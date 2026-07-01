@@ -1,0 +1,27 @@
+{
+  "name": "foodie-match",
+  "version": "1.0.0",
+  "description": "Welcome! This is the repository for **Foodie Match**, a small casual plate-serving puzzle game developed with **Unity 6000.0.58f2**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kandy2705/Foodie-Match.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Kandy2705/Foodie-Match/issues"
+  },
+  "homepage": "https://github.com/Kandy2705/Foodie-Match#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.0",
+    "@commitlint/config-conventional": "^21.2.0",
+    "husky": "^9.1.7"
+  }
+}
