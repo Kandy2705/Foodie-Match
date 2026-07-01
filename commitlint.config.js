@@ -1,5 +1,13 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
+
+  parserPreset: {
+    parserOpts: {
+      headerPattern: /^(\w+)(?:\(([^)]+)\))?!?:\s+(?::[a-z0-9_-]+:|[\p{Emoji_Presentation}\p{Extended_Pictographic}])\s+(.+)$/u,
+      headerCorrespondence: ['type', 'scope', 'subject']
+    }
+  },
+
   rules: {
     'type-enum': [
       2,
@@ -16,30 +24,6 @@ module.exports = {
         'ci',
         'perf',
         'revert'
-      ]
-    ],
-    'scope-enum': [
-      1,
-      'always',
-      [
-        'screen',
-        'button',
-        'gameplay',
-        'tray',
-        'food',
-        'plate',
-        'order',
-        'serving',
-        'storage',
-        'level',
-        'booster',
-        'data',
-        'animation',
-        'vfx',
-        'audio',
-        'tester',
-        'project',
-        'readme'
       ]
     ],
     'subject-empty': [2, 'never'],
