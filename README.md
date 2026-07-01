@@ -28,3 +28,53 @@ Customer requests plates
 → A new plate request appears
 → Clear all food from the tray
 ```
+
+---
+
+## Tech Stack
+
+This project is currently developed with:
+
+| Tool | Usage |
+|---|---|
+| Unity 6000.0.58f2 | Main game engine |
+| C# | Gameplay, UI, and game systems |
+| Git | Version control |
+| GitHub | Repository hosting and collaboration |
+| Husky | Local Git hooks |
+| Commitlint | Commit message validation |
+| Gitmoji | Emoji-based commit style |
+
+---
+
+## Commit Convention
+
+This project uses **Husky**, **Commitlint**, and **Gitmoji** to keep commit messages consistent.
+
+Commit format:
+
+```text
+type: Commit message
+type: emoji Commit message
+type(scope): Commit message
+type(scope): emoji Commit message
+```
+
+Examples:
+
+```text
+feat: Add food selection logic
+feat: ✨ Add food selection logic
+fix(plate): Fix plate completion detection
+docs(readme): 📝 Update project overview
+chore(project): 🔧 Setup commit validation
+```
+
+Allowed types:
+
+```text
+feat, fix, docs, style, refactor, test, chore, build, ci, perf, revert
+```
+
+Commits with invalid format will be rejected by the Git hook.
+
