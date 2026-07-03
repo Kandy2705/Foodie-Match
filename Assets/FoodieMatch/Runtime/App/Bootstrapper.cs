@@ -1,16 +1,27 @@
 using UnityEngine;
 
-public class Bootstrapper : MonoBehaviour
+namespace FoodieMatch.Runtime.App
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public sealed class Bootstrapper : MonoBehaviour
     {
-        
-    }
+        [SerializeField] private AppRoot _appRootPrefab;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        private void Awake()
+        {
+            CreateAppRoot();
+        }
+
+        private void CreateAppRoot()
+        {
+            if (_appRootPrefab == null)
+            {
+                Debug.LogError("AppRoot prefab is missing.");
+                return;
+            }
+
+            AppRoot appRoot = Instantiate(_appRootPrefab);
+            appRoot.gameObject.name = _appRootPrefab.gameObject.name;
+            appRoot.Initialize();
+        }
     }
 }
