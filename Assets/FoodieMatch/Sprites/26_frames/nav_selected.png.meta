@@ -129,13 +129,13 @@ TextureImporter:
       name: nav_selected_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 3
         y: 0
-        width: 201
+        width: 195
         height: 172
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 32, y: 0, z: 32, w: 38}
       customData: 
       outline: []
       physicsShape: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: ae46747ac87bb4189b6421f628530df1
     internalID: 0
     vertices: []
     indices: 

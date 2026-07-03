@@ -129,13 +129,13 @@ TextureImporter:
       name: btn_blue_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 4
         y: 0
-        width: 162
-        height: 177
+        width: 155
+        height: 171
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 52, y: 70, z: 52, w: 45}
       customData: 
       outline: []
       physicsShape: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5c3d68a92ca904d1999be49cdfdc1b47
     internalID: 0
     vertices: []
     indices: 
