@@ -128,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 252108126}
+  - component: {fileID: 252108127}
   m_Layer: 0
   m_Name: Bootstrapper
   m_TagString: Untagged
@@ -150,6 +151,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &252108127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252108125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4f5d71213e1f6e49a970f8e79d4e741, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _appRootPrefab: {fileID: 4562025231821585959, guid: 2952f092d086a9f4ea0fb3465e2620ad, type: 3}
 --- !u!1 &463862671
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,5 +385,5 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 463862674}
-  - {fileID: 252108126}
   - {fileID: 1992794963}
+  - {fileID: 252108126}
