@@ -129,10 +129,10 @@ TextureImporter:
       name: booster_swap_2_0
       rect:
         serializedVersion: 2
-        x: 15
-        y: 18
-        width: 62
-        height: 53
+        x: 22
+        y: 26
+        width: 94
+        height: 81
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

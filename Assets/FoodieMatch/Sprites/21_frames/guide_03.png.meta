@@ -8,9 +8,6 @@ TextureImporter:
   - first:
       213: 4735548455694421786
     second: guide_03_1
-  - first:
-      213: -3314913931393077036
-    second: guide_03_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -137,8 +134,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 113
-        height: 196
+        width: 331
+        height: 318
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -157,10 +154,10 @@ TextureImporter:
       name: guide_03_1
       rect:
         serializedVersion: 2
-        x: 107
+        x: 321
         y: 0
-        width: 114
-        height: 212
+        width: 168
+        height: 266
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -171,28 +168,6 @@ TextureImporter:
       bones: []
       spriteID: a1fc05efa3c08b140800000000000000
       internalID: 4735548455694421786
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: guide_03_2
-      rect:
-        serializedVersion: 2
-        x: 214
-        y: 0
-        width: 112
-        height: 177
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4d07252b75f0ff1d0800000000000000
-      internalID: -3314913931393077036
       vertices: []
       indices: 
       edges: []
@@ -213,7 +188,6 @@ TextureImporter:
     nameFileIdTable:
       guide_03_0: 6115442055238710950
       guide_03_1: 4735548455694421786
-      guide_03_2: -3314913931393077036
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
