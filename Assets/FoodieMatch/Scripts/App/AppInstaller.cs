@@ -1,0 +1,58 @@
+using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Infrastructure.Audio;
+using FoodieMatch.Core.Infrastructure.Save;
+using UnityEngine;
+
+namespace FoodieMatch.App
+{
+    public sealed class AppInstaller : MonoBehaviour
+    {
+        public GameplayEvents GameplayEvents { get; private set; }
+
+        public void Install(AppRoot appRoot)
+        {
+            if (!HasValidReferences(appRoot))
+            {
+                return;
+            }
+
+            GameplayEvents = new GameplayEvents();
+
+            IAudioService audioService = new NullAudioService();
+            ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+
+            appRoot.UIManager.Construct(GameplayEvents, audioService);
+            appRoot.GameplayController.Construct(appRoot, appRoot.UIManager, GameplayEvents);
+            appRoot.AppController.Construct(appRoot.UIManager, appRoot.GameplayController, saveService);
+        }
+
+        private bool HasValidReferences(AppRoot appRoot)
+        {
+            if (appRoot == null)
+            {
+                Debug.LogError("Cannot install app because AppRoot is null.");
+                return false;
+            }
+
+            if (appRoot.AppController == null)
+            {
+                Debug.LogError("Cannot install app because AppController is missing.");
+                return false;
+            }
+
+            if (appRoot.GameplayController == null)
+            {
+                Debug.LogError("Cannot install app because GameplayController is missing.");
+                return false;
+            }
+
+            if (appRoot.UIManager == null)
+            {
+                Debug.LogError("Cannot install app because UIManager is missing.");
+                return false;
+            }
+
+            return true;
+        }
+    }
+}
