@@ -129,38 +129,16 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: button_green_2_0
-      rect:
-        serializedVersion: 2
-        x: 62
-        y: 207
-        width: 84
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 28801aadedebba3d0800000000000000
-      internalID: -3194249646329231230
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: button_green_2_1
       rect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 146
-        height: 202
+        height: 215
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 60, y: 0, z: 66, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 64, y: 0, z: 64, w: 0}
       customData: 
       outline: []
       physicsShape: []

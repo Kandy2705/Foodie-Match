@@ -10,6 +10,13 @@
       },
       "hash": "87dca448ce964ca2325d7105fa93119749743f50"
     },
+    "com.gilzoide.safe-area-layout": {
+      "version": "https://github.com/gilzoide/unity-safe-area-layout.git#1.1.2",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "f11287e334aa090369e2f1e5257dc82714b1a4d6"
+    },
     "com.kyrylokuzyk.primetween": {
       "version": "file:../Assets/Plugins/PrimeTween/internal/com.kyrylokuzyk.primetween.tgz",
       "depth": 0,

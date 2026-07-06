@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.gilzoide.safe-area-layout": "https://github.com/gilzoide/unity-safe-area-layout.git#1.1.2",
     "com.coffee.ui-particle": "https://github.com/mob-sakai/ParticleEffectForUGUI.git",
     "com.kyrylokuzyk.primetween": "file:../Assets/Plugins/PrimeTween/internal/com.kyrylokuzyk.primetween.tgz",
     "com.unity.collab-proxy": "2.12.4",
