@@ -24,12 +24,22 @@ namespace FoodieMatch.Data.Level
                 result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds cannot contain more than 3 items.");
             }
 
+            var hasFoodToken = false;
+
             for (var i = 0; i < _foodTokenIds.Count; i++)
             {
-                if (_foodTokenIds[i] <= 0)
+                if (_foodTokenIds[i] < 0)
                 {
-                    result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds[{i}] must be greater than 0.");
+                    result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds[{i}] cannot be negative.");
+                    continue;
                 }
+
+                hasFoodToken |= _foodTokenIds[i] > 0;
+            }
+
+            if (!hasFoodToken)
+            {
+                result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds must contain at least one item id.");
             }
         }
     }

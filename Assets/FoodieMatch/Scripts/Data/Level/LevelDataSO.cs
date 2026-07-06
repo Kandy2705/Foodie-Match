@@ -109,7 +109,7 @@ namespace FoodieMatch.Data.Level
                     continue;
                 }
 
-                count += grill.InitialFoodTokenIds?.Count ?? 0;
+                count += CountFoodTokens(grill.InitialFoodTokenIds);
 
                 if (grill.Plates == null)
                 {
@@ -118,7 +118,27 @@ namespace FoodieMatch.Data.Level
 
                 foreach (var plate in grill.Plates)
                 {
-                    count += plate?.FoodTokenIds?.Count ?? 0;
+                    count += CountFoodTokens(plate?.FoodTokenIds);
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountFoodTokens(IReadOnlyList<int> foodTokenIds)
+        {
+            if (foodTokenIds == null)
+            {
+                return 0;
+            }
+
+            var count = 0;
+
+            foreach (var foodTokenId in foodTokenIds)
+            {
+                if (foodTokenId > 0)
+                {
+                    count++;
                 }
             }
 
