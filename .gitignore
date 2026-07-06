@@ -106,3 +106,8 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ss]ceneDependencyCache*
 node_modules/
 .vscode/
+
+# Local markdown docs (do not push)
+/md/
+*.md
+!README.md
