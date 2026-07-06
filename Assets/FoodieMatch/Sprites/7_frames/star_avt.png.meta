@@ -53,6 +53,15 @@ TextureImporter:
   - first:
       213: 1221316795634897878
     second: star_avt_16
+  - first:
+      213: 6518121524466035362
+    second: star_avt_17
+  - first:
+      213: 6051847755276023348
+    second: star_avt_18
+  - first:
+      213: -8633260103429010347
+    second: star_avt_19
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -177,10 +186,10 @@ TextureImporter:
       name: star_avt_0
       rect:
         serializedVersion: 2
-        x: 127
-        y: 258
-        width: 12
-        height: 12
+        x: 190
+        y: 387
+        width: 19
+        height: 18
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -199,10 +208,10 @@ TextureImporter:
       name: star_avt_1
       rect:
         serializedVersion: 2
-        x: 216
-        y: 207
-        width: 51
-        height: 51
+        x: 324
+        y: 310
+        width: 77
+        height: 77
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -221,10 +230,10 @@ TextureImporter:
       name: star_avt_2
       rect:
         serializedVersion: 2
-        x: 119
-        y: 239
-        width: 16
-        height: 16
+        x: 178
+        y: 358
+        width: 25
+        height: 25
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -243,10 +252,10 @@ TextureImporter:
       name: star_avt_3
       rect:
         serializedVersion: 2
-        x: 0
-        y: 169
-        width: 16
-        height: 15
+        x: 75
+        y: 322
+        width: 8
+        height: 7
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -265,10 +274,10 @@ TextureImporter:
       name: star_avt_4
       rect:
         serializedVersion: 2
-        x: 15
-        y: 172
-        width: 40
-        height: 47
+        x: 0
+        y: 253
+        width: 24
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -287,10 +296,10 @@ TextureImporter:
       name: star_avt_5
       rect:
         serializedVersion: 2
-        x: 263
-        y: 162
-        width: 62
-        height: 24
+        x: 22
+        y: 258
+        width: 49
+        height: 48
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -309,10 +318,10 @@ TextureImporter:
       name: star_avt_6
       rect:
         serializedVersion: 2
-        x: 9
-        y: 151
-        width: 11
-        height: 12
+        x: 481
+        y: 272
+        width: 8
+        height: 8
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -331,10 +340,10 @@ TextureImporter:
       name: star_avt_7
       rect:
         serializedVersion: 2
-        x: 300
-        y: 121
-        width: 13
-        height: 13
+        x: 13
+        y: 226
+        width: 17
+        height: 19
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -353,10 +362,10 @@ TextureImporter:
       name: star_avt_8
       rect:
         serializedVersion: 2
-        x: 30
-        y: 103
-        width: 13
-        height: 13
+        x: 395
+        y: 243
+        width: 23
+        height: 23
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -375,10 +384,10 @@ TextureImporter:
       name: star_avt_9
       rect:
         serializedVersion: 2
-        x: 17
-        y: 64
-        width: 16
-        height: 16
+        x: 450
+        y: 181
+        width: 20
+        height: 20
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -397,10 +406,10 @@ TextureImporter:
       name: star_avt_10
       rect:
         serializedVersion: 2
-        x: 252
-        y: 61
-        width: 32
-        height: 32
+        x: 45
+        y: 154
+        width: 20
+        height: 20
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -419,10 +428,10 @@ TextureImporter:
       name: star_avt_11
       rect:
         serializedVersion: 2
-        x: 28
-        y: 22
-        width: 26
-        height: 26
+        x: 25
+        y: 96
+        width: 25
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -441,10 +450,10 @@ TextureImporter:
       name: star_avt_12
       rect:
         serializedVersion: 2
-        x: 260
-        y: 39
-        width: 14
-        height: 14
+        x: 378
+        y: 91
+        width: 49
+        height: 49
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -463,10 +472,10 @@ TextureImporter:
       name: star_avt_13
       rect:
         serializedVersion: 2
-        x: 63
-        y: 2
-        width: 14
-        height: 14
+        x: 42
+        y: 33
+        width: 39
+        height: 39
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -485,10 +494,10 @@ TextureImporter:
       name: star_avt_14
       rect:
         serializedVersion: 2
-        x: 157
-        y: 0
-        width: 14
-        height: 13
+        x: 390
+        y: 58
+        width: 22
+        height: 22
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -507,10 +516,10 @@ TextureImporter:
       name: star_avt_15
       rect:
         serializedVersion: 2
-        x: 223
-        y: 0
-        width: 14
-        height: 13
+        x: 94
+        y: 3
+        width: 22
+        height: 21
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -529,10 +538,10 @@ TextureImporter:
       name: star_avt_16
       rect:
         serializedVersion: 2
-        x: 257
-        y: 6
-        width: 15
-        height: 16
+        x: 235
+        y: 0
+        width: 22
+        height: 20
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -543,6 +552,72 @@ TextureImporter:
       bones: []
       spriteID: 6d35902a72df2f010800000000000000
       internalID: 1221316795634897878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: star_avt_17
+      rect:
+        serializedVersion: 2
+        x: 335
+        y: 0
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2aa20a4fdf4057a50800000000000000
+      internalID: 6518121524466035362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: star_avt_18
+      rect:
+        serializedVersion: 2
+        x: 350
+        y: 13
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 436f8f7287b7cf350800000000000000
+      internalID: 6051847755276023348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: star_avt_19
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 9
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55ccf894daf703880800000000000000
+      internalID: -8633260103429010347
       vertices: []
       indices: 
       edges: []
@@ -570,6 +645,9 @@ TextureImporter:
       star_avt_14: -1641434822825933330
       star_avt_15: 3129264289218788521
       star_avt_16: 1221316795634897878
+      star_avt_17: 6518121524466035362
+      star_avt_18: 6051847755276023348
+      star_avt_19: -8633260103429010347
       star_avt_2: -3425641132193627377
       star_avt_3: 5701460049492718459
       star_avt_4: 6552968259490663988

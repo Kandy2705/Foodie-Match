@@ -5,6 +5,9 @@ TextureImporter:
   - first:
       213: 5695393790061984308
     second: LightEffect_0
+  - first:
+      213: -6678959315866631678
+    second: LightEffect_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -131,8 +134,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 393
-        height: 288
+        width: 590
+        height: 431
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,6 +146,28 @@ TextureImporter:
       bones: []
       spriteID: 43a3c900a7a1a0f40800000000000000
       internalID: 5695393790061984308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LightEffect_1
+      rect:
+        serializedVersion: 2
+        x: 531
+        y: 390
+        width: 7
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 202cb7c83e19f43a0800000000000000
+      internalID: -6678959315866631678
       vertices: []
       indices: 
       edges: []
@@ -162,6 +187,7 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       LightEffect_0: 5695393790061984308
+      LightEffect_1: -6678959315866631678
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

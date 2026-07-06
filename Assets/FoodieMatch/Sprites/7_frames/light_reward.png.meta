@@ -129,10 +129,10 @@ TextureImporter:
       name: light_reward_0
       rect:
         serializedVersion: 2
-        x: 24
-        y: 29
-        width: 334
-        height: 333
+        x: 36
+        y: 43
+        width: 501
+        height: 501
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

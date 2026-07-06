@@ -129,10 +129,10 @@ TextureImporter:
       name: booster_wand_2_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 12
-        width: 64
-        height: 65
+        x: 16
+        y: 17
+        width: 97
+        height: 99
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
