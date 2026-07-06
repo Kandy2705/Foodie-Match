@@ -14,10 +14,6 @@ namespace FoodieMatch.UI
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
 
-        [Header("Home")]
-        [SerializeField] private Transform _mainMenuRoot;
-        [SerializeField] private HomeView _homeView;
-
         [Header("HUD")]
         [SerializeField] private GameObject _gameplayHudPrefab;
         [SerializeField] private Transform _hudRoot;
@@ -47,7 +43,6 @@ namespace FoodieMatch.UI
 
             _gameplayEvents = gameplayEvents;
             SubscribeEvents();
-            EnsureHomeReferences();
 
             _hasConstructed = true;
 
@@ -59,23 +54,9 @@ namespace FoodieMatch.UI
 
         public void ShowHome()
         {
-            EnsureHomeReferences();
-
-            if (_mainMenuRoot != null)
-            {
-                _mainMenuRoot.gameObject.SetActive(true);
-            }
-
-            if (_homeView != null)
-            {
-                _homeView.Show();
-                _homeView.SetActions(new HomeViewActions(OnHomePlayRequested));
-                return;
-            }
-
             if (_popupManager == null)
             {
-                Debug.LogError("Cannot show home because HomeView and PopupManager are missing.");
+                Debug.LogError("Cannot show home because PopupManager is missing.");
                 return;
             }
 
@@ -91,20 +72,6 @@ namespace FoodieMatch.UI
 
         public void HideHome()
         {
-            EnsureHomeReferences();
-
-            if (_mainMenuRoot != null)
-            {
-                _mainMenuRoot.gameObject.SetActive(false);
-                return;
-            }
-
-            if (_homeView != null)
-            {
-                _homeView.Hide();
-                return;
-            }
-
             if (_popupManager == null)
             {
                 return;
@@ -181,32 +148,6 @@ namespace FoodieMatch.UI
             _gameplayEvents.LevelStarted -= OnLevelStarted;
             _gameplayEvents.LevelProgressChanged -= OnLevelProgressChanged;
             _gameplayEvents.LevelEnded -= OnLevelEnded;
-        }
-
-        private void EnsureHomeReferences()
-        {
-            Transform searchRoot = transform.parent != null ? transform.parent : transform;
-
-            if (_homeView == null)
-            {
-                _homeView = searchRoot.GetComponentInChildren<HomeView>(true);
-            }
-
-            if (_mainMenuRoot != null)
-            {
-                return;
-            }
-
-            Transform[] transforms = searchRoot.GetComponentsInChildren<Transform>(true);
-
-            for (int i = 0; i < transforms.Length; i++)
-            {
-                if (transforms[i].name == "MainMenuRoot")
-                {
-                    _mainMenuRoot = transforms[i];
-                    return;
-                }
-            }
         }
 
         private void OnHomePlayRequested()
