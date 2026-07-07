@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: bb0ce324e503b475fb3a131c9d2cc60e
+guid: 47924c351085c44c1b15bc0995fea6ee
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7049752581813627975
-    second: tray_0
+      213: -2413355508425538855
+    second: ui_grill_singleMove_03_0
+  - first:
+      213: 7825661031568024988
+    second: ui_grill_singleMove_03_1
+  - first:
+      213: -4293506272514275490
+    second: ui_grill_singleMove_03_2
+  - first:
+      213: -6434879745662303983
+    second: ui_grill_singleMove_03_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,17 +131,30 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: tray_0
+      name: ui_grill_singleMove_03_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 162
-        height: 65
+        y: 77
+        width: 90
+        height: 18
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +163,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9b31b96c06f3a2e90800000000000000
-      internalID: -7049752581813627975
+      spriteID: 9d2409b93f9028ed0800000000000000
+      internalID: -2413355508425538855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_grill_singleMove_03_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 51
+        width: 90
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c95aa3ffe355a9c60800000000000000
+      internalID: 7825661031568024988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_grill_singleMove_03_2
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 25
+        width: 90
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5700e90bc66a64c0800000000000000
+      internalID: -4293506272514275490
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui_grill_singleMove_03_3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 90
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 111417bf6f6b2b6a0800000000000000
+      internalID: -6434879745662303983
       vertices: []
       indices: 
       edges: []
@@ -161,7 +249,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      tray_0: -7049752581813627975
+      ui_grill_singleMove_03_0: -2413355508425538855
+      ui_grill_singleMove_03_1: 7825661031568024988
+      ui_grill_singleMove_03_2: -4293506272514275490
+      ui_grill_singleMove_03_3: -6434879745662303983
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
