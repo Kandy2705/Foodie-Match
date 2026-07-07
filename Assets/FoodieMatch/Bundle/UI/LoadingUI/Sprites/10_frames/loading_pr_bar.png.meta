@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: c64e4cee9fed54b3b9ef19af9c64495f
+guid: 379bd55fa6d954181bba6d3603afac44
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2969582848770072394
-    second: bg_progress_0
+      213: -8932542395042157303
+    second: loading_pr_bar_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bg_progress_0
+      name: loading_pr_bar_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 132
-        height: 83
+        width: 75
+        height: 50
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 22, y: 0, z: 22, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a4f58001ed3163920800000000000000
-      internalID: 2969582848770072394
+      spriteID: 90d2562b40c390480800000000000000
+      internalID: -8932542395042157303
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: cf230c4b9299f49d19de8bdcaab7b717
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bg_progress_0: 2969582848770072394
+      loading_pr_bar_0: -8932542395042157303
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
