@@ -8,10 +8,13 @@ namespace FoodieMatch.Features.Food
     {
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Collider2D _clickCollider;
+        [SerializeField] private Vector3 _grillScale = Vector3.one;
+        [SerializeField] private Vector3 _plateScale = new Vector3(0.75f, 0.75f, 1f);
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
         public bool IsInteractable { get; private set; }
+        public FoodItemVisualState VisualState { get; private set; }
 
         public event Action<FoodItemView> Selected;
 
@@ -28,6 +31,7 @@ namespace FoodieMatch.Features.Food
             }
 
             ApplyColliderState();
+            ApplyVisualState();
         }
 
         public void Setup(int foodTokenId, Sprite sprite)
@@ -46,6 +50,7 @@ namespace FoodieMatch.Features.Food
             }
 
             FoodTokenId = foodTokenId;
+            VisualState = FoodItemVisualState.OnGrill;
 
             if (_spriteRenderer != null)
             {
@@ -54,6 +59,7 @@ namespace FoodieMatch.Features.Food
             }
 
             ApplyColliderState();
+            ApplyVisualState();
         }
 
         public void Clear()
@@ -67,12 +73,19 @@ namespace FoodieMatch.Features.Food
             }
 
             ApplyColliderState();
+            ApplyVisualState();
         }
 
         public void SetInteractable(bool isInteractable)
         {
             IsInteractable = isInteractable;
             ApplyColliderState();
+        }
+
+        public void SetVisualState(FoodItemVisualState visualState)
+        {
+            VisualState = visualState;
+            ApplyVisualState();
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -91,6 +104,30 @@ namespace FoodieMatch.Features.Food
             {
                 _clickCollider.enabled = !IsEmpty && IsInteractable;
             }
+        }
+
+        private void ApplyVisualState()
+        {
+            if (IsEmpty)
+            {
+                VisualState = FoodItemVisualState.Empty;
+
+                if (_spriteRenderer != null)
+                {
+                    _spriteRenderer.enabled = false;
+                }
+
+                return;
+            }
+
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.enabled = _spriteRenderer.sprite != null;
+            }
+
+            transform.localScale = VisualState == FoodItemVisualState.OnPlate
+                ? _plateScale
+                : _grillScale;
         }
     }
 }
