@@ -271,7 +271,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8590836424026343587}
   m_Layer: 0
-  m_Name: PlateStackAnchor
+  m_Name: TrayStackAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -555,7 +555,7 @@ MonoBehaviour:
   - {fileID: 5590539011933219216}
   - {fileID: 3559022086368937256}
   - {fileID: 6456585175415227267}
-  _plateStackAnchor: {fileID: 8590836424026343587}
+  _trayStackAnchor: {fileID: 8590836424026343587}
 --- !u!1 &8065578757226860190
 GameObject:
   m_ObjectHideFlags: 0

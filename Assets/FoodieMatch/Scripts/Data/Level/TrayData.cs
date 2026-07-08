@@ -5,23 +5,23 @@ using UnityEngine;
 namespace FoodieMatch.Data.Level
 {
     [Serializable]
-    public sealed class PlateData
+    public sealed class TrayData
     {
         [SerializeField] private List<int> _foodTokenIds = new();
 
         public IReadOnlyList<int> FoodTokenIds => _foodTokenIds;
 
-        public void Validate(LevelValidationResult result, int grillIndex, int plateIndex)
+        public void Validate(LevelValidationResult result, int grillIndex, int trayIndex)
         {
             if (_foodTokenIds == null || _foodTokenIds.Count == 0)
             {
-                result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds cannot be empty.");
+                result.AddError($"Grill {grillIndex}, Tray {trayIndex}: FoodTokenIds cannot be empty.");
                 return;
             }
 
             if (_foodTokenIds.Count > 3)
             {
-                result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds cannot contain more than 3 items.");
+                result.AddError($"Grill {grillIndex}, Tray {trayIndex}: FoodTokenIds cannot contain more than 3 items.");
             }
 
             var hasFoodToken = false;
@@ -30,7 +30,7 @@ namespace FoodieMatch.Data.Level
             {
                 if (_foodTokenIds[i] < 0)
                 {
-                    result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds[{i}] cannot be negative.");
+                    result.AddError($"Grill {grillIndex}, Tray {trayIndex}: FoodTokenIds[{i}] cannot be negative.");
                     continue;
                 }
 
@@ -39,7 +39,7 @@ namespace FoodieMatch.Data.Level
 
             if (!hasFoodToken)
             {
-                result.AddError($"Grill {grillIndex}, Plate {plateIndex}: FoodTokenIds must contain at least one item id.");
+                result.AddError($"Grill {grillIndex}, Tray {trayIndex}: FoodTokenIds must contain at least one item id.");
             }
         }
     }

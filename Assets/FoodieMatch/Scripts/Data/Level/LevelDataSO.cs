@@ -111,14 +111,14 @@ namespace FoodieMatch.Data.Level
 
                 count += CountFoodTokens(grill.InitialFoodTokenIds);
 
-                if (grill.Plates == null)
+                if (grill.Trays == null)
                 {
                     continue;
                 }
 
-                foreach (var plate in grill.Plates)
+                foreach (var tray in grill.Trays)
                 {
-                    count += CountFoodTokens(plate?.FoodTokenIds);
+                    count += CountFoodTokens(tray?.FoodTokenIds);
                 }
             }
 

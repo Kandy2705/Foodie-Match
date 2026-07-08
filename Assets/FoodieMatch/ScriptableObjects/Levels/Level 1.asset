@@ -22,13 +22,12 @@ MonoBehaviour:
   _grills:
   - _positionIndex: 0
     _initialFoodTokenIds: 010000000000000001000000
-    _plates:
-    - _foodTokenIds: 020000000200000003000000
-    - _foodTokenIds: 010000000200000002000000
-    - _foodTokenIds: 020000000000000001000000
+    _trays:
+    - _foodTokenIds: 010000000200000000000000
+    - _foodTokenIds: 020000000000000003000000
+    - _foodTokenIds: 020000000300000001000000
   - _positionIndex: 1
     _initialFoodTokenIds: 030000000000000001000000
-    _plates:
+    _trays:
+    - _foodTokenIds: 030000000300000002000000
     - _foodTokenIds: 010000000200000001000000
-    - _foodTokenIds: 030000000000000003000000
-    - _foodTokenIds: 010000000200000002000000

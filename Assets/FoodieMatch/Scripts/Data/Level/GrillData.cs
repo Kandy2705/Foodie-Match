@@ -9,11 +9,11 @@ namespace FoodieMatch.Data.Level
     {
         [SerializeField] private int _positionIndex;
         [SerializeField] private List<int> _initialFoodTokenIds = new();
-        [SerializeField] private List<PlateData> _plates = new();
+        [SerializeField] private List<TrayData> _trays = new();
 
         public int PositionIndex => _positionIndex;
         public IReadOnlyList<int> InitialFoodTokenIds => _initialFoodTokenIds;
-        public IReadOnlyList<PlateData> Plates => _plates;
+        public IReadOnlyList<TrayData> Trays => _trays;
 
         public void Validate(LevelValidationResult result, int grillIndex)
         {
@@ -23,7 +23,7 @@ namespace FoodieMatch.Data.Level
             }
 
             ValidateInitialFoodTokens(result, grillIndex);
-            ValidatePlates(result, grillIndex);
+            ValidateTrays(result, grillIndex);
         }
 
         private void ValidateInitialFoodTokens(LevelValidationResult result, int grillIndex)
@@ -58,22 +58,22 @@ namespace FoodieMatch.Data.Level
             }
         }
 
-        private void ValidatePlates(LevelValidationResult result, int grillIndex)
+        private void ValidateTrays(LevelValidationResult result, int grillIndex)
         {
-            if (_plates == null)
+            if (_trays == null)
             {
                 return;
             }
 
-            for (var i = 0; i < _plates.Count; i++)
+            for (var i = 0; i < _trays.Count; i++)
             {
-                if (_plates[i] == null)
+                if (_trays[i] == null)
                 {
-                    result.AddError($"Grill {grillIndex}: Plate {i} cannot be null.");
+                    result.AddError($"Grill {grillIndex}: Tray {i} cannot be null.");
                     continue;
                 }
 
-                _plates[i].Validate(result, grillIndex, i);
+                _trays[i].Validate(result, grillIndex, i);
             }
         }
     }

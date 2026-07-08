@@ -9,7 +9,7 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Collider2D _clickCollider;
         [SerializeField] private Vector3 _grillScale = Vector3.one;
-        [SerializeField] private Vector3 _plateScale = new Vector3(0.75f, 0.75f, 1f);
+        [SerializeField] private Vector3 _trayScale = new Vector3(0.75f, 0.75f, 1f);
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -125,8 +125,8 @@ namespace FoodieMatch.Features.Food
                 _spriteRenderer.enabled = _spriteRenderer.sprite != null;
             }
 
-            transform.localScale = VisualState == FoodItemVisualState.OnPlate
-                ? _plateScale
+            transform.localScale = VisualState == FoodItemVisualState.OnTray
+                ? _trayScale
                 : _grillScale;
         }
     }
