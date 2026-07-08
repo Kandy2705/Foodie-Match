@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 04ad7316b4b964a69a6b181e00b1cc36
+guid: e1003d015c83a4b3c9ff5c104beffb4c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5548637266479608735
-    second: button_green_5_0
-  - first:
-      213: -3264919329692358596
-    second: button_green_5_1
+      213: -1975231004027015862
+    second: button_yellow_1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -129,45 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: button_green_5_0
+      name: button_yellow_1_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 77
-        width: 5
-        height: 189
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 16c0df7ddc74ff2b0800000000000000
-      internalID: -5548637266479608735
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: button_green_5_1
-      rect:
-        serializedVersion: 2
-        x: 7
         y: 0
-        width: 248
-        height: 266
+        width: 246
+        height: 269
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 80, y: 80, z: 80, w: 80}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c38616dfa2da0b2d0800000000000000
-      internalID: -3264919329692358596
+      spriteID: a4da1a7fdd19694e0800000000000000
+      internalID: -1975231004027015862
       vertices: []
       indices: 
       edges: []
@@ -176,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 8ae86d44b978f4c3eb262e77825cce0b
     internalID: 0
     vertices: []
     indices: 
@@ -186,8 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      button_green_5_0: -5548637266479608735
-      button_green_5_1: -3264919329692358596
+      button_yellow_1_0: -1975231004027015862
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

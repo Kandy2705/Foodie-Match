@@ -1,0 +1,2951 @@
+fileFormatVersion: 2
+guid: 5e1536764a4be4823964d801efd98c53
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7466501987353455348
+    second: Foodie_Mascot_0
+  - first:
+      213: -8840357519124999578
+    second: Foodie_Mascot_1
+  - first:
+      213: 4118093313374747180
+    second: Foodie_Mascot_2
+  - first:
+      213: 738481102487727545
+    second: Foodie_Mascot_3
+  - first:
+      213: 4638178976201587116
+    second: Foodie_Mascot_4
+  - first:
+      213: 6189029093424589994
+    second: Foodie_Mascot_5
+  - first:
+      213: -8112686949384301617
+    second: Foodie_Mascot_6
+  - first:
+      213: 269177643702530677
+    second: Foodie_Mascot_7
+  - first:
+      213: -6322792121309783335
+    second: Foodie_Mascot_8
+  - first:
+      213: 3602135138990626027
+    second: Foodie_Mascot_9
+  - first:
+      213: 1886329649688980581
+    second: Foodie_Mascot_10
+  - first:
+      213: -7092081560253863113
+    second: Foodie_Mascot_11
+  - first:
+      213: 6773089672995096074
+    second: Foodie_Mascot_12
+  - first:
+      213: -509706483314812653
+    second: Foodie_Mascot_13
+  - first:
+      213: -7999169736038069300
+    second: Foodie_Mascot_14
+  - first:
+      213: -8713809003075231180
+    second: Foodie_Mascot_15
+  - first:
+      213: 8132250969837894778
+    second: Foodie_Mascot_16
+  - first:
+      213: -2822269649136089060
+    second: Foodie_Mascot_17
+  - first:
+      213: -6332145543138314891
+    second: Foodie_Mascot_18
+  - first:
+      213: -8552438445014716699
+    second: Foodie_Mascot_19
+  - first:
+      213: -2676163741229402999
+    second: Foodie_Mascot_20
+  - first:
+      213: 6676765056361000736
+    second: Foodie_Mascot_21
+  - first:
+      213: 8807198301162125925
+    second: Foodie_Mascot_22
+  - first:
+      213: -9050364382419333938
+    second: Foodie_Mascot_23
+  - first:
+      213: -4969473652990768320
+    second: Foodie_Mascot_24
+  - first:
+      213: -8772230598541838792
+    second: Foodie_Mascot_25
+  - first:
+      213: -7895770511713850350
+    second: Foodie_Mascot_26
+  - first:
+      213: 5219273991571000520
+    second: Foodie_Mascot_27
+  - first:
+      213: 4997288438920068094
+    second: Foodie_Mascot_28
+  - first:
+      213: 7490992745703664318
+    second: Foodie_Mascot_29
+  - first:
+      213: -3671982446853493775
+    second: Foodie_Mascot_30
+  - first:
+      213: 1093334417466320432
+    second: Foodie_Mascot_31
+  - first:
+      213: -822997971623374720
+    second: Foodie_Mascot_32
+  - first:
+      213: -8116993466230435469
+    second: Foodie_Mascot_33
+  - first:
+      213: -2469455740984002309
+    second: Foodie_Mascot_34
+  - first:
+      213: -2061588990925454430
+    second: Foodie_Mascot_35
+  - first:
+      213: 4476917531952843473
+    second: Foodie_Mascot_36
+  - first:
+      213: 2731462789912196255
+    second: Foodie_Mascot_37
+  - first:
+      213: -103478427261687133
+    second: Foodie_Mascot_38
+  - first:
+      213: 7025708410894733956
+    second: Foodie_Mascot_39
+  - first:
+      213: 9033859397496348955
+    second: Foodie_Mascot_40
+  - first:
+      213: -7168555854065664000
+    second: Foodie_Mascot_41
+  - first:
+      213: 8962393581476135863
+    second: Foodie_Mascot_42
+  - first:
+      213: 8990264806853640019
+    second: Foodie_Mascot_43
+  - first:
+      213: 6707001332449577269
+    second: Foodie_Mascot_44
+  - first:
+      213: -1745024513704110463
+    second: Foodie_Mascot_45
+  - first:
+      213: 1971346214840327762
+    second: Foodie_Mascot_46
+  - first:
+      213: -1376181630255352180
+    second: Foodie_Mascot_47
+  - first:
+      213: -3332956437943340425
+    second: Foodie_Mascot_48
+  - first:
+      213: 4108680965588409935
+    second: Foodie_Mascot_49
+  - first:
+      213: -3425791205908860828
+    second: Foodie_Mascot_50
+  - first:
+      213: -7675728894634975163
+    second: Foodie_Mascot_51
+  - first:
+      213: -3373129312488623398
+    second: Foodie_Mascot_52
+  - first:
+      213: -8340381436308839536
+    second: Foodie_Mascot_53
+  - first:
+      213: -4585860414642291920
+    second: Foodie_Mascot_54
+  - first:
+      213: -2872028339923670642
+    second: Foodie_Mascot_55
+  - first:
+      213: -8439392689984229447
+    second: Foodie_Mascot_56
+  - first:
+      213: 6853782087985195850
+    second: Foodie_Mascot_57
+  - first:
+      213: 6230940236926386763
+    second: Foodie_Mascot_58
+  - first:
+      213: 3757676142155477286
+    second: Foodie_Mascot_59
+  - first:
+      213: -8196765306436405603
+    second: Foodie_Mascot_60
+  - first:
+      213: 1523393107717939887
+    second: Foodie_Mascot_61
+  - first:
+      213: -8842170989323493156
+    second: Foodie_Mascot_62
+  - first:
+      213: -864399349430651238
+    second: Foodie_Mascot_63
+  - first:
+      213: 6744793148556961257
+    second: Foodie_Mascot_64
+  - first:
+      213: -8848130258915596264
+    second: Foodie_Mascot_65
+  - first:
+      213: -745862622839800391
+    second: Foodie_Mascot_66
+  - first:
+      213: -2089462702796787614
+    second: Foodie_Mascot_67
+  - first:
+      213: -5015262091875303836
+    second: Foodie_Mascot_68
+  - first:
+      213: 6119795728665912471
+    second: Foodie_Mascot_69
+  - first:
+      213: 3306529744722398858
+    second: Foodie_Mascot_70
+  - first:
+      213: -3590498861406509059
+    second: Foodie_Mascot_71
+  - first:
+      213: -8698722371999833550
+    second: Foodie_Mascot_72
+  - first:
+      213: -7700038781598837589
+    second: Foodie_Mascot_73
+  - first:
+      213: -5145215269636168114
+    second: Foodie_Mascot_74
+  - first:
+      213: 5871854924916826823
+    second: Foodie_Mascot_75
+  - first:
+      213: -1059777100007876208
+    second: Foodie_Mascot_76
+  - first:
+      213: 8731425092834936520
+    second: Foodie_Mascot_77
+  - first:
+      213: 1871303835472095082
+    second: Foodie_Mascot_78
+  - first:
+      213: -6160944740465694111
+    second: Foodie_Mascot_79
+  - first:
+      213: -4363963444729843327
+    second: Foodie_Mascot_80
+  - first:
+      213: -7548819751729887347
+    second: Foodie_Mascot_81
+  - first:
+      213: -8945743155893268751
+    second: Foodie_Mascot_82
+  - first:
+      213: 5968166620819366026
+    second: Foodie_Mascot_83
+  - first:
+      213: -8189080187976787343
+    second: Foodie_Mascot_84
+  - first:
+      213: -8128323166246997884
+    second: Foodie_Mascot_85
+  - first:
+      213: 7230600985251875590
+    second: Foodie_Mascot_86
+  - first:
+      213: -4374641290203995899
+    second: Foodie_Mascot_87
+  - first:
+      213: 2643812159184471449
+    second: Foodie_Mascot_88
+  - first:
+      213: 9126496049936018556
+    second: Foodie_Mascot_89
+  - first:
+      213: -2090861770277768989
+    second: Foodie_Mascot_90
+  - first:
+      213: -161350426625891930
+    second: Foodie_Mascot_91
+  - first:
+      213: 1048571299267542983
+    second: Foodie_Mascot_92
+  - first:
+      213: -1473296141745721870
+    second: Foodie_Mascot_93
+  - first:
+      213: -7625184004435963802
+    second: Foodie_Mascot_94
+  - first:
+      213: -6408723259324693879
+    second: Foodie_Mascot_95
+  - first:
+      213: -5731999134875763002
+    second: Foodie_Mascot_96
+  - first:
+      213: -2541652021239585143
+    second: Foodie_Mascot_97
+  - first:
+      213: 77312477572549684
+    second: Foodie_Mascot_98
+  - first:
+      213: 5676097616606275723
+    second: Foodie_Mascot_99
+  - first:
+      213: -1635845859427454794
+    second: Foodie_Mascot_100
+  - first:
+      213: 8579106223883790624
+    second: Foodie_Mascot_101
+  - first:
+      213: 7579259227899705759
+    second: Foodie_Mascot_102
+  - first:
+      213: -4258404538916225639
+    second: Foodie_Mascot_103
+  - first:
+      213: -3943474620697616012
+    second: Foodie_Mascot_104
+  - first:
+      213: 5011862908162955585
+    second: Foodie_Mascot_105
+  - first:
+      213: 2410837781997119576
+    second: Foodie_Mascot_106
+  - first:
+      213: 6292189460627533287
+    second: Foodie_Mascot_107
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 0
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Foodie_Mascot_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 1384
+        width: 440
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c059c017008a16890800000000000000
+      internalID: -7466501987353455348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_1
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 1468
+        width: 73
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 662d911bcadb05580800000000000000
+      internalID: -8840357519124999578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_2
+      rect:
+        serializedVersion: 2
+        x: 526
+        y: 1464
+        width: 46
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2afc97cc08662930800000000000000
+      internalID: 4118093313374747180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_3
+      rect:
+        serializedVersion: 2
+        x: 574
+        y: 1464
+        width: 45
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bdae1b66ac9f3a00800000000000000
+      internalID: 738481102487727545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_4
+      rect:
+        serializedVersion: 2
+        x: 621
+        y: 1464
+        width: 40
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca93e29643f1e5040800000000000000
+      internalID: 4638178976201587116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_5
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 1464
+        width: 66
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aac612a6b29d3e550800000000000000
+      internalID: 6189029093424589994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_6
+      rect:
+        serializedVersion: 2
+        x: 731
+        y: 1464
+        width: 55
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc35000d332f96f80800000000000000
+      internalID: -8112686949384301617
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_7
+      rect:
+        serializedVersion: 2
+        x: 801
+        y: 1486
+        width: 78
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 572bd5a04af4cb300800000000000000
+      internalID: 269177643702530677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_8
+      rect:
+        serializedVersion: 2
+        x: 986
+        y: 1433
+        width: 73
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9da11b4b01ee048a0800000000000000
+      internalID: -6322792121309783335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_9
+      rect:
+        serializedVersion: 2
+        x: 1061
+        y: 1433
+        width: 70
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be41d70f2da5df130800000000000000
+      internalID: 3602135138990626027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_10
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 1428
+        width: 60
+        height: 78
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56caffa72d69d2a10800000000000000
+      internalID: 1886329649688980581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_11
+      rect:
+        serializedVersion: 2
+        x: 1195
+        y: 1428
+        width: 83
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73b68fa756dd39d90800000000000000
+      internalID: -7092081560253863113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_12
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 1438
+        width: 73
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a064db61c29defd50800000000000000
+      internalID: 6773089672995096074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_13
+      rect:
+        serializedVersion: 2
+        x: 1355
+        y: 1438
+        width: 37
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3199e4a67a82de8f0800000000000000
+      internalID: -509706483314812653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_14
+      rect:
+        serializedVersion: 2
+        x: 1394
+        y: 1436
+        width: 71
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccb4569a18d3df090800000000000000
+      internalID: -7999169736038069300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_15
+      rect:
+        serializedVersion: 2
+        x: 1467
+        y: 1436
+        width: 59
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 432a91321e4521780800000000000000
+      internalID: -8713809003075231180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_16
+      rect:
+        serializedVersion: 2
+        x: 1529
+        y: 1457
+        width: 49
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7c7389ab2f8bd070800000000000000
+      internalID: 8132250969837894778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_17
+      rect:
+        serializedVersion: 2
+        x: 1581
+        y: 1456
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1880e605b845d8d0800000000000000
+      internalID: -2822269649136089060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_18
+      rect:
+        serializedVersion: 2
+        x: 1633
+        y: 1452
+        width: 69
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 575fa2b7d23bf18a0800000000000000
+      internalID: -6332145543138314891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_19
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 1384
+        width: 79
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5eee0890c82af4980800000000000000
+      internalID: -8552438445014716699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_20
+      rect:
+        serializedVersion: 2
+        x: 535
+        y: 1278
+        width: 262
+        height: 184
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 984bd3b914b5cdad0800000000000000
+      internalID: -2676163741229402999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_21
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 1445
+        width: 45
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02f63299172a8ac50800000000000000
+      internalID: 6676765056361000736
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_22
+      rect:
+        serializedVersion: 2
+        x: 1528
+        y: 1303
+        width: 100
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56a313f3134793a70800000000000000
+      internalID: 8807198301162125925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_23
+      rect:
+        serializedVersion: 2
+        x: 1630
+        y: 1368
+        width: 44
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecc4c0a8b85a66280800000000000000
+      internalID: -9050364382419333938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_24
+      rect:
+        serializedVersion: 2
+        x: 1704
+        y: 1441
+        width: 40
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04b82d0ca02e80bb0800000000000000
+      internalID: -4969473652990768320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_25
+      rect:
+        serializedVersion: 2
+        x: 1746
+        y: 1442
+        width: 37
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 836f9167fb6c24680800000000000000
+      internalID: -8772230598541838792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_26
+      rect:
+        serializedVersion: 2
+        x: 802
+        y: 1303
+        width: 180
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21caa4d9d869c6290800000000000000
+      internalID: -7895770511713850350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_27
+      rect:
+        serializedVersion: 2
+        x: 993
+        y: 1310
+        width: 113
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8cc460dda069e6840800000000000000
+      internalID: 5219273991571000520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_28
+      rect:
+        serializedVersion: 2
+        x: 1116
+        y: 1319
+        width: 174
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: efb3ff1cb5fe95540800000000000000
+      internalID: 4997288438920068094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_29
+      rect:
+        serializedVersion: 2
+        x: 1292
+        y: 1319
+        width: 100
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebae1b6963a55f760800000000000000
+      internalID: 7490992745703664318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_30
+      rect:
+        serializedVersion: 2
+        x: 1395
+        y: 1303
+        width: 131
+        height: 131
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fbe3d96b6f7a0dc0800000000000000
+      internalID: -3671982446853493775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_31
+      rect:
+        serializedVersion: 2
+        x: 1676
+        y: 1368
+        width: 37
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 036e9c52cdd4c2f00800000000000000
+      internalID: 1093334417466320432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_32
+      rect:
+        serializedVersion: 2
+        x: 1715
+        y: 1405
+        width: 44
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 080958a84bf1494f0800000000000000
+      internalID: -822997971623374720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_33
+      rect:
+        serializedVersion: 2
+        x: 1761
+        y: 1405
+        width: 34
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3711b29b275aa5f80800000000000000
+      internalID: -8116993466230435469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_34
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 1073
+        width: 514
+        height: 302
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf8791a561bbabdd0800000000000000
+      internalID: -2469455740984002309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_35
+      rect:
+        serializedVersion: 2
+        x: 1630
+        y: 1292
+        width: 55
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a3480b4cb3c363e0800000000000000
+      internalID: -2061588990925454430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_36
+      rect:
+        serializedVersion: 2
+        x: 1715
+        y: 1360
+        width: 46
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1da84cc86c4312e30800000000000000
+      internalID: 4476917531952843473
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_37
+      rect:
+        serializedVersion: 2
+        x: 1376
+        y: 1060
+        width: 234
+        height: 241
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f94f9ed7fea18e520800000000000000
+      internalID: 2731462789912196255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_38
+      rect:
+        serializedVersion: 2
+        x: 1687
+        y: 1301
+        width: 54
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3aaa62d2bee509ef0800000000000000
+      internalID: -103478427261687133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_39
+      rect:
+        serializedVersion: 2
+        x: 1743
+        y: 1301
+        width: 29
+        height: 55
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 482dade6394508160800000000000000
+      internalID: 7025708410894733956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_40
+      rect:
+        serializedVersion: 2
+        x: 1775
+        y: 1294
+        width: 33
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1128923247be5d70800000000000000
+      internalID: 9033859397496348955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_41
+      rect:
+        serializedVersion: 2
+        x: 535
+        y: 924
+        width: 314
+        height: 349
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0008edd6e6c248c90800000000000000
+      internalID: -7168555854065664000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_42
+      rect:
+        serializedVersion: 2
+        x: 851
+        y: 925
+        width: 265
+        height: 375
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b340214a71d06c70800000000000000
+      internalID: 8962393581476135863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_43
+      rect:
+        serializedVersion: 2
+        x: 1146
+        y: 1087
+        width: 201
+        height: 201
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35ff4399536d3cc70800000000000000
+      internalID: 8990264806853640019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_44
+      rect:
+        serializedVersion: 2
+        x: 1613
+        y: 1238
+        width: 81
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5398ab83d2e041d50800000000000000
+      internalID: 6707001332449577269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_45
+      rect:
+        serializedVersion: 2
+        x: 1696
+        y: 1242
+        width: 60
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1865158437d68c7e0800000000000000
+      internalID: -1745024513704110463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_46
+      rect:
+        serializedVersion: 2
+        x: 1758
+        y: 1245
+        width: 51
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25e5ed010f0ab5b10800000000000000
+      internalID: 1971346214840327762
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_47
+      rect:
+        serializedVersion: 2
+        x: 1613
+        y: 1060
+        width: 102
+        height: 176
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c86363e3912d6ece0800000000000000
+      internalID: -1376181630255352180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_48
+      rect:
+        serializedVersion: 2
+        x: 1717
+        y: 1191
+        width: 60
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 772398847c5feb1d0800000000000000
+      internalID: -3332956437943340425
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_49
+      rect:
+        serializedVersion: 2
+        x: 1779
+        y: 1191
+        width: 35
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4e5e49c197f40930800000000000000
+      internalID: 4108680965588409935
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_50
+      rect:
+        serializedVersion: 2
+        x: 1717
+        y: 1125
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46035218c052570d0800000000000000
+      internalID: -3425791205908860828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_51
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 23
+        width: 414
+        height: 1042
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 540a413fc355a7590800000000000000
+      internalID: -7675728894634975163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_52
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 925
+        width: 96
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad278ab03cc3031d0800000000000000
+      internalID: -3373129312488623398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_53
+      rect:
+        serializedVersion: 2
+        x: 1717
+        y: 1059
+        width: 51
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 093ac8dd543014c80800000000000000
+      internalID: -8340381436308839536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_54
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 1055
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03b78b3ff30cb50c0800000000000000
+      internalID: -4585860414642291920
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_55
+      rect:
+        serializedVersion: 2
+        x: 1118
+        y: 824
+        width: 312
+        height: 233
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e89aef501718428d0800000000000000
+      internalID: -2872028339923670642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_56
+      rect:
+        serializedVersion: 2
+        x: 1464
+        y: 833
+        width: 191
+        height: 191
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bf2671ff0141ea80800000000000000
+      internalID: -8439392689984229447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_57
+      rect:
+        serializedVersion: 2
+        x: 1690
+        y: 1008
+        width: 66
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4bea420f768d1f50800000000000000
+      internalID: 6853782087985195850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_58
+      rect:
+        serializedVersion: 2
+        x: 1758
+        y: 999
+        width: 56
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b428faee12fb87650800000000000000
+      internalID: 6230940236926386763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_59
+      rect:
+        serializedVersion: 2
+        x: 1690
+        y: 942
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6213322da82f52430800000000000000
+      internalID: 3757676142155477286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_60
+      rect:
+        serializedVersion: 2
+        x: 1756
+        y: 949
+        width: 58
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d96bc92d16d3f3e80800000000000000
+      internalID: -8196765306436405603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_61
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 574
+        width: 672
+        height: 348
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa26ecec5fd242510800000000000000
+      internalID: 1523393107717939887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_62
+      rect:
+        serializedVersion: 2
+        x: 1690
+        y: 873
+        width: 54
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd0eb12455c4a4580800000000000000
+      internalID: -8842170989323493156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_63
+      rect:
+        serializedVersion: 2
+        x: 1756
+        y: 892
+        width: 58
+        height: 55
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a967b191f590104f0800000000000000
+      internalID: -864399349430651238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_64
+      rect:
+        serializedVersion: 2
+        x: 1690
+        y: 802
+        width: 49
+        height: 68
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e5e93712a15a9d50800000000000000
+      internalID: 6744793148556961257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_65
+      rect:
+        serializedVersion: 2
+        x: 1758
+        y: 831
+        width: 56
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81863fea860253580800000000000000
+      internalID: -8848130258915596264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_66
+      rect:
+        serializedVersion: 2
+        x: 1090
+        y: 563
+        width: 452
+        height: 237
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bd746275e926a5f0800000000000000
+      internalID: -745862622839800391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_67
+      rect:
+        serializedVersion: 2
+        x: 1546
+        y: 734
+        width: 65
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 260be540ebcb003e0800000000000000
+      internalID: -2089462702796787614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_68
+      rect:
+        serializedVersion: 2
+        x: 1613
+        y: 734
+        width: 65
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46e3a4e03b5366ab0800000000000000
+      internalID: -5015262091875303836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_69
+      rect:
+        serializedVersion: 2
+        x: 1680
+        y: 734
+        width: 60
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 794a5198ac1ede450800000000000000
+      internalID: 6119795728665912471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_70
+      rect:
+        serializedVersion: 2
+        x: 1758
+        y: 769
+        width: 56
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8e0179b84723ed20800000000000000
+      internalID: 3306529744722398858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_71
+      rect:
+        serializedVersion: 2
+        x: 1545
+        y: 563
+        width: 148
+        height: 168
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df7ab6f0f4cfb2ec0800000000000000
+      internalID: -3590498861406509059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_72
+      rect:
+        serializedVersion: 2
+        x: 1742
+        y: 722
+        width: 72
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 232e439271ee74780800000000000000
+      internalID: -8698722371999833550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_73
+      rect:
+        serializedVersion: 2
+        x: 1695
+        y: 562
+        width: 52
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba4d1125687f32590800000000000000
+      internalID: -7700038781598837589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_74
+      rect:
+        serializedVersion: 2
+        x: 1749
+        y: 660
+        width: 65
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e46ab6809f58898b0800000000000000
+      internalID: -5145215269636168114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_75
+      rect:
+        serializedVersion: 2
+        x: 1749
+        y: 597
+        width: 65
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c2ab4c91f40d7150800000000000000
+      internalID: 5871854924916826823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_76
+      rect:
+        serializedVersion: 2
+        x: 421
+        y: 7
+        width: 559
+        height: 559
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 099dfeca75aea41f0800000000000000
+      internalID: -1059777100007876208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_77
+      rect:
+        serializedVersion: 2
+        x: 986
+        y: 426
+        width: 590
+        height: 136
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c6cb516cd04c2970800000000000000
+      internalID: 8731425092834936520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_78
+      rect:
+        serializedVersion: 2
+        x: 1577
+        y: 465
+        width: 161
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a67e32c7ce438f910800000000000000
+      internalID: 1871303835472095082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_79
+      rect:
+        serializedVersion: 2
+        x: 1749
+        y: 530
+        width: 65
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16a2bbf866def7aa0800000000000000
+      internalID: -6160944740465694111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_80
+      rect:
+        serializedVersion: 2
+        x: 1740
+        y: 465
+        width: 74
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18176184e561073c0800000000000000
+      internalID: -4363963444729843327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_81
+      rect:
+        serializedVersion: 2
+        x: 1577
+        y: 427
+        width: 58
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8700b06e643d3790800000000000000
+      internalID: -7548819751729887347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_82
+      rect:
+        serializedVersion: 2
+        x: 1637
+        y: 403
+        width: 60
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fe891d0ff55ad380800000000000000
+      internalID: -8945743155893268751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_83
+      rect:
+        serializedVersion: 2
+        x: 1728
+        y: 382
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a802842cbef23d250800000000000000
+      internalID: 5968166620819366026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_84
+      rect:
+        serializedVersion: 2
+        x: 1049
+        y: 391
+        width: 32
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17a5476e4fa8a5e80800000000000000
+      internalID: -8189080187976787343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_85
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 386
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 480f4406525623f80800000000000000
+      internalID: -8128323166246997884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_86
+      rect:
+        serializedVersion: 2
+        x: 1293
+        y: 370
+        width: 24
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60b07866941485460800000000000000
+      internalID: 7230600985251875590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_87
+      rect:
+        serializedVersion: 2
+        x: 1522
+        y: 373
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50162a5ace62a43c0800000000000000
+      internalID: -4374641290203995899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_88
+      rect:
+        serializedVersion: 2
+        x: 1203
+        y: 383
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9958c09b625b0b420800000000000000
+      internalID: 2643812159184471449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_89
+      rect:
+        serializedVersion: 2
+        x: 1104
+        y: 342
+        width: 27
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7c217c9dc3d7ae70800000000000000
+      internalID: 9126496049936018556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_90
+      rect:
+        serializedVersion: 2
+        x: 1339
+        y: 340
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e0362c3c44cbf2e0800000000000000
+      internalID: -2090861770277768989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_91
+      rect:
+        serializedVersion: 2
+        x: 1638
+        y: 191
+        width: 142
+        height: 189
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a12b9054a4c2cdf0800000000000000
+      internalID: -161350426625891930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_92
+      rect:
+        serializedVersion: 2
+        x: 1175
+        y: 282
+        width: 40
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cff2868a064d8e00800000000000000
+      internalID: 1048571299267542983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_93
+      rect:
+        serializedVersion: 2
+        x: 1559
+        y: 307
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fdea4607fccd8be0800000000000000
+      internalID: -1473296141745721870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_94
+      rect:
+        serializedVersion: 2
+        x: 1616
+        y: 296
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6609a944c87ed2690800000000000000
+      internalID: -7625184004435963802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_95
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 176
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9820b288624af07a0800000000000000
+      internalID: -6408723259324693879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_96
+      rect:
+        serializedVersion: 2
+        x: 1637
+        y: 118
+        width: 143
+        height: 71
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ce32e00829d370b0800000000000000
+      internalID: -5731999134875763002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_97
+      rect:
+        serializedVersion: 2
+        x: 1192
+        y: 97
+        width: 23
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9866c53f3fc3abcd0800000000000000
+      internalID: -2541652021239585143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_98
+      rect:
+        serializedVersion: 2
+        x: 1790
+        y: 63
+        width: 24
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43cca6ae94ba21100800000000000000
+      internalID: 77312477572549684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_99
+      rect:
+        serializedVersion: 2
+        x: 1231
+        y: 58
+        width: 33
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b88224485bc85ce40800000000000000
+      internalID: 5676097616606275723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_100
+      rect:
+        serializedVersion: 2
+        x: 1643
+        y: 2
+        width: 145
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b07881abde4c49e0800000000000000
+      internalID: -1635845859427454794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_101
+      rect:
+        serializedVersion: 2
+        x: 1790
+        y: 2
+        width: 24
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 029afe418ab1f0770800000000000000
+      internalID: 8579106223883790624
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_102
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 16
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9930937c10fe2960800000000000000
+      internalID: 7579259227899705759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_103
+      rect:
+        serializedVersion: 2
+        x: 1019
+        y: 2
+        width: 30
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99dbcf342ab17e4c0800000000000000
+      internalID: -4258404538916225639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_104
+      rect:
+        serializedVersion: 2
+        x: 1104
+        y: 14
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 471ec84d9b6f549c0800000000000000
+      internalID: -3943474620697616012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_105
+      rect:
+        serializedVersion: 2
+        x: 1365
+        y: 9
+        width: 29
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1495200d2c6bd8540800000000000000
+      internalID: 5011862908162955585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_106
+      rect:
+        serializedVersion: 2
+        x: 1492
+        y: 13
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85867078034057120800000000000000
+      internalID: 2410837781997119576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Foodie_Mascot_107
+      rect:
+        serializedVersion: 2
+        x: 1556
+        y: 24
+        width: 29
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ed292c1af8525750800000000000000
+      internalID: 6292189460627533287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Foodie_Mascot_0: -7466501987353455348
+      Foodie_Mascot_1: -8840357519124999578
+      Foodie_Mascot_10: 1886329649688980581
+      Foodie_Mascot_100: -1635845859427454794
+      Foodie_Mascot_101: 8579106223883790624
+      Foodie_Mascot_102: 7579259227899705759
+      Foodie_Mascot_103: -4258404538916225639
+      Foodie_Mascot_104: -3943474620697616012
+      Foodie_Mascot_105: 5011862908162955585
+      Foodie_Mascot_106: 2410837781997119576
+      Foodie_Mascot_107: 6292189460627533287
+      Foodie_Mascot_11: -7092081560253863113
+      Foodie_Mascot_12: 6773089672995096074
+      Foodie_Mascot_13: -509706483314812653
+      Foodie_Mascot_14: -7999169736038069300
+      Foodie_Mascot_15: -8713809003075231180
+      Foodie_Mascot_16: 8132250969837894778
+      Foodie_Mascot_17: -2822269649136089060
+      Foodie_Mascot_18: -6332145543138314891
+      Foodie_Mascot_19: -8552438445014716699
+      Foodie_Mascot_2: 4118093313374747180
+      Foodie_Mascot_20: -2676163741229402999
+      Foodie_Mascot_21: 6676765056361000736
+      Foodie_Mascot_22: 8807198301162125925
+      Foodie_Mascot_23: -9050364382419333938
+      Foodie_Mascot_24: -4969473652990768320
+      Foodie_Mascot_25: -8772230598541838792
+      Foodie_Mascot_26: -7895770511713850350
+      Foodie_Mascot_27: 5219273991571000520
+      Foodie_Mascot_28: 4997288438920068094
+      Foodie_Mascot_29: 7490992745703664318
+      Foodie_Mascot_3: 738481102487727545
+      Foodie_Mascot_30: -3671982446853493775
+      Foodie_Mascot_31: 1093334417466320432
+      Foodie_Mascot_32: -822997971623374720
+      Foodie_Mascot_33: -8116993466230435469
+      Foodie_Mascot_34: -2469455740984002309
+      Foodie_Mascot_35: -2061588990925454430
+      Foodie_Mascot_36: 4476917531952843473
+      Foodie_Mascot_37: 2731462789912196255
+      Foodie_Mascot_38: -103478427261687133
+      Foodie_Mascot_39: 7025708410894733956
+      Foodie_Mascot_4: 4638178976201587116
+      Foodie_Mascot_40: 9033859397496348955
+      Foodie_Mascot_41: -7168555854065664000
+      Foodie_Mascot_42: 8962393581476135863
+      Foodie_Mascot_43: 8990264806853640019
+      Foodie_Mascot_44: 6707001332449577269
+      Foodie_Mascot_45: -1745024513704110463
+      Foodie_Mascot_46: 1971346214840327762
+      Foodie_Mascot_47: -1376181630255352180
+      Foodie_Mascot_48: -3332956437943340425
+      Foodie_Mascot_49: 4108680965588409935
+      Foodie_Mascot_5: 6189029093424589994
+      Foodie_Mascot_50: -3425791205908860828
+      Foodie_Mascot_51: -7675728894634975163
+      Foodie_Mascot_52: -3373129312488623398
+      Foodie_Mascot_53: -8340381436308839536
+      Foodie_Mascot_54: -4585860414642291920
+      Foodie_Mascot_55: -2872028339923670642
+      Foodie_Mascot_56: -8439392689984229447
+      Foodie_Mascot_57: 6853782087985195850
+      Foodie_Mascot_58: 6230940236926386763
+      Foodie_Mascot_59: 3757676142155477286
+      Foodie_Mascot_6: -8112686949384301617
+      Foodie_Mascot_60: -8196765306436405603
+      Foodie_Mascot_61: 1523393107717939887
+      Foodie_Mascot_62: -8842170989323493156
+      Foodie_Mascot_63: -864399349430651238
+      Foodie_Mascot_64: 6744793148556961257
+      Foodie_Mascot_65: -8848130258915596264
+      Foodie_Mascot_66: -745862622839800391
+      Foodie_Mascot_67: -2089462702796787614
+      Foodie_Mascot_68: -5015262091875303836
+      Foodie_Mascot_69: 6119795728665912471
+      Foodie_Mascot_7: 269177643702530677
+      Foodie_Mascot_70: 3306529744722398858
+      Foodie_Mascot_71: -3590498861406509059
+      Foodie_Mascot_72: -8698722371999833550
+      Foodie_Mascot_73: -7700038781598837589
+      Foodie_Mascot_74: -5145215269636168114
+      Foodie_Mascot_75: 5871854924916826823
+      Foodie_Mascot_76: -1059777100007876208
+      Foodie_Mascot_77: 8731425092834936520
+      Foodie_Mascot_78: 1871303835472095082
+      Foodie_Mascot_79: -6160944740465694111
+      Foodie_Mascot_8: -6322792121309783335
+      Foodie_Mascot_80: -4363963444729843327
+      Foodie_Mascot_81: -7548819751729887347
+      Foodie_Mascot_82: -8945743155893268751
+      Foodie_Mascot_83: 5968166620819366026
+      Foodie_Mascot_84: -8189080187976787343
+      Foodie_Mascot_85: -8128323166246997884
+      Foodie_Mascot_86: 7230600985251875590
+      Foodie_Mascot_87: -4374641290203995899
+      Foodie_Mascot_88: 2643812159184471449
+      Foodie_Mascot_89: 9126496049936018556
+      Foodie_Mascot_9: 3602135138990626027
+      Foodie_Mascot_90: -2090861770277768989
+      Foodie_Mascot_91: -161350426625891930
+      Foodie_Mascot_92: 1048571299267542983
+      Foodie_Mascot_93: -1473296141745721870
+      Foodie_Mascot_94: -7625184004435963802
+      Foodie_Mascot_95: -6408723259324693879
+      Foodie_Mascot_96: -5731999134875763002
+      Foodie_Mascot_97: -2541652021239585143
+      Foodie_Mascot_98: 77312477572549684
+      Foodie_Mascot_99: 5676097616606275723
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
