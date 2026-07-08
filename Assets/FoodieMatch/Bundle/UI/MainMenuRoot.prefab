@@ -342,6 +342,30 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Open
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: FoodieMatch.UI.Common.PopupAnimController, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 1677669698540852110, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
