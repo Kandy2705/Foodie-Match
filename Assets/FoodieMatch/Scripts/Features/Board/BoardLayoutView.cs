@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using FoodieMatch.Data.Level;
 using FoodieMatch.Features.Food;
 using UnityEngine;
@@ -60,6 +62,8 @@ namespace FoodieMatch.Features.Board
                 }
 
                 var grillView = Instantiate(_grillPrefab, position);
+                grillView.SetupTrayStack(GetTrayCount(grillData));
+                SpawnTopTrayFoodItems(grillData, grillView);
                 SpawnInitialFoodItems(grillData, grillView);
             }
         }
@@ -87,7 +91,49 @@ namespace FoodieMatch.Features.Board
             }
         }
 
+        private static int GetTrayCount(GrillData grillData)
+        {
+            return grillData.Trays != null ? grillData.Trays.Count : 0;
+        }
+
+        private void SpawnTopTrayFoodItems(GrillData grillData, GrillView grillView)
+        {
+            if (grillData.Trays == null || grillData.Trays.Count == 0 || grillData.Trays[0] == null)
+            {
+                return;
+            }
+
+            SpawnFoodItems(
+                grillData.Trays[0].FoodTokenIds,
+                grillView.GetTopTrayFoodAnchor,
+                FoodItemVisualState.OnTray,
+                false,
+                $"top tray on grill position {grillData.PositionIndex}");
+        }
+
         private void SpawnInitialFoodItems(GrillData grillData, GrillView grillView)
+        {
+            SpawnFoodItems(
+                grillData.InitialFoodTokenIds,
+                grillView.GetFoodAnchor,
+                FoodItemVisualState.OnGrill,
+                false,
+                $"grill position {grillData.PositionIndex}");
+        }
+
+        private Sprite ResolveFoodSprite(int foodTokenId)
+        {
+            return _foodVisualResolver != null
+                ? _foodVisualResolver.ResolveIcon(foodTokenId)
+                : null;
+        }
+
+        private void SpawnFoodItems(
+            IReadOnlyList<int> foodTokenIds,
+            Func<int, Transform> resolveAnchor,
+            FoodItemVisualState visualState,
+            bool isInteractable,
+            string context)
         {
             if (_foodItemPrefab == null)
             {
@@ -101,41 +147,34 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            if (grillData.InitialFoodTokenIds == null)
+            if (foodTokenIds == null)
             {
                 return;
             }
 
-            for (var i = 0; i < grillData.InitialFoodTokenIds.Count; i++)
+            for (var i = 0; i < foodTokenIds.Count; i++)
             {
-                var foodTokenId = grillData.InitialFoodTokenIds[i];
+                var foodTokenId = foodTokenIds[i];
 
                 if (foodTokenId <= 0)
                 {
                     continue;
                 }
 
-                var foodAnchor = grillView.GetFoodAnchor(i);
+                var foodAnchor = resolveAnchor?.Invoke(i);
 
                 if (foodAnchor == null)
                 {
-                    Debug.LogWarning($"Food anchor {i} is missing on grill position {grillData.PositionIndex}.", this);
+                    Debug.LogWarning($"Food anchor {i} is missing for {context}.", this);
                     continue;
                 }
 
                 var foodItemView = Instantiate(_foodItemPrefab, _foodItemRoot);
                 foodItemView.transform.SetPositionAndRotation(foodAnchor.position, foodAnchor.rotation);
                 foodItemView.Setup(foodTokenId, ResolveFoodSprite(foodTokenId));
-                foodItemView.SetVisualState(FoodItemVisualState.OnGrill);
-                foodItemView.SetInteractable(false);
+                foodItemView.SetVisualState(visualState);
+                foodItemView.SetInteractable(isInteractable);
             }
-        }
-
-        private Sprite ResolveFoodSprite(int foodTokenId)
-        {
-            return _foodVisualResolver != null
-                ? _foodVisualResolver.ResolveIcon(foodTokenId)
-                : null;
         }
 
         private void ClearFoodItems()

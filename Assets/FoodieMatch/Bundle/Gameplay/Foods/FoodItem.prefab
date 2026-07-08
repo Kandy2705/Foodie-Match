@@ -76,7 +76,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1922596459
-  m_SortingLayer: 2
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 281652535026622303, guid: cb708b1f75a3443098c1c67dc50e1cfa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -150,4 +150,5 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 658826907640718078}
   _clickCollider: {fileID: 8362798495815879590}
   _grillScale: {x: 1, y: 1, z: 1}
-  _plateScale: {x: 0.75, y: 0.75, z: 1}
+  _trayScale: {x: 0.5, y: 0.5, z: 1}
+  _trayRotation: {x: 0, y: 0, z: -30}
