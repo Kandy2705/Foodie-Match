@@ -8,63 +8,8 @@ namespace FoodieMatch.Features.WaitingRack
         [SerializeField] private WaitingRackSlotView[] _slots;
 
         public int Capacity => _slots != null ? _slots.Length : 0;
-        public bool HasEmptySlot => GetFirstEmptySlotIndex() >= 0;
-        public bool IsFull => Capacity > 0 && !HasEmptySlot;
 
-        public int OccupiedCount
-        {
-            get
-            {
-                if (_slots == null)
-                {
-                    return 0;
-                }
-
-                int count = 0;
-
-                for (int i = 0; i < _slots.Length; i++)
-                {
-                    if (_slots[i] != null && !_slots[i].IsEmpty)
-                    {
-                        count++;
-                    }
-                }
-
-                return count;
-            }
-        }
-
-        public int GetFirstEmptySlotIndex()
-        {
-            if (_slots == null)
-            {
-                return -1;
-            }
-
-            for (int i = 0; i < _slots.Length; i++)
-            {
-                if (_slots[i] != null && _slots[i].IsEmpty)
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        public bool TryPlaceFood(FoodItemView foodItemView)
-        {
-            int slotIndex = GetFirstEmptySlotIndex();
-
-            if (slotIndex < 0)
-            {
-                return false;
-            }
-
-            return TryPlaceFoodAt(slotIndex, foodItemView);
-        }
-
-        public bool TryPlaceFoodAt(int index, FoodItemView foodItemView)
+        public bool SetFoodAt(int index, FoodItemView foodItemView)
         {
             WaitingRackSlotView slot = GetSlot(index);
 
@@ -74,7 +19,7 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            return slot.TryPlaceFood(foodItemView);
+            return slot.SetFood(foodItemView);
         }
 
         public FoodItemView RemoveFoodAt(int index)

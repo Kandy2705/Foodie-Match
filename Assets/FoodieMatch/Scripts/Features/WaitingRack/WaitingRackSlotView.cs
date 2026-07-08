@@ -12,7 +12,7 @@ namespace FoodieMatch.Features.WaitingRack
         public bool IsEmpty => _foodItemView == null;
         public FoodItemView FoodItemView => _foodItemView;
 
-        public bool TryPlaceFood(FoodItemView foodItemView)
+        public bool SetFood(FoodItemView foodItemView)
         {
             if (foodItemView == null)
             {
@@ -42,7 +42,7 @@ namespace FoodieMatch.Features.WaitingRack
 
         public FoodItemView RemoveFood()
         {
-            var foodItemView = _foodItemView;
+            FoodItemView foodItemView = _foodItemView;
             _foodItemView = null;
             return foodItemView;
         }
