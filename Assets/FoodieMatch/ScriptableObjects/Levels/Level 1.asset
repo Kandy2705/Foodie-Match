@@ -24,11 +24,11 @@ MonoBehaviour:
     _initialFoodTokenIds: 010000000000000001000000
     _plates:
     - _foodTokenIds: 020000000200000003000000
-    - _foodTokenIds: 010000000200000004000000
+    - _foodTokenIds: 010000000200000002000000
     - _foodTokenIds: 020000000000000001000000
   - _positionIndex: 1
-    _initialFoodTokenIds: 040000000000000001000000
+    _initialFoodTokenIds: 030000000000000001000000
     _plates:
-    - _foodTokenIds: 040000000200000001000000
+    - _foodTokenIds: 010000000200000001000000
     - _foodTokenIds: 030000000000000003000000
-    - _foodTokenIds: 010000000400000004000000
+    - _foodTokenIds: 010000000200000002000000
