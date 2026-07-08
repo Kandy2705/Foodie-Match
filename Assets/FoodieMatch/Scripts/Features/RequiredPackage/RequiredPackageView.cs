@@ -1,3 +1,4 @@
+using FoodieMatch.Core.Domain.RequiredPackage;
 using UnityEngine;
 
 namespace FoodieMatch.Features.RequiredPackage
@@ -49,6 +50,11 @@ namespace FoodieMatch.Features.RequiredPackage
             RefreshActiveView();
         }
 
+        public RequiredPackageState GetState()
+        {
+            return new RequiredPackageState(FoodTokenId, RequiredAmount, FilledAmount);
+        }
+
         public void Clear()
         {
             FoodTokenId = 0;
@@ -63,7 +69,7 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             HideAllViews();
 
-            var activeView = GetView(RequiredAmount);
+            RequiredPackageAmountView activeView = GetView(RequiredAmount);
 
             if (activeView == null)
             {
