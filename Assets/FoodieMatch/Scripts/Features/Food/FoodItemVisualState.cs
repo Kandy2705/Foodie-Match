@@ -4,6 +4,6 @@ namespace FoodieMatch.Features.Food
     {
         Empty,
         OnGrill,
-        OnPlate
+        OnTray
     }
 }

@@ -222,43 +222,43 @@ namespace FoodieMatch.Editor.Data.Level
 
             var positionIndexProperty = grillProperty.FindPropertyRelative("_positionIndex");
             var initialFoodTokenIdsProperty = grillProperty.FindPropertyRelative("_initialFoodTokenIds");
-            var platesProperty = grillProperty.FindPropertyRelative("_plates");
+            var traysProperty = grillProperty.FindPropertyRelative("_trays");
 
             EditorGUILayout.PropertyField(positionIndexProperty);
             DrawTokenSlots("Initial Foods", initialFoodTokenIdsProperty);
-            DrawPlates(platesProperty);
+            DrawTrays(traysProperty);
 
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawPlates(SerializedProperty platesProperty)
+        private void DrawTrays(SerializedProperty traysProperty)
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Plates", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Trays", EditorStyles.boldLabel);
 
-            if (GUILayout.Button("Add Plate", GUILayout.Width(100)))
+            if (GUILayout.Button("Add Tray", GUILayout.Width(100)))
             {
-                AddPlate(platesProperty);
+                AddTray(traysProperty);
             }
 
             EditorGUILayout.EndHorizontal();
 
-            for (var i = 0; i < platesProperty.arraySize; i++)
+            for (var i = 0; i < traysProperty.arraySize; i++)
             {
-                var plateProperty = platesProperty.GetArrayElementAtIndex(i);
-                DrawPlate(i, platesProperty, plateProperty);
+                var trayProperty = traysProperty.GetArrayElementAtIndex(i);
+                DrawTray(i, traysProperty, trayProperty);
             }
         }
 
-        private void DrawPlate(int index, SerializedProperty platesProperty, SerializedProperty plateProperty)
+        private void DrawTray(int index, SerializedProperty traysProperty, SerializedProperty trayProperty)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Plate {index}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"Tray {index}", EditorStyles.boldLabel);
 
             if (GUILayout.Button("Remove", GUILayout.Width(80)))
             {
-                RemovePlate(platesProperty, index);
+                RemoveTray(traysProperty, index);
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
                 return;
@@ -266,7 +266,7 @@ namespace FoodieMatch.Editor.Data.Level
 
             EditorGUILayout.EndHorizontal();
 
-            var foodTokenIdsProperty = plateProperty.FindPropertyRelative("_foodTokenIds");
+            var foodTokenIdsProperty = trayProperty.FindPropertyRelative("_foodTokenIds");
             DrawTokenSlots("Foods", foodTokenIdsProperty);
 
             EditorGUILayout.EndVertical();
@@ -313,7 +313,7 @@ namespace FoodieMatch.Editor.Data.Level
             initialFoodTokenIdsProperty.ClearArray();
             SetDefaultTokenSlots(initialFoodTokenIdsProperty);
 
-            grillProperty.FindPropertyRelative("_plates").ClearArray();
+            grillProperty.FindPropertyRelative("_trays").ClearArray();
         }
 
         private void RemoveGrill(int index)
@@ -321,12 +321,12 @@ namespace FoodieMatch.Editor.Data.Level
             _grillsProperty.DeleteArrayElementAtIndex(index);
         }
 
-        private static void AddPlate(SerializedProperty platesProperty)
+        private static void AddTray(SerializedProperty traysProperty)
         {
-            platesProperty.InsertArrayElementAtIndex(platesProperty.arraySize);
+            traysProperty.InsertArrayElementAtIndex(traysProperty.arraySize);
 
-            var plateProperty = platesProperty.GetArrayElementAtIndex(platesProperty.arraySize - 1);
-            var foodTokenIdsProperty = plateProperty.FindPropertyRelative("_foodTokenIds");
+            var trayProperty = traysProperty.GetArrayElementAtIndex(traysProperty.arraySize - 1);
+            var foodTokenIdsProperty = trayProperty.FindPropertyRelative("_foodTokenIds");
             foodTokenIdsProperty.ClearArray();
             SetDefaultTokenSlots(foodTokenIdsProperty);
         }
@@ -340,9 +340,9 @@ namespace FoodieMatch.Editor.Data.Level
             }
         }
 
-        private static void RemovePlate(SerializedProperty platesProperty, int index)
+        private static void RemoveTray(SerializedProperty traysProperty, int index)
         {
-            platesProperty.DeleteArrayElementAtIndex(index);
+            traysProperty.DeleteArrayElementAtIndex(index);
         }
 
         private void CreateNewLevelData()
