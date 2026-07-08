@@ -6,11 +6,20 @@ namespace FoodieMatch.Features.Food
 {
     public sealed class FoodItemView : MonoBehaviour, IPointerClickHandler
     {
+        [Header("References")]
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Collider2D _clickCollider;
+
+        [Header("Grill")]
         [SerializeField] private Vector3 _grillScale = Vector3.one;
+
+        [Header("Tray")]
         [SerializeField] private Vector3 _trayScale = new Vector3(0.75f, 0.75f, 1f);
         [SerializeField] private Vector3 _trayRotation;
+
+        [Header("Waiting Rack")]
+        [SerializeField] private Vector3 _waitingRackScale = Vector3.one;
+        [SerializeField] private Vector3 _waitingRackRotation;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -130,6 +139,13 @@ namespace FoodieMatch.Features.Food
             {
                 transform.localScale = _trayScale;
                 transform.localEulerAngles = _trayRotation;
+                return;
+            }
+
+            if (VisualState == FoodItemVisualState.OnWaitingRack)
+            {
+                transform.localScale = _waitingRackScale;
+                transform.localEulerAngles = _waitingRackRotation;
                 return;
             }
 
