@@ -22,7 +22,7 @@ namespace FoodieMatch.App
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
 
             appRoot.UIManager.Construct(GameplayEvents, audioService);
-            appRoot.GameplayController.Construct(appRoot, appRoot.UIManager, GameplayEvents);
+            appRoot.GameplayController.Construct(appRoot.UIManager, GameplayEvents, appRoot.BoardLayoutView);
             appRoot.AppController.Construct(appRoot.UIManager, appRoot.GameplayController, saveService);
         }
 

@@ -1,4 +1,5 @@
 using FoodieMatch.Features.LevelSystem;
+using FoodieMatch.Features.Board;
 using FoodieMatch.UI;
 using UnityEngine;
 
@@ -19,6 +20,8 @@ namespace FoodieMatch.App
         [Header("Gameplay Roots")]
         [SerializeField] private Transform _boardRoot;
 
+        [SerializeField] private BoardLayoutView _boardLayoutView;
+
         [SerializeField] private Transform _requiredPackageRoot;
 
         [SerializeField] private Transform _waitingRackRoot;
@@ -28,6 +31,7 @@ namespace FoodieMatch.App
         public GameplayController GameplayController => _gameplayController;
         public UIManager UIManager => _uiManager;
         public Transform BoardRoot => _boardRoot;
+        public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public Transform RequiredPackageRoot => _requiredPackageRoot;
         public Transform WaitingRackRoot => _waitingRackRoot;
 
@@ -72,6 +76,12 @@ namespace FoodieMatch.App
             if (_boardRoot == null)
             {
                 Debug.LogError("BoardRoot is missing.");
+                return false;
+            }
+
+            if (_boardLayoutView == null)
+            {
+                Debug.LogError("BoardLayoutView is missing.");
                 return false;
             }
 
