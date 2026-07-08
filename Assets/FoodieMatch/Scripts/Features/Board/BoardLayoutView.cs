@@ -15,6 +15,10 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private FoodVisualResolver _foodVisualResolver;
         [SerializeField] private LevelDataSO _levelData;
 
+        private readonly List<FoodItemView> _selectableFoodItems = new();
+
+        public event Action<FoodSelectionContext> FoodSelected;
+
         private void Awake()
         {
             if (_positions == null || _positions.Length == 0)
@@ -46,14 +50,14 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            foreach (var grillData in levelData.Grills)
+            foreach (GrillData grillData in levelData.Grills)
             {
                 if (grillData == null)
                 {
                     continue;
                 }
 
-                var position = GetPosition(grillData.PositionIndex);
+                Transform position = GetPosition(grillData.PositionIndex);
 
                 if (position == null)
                 {
@@ -61,7 +65,7 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                var grillView = Instantiate(_grillPrefab, position);
+                GrillView grillView = Instantiate(_grillPrefab, position);
                 grillView.SetupTrayStack(GetTrayCount(grillData));
                 SpawnTopTrayFoodItems(grillData, grillView);
                 SpawnInitialFoodItems(grillData, grillView);
@@ -77,14 +81,14 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            for (var i = 0; i < _positions.Length; i++)
+            for (int i = 0; i < _positions.Length; i++)
             {
                 if (_positions[i] == null)
                 {
                     continue;
                 }
 
-                for (var childIndex = _positions[i].childCount - 1; childIndex >= 0; childIndex--)
+                for (int childIndex = _positions[i].childCount - 1; childIndex >= 0; childIndex--)
                 {
                     Destroy(_positions[i].GetChild(childIndex).gameObject);
                 }
@@ -117,7 +121,7 @@ namespace FoodieMatch.Features.Board
                 grillData.InitialFoodTokenIds,
                 grillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
-                false,
+                true,
                 $"grill position {grillData.PositionIndex}");
         }
 
@@ -152,16 +156,16 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            for (var i = 0; i < foodTokenIds.Count; i++)
+            for (int i = 0; i < foodTokenIds.Count; i++)
             {
-                var foodTokenId = foodTokenIds[i];
+                int foodTokenId = foodTokenIds[i];
 
                 if (foodTokenId <= 0)
                 {
                     continue;
                 }
 
-                var foodAnchor = resolveAnchor?.Invoke(i);
+                Transform foodAnchor = resolveAnchor?.Invoke(i);
 
                 if (foodAnchor == null)
                 {
@@ -169,25 +173,46 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                var foodItemView = Instantiate(_foodItemPrefab, _foodItemRoot);
+                FoodItemView foodItemView = Instantiate(_foodItemPrefab, _foodItemRoot);
                 foodItemView.transform.SetPositionAndRotation(foodAnchor.position, foodAnchor.rotation);
                 foodItemView.Setup(foodTokenId, ResolveFoodSprite(foodTokenId));
                 foodItemView.SetVisualState(visualState);
                 foodItemView.SetInteractable(isInteractable);
+
+                if (isInteractable)
+                {
+                    foodItemView.Selected += HandleFoodSelected;
+                    _selectableFoodItems.Add(foodItemView);
+                }
             }
         }
 
         private void ClearFoodItems()
         {
+            for (int i = 0; i < _selectableFoodItems.Count; i++)
+            {
+                if (_selectableFoodItems[i] != null)
+                {
+                    _selectableFoodItems[i].Selected -= HandleFoodSelected;
+                }
+            }
+
+            _selectableFoodItems.Clear();
+
             if (_foodItemRoot == null)
             {
                 return;
             }
 
-            for (var childIndex = _foodItemRoot.childCount - 1; childIndex >= 0; childIndex--)
+            for (int childIndex = _foodItemRoot.childCount - 1; childIndex >= 0; childIndex--)
             {
                 Destroy(_foodItemRoot.GetChild(childIndex).gameObject);
             }
+        }
+
+        private void HandleFoodSelected(FoodItemView foodItemView)
+        {
+            FoodSelected?.Invoke(new FoodSelectionContext(foodItemView));
         }
 
         private Transform GetPosition(int positionIndex)

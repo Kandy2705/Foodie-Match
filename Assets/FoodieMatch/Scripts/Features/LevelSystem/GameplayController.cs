@@ -1,6 +1,6 @@
 using System;
-using FoodieMatch.App;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Features.Board;
 using FoodieMatch.UI;
 using UnityEngine;
 
@@ -11,22 +11,27 @@ namespace FoodieMatch.Features.LevelSystem
         private const string WinReason = "Completed";
         private const string LoseReason = "WaitingRackFull";
 
-        private AppRoot _appRoot;
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
+        private BoardLayoutView _boardLayoutView;
         private Action _homeRequested;
 
         private int _currentLevelId;
         private bool _isInputEnabled;
 
         public void Construct(
-            AppRoot appRoot,
             UIManager uiManager,
-            GameplayEvents gameplayEvents)
+            GameplayEvents gameplayEvents,
+            BoardLayoutView boardLayoutView)
         {
-            _appRoot = appRoot;
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
+            _boardLayoutView = boardLayoutView;
+
+            if (_boardLayoutView != null)
+            {
+                _boardLayoutView.FoodSelected += HandleFoodSelected;
+            }
         }
 
         public void StartLevel(
@@ -103,12 +108,6 @@ namespace FoodieMatch.Features.LevelSystem
 
         private bool HasDependencies()
         {
-            if (_appRoot == null)
-            {
-                Debug.LogError("AppRoot has not been constructed.");
-                return false;
-            }
-
             if (_uiManager == null)
             {
                 Debug.LogError("UIManager has not been constructed.");
@@ -121,7 +120,26 @@ namespace FoodieMatch.Features.LevelSystem
                 return false;
             }
 
+            if (_boardLayoutView == null)
+            {
+                Debug.LogError("BoardLayoutView has not been constructed.");
+                return false;
+            }
+
             return true;
+        }
+
+        private void OnDestroy()
+        {
+            if (_boardLayoutView != null)
+            {
+                _boardLayoutView.FoodSelected -= HandleFoodSelected;
+            }
+        }
+
+        private void HandleFoodSelected(FoodSelectionContext context)
+        {
+            SelectFood(context.FoodTokenId);
         }
 
         private void OnNextLevelClicked()

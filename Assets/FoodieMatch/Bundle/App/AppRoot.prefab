@@ -55,6 +55,7 @@ MonoBehaviour:
   _gameplayController: {fileID: 3376663949317477137}
   _uiManager: {fileID: 6535060838407858178}
   _boardRoot: {fileID: 2132597356948764152}
+  _boardLayoutView: {fileID: 5535215390786423237}
   _requiredPackageRoot: {fileID: 4071240919253388560}
   _waitingRackRoot: {fileID: 7035273893593377608}
 --- !u!1001 &3470205679157354042
@@ -429,6 +430,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5514189170341223280, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
   m_PrefabInstance: {fileID: 8428946154357298784}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5535215390786423237 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4046669860431011749, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
+  m_PrefabInstance: {fileID: 8428946154357298784}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 906b20343e585cc4398cdbcea401de3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &7035273893593377608 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1539089275309194536, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
