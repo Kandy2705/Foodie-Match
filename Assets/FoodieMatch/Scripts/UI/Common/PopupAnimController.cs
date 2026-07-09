@@ -1,13 +1,9 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 namespace FoodieMatch.UI.Common
 {
-    /// <summary>
-    /// Drives popup open/close through an Animator Controller.
-    /// Wire button OnClick to Open() / Close(), and add Animation Events on clips
-    /// calling OnOpenAnimationFinished() / OnCloseAnimationFinished().
-    /// </summary>
     [DisallowMultipleComponent]
     public sealed class PopupAnimController : MonoBehaviour
     {
@@ -43,11 +39,20 @@ namespace FoodieMatch.UI.Common
         private int _hiddenStateHash;
         private Coroutine _waitCoroutine;
         private bool _isOpened;
+        private bool _hasAwakened;
+
+        public bool IsOpened => _isOpened;
 
         private void Awake()
         {
             CacheHashes();
-            HideInstantly();
+            _hasAwakened = true;
+
+            // Do not call Animator.Update here. During Awake the Animator may not
+            // have finished its own Awake yet, which triggers m_DidAwake assert.
+            _isOpened = false;
+            SetInteractable(false);
+            gameObject.SetActive(false);
         }
 
         private void OnValidate()
@@ -55,39 +60,69 @@ namespace FoodieMatch.UI.Common
             CacheHashes();
         }
 
-        public void Open()
+        public void Open(Action onComplete = null)
         {
             StopWaiting();
 
             gameObject.SetActive(true);
             SetInteractable(false);
 
-            _animator.ResetTrigger(_closeTriggerHash);
-            _animator.SetTrigger(_openTriggerHash);
-
-            if (_waitForAnimatorStates)
+            if (_animator != null)
             {
-                _waitCoroutine = StartCoroutine(WaitForState(_openState, OnOpenAnimationFinished));
+                SampleHiddenStateIfPossible();
+                _animator.ResetTrigger(_closeTriggerHash);
+                _animator.SetTrigger(_openTriggerHash);
             }
+
+            if (_waitForAnimatorStates && _animator != null)
+            {
+                _waitCoroutine = StartCoroutine(
+                    WaitForState(
+                        _openState,
+                        () =>
+                        {
+                            OnOpenAnimationFinished();
+                            onComplete?.Invoke();
+                        }));
+                return;
+            }
+
+            OnOpenAnimationFinished();
+            onComplete?.Invoke();
         }
 
-        public void Close()
+        public void Close(Action onComplete = null)
         {
             if (!gameObject.activeSelf)
             {
+                onComplete?.Invoke();
                 return;
             }
 
             StopWaiting();
             SetInteractable(false);
 
-            _animator.ResetTrigger(_openTriggerHash);
-            _animator.SetTrigger(_closeTriggerHash);
-
-            if (_waitForAnimatorStates)
+            if (_animator != null)
             {
-                _waitCoroutine = StartCoroutine(WaitForState(_closeState, OnCloseAnimationFinished));
+                _animator.ResetTrigger(_openTriggerHash);
+                _animator.SetTrigger(_closeTriggerHash);
             }
+
+            if (_waitForAnimatorStates && _animator != null)
+            {
+                _waitCoroutine = StartCoroutine(
+                    WaitForState(
+                        _closeState,
+                        () =>
+                        {
+                            OnCloseAnimationFinished();
+                            onComplete?.Invoke();
+                        }));
+                return;
+            }
+
+            OnCloseAnimationFinished();
+            onComplete?.Invoke();
         }
 
         public void Toggle()
@@ -105,15 +140,27 @@ namespace FoodieMatch.UI.Common
         {
             StopWaiting();
             _isOpened = false;
-
-            if (_animator != null && !string.IsNullOrEmpty(_hiddenState))
-            {
-                _animator.Play(_hiddenStateHash, 0, 1f);
-                _animator.Update(0f);
-            }
-
+            SampleHiddenStateIfPossible();
             SetInteractable(false);
             gameObject.SetActive(false);
+        }
+
+        private void SampleHiddenStateIfPossible()
+        {
+            if (_animator == null ||
+                string.IsNullOrEmpty(_hiddenState) ||
+                !_hasAwakened ||
+                !_animator.isInitialized)
+            {
+                return;
+            }
+
+            _animator.Play(_hiddenStateHash, 0, 1f);
+
+            if (_animator.isActiveAndEnabled && gameObject.activeInHierarchy)
+            {
+                _animator.Update(0f);
+            }
         }
 
         public void OnOpenAnimationFinished()
@@ -157,7 +204,7 @@ namespace FoodieMatch.UI.Common
             _waitCoroutine = null;
         }
 
-        private IEnumerator WaitForState(string stateName, System.Action onComplete)
+        private IEnumerator WaitForState(string stateName, Action onComplete)
         {
             if (_animator == null || string.IsNullOrEmpty(stateName))
             {
@@ -174,7 +221,9 @@ namespace FoodieMatch.UI.Common
             {
                 stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
 
-                if (stateInfo.shortNameHash == stateHash && stateInfo.normalizedTime >= 1f && !_animator.IsInTransition(0))
+                if (stateInfo.shortNameHash == stateHash &&
+                    stateInfo.normalizedTime >= 1f &&
+                    !_animator.IsInTransition(0))
                 {
                     break;
                 }
