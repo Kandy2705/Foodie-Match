@@ -210,6 +210,60 @@ namespace FoodieMatch.Core.Domain.Board
             return foodTokenIds;
         }
 
+        public IReadOnlyList<int> GetAllFoodTokenIds()
+        {
+            HashSet<int> uniqueTokenIds = new HashSet<int>();
+            List<int> foodTokenIds = new List<int>();
+
+            for (int grillIndex = 0;
+                 grillIndex < _grills.Count;
+                 grillIndex++)
+            {
+                GrillModel grill = _grills[grillIndex];
+
+                AddFoodTokenIds(
+                    grill.ActiveFoodSlotCount,
+                    grill.GetFoodTokenIdAt,
+                    uniqueTokenIds,
+                    foodTokenIds);
+
+                for (int trayIndex = 0;
+                     trayIndex < grill.TrayCount;
+                     trayIndex++)
+                {
+                    TrayModel tray = grill.GetTrayAt(trayIndex);
+
+                    AddFoodTokenIds(
+                        tray.SlotCount,
+                        tray.GetFoodTokenIdAt,
+                        uniqueTokenIds,
+                        foodTokenIds);
+                }
+            }
+
+            return foodTokenIds;
+        }
+
+        private static void AddFoodTokenIds(
+            int slotCount,
+            Func<int, int> getFoodTokenId,
+            HashSet<int> uniqueTokenIds,
+            List<int> foodTokenIds)
+        {
+            for (int slotIndex = 0;
+                 slotIndex < slotCount;
+                 slotIndex++)
+            {
+                int foodTokenId = getFoodTokenId(slotIndex);
+
+                if (foodTokenId > BoardRules.EmptyFoodTokenId &&
+                    uniqueTokenIds.Add(foodTokenId))
+                {
+                    foodTokenIds.Add(foodTokenId);
+                }
+            }
+        }
+
         private static List<GrillModel> CopyGrills(
             IReadOnlyList<GrillModel> grills)
         {

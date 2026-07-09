@@ -13,7 +13,6 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private GrillView _grillPrefab;
         [SerializeField] private FoodItemView _foodItemPrefab;
         [SerializeField] private Transform _foodItemRoot;
-        [SerializeField] private FoodVisualResolver _foodVisualResolver;
 
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
             _foodAddresses = new();
@@ -21,7 +20,15 @@ namespace FoodieMatch.Features.Board
         private readonly Dictionary<int, List<FoodItemView>>
             _topTrayFoodItems = new();
 
+        private FoodVisualResolver _foodVisualResolver;
+
         public event Action<FoodSelectionContext> FoodSelected;
+
+        public void Construct(
+            FoodVisualResolver foodVisualResolver)
+        {
+            _foodVisualResolver = foodVisualResolver;
+        }
 
         private void Awake()
         {

@@ -26,6 +26,7 @@ namespace FoodieMatch.Features.LevelSystem
         private BoardLayoutView _boardLayoutView;
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
+        private FoodVisualResolver _foodVisualResolver;
         private SelectFoodUseCase _selectFoodUseCase;
         private ILevelRepository _levelRepository;
         private BoardModelFactory _boardModelFactory;
@@ -43,6 +44,7 @@ namespace FoodieMatch.Features.LevelSystem
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
+            FoodVisualResolver foodVisualResolver,
             SelectFoodUseCase selectFoodUseCase,
             ILevelRepository levelRepository,
             BoardModelFactory boardModelFactory)
@@ -52,6 +54,7 @@ namespace FoodieMatch.Features.LevelSystem
             _boardLayoutView = boardLayoutView;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
+            _foodVisualResolver = foodVisualResolver;
             _selectFoodUseCase = selectFoodUseCase;
             _levelRepository = levelRepository;
             _boardModelFactory = boardModelFactory;
@@ -89,6 +92,18 @@ namespace FoodieMatch.Features.LevelSystem
             _currentLevelNumber = levelNumber;
             _homeRequested = homeRequested;
             _board = _boardModelFactory.Create(levelConfig);
+
+            if (!_foodVisualResolver.TryCreateRandomMapping(
+                    _board.GetAllFoodTokenIds()))
+            {
+                Debug.LogError(
+                    $"Food visual mapping could not be created " +
+                    $"for level {levelNumber}.");
+
+                _board = null;
+                return;
+            }
+
             _requiredPackages = _requiredPackageGroupView.CreatePackages();
             _waitingRack = new WaitingRackModel(levelConfig.WaitingRackCapacity);
             _boardLayoutView.Setup(_board);
@@ -174,6 +189,12 @@ namespace FoodieMatch.Features.LevelSystem
             if (_waitingRackView == null)
             {
                 Debug.LogError("WaitingRackView has not been constructed.");
+                return false;
+            }
+
+            if (_foodVisualResolver == null)
+            {
+                Debug.LogError("FoodVisualResolver has not been constructed.");
                 return false;
             }
 

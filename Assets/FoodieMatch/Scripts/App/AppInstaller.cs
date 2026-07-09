@@ -38,12 +38,15 @@ namespace FoodieMatch.App
                 new BoardModelFactory();
 
             appRoot.UIManager.Construct(GameplayEvents, audioService);
+            appRoot.BoardLayoutView.Construct(
+                appRoot.FoodVisualResolver);
             appRoot.GameplayController.Construct(
                 appRoot.UIManager,
                 GameplayEvents,
                 appRoot.BoardLayoutView,
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,
+                appRoot.FoodVisualResolver,
                 selectFoodUseCase,
                 levelRepository,
                 boardModelFactory);
@@ -95,6 +98,12 @@ namespace FoodieMatch.App
             if (appRoot.WaitingRackView == null)
             {
                 Debug.LogError("Cannot install app because WaitingRackView is missing.");
+                return false;
+            }
+
+            if (appRoot.FoodVisualResolver == null)
+            {
+                Debug.LogError("Cannot install app because FoodVisualResolver is missing.");
                 return false;
             }
 

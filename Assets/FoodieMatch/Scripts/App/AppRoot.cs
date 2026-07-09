@@ -1,6 +1,7 @@
 using FoodieMatch.Data.Level;
 using FoodieMatch.Features.LevelSystem;
 using FoodieMatch.Features.Board;
+using FoodieMatch.Features.Food;
 using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
@@ -30,6 +31,8 @@ namespace FoodieMatch.App
 
         [SerializeField] private WaitingRackView _waitingRackView;
 
+        [SerializeField] private FoodVisualResolver _foodVisualResolver;
+
         public AppInstaller AppInstaller => _appInstaller;
         public AppController AppController => _appController;
         public GameplayController GameplayController => _gameplayController;
@@ -38,6 +41,7 @@ namespace FoodieMatch.App
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;
+        public FoodVisualResolver FoodVisualResolver => _foodVisualResolver;
 
         public void Initialize()
         {
@@ -97,6 +101,12 @@ namespace FoodieMatch.App
             if (_waitingRackView == null)
             {
                 Debug.LogError("WaitingRackView is missing.");
+                return false;
+            }
+
+            if (_foodVisualResolver == null)
+            {
+                Debug.LogError("FoodVisualResolver is missing.");
                 return false;
             }
 
