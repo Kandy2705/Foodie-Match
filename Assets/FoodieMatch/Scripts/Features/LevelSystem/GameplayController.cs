@@ -89,8 +89,8 @@ namespace FoodieMatch.Features.LevelSystem
                     WinReason));
 
             _uiManager.ShowWinPopup(
-                OnNextLevelClicked,
-                OnHomeClicked);
+                OnClaimCoinRewardClicked,
+                OnDoubleCoinRewardClicked);
         }
 
         public void ResolveLose()
@@ -107,6 +107,10 @@ namespace FoodieMatch.Features.LevelSystem
                     _currentLevelId,
                     false,
                     LoseReason));
+
+            _uiManager.ShowLosePopup(
+                OnTryAgainClicked,
+                OnHomeClicked);
         }
 
         public void ClearLevel()
@@ -221,14 +225,30 @@ namespace FoodieMatch.Features.LevelSystem
             _boardLayoutView.RestoreFoodItem(foodItemView);
         }
 
-        private void OnNextLevelClicked()
+        private void OnClaimCoinRewardClicked()
         {
+            Debug.Log("Win Claim Coin Reward Clicked");
             _uiManager.HideAllPopups();
             StartLevel(_currentLevelId + 1, _homeRequested);
         }
 
+        private void OnDoubleCoinRewardClicked()
+        {
+            Debug.Log("Win Double Coin Reward Clicked");
+            _uiManager.HideAllPopups();
+            StartLevel(_currentLevelId + 1, _homeRequested);
+        }
+
+        private void OnTryAgainClicked()
+        {
+            Debug.Log("Lose Try Again Clicked");
+            _uiManager.HideAllPopups();
+            StartLevel(_currentLevelId, _homeRequested);
+        }
+
         private void OnHomeClicked()
         {
+            Debug.Log("Result Home Clicked");
             _uiManager.HideAllPopups();
             ClearLevel();
 
