@@ -16,7 +16,7 @@ namespace FoodieMatch.Core.Application.UseCases
 
         public SelectFoodResult Execute(
             int foodTokenId,
-            IReadOnlyList<RequiredPackageState> requiredPackages,
+            IReadOnlyList<RequiredPackage> requiredPackages,
             WaitingRackState waitingRackState)
         {
             if (foodTokenId <= 0 ||
@@ -31,9 +31,15 @@ namespace FoodieMatch.Core.Application.UseCases
                     foodTokenId,
                     out int requiredPackageIndex))
             {
-                return SelectFoodResult.PlacedInRequiredPackage(
-                    foodTokenId,
-                    requiredPackageIndex);
+                RequiredPackage requiredPackage =
+                    requiredPackages[requiredPackageIndex];
+
+                if (requiredPackage.TryPlaceFood(foodTokenId))
+                {
+                    return SelectFoodResult.PlacedInRequiredPackage(
+                        foodTokenId,
+                        requiredPackageIndex);
+                }
             }
 
             if (waitingRackState.TryPlaceFood(

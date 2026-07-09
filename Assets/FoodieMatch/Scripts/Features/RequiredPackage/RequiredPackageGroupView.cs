@@ -1,5 +1,5 @@
-using FoodieMatch.Core.Domain.RequiredPackage;
 using UnityEngine;
+using RequiredPackageDomain = FoodieMatch.Core.Domain.RequiredPackage.RequiredPackage;
 
 namespace FoodieMatch.Features.RequiredPackage
 {
@@ -9,24 +9,41 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public int PackageCount => _packages != null ? _packages.Length : 0;
 
-        public RequiredPackageState[] GetStates()
+        public RequiredPackageDomain[] CreatePackages()
         {
             if (_packages == null)
             {
-                return new RequiredPackageState[0];
+                return new RequiredPackageDomain[0];
             }
 
-            RequiredPackageState[] states = new RequiredPackageState[_packages.Length];
+            RequiredPackageDomain[] packages =
+                new RequiredPackageDomain[_packages.Length];
 
             for (int i = 0; i < _packages.Length; i++)
             {
-                if (_packages[i] != null)
-                {
-                    states[i] = _packages[i].GetState();
-                }
+                RequiredPackageView packageView = _packages[i];
+
+                packages[i] = packageView != null
+                    ? packageView.CreatePackage()
+                    : new RequiredPackageDomain(0, 0, 0);
             }
 
-            return states;
+            return packages;
+        }
+
+        public bool ApplyPackageAt(
+            int packageIndex,
+            RequiredPackageDomain package)
+        {
+            RequiredPackageView packageView = GetPackageAt(packageIndex);
+
+            if (packageView == null || package == null)
+            {
+                return false;
+            }
+
+            packageView.SetFilledAmount(package.FilledAmount);
+            return true;
         }
 
         public RequiredPackageView GetPackageAt(int packageIndex)

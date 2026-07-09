@@ -1,8 +1,8 @@
 namespace FoodieMatch.Core.Domain.RequiredPackage
 {
-    public readonly struct RequiredPackageState
+    public sealed class RequiredPackage
     {
-        public RequiredPackageState(
+        public RequiredPackage(
             int foodTokenId,
             int requiredAmount,
             int filledAmount)
@@ -14,7 +14,7 @@ namespace FoodieMatch.Core.Domain.RequiredPackage
 
         public int FoodTokenId { get; }
         public int RequiredAmount { get; }
-        public int FilledAmount { get; }
+        public int FilledAmount { get; private set; }
         public bool IsEmpty => FoodTokenId <= 0;
         public bool IsComplete => !IsEmpty && FilledAmount >= RequiredAmount;
         public int RemainingAmount => RequiredAmount - FilledAmount;
@@ -22,6 +22,17 @@ namespace FoodieMatch.Core.Domain.RequiredPackage
         public bool CanAccept(int foodTokenId)
         {
             return !IsEmpty && !IsComplete && FoodTokenId == foodTokenId;
+        }
+
+        public bool TryPlaceFood(int foodTokenId)
+        {
+            if (!CanAccept(foodTokenId))
+            {
+                return false;
+            }
+
+            FilledAmount++;
+            return true;
         }
     }
 }

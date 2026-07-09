@@ -95,6 +95,31 @@ namespace FoodieMatch.Features.Board
             }
         }
 
+        public void ReleaseFoodItem(FoodItemView foodItemView)
+        {
+            if (foodItemView == null)
+            {
+                return;
+            }
+
+            foodItemView.Selected -= HandleFoodSelected;
+            foodItemView.SetInteractable(false);
+            _selectableFoodItems.Remove(foodItemView);
+        }
+
+        public void RestoreFoodItem(FoodItemView foodItemView)
+        {
+            if (foodItemView == null ||
+                _selectableFoodItems.Contains(foodItemView))
+            {
+                return;
+            }
+
+            foodItemView.Selected += HandleFoodSelected;
+            foodItemView.SetInteractable(true);
+            _selectableFoodItems.Add(foodItemView);
+        }
+
         private static int GetTrayCount(GrillData grillData)
         {
             return grillData.Trays != null ? grillData.Trays.Count : 0;
