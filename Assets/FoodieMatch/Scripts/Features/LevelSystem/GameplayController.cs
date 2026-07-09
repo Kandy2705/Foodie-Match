@@ -216,15 +216,16 @@ namespace FoodieMatch.Features.LevelSystem
             }
 
             SelectFoodResult result = _selectFoodUseCase.Execute(
-                context.FoodTokenId,
+                context.Address,
+                _board,
                 _requiredPackages,
                 _waitingRack);
 
-            ApplySelectionResult(context.FoodItemView, result);
+            ApplySelectionResult(context, result);
         }
 
         private void ApplySelectionResult(
-            FoodItemView foodItemView,
+            FoodSelectionContext context,
             SelectFoodResult result)
         {
             if (!result.IsPlaced)
@@ -232,6 +233,7 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
+            FoodItemView foodItemView = context.FoodItemView;
             _boardLayoutView.ReleaseFoodItem(foodItemView);
 
             if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
@@ -258,7 +260,17 @@ namespace FoodieMatch.Features.LevelSystem
                 result.TargetIndex,
                 out _);
 
-            _boardLayoutView.RestoreFoodItem(foodItemView);
+            if (!_board.TryRestoreFood(
+                    context.Address,
+                    result.FoodTokenId))
+            {
+                Debug.LogError("Selected food could not be restored.");
+                return;
+            }
+
+            _boardLayoutView.RestoreFoodItem(
+                foodItemView,
+                context.Address);
         }
 
         private void OnNextLevelClicked()

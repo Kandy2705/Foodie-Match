@@ -100,6 +100,29 @@ namespace FoodieMatch.Core.Domain.Grill
             return true;
         }
 
+        public bool CanRestoreFood(
+            int slotIndex,
+            int foodTokenId)
+        {
+            return foodTokenId > BoardRules.EmptyFoodTokenId &&
+                   IsValidSlotIndex(slotIndex) &&
+                   _activeFoodTokenIds[slotIndex] ==
+                       BoardRules.EmptyFoodTokenId;
+        }
+
+        public bool TryRestoreFood(
+            int slotIndex,
+            int foodTokenId)
+        {
+            if (!CanRestoreFood(slotIndex, foodTokenId))
+            {
+                return false;
+            }
+
+            _activeFoodTokenIds[slotIndex] = foodTokenId;
+            return true;
+        }
+
         private bool IsValidSlotIndex(int slotIndex)
         {
             return slotIndex >= 0 && slotIndex < _activeFoodTokenIds.Length;

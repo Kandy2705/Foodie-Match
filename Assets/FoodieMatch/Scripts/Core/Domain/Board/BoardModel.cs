@@ -95,6 +95,36 @@ namespace FoodieMatch.Core.Domain.Board
                 expectedFoodTokenId);
         }
 
+        public int GetFoodTokenId(FoodBoardAddress address)
+        {
+            if (!address.IsValid ||
+                !TryGetGrill(
+                    address.GrillPositionIndex,
+                    out GrillModel grill))
+            {
+                return BoardRules.EmptyFoodTokenId;
+            }
+
+            return grill.GetFoodTokenIdAt(address.FoodSlotIndex);
+        }
+
+        public bool TryRestoreFood(
+            FoodBoardAddress address,
+            int foodTokenId)
+        {
+            if (!address.IsValid ||
+                !TryGetGrill(
+                    address.GrillPositionIndex,
+                    out GrillModel grill))
+            {
+                return false;
+            }
+
+            return grill.TryRestoreFood(
+                address.FoodSlotIndex,
+                foodTokenId);
+        }
+
         public bool TryGetGrill(
             int positionIndex,
             out GrillModel grill)

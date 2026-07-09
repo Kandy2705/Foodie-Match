@@ -15,7 +15,8 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private Transform _foodItemRoot;
         [SerializeField] private FoodVisualResolver _foodVisualResolver;
 
-        private readonly List<FoodItemView> _selectableFoodItems = new();
+        private readonly Dictionary<FoodItemView, FoodBoardAddress>
+            _foodAddresses = new();
 
         public event Action<FoodSelectionContext> FoodSelected;
 
@@ -104,20 +105,22 @@ namespace FoodieMatch.Features.Board
 
             foodItemView.Selected -= HandleFoodSelected;
             foodItemView.SetInteractable(false);
-            _selectableFoodItems.Remove(foodItemView);
+            _foodAddresses.Remove(foodItemView);
         }
 
-        public void RestoreFoodItem(FoodItemView foodItemView)
+        public void RestoreFoodItem(
+            FoodItemView foodItemView,
+            FoodBoardAddress address)
         {
             if (foodItemView == null ||
-                _selectableFoodItems.Contains(foodItemView))
+                _foodAddresses.ContainsKey(foodItemView))
             {
                 return;
             }
 
+            _foodAddresses.Add(foodItemView, address);
             foodItemView.Selected += HandleFoodSelected;
             foodItemView.SetInteractable(true);
-            _selectableFoodItems.Add(foodItemView);
         }
 
         private void SpawnTopTrayFoodItems(
@@ -132,6 +135,7 @@ namespace FoodieMatch.Features.Board
             }
 
             SpawnFoodItems(
+                grillModel.PositionIndex,
                 topTray.SlotCount,
                 topTray.GetFoodTokenIdAt,
                 grillView.GetTopTrayFoodAnchor,
@@ -145,6 +149,7 @@ namespace FoodieMatch.Features.Board
             GrillView grillView)
         {
             SpawnFoodItems(
+                grillModel.PositionIndex,
                 grillModel.ActiveFoodSlotCount,
                 grillModel.GetFoodTokenIdAt,
                 grillView.GetFoodAnchor,
@@ -161,6 +166,7 @@ namespace FoodieMatch.Features.Board
         }
 
         private void SpawnFoodItems(
+            int grillPositionIndex,
             int foodSlotCount,
             Func<int, int> resolveFoodTokenId,
             Func<int, Transform> resolveAnchor,
@@ -208,25 +214,29 @@ namespace FoodieMatch.Features.Board
                 foodItemView.SetVisualState(visualState);
                 foodItemView.SetInteractable(isInteractable);
 
+                FoodBoardAddress address = new FoodBoardAddress(
+                    grillPositionIndex,
+                    i);
+                _foodAddresses.Add(foodItemView, address);
+
                 if (isInteractable)
                 {
                     foodItemView.Selected += HandleFoodSelected;
-                    _selectableFoodItems.Add(foodItemView);
                 }
             }
         }
 
         private void ClearFoodItems()
         {
-            for (int i = 0; i < _selectableFoodItems.Count; i++)
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
             {
-                if (_selectableFoodItems[i] != null)
+                if (entry.Key != null)
                 {
-                    _selectableFoodItems[i].Selected -= HandleFoodSelected;
+                    entry.Key.Selected -= HandleFoodSelected;
                 }
             }
 
-            _selectableFoodItems.Clear();
+            _foodAddresses.Clear();
 
             if (_foodItemRoot == null)
             {
@@ -241,7 +251,17 @@ namespace FoodieMatch.Features.Board
 
         private void HandleFoodSelected(FoodItemView foodItemView)
         {
-            FoodSelected?.Invoke(new FoodSelectionContext(foodItemView));
+            if (!_foodAddresses.TryGetValue(
+                    foodItemView,
+                    out FoodBoardAddress address))
+            {
+                return;
+            }
+
+            FoodSelected?.Invoke(
+                new FoodSelectionContext(
+                    foodItemView,
+                    address));
         }
 
         private Transform GetPosition(int positionIndex)
