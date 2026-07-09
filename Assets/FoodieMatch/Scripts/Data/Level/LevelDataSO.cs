@@ -8,13 +8,11 @@ namespace FoodieMatch.Data.Level
         menuName = "FoodieMatch/Level/Level Data")]
     public sealed class LevelDataSO : ScriptableObject
     {
-        [SerializeField] private string _levelId;
         [SerializeField] private int _waitingRackCapacity = 5;
         [SerializeField] private int _maxPackageSlotCount = 4;
         [SerializeField] private RequiredPackageGenerationConfig _requiredPackageGenerationConfig = new();
         [SerializeField] private List<GrillData> _grills = new();
 
-        public string LevelId => _levelId;
         public int WaitingRackCapacity => _waitingRackCapacity;
         public int MaxPackageSlotCount => _maxPackageSlotCount;
         public RequiredPackageGenerationConfig RequiredPackageGenerationConfig => _requiredPackageGenerationConfig;
@@ -23,11 +21,6 @@ namespace FoodieMatch.Data.Level
         public LevelValidationResult Validate()
         {
             var result = new LevelValidationResult();
-
-            if (string.IsNullOrWhiteSpace(_levelId))
-            {
-                result.AddError("LevelId is required.");
-            }
 
             if (_waitingRackCapacity <= 0)
             {

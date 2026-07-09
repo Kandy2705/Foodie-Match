@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58d33da51d7147cdbc3732027b6f7f9d, type: 3}
   m_Name: Level 2
   m_EditorClassIdentifier: 
-  _levelId: 1
+  _levelId: 2
   _waitingRackCapacity: 5
   _maxPackageSlotCount: 4
   _requiredPackageGenerationConfig:
@@ -21,7 +21,7 @@ MonoBehaviour:
     _maxRequiredAmount: 3
   _grills:
   - _positionIndex: 0
-    _initialFoodTokenIds: 020000000000000001000000
+    _initialFoodTokenIds: 020000000200000001000000
     _trays:
     - _foodTokenIds: 030000000000000002000000
     - _foodTokenIds: 020000000300000001000000

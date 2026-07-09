@@ -1,6 +1,9 @@
 using System;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
@@ -23,11 +26,14 @@ namespace FoodieMatch.Features.LevelSystem
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
         private SelectFoodUseCase _selectFoodUseCase;
+        private ILevelRepository _levelRepository;
+        private BoardModelFactory _boardModelFactory;
         private Action _homeRequested;
 
+        private BoardModel _board;
         private RequiredPackageModel[] _requiredPackages;
         private WaitingRackModel _waitingRack;
-        private int _currentLevelId;
+        private int _currentLevelNumber;
         private bool _isInputEnabled;
 
         public void Construct(
@@ -36,7 +42,9 @@ namespace FoodieMatch.Features.LevelSystem
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
-            SelectFoodUseCase selectFoodUseCase)
+            SelectFoodUseCase selectFoodUseCase,
+            ILevelRepository levelRepository,
+            BoardModelFactory boardModelFactory)
         {
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
@@ -44,6 +52,8 @@ namespace FoodieMatch.Features.LevelSystem
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
             _selectFoodUseCase = selectFoodUseCase;
+            _levelRepository = levelRepository;
+            _boardModelFactory = boardModelFactory;
 
             if (_boardLayoutView != null)
             {
@@ -52,7 +62,7 @@ namespace FoodieMatch.Features.LevelSystem
         }
 
         public void StartLevel(
-            int levelId,
+            int levelNumber,
             Action homeRequested)
         {
             if (!HasDependencies())
@@ -60,16 +70,34 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
-            _currentLevelId = levelId;
+            if (!_levelRepository.TryGetLevel(
+                    levelNumber,
+                    out LevelConfig levelConfig))
+            {
+                Debug.LogError($"Level {levelNumber} could not be loaded.");
+                return;
+            }
+
+            if (_waitingRackView.Capacity != levelConfig.WaitingRackCapacity)
+            {
+                Debug.LogError(
+                    $"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
+                return;
+            }
+
+            _currentLevelNumber = levelNumber;
             _homeRequested = homeRequested;
+            _board = _boardModelFactory.Create(levelConfig);
             _requiredPackages = _requiredPackageGroupView.CreatePackages();
-            _waitingRack = new WaitingRackModel(_waitingRackView.Capacity);
+            _waitingRack = new WaitingRackModel(levelConfig.WaitingRackCapacity);
+            _boardLayoutView.Setup(_board);
             _waitingRackView.Clear();
             _isInputEnabled = true;
 
-            Debug.Log($"Start Level {levelId}");
+            Debug.Log($"Start Level {levelNumber}");
 
-            _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelId));
+            _gameplayEvents.OnLevelStarted(
+                new LevelStartedEvent(levelNumber));
             _gameplayEvents.OnLevelProgressChanged(new LevelProgressChangedEvent(0, 10));
         }
 
@@ -84,7 +112,7 @@ namespace FoodieMatch.Features.LevelSystem
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _currentLevelId,
+                    _currentLevelNumber,
                     true,
                     WinReason));
 
@@ -104,7 +132,7 @@ namespace FoodieMatch.Features.LevelSystem
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _currentLevelId,
+                    _currentLevelNumber,
                     false,
                     LoseReason));
         }
@@ -151,6 +179,18 @@ namespace FoodieMatch.Features.LevelSystem
             if (_selectFoodUseCase == null)
             {
                 Debug.LogError("SelectFoodUseCase has not been constructed.");
+                return false;
+            }
+
+            if (_levelRepository == null)
+            {
+                Debug.LogError("LevelRepository has not been constructed.");
+                return false;
+            }
+
+            if (_boardModelFactory == null)
+            {
+                Debug.LogError("BoardModelFactory has not been constructed.");
                 return false;
             }
 
@@ -223,8 +263,16 @@ namespace FoodieMatch.Features.LevelSystem
 
         private void OnNextLevelClicked()
         {
+            if (!_levelRepository.TryGetNextLevel(
+                    _currentLevelNumber,
+                    out _))
+            {
+                Debug.Log("No next level is available.");
+                return;
+            }
+
             _uiManager.HideAllPopups();
-            StartLevel(_currentLevelId + 1, _homeRequested);
+            StartLevel(_currentLevelNumber + 1, _homeRequested);
         }
 
         private void OnHomeClicked()

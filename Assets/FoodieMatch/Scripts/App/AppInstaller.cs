@@ -1,8 +1,11 @@
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
+using FoodieMatch.Data.Level;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -26,6 +29,13 @@ namespace FoodieMatch.App
                 new RequiredPackageMatcher();
             SelectFoodUseCase selectFoodUseCase =
                 new SelectFoodUseCase(requiredPackageMatcher);
+            LevelDataMapper levelDataMapper = new LevelDataMapper();
+            ILevelRepository levelRepository =
+                new ScriptableObjectLevelRepository(
+                    appRoot.LevelCatalog,
+                    levelDataMapper);
+            BoardModelFactory boardModelFactory =
+                new BoardModelFactory();
 
             appRoot.UIManager.Construct(GameplayEvents, audioService);
             appRoot.GameplayController.Construct(
@@ -34,8 +44,14 @@ namespace FoodieMatch.App
                 appRoot.BoardLayoutView,
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,
-                selectFoodUseCase);
-            appRoot.AppController.Construct(appRoot.UIManager, appRoot.GameplayController, saveService);
+                selectFoodUseCase,
+                levelRepository,
+                boardModelFactory);
+            appRoot.AppController.Construct(
+                appRoot.UIManager,
+                appRoot.GameplayController,
+                saveService,
+                levelRepository);
         }
 
         private bool HasValidReferences(AppRoot appRoot)

@@ -32,6 +32,13 @@ namespace FoodieMatch.Core.Domain.Grill
         public bool HasRemainingFood => !IsEmpty || HasTrays;
         public TrayModel TopTray => HasTrays ? _trays[0] : null;
 
+        public TrayModel GetTrayAt(int index)
+        {
+            return index >= 0 && index < _trays.Count
+                ? _trays[index]
+                : null;
+        }
+
         public int ActiveFoodCount
         {
             get

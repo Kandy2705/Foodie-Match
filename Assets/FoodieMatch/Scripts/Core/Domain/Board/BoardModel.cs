@@ -27,6 +27,13 @@ namespace FoodieMatch.Core.Domain.Board
 
         public int GrillCount => _grills.Count;
 
+        public GrillModel GetGrillAt(int index)
+        {
+            return index >= 0 && index < _grills.Count
+                ? _grills[index]
+                : null;
+        }
+
         public bool HasRemainingFood
         {
             get

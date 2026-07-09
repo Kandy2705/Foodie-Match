@@ -2,18 +2,18 @@ namespace FoodieMatch.Core.Application.Events
 {
     public readonly struct LevelEndedEvent
     {
-        public int LevelId { get; }
+        public int LevelNumber { get; }
 
         public bool IsWin { get; }
 
         public string Reason { get; }
 
         public LevelEndedEvent(
-            int levelId,
+            int levelNumber,
             bool isWin,
             string reason)
         {
-            LevelId = levelId;
+            LevelNumber = levelNumber;
             IsWin = isWin;
             Reason = reason;
         }
