@@ -45,9 +45,12 @@ namespace FoodieMatch.Core.Application.UseCases
                 waitingRackSlotIndex);
         }
 
-        public static SelectFoodResult WaitingRackFull(int foodTokenId)
+        public static SelectFoodResult NoAvailablePlacement(int foodTokenId)
         {
-            return new SelectFoodResult(SelectFoodResultType.WaitingRackFull, foodTokenId, -1);
+            return new SelectFoodResult(
+                SelectFoodResultType.NoAvailablePlacement,
+                foodTokenId,
+                -1);
         }
     }
 }

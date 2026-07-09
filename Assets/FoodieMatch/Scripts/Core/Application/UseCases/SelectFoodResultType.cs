@@ -5,7 +5,7 @@ namespace FoodieMatch.Core.Application.UseCases
         None = 0,
         PlacedInRequiredPackage = 1,
         PlacedInWaitingRack = 2,
-        WaitingRackFull = 3,
+        NoAvailablePlacement = 3,
         InvalidSelection = 4
     }
 }
