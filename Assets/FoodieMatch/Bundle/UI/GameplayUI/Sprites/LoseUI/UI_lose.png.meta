@@ -1,0 +1,1053 @@
+fileFormatVersion: 2
+guid: 6aa9e5b0e074d4b1c8060ba74a7905e6
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 658725309699492652
+    second: UI_lose_0
+  - first:
+      213: -4849702149593417307
+    second: UI_lose_1
+  - first:
+      213: -6313115688213001358
+    second: UI_lose_2
+  - first:
+      213: 9063443842548445393
+    second: UI_lose_3
+  - first:
+      213: -9095675555128297654
+    second: UI_lose_4
+  - first:
+      213: -7248504486407232659
+    second: UI_lose_5
+  - first:
+      213: -1617986718919326898
+    second: UI_lose_6
+  - first:
+      213: 5754290742631549411
+    second: UI_lose_7
+  - first:
+      213: 8400417737079420267
+    second: UI_lose_8
+  - first:
+      213: -1051650919095498440
+    second: UI_lose_9
+  - first:
+      213: 4405107254024235017
+    second: UI_lose_10
+  - first:
+      213: 6317583712574102783
+    second: UI_lose_11
+  - first:
+      213: -4276672149451854694
+    second: UI_lose_12
+  - first:
+      213: -2212315526653660009
+    second: UI_lose_13
+  - first:
+      213: 6985016099813286706
+    second: UI_lose_14
+  - first:
+      213: 6250374291230143866
+    second: UI_lose_15
+  - first:
+      213: 7434770164087600583
+    second: UI_lose_16
+  - first:
+      213: -8095951137696608637
+    second: UI_lose_17
+  - first:
+      213: -5702531719586192376
+    second: UI_lose_18
+  - first:
+      213: -4004581002631728354
+    second: UI_lose_19
+  - first:
+      213: -8340456840293648958
+    second: UI_lose_20
+  - first:
+      213: 7182162250839978201
+    second: UI_lose_21
+  - first:
+      213: -1552776397139578624
+    second: UI_lose_22
+  - first:
+      213: -6872331446859442363
+    second: UI_lose_23
+  - first:
+      213: 1447875116346885689
+    second: UI_lose_24
+  - first:
+      213: 1395311824930399172
+    second: UI_lose_25
+  - first:
+      213: -8553648261346802553
+    second: UI_lose_26
+  - first:
+      213: -7699990010108429652
+    second: UI_lose_27
+  - first:
+      213: -3996165829975017177
+    second: UI_lose_28
+  - first:
+      213: 1644470922534215744
+    second: UI_lose_29
+  - first:
+      213: 2361407164524927662
+    second: UI_lose_30
+  - first:
+      213: -9086231804424191988
+    second: UI_lose_31
+  - first:
+      213: -6673498169813485053
+    second: UI_lose_32
+  - first:
+      213: 8896485732186490529
+    second: UI_lose_33
+  - first:
+      213: -1090806197700630180
+    second: UI_lose_34
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 0
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: UI_lose_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 999
+        width: 399
+        height: 257
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2b8239dd23442900800000000000000
+      internalID: 658725309699492652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_1
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 1057
+        width: 372
+        height: 179
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a9390bf69562bcb0800000000000000
+      internalID: -4849702149593417307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_2
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 1057
+        width: 168
+        height: 201
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27b4e1adabe4368a0800000000000000
+      internalID: -6313115688213001358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_3
+      rect:
+        serializedVersion: 2
+        x: 947
+        y: 1209
+        width: 71
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d03dc49722d7cd70800000000000000
+      internalID: 9063443842548445393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_4
+      rect:
+        serializedVersion: 2
+        x: 1067
+        y: 1215
+        width: 33
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a47bf58064ba5c180800000000000000
+      internalID: -9095675555128297654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_5
+      rect:
+        serializedVersion: 2
+        x: 1102
+        y: 1211
+        width: 46
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d632fd6e293286b90800000000000000
+      internalID: -7248504486407232659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_6
+      rect:
+        serializedVersion: 2
+        x: 1171
+        y: 1174
+        width: 117
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e43838fc6a1cb89e0800000000000000
+      internalID: -1617986718919326898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_7
+      rect:
+        serializedVersion: 2
+        x: 1291
+        y: 1174
+        width: 96
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e94fd061f85bdf40800000000000000
+      internalID: 5754290742631549411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_8
+      rect:
+        serializedVersion: 2
+        x: 1394
+        y: 913
+        width: 51
+        height: 321
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b65728fac67449470800000000000000
+      internalID: 8400417737079420267
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_9
+      rect:
+        serializedVersion: 2
+        x: 1505
+        y: 1226
+        width: 32
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 839899b9f09c761f0800000000000000
+      internalID: -1051650919095498440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_10
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 923
+        width: 221
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9086c9155b5122d30800000000000000
+      internalID: 4405107254024235017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_11
+      rect:
+        serializedVersion: 2
+        x: 1170
+        y: 911
+        width: 222
+        height: 262
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ffcd5c22ae09ca750800000000000000
+      internalID: 6317583712574102783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_12
+      rect:
+        serializedVersion: 2
+        x: 1411
+        y: 912
+        width: 91
+        height: 302
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9cad1fb65536a4c0800000000000000
+      internalID: -4276672149451854694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_13
+      rect:
+        serializedVersion: 2
+        x: 1505
+        y: 1089
+        width: 90
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7943ab6ffb64c41e0800000000000000
+      internalID: -2212315526653660009
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_14
+      rect:
+        serializedVersion: 2
+        x: 1597
+        y: 1089
+        width: 63
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23361c37223cfe060800000000000000
+      internalID: 6985016099813286706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_15
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 999
+        width: 66
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a75b10e4d4acdb650800000000000000
+      internalID: 6250374291230143866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_16
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 980
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c53d19b21c9d2760800000000000000
+      internalID: 7434770164087600583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_17
+      rect:
+        serializedVersion: 2
+        x: 471
+        y: 955
+        width: 32
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38e8cae955765af80800000000000000
+      internalID: -8095951137696608637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_18
+      rect:
+        serializedVersion: 2
+        x: 473
+        y: 960
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 804eaa54d998cd0b0800000000000000
+      internalID: -5702531719586192376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_19
+      rect:
+        serializedVersion: 2
+        x: 478
+        y: 966
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e13bbd79bcedc68c0800000000000000
+      internalID: -4004581002631728354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_20
+      rect:
+        serializedVersion: 2
+        x: 479
+        y: 937
+        width: 29
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c5f1d181beb04c80800000000000000
+      internalID: -8340456840293648958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_21
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 962
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d07980b38a2ca360800000000000000
+      internalID: 7182162250839978201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_22
+      rect:
+        serializedVersion: 2
+        x: 517
+        y: 922
+        width: 400
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00172e0081e637ae0800000000000000
+      internalID: -1552776397139578624
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_23
+      rect:
+        serializedVersion: 2
+        x: 1505
+        y: 956
+        width: 122
+        height: 131
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5475233d5f290a0a0800000000000000
+      internalID: -6872331446859442363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_24
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 30
+        width: 455
+        height: 718
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 936cbf44fb2e71410800000000000000
+      internalID: 1447875116346885689
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_25
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 678
+        width: 621
+        height: 241
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c3e0eb46b42d5310800000000000000
+      internalID: 1395311824930399172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_26
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 702
+        width: 376
+        height: 208
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78449c8b9365b4980800000000000000
+      internalID: -8553648261346802553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_27
+      rect:
+        serializedVersion: 2
+        x: 1518
+        y: 703
+        width: 111
+        height: 251
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: caa3e61d1e3242590800000000000000
+      internalID: -7699990010108429652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_28
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 8
+        width: 654
+        height: 661
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 729f8c8a954ca88c0800000000000000
+      internalID: -3996165829975017177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_29
+      rect:
+        serializedVersion: 2
+        x: 1186
+        y: 498
+        width: 424
+        height: 203
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0406c1d579552d610800000000000000
+      internalID: 1644470922534215744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_30
+      rect:
+        serializedVersion: 2
+        x: 1613
+        y: 549
+        width: 34
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eaa129b0e4765c020800000000000000
+      internalID: 2361407164524927662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_31
+      rect:
+        serializedVersion: 2
+        x: 1613
+        y: 497
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c008076905837e180800000000000000
+      internalID: -9086231804424191988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_32
+      rect:
+        serializedVersion: 2
+        x: 1183
+        y: 45
+        width: 451
+        height: 421
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30a3c03b5c8f263a0800000000000000
+      internalID: -6673498169813485053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_33
+      rect:
+        serializedVersion: 2
+        x: 1655
+        y: 126
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a68e4843aaa67b70800000000000000
+      internalID: 8896485732186490529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_lose_34
+      rect:
+        serializedVersion: 2
+        x: 1658
+        y: 2
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c596243ea8dacd0f0800000000000000
+      internalID: -1090806197700630180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      UI_lose_0: 658725309699492652
+      UI_lose_1: -4849702149593417307
+      UI_lose_10: 4405107254024235017
+      UI_lose_11: 6317583712574102783
+      UI_lose_12: -4276672149451854694
+      UI_lose_13: -2212315526653660009
+      UI_lose_14: 6985016099813286706
+      UI_lose_15: 6250374291230143866
+      UI_lose_16: 7434770164087600583
+      UI_lose_17: -8095951137696608637
+      UI_lose_18: -5702531719586192376
+      UI_lose_19: -4004581002631728354
+      UI_lose_2: -6313115688213001358
+      UI_lose_20: -8340456840293648958
+      UI_lose_21: 7182162250839978201
+      UI_lose_22: -1552776397139578624
+      UI_lose_23: -6872331446859442363
+      UI_lose_24: 1447875116346885689
+      UI_lose_25: 1395311824930399172
+      UI_lose_26: -8553648261346802553
+      UI_lose_27: -7699990010108429652
+      UI_lose_28: -3996165829975017177
+      UI_lose_29: 1644470922534215744
+      UI_lose_3: 9063443842548445393
+      UI_lose_30: 2361407164524927662
+      UI_lose_31: -9086231804424191988
+      UI_lose_32: -6673498169813485053
+      UI_lose_33: 8896485732186490529
+      UI_lose_34: -1090806197700630180
+      UI_lose_4: -9095675555128297654
+      UI_lose_5: -7248504486407232659
+      UI_lose_6: -1617986718919326898
+      UI_lose_7: 5754290742631549411
+      UI_lose_8: 8400417737079420267
+      UI_lose_9: -1051650919095498440
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
