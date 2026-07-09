@@ -125,6 +125,20 @@ namespace FoodieMatch.Core.Domain.Board
                 foodTokenId);
         }
 
+        public bool TryMoveTopTrayToGrill(
+            int grillPositionIndex,
+            out GrillModel grill)
+        {
+            if (!TryGetGrill(grillPositionIndex, out grill) ||
+                !grill.TryMoveTopTrayToGrill())
+            {
+                grill = null;
+                return false;
+            }
+
+            return true;
+        }
+
         public bool TryGetGrill(
             int positionIndex,
             out GrillModel grill)

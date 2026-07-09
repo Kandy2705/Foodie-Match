@@ -123,6 +123,33 @@ namespace FoodieMatch.Core.Domain.Grill
             return true;
         }
 
+        public bool CanMoveTopTrayToGrill()
+        {
+            TrayModel topTray = TopTray;
+
+            return IsEmpty &&
+                   topTray != null &&
+                   topTray.SlotCount <= ActiveFoodSlotCount;
+        }
+
+        public bool TryMoveTopTrayToGrill()
+        {
+            if (!CanMoveTopTrayToGrill())
+            {
+                return false;
+            }
+
+            TrayModel topTray = TopTray;
+
+            for (int i = 0; i < topTray.SlotCount; i++)
+            {
+                _activeFoodTokenIds[i] = topTray.GetFoodTokenIdAt(i);
+            }
+
+            _trays.RemoveAt(0);
+            return true;
+        }
+
         private bool IsValidSlotIndex(int slotIndex)
         {
             return slotIndex >= 0 && slotIndex < _activeFoodTokenIds.Length;

@@ -39,5 +39,15 @@ namespace FoodieMatch.Features.Board
 
             return _trayStackView.GetTopTrayFoodAnchor(index);
         }
+
+        public void HideTopTray()
+        {
+            if (_trayStackView == null)
+            {
+                return;
+            }
+
+            _trayStackView.HideTopTray();
+        }
     }
 }

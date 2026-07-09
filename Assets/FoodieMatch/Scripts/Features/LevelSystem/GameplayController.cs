@@ -3,6 +3,7 @@ using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
@@ -221,16 +222,22 @@ namespace FoodieMatch.Features.LevelSystem
                 _requiredPackages,
                 _waitingRack);
 
-            ApplySelectionResult(context, result);
+            if (!ApplySelectionResult(context, result))
+            {
+                return;
+            }
+
+            MoveTopTrayToGrill(
+                context.Address.GrillPositionIndex);
         }
 
-        private void ApplySelectionResult(
+        private bool ApplySelectionResult(
             FoodSelectionContext context,
             SelectFoodResult result)
         {
             if (!result.IsPlaced)
             {
-                return;
+                return false;
             }
 
             FoodItemView foodItemView = context.FoodItemView;
@@ -246,14 +253,14 @@ namespace FoodieMatch.Features.LevelSystem
                     requiredPackage);
 
                 foodItemView.Clear();
-                return;
+                return true;
             }
 
             if (_waitingRackView.SetFoodAt(
                     result.TargetIndex,
                     foodItemView))
             {
-                return;
+                return true;
             }
 
             _waitingRack.TryRemoveFoodAt(
@@ -265,12 +272,32 @@ namespace FoodieMatch.Features.LevelSystem
                     result.FoodTokenId))
             {
                 Debug.LogError("Selected food could not be restored.");
-                return;
+                return false;
             }
 
             _boardLayoutView.RestoreFoodItem(
                 foodItemView,
                 context.Address);
+
+            return false;
+        }
+
+        private void MoveTopTrayToGrill(
+            int grillPositionIndex)
+        {
+            if (!_board.TryMoveTopTrayToGrill(
+                    grillPositionIndex,
+                    out GrillModel grillModel))
+            {
+                return;
+            }
+
+            if (!_boardLayoutView.MoveTopTrayFoodToGrill(
+                    grillModel))
+            {
+                Debug.LogError(
+                    $"Could not move top tray to grill {grillPositionIndex}.");
+            }
         }
 
         private void OnNextLevelClicked()
