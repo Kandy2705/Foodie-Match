@@ -1,10 +1,10 @@
 namespace FoodieMatch.Core.Domain.WaitingRack
 {
-    public sealed class WaitingRackState
+    public sealed class WaitingRackModel
     {
         private readonly int[] _foodTokenIds;
 
-        public WaitingRackState(int capacity)
+        public WaitingRackModel(int capacity)
         {
             int validCapacity = capacity > 0 ? capacity : 0;
             _foodTokenIds = new int[validCapacity];

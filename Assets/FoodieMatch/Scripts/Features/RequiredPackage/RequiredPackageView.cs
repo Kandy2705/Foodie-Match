@@ -1,5 +1,5 @@
+using FoodieMatch.Core.Domain.RequiredPackage;
 using UnityEngine;
-using RequiredPackageDomain = FoodieMatch.Core.Domain.RequiredPackage.RequiredPackage;
 
 namespace FoodieMatch.Features.RequiredPackage
 {
@@ -50,9 +50,9 @@ namespace FoodieMatch.Features.RequiredPackage
             RefreshActiveView();
         }
 
-        public RequiredPackageDomain CreatePackage()
+        public RequiredPackageModel CreatePackage()
         {
-            return new RequiredPackageDomain(FoodTokenId, RequiredAmount, FilledAmount);
+            return new RequiredPackageModel(FoodTokenId, RequiredAmount, FilledAmount);
         }
 
         public void Clear()

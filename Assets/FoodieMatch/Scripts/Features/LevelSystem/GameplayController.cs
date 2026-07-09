@@ -1,6 +1,7 @@
 using System;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
@@ -8,7 +9,6 @@ using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
 using UnityEngine;
-using RequiredPackageDomain = FoodieMatch.Core.Domain.RequiredPackage.RequiredPackage;
 
 namespace FoodieMatch.Features.LevelSystem
 {
@@ -25,8 +25,8 @@ namespace FoodieMatch.Features.LevelSystem
         private SelectFoodUseCase _selectFoodUseCase;
         private Action _homeRequested;
 
-        private RequiredPackageDomain[] _requiredPackages;
-        private WaitingRackState _waitingRackState;
+        private RequiredPackageModel[] _requiredPackages;
+        private WaitingRackModel _waitingRack;
         private int _currentLevelId;
         private bool _isInputEnabled;
 
@@ -63,7 +63,7 @@ namespace FoodieMatch.Features.LevelSystem
             _currentLevelId = levelId;
             _homeRequested = homeRequested;
             _requiredPackages = _requiredPackageGroupView.CreatePackages();
-            _waitingRackState = new WaitingRackState(_waitingRackView.Capacity);
+            _waitingRack = new WaitingRackModel(_waitingRackView.Capacity);
             _waitingRackView.Clear();
             _isInputEnabled = true;
 
@@ -170,7 +170,7 @@ namespace FoodieMatch.Features.LevelSystem
             if (!_isInputEnabled ||
                 context.FoodItemView == null ||
                 _requiredPackages == null ||
-                _waitingRackState == null)
+                _waitingRack == null)
             {
                 return;
             }
@@ -178,7 +178,7 @@ namespace FoodieMatch.Features.LevelSystem
             SelectFoodResult result = _selectFoodUseCase.Execute(
                 context.FoodTokenId,
                 _requiredPackages,
-                _waitingRackState);
+                _waitingRack);
 
             ApplySelectionResult(context.FoodItemView, result);
         }
@@ -196,7 +196,7 @@ namespace FoodieMatch.Features.LevelSystem
 
             if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
             {
-                RequiredPackageDomain requiredPackage =
+                RequiredPackageModel requiredPackage =
                     _requiredPackages[result.TargetIndex];
 
                 _requiredPackageGroupView.ApplyPackageAt(
@@ -214,7 +214,7 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
-            _waitingRackState.TryRemoveFoodAt(
+            _waitingRack.TryRemoveFoodAt(
                 result.TargetIndex,
                 out _);
 

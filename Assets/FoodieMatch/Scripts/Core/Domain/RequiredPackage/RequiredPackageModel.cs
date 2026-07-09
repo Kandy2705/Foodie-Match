@@ -1,8 +1,8 @@
 namespace FoodieMatch.Core.Domain.RequiredPackage
 {
-    public sealed class RequiredPackage
+    public sealed class RequiredPackageModel
     {
-        public RequiredPackage(
+        public RequiredPackageModel(
             int foodTokenId,
             int requiredAmount,
             int filledAmount)
