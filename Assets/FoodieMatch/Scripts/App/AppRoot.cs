@@ -1,5 +1,7 @@
 using FoodieMatch.Features.LevelSystem;
 using FoodieMatch.Features.Board;
+using FoodieMatch.Features.RequiredPackage;
+using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
 using UnityEngine;
 
@@ -18,22 +20,19 @@ namespace FoodieMatch.App
         [SerializeField] private UIManager _uiManager;
 
         [Header("Gameplay Roots")]
-        [SerializeField] private Transform _boardRoot;
-
         [SerializeField] private BoardLayoutView _boardLayoutView;
 
-        [SerializeField] private Transform _requiredPackageRoot;
+        [SerializeField] private RequiredPackageGroupView _requiredPackageGroupView;
 
-        [SerializeField] private Transform _waitingRackRoot;
+        [SerializeField] private WaitingRackView _waitingRackView;
 
         public AppInstaller AppInstaller => _appInstaller;
         public AppController AppController => _appController;
         public GameplayController GameplayController => _gameplayController;
         public UIManager UIManager => _uiManager;
-        public Transform BoardRoot => _boardRoot;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
-        public Transform RequiredPackageRoot => _requiredPackageRoot;
-        public Transform WaitingRackRoot => _waitingRackRoot;
+        public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
+        public WaitingRackView WaitingRackView => _waitingRackView;
 
         public void Initialize()
         {
@@ -73,27 +72,21 @@ namespace FoodieMatch.App
                 return false;
             }
 
-            if (_boardRoot == null)
-            {
-                Debug.LogError("BoardRoot is missing.");
-                return false;
-            }
-
             if (_boardLayoutView == null)
             {
                 Debug.LogError("BoardLayoutView is missing.");
                 return false;
             }
 
-            if (_requiredPackageRoot == null)
+            if (_requiredPackageGroupView == null)
             {
-                Debug.LogError("RequiredPackageRoot is missing.");
+                Debug.LogError("RequiredPackageGroupView is missing.");
                 return false;
             }
 
-            if (_waitingRackRoot == null)
+            if (_waitingRackView == null)
             {
-                Debug.LogError("WaitingRackRoot is missing.");
+                Debug.LogError("WaitingRackView is missing.");
                 return false;
             }
 

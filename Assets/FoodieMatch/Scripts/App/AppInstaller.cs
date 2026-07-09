@@ -1,4 +1,6 @@
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
 using UnityEngine;
@@ -20,9 +22,19 @@ namespace FoodieMatch.App
 
             IAudioService audioService = new NullAudioService();
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            RequiredPackageMatcher requiredPackageMatcher =
+                new RequiredPackageMatcher();
+            SelectFoodUseCase selectFoodUseCase =
+                new SelectFoodUseCase(requiredPackageMatcher);
 
             appRoot.UIManager.Construct(GameplayEvents, audioService);
-            appRoot.GameplayController.Construct(appRoot.UIManager, GameplayEvents, appRoot.BoardLayoutView);
+            appRoot.GameplayController.Construct(
+                appRoot.UIManager,
+                GameplayEvents,
+                appRoot.BoardLayoutView,
+                appRoot.RequiredPackageGroupView,
+                appRoot.WaitingRackView,
+                selectFoodUseCase);
             appRoot.AppController.Construct(appRoot.UIManager, appRoot.GameplayController, saveService);
         }
 
@@ -49,6 +61,24 @@ namespace FoodieMatch.App
             if (appRoot.UIManager == null)
             {
                 Debug.LogError("Cannot install app because UIManager is missing.");
+                return false;
+            }
+
+            if (appRoot.BoardLayoutView == null)
+            {
+                Debug.LogError("Cannot install app because BoardLayoutView is missing.");
+                return false;
+            }
+
+            if (appRoot.RequiredPackageGroupView == null)
+            {
+                Debug.LogError("Cannot install app because RequiredPackageGroupView is missing.");
+                return false;
+            }
+
+            if (appRoot.WaitingRackView == null)
+            {
+                Debug.LogError("Cannot install app because WaitingRackView is missing.");
                 return false;
             }
 

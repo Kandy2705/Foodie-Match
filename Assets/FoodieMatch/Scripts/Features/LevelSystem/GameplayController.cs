@@ -1,8 +1,14 @@
 using System;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
+using FoodieMatch.Features.Food;
+using FoodieMatch.Features.RequiredPackage;
+using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
 using UnityEngine;
+using RequiredPackageDomain = FoodieMatch.Core.Domain.RequiredPackage.RequiredPackage;
 
 namespace FoodieMatch.Features.LevelSystem
 {
@@ -14,19 +20,30 @@ namespace FoodieMatch.Features.LevelSystem
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
         private BoardLayoutView _boardLayoutView;
+        private RequiredPackageGroupView _requiredPackageGroupView;
+        private WaitingRackView _waitingRackView;
+        private SelectFoodUseCase _selectFoodUseCase;
         private Action _homeRequested;
 
+        private RequiredPackageDomain[] _requiredPackages;
+        private WaitingRackState _waitingRackState;
         private int _currentLevelId;
         private bool _isInputEnabled;
 
         public void Construct(
             UIManager uiManager,
             GameplayEvents gameplayEvents,
-            BoardLayoutView boardLayoutView)
+            BoardLayoutView boardLayoutView,
+            RequiredPackageGroupView requiredPackageGroupView,
+            WaitingRackView waitingRackView,
+            SelectFoodUseCase selectFoodUseCase)
         {
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
             _boardLayoutView = boardLayoutView;
+            _requiredPackageGroupView = requiredPackageGroupView;
+            _waitingRackView = waitingRackView;
+            _selectFoodUseCase = selectFoodUseCase;
 
             if (_boardLayoutView != null)
             {
@@ -45,22 +62,15 @@ namespace FoodieMatch.Features.LevelSystem
 
             _currentLevelId = levelId;
             _homeRequested = homeRequested;
+            _requiredPackages = _requiredPackageGroupView.CreatePackages();
+            _waitingRackState = new WaitingRackState(_waitingRackView.Capacity);
+            _waitingRackView.Clear();
             _isInputEnabled = true;
 
             Debug.Log($"Start Level {levelId}");
 
             _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelId));
             _gameplayEvents.OnLevelProgressChanged(new LevelProgressChangedEvent(0, 10));
-        }
-
-        public void SelectFood(int foodId)
-        {
-            if (!_isInputEnabled)
-            {
-                return;
-            }
-
-            Debug.Log($"Select Food {foodId}");
         }
 
         public void ResolveWin()
@@ -126,6 +136,24 @@ namespace FoodieMatch.Features.LevelSystem
                 return false;
             }
 
+            if (_requiredPackageGroupView == null)
+            {
+                Debug.LogError("RequiredPackageGroupView has not been constructed.");
+                return false;
+            }
+
+            if (_waitingRackView == null)
+            {
+                Debug.LogError("WaitingRackView has not been constructed.");
+                return false;
+            }
+
+            if (_selectFoodUseCase == null)
+            {
+                Debug.LogError("SelectFoodUseCase has not been constructed.");
+                return false;
+            }
+
             return true;
         }
 
@@ -139,7 +167,58 @@ namespace FoodieMatch.Features.LevelSystem
 
         private void HandleFoodSelected(FoodSelectionContext context)
         {
-            SelectFood(context.FoodTokenId);
+            if (!_isInputEnabled ||
+                context.FoodItemView == null ||
+                _requiredPackages == null ||
+                _waitingRackState == null)
+            {
+                return;
+            }
+
+            SelectFoodResult result = _selectFoodUseCase.Execute(
+                context.FoodTokenId,
+                _requiredPackages,
+                _waitingRackState);
+
+            ApplySelectionResult(context.FoodItemView, result);
+        }
+
+        private void ApplySelectionResult(
+            FoodItemView foodItemView,
+            SelectFoodResult result)
+        {
+            if (!result.IsPlaced)
+            {
+                return;
+            }
+
+            _boardLayoutView.ReleaseFoodItem(foodItemView);
+
+            if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
+            {
+                RequiredPackageDomain requiredPackage =
+                    _requiredPackages[result.TargetIndex];
+
+                _requiredPackageGroupView.ApplyPackageAt(
+                    result.TargetIndex,
+                    requiredPackage);
+
+                foodItemView.Clear();
+                return;
+            }
+
+            if (_waitingRackView.SetFoodAt(
+                    result.TargetIndex,
+                    foodItemView))
+            {
+                return;
+            }
+
+            _waitingRackState.TryRemoveFoodAt(
+                result.TargetIndex,
+                out _);
+
+            _boardLayoutView.RestoreFoodItem(foodItemView);
         }
 
         private void OnNextLevelClicked()
