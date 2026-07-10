@@ -1,5 +1,6 @@
 using System;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.GameState;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -40,6 +41,7 @@ namespace FoodieMatch.Features.LevelSystem
             _requiredPackageGenerationSettings;
         private WaitingRackModel _waitingRack;
         private int _currentLevelNumber;
+        private LevelSessionState _levelSessionState;
         private bool _isInputEnabled;
 
         public void Construct(
@@ -144,6 +146,7 @@ namespace FoodieMatch.Features.LevelSystem
             _boardLayoutView.Setup(_board);
             _waitingRackView.Clear();
             RefreshRequiredPackageViews();
+            _levelSessionState = LevelSessionState.Playing;
             _isInputEnabled = true;
 
             Debug.Log($"Start Level {levelNumber}");
@@ -153,13 +156,15 @@ namespace FoodieMatch.Features.LevelSystem
             _gameplayEvents.OnLevelProgressChanged(new LevelProgressChangedEvent(0, 10));
         }
 
-        public void ResolveWin()
+        private void ResolveWin()
         {
-            if (!HasDependencies())
+            if (!HasDependencies() ||
+                _levelSessionState != LevelSessionState.Playing)
             {
                 return;
             }
 
+            _levelSessionState = LevelSessionState.Won;
             _isInputEnabled = false;
 
             _gameplayEvents.OnLevelEnded(
@@ -173,24 +178,9 @@ namespace FoodieMatch.Features.LevelSystem
                 OnHomeClicked);
         }
 
-        public void ResolveLose()
-        {
-            if (!HasDependencies())
-            {
-                return;
-            }
-
-            _isInputEnabled = false;
-
-            _gameplayEvents.OnLevelEnded(
-                new LevelEndedEvent(
-                    _currentLevelNumber,
-                    false,
-                    LoseReason));
-        }
-
         public void ClearLevel()
         {
+            _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
 
             Debug.Log("Clear Level");
@@ -272,7 +262,8 @@ namespace FoodieMatch.Features.LevelSystem
 
         private void HandleFoodSelected(FoodSelectionContext context)
         {
-            if (!_isInputEnabled ||
+            if (_levelSessionState != LevelSessionState.Playing ||
+                !_isInputEnabled ||
                 context.FoodItemView == null ||
                 _requiredPackages == null ||
                 _waitingRack == null)
@@ -288,6 +279,12 @@ namespace FoodieMatch.Features.LevelSystem
 
             if (!ApplySelectionResult(context, result))
             {
+                return;
+            }
+
+            if (_waitingRack.IsFull)
+            {
+                EnterAwaitingRevive();
                 return;
             }
 
@@ -454,6 +451,37 @@ namespace FoodieMatch.Features.LevelSystem
             }
         }
 
+        private void EnterAwaitingRevive()
+        {
+            if (_levelSessionState != LevelSessionState.Playing)
+            {
+                return;
+            }
+
+            _levelSessionState = LevelSessionState.AwaitingRevive;
+            _isInputEnabled = false;
+
+            _uiManager.ShowLosePopup(
+                OnTryAgainClicked,
+                OnHomeClicked);
+        }
+
+        private void FinalizeLose()
+        {
+            if (_levelSessionState != LevelSessionState.AwaitingRevive)
+            {
+                return;
+            }
+
+            _levelSessionState = LevelSessionState.Lost;
+
+            _gameplayEvents.OnLevelEnded(
+                new LevelEndedEvent(
+                    _currentLevelNumber,
+                    false,
+                    LoseReason));
+        }
+
         private void OnNextLevelClicked()
         {
             if (!_levelRepository.TryGetNextLevel(
@@ -468,8 +496,18 @@ namespace FoodieMatch.Features.LevelSystem
             StartLevel(_currentLevelNumber + 1, _homeRequested);
         }
 
+        private void OnTryAgainClicked()
+        {
+            FinalizeLose();
+
+            _uiManager.HideAllPopups();
+            StartLevel(_currentLevelNumber, _homeRequested);
+        }
+
         private void OnHomeClicked()
         {
+            FinalizeLose();
+
             _uiManager.HideAllPopups();
             ClearLevel();
 
