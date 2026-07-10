@@ -8,6 +8,7 @@ using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
+using FoodieMatch.UI.Revive;
 using FoodieMatch.UI.Setting;
 using UnityEngine;
 
@@ -29,6 +30,7 @@ namespace FoodieMatch.UI
         private GameObject _gameplayHud;
         private GameplayHudView _gameplayHudView;
         private bool _hasConstructed;
+        private bool _returnToReviveOnLeaveClose;
 
         public event Action PlayGameRequested;
 
@@ -256,6 +258,40 @@ namespace FoodieMatch.UI
             _popupManager.Hide<RetryGamePopupView>();
         }
 
+        public void ShowRevivePopup()
+        {
+            if (_popupManager == null)
+            {
+                Debug.LogError("Cannot show revive popup because PopupManager is missing.");
+                return;
+            }
+
+            RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
+
+            if (revivePopup == null)
+            {
+                return;
+            }
+
+            revivePopup.SetActions(
+                new RevivePopupViewActions(
+                    OnReviveCloseClicked,
+                    OnReviveFreeAdsClicked,
+                    OnRevivePlayOnClicked));
+
+            _audioService?.PlaySfx(PopupShowSfxKey);
+        }
+
+        public void HideRevivePopup()
+        {
+            if (_popupManager == null)
+            {
+                return;
+            }
+
+            _popupManager.Hide<RevivePopupView>();
+        }
+
         public void ShowWinPopup(
             Action claimCoinRewardClicked,
             Action doubleCoinRewardClicked)
@@ -429,17 +465,27 @@ namespace FoodieMatch.UI
         private void OnPauseHomeClicked()
         {
             HidePausePopup();
+            _returnToReviveOnLeaveClose = false;
             ShowLeaveGamePopup();
         }
 
         private void OnLeaveGameCloseClicked()
         {
             HideLeaveGamePopup();
+
+            if (_returnToReviveOnLeaveClose)
+            {
+                _returnToReviveOnLeaveClose = false;
+                ShowRevivePopup();
+                return;
+            }
+
             ShowPausePopup();
         }
 
         private void OnLeaveGameLeaveClicked()
         {
+            _returnToReviveOnLeaveClose = false;
             HideAllPopups();
             LeaveGameRequested?.Invoke();
         }
@@ -454,6 +500,25 @@ namespace FoodieMatch.UI
         {
             HideAllPopups();
             RestartGameRequested?.Invoke();
+        }
+
+        private void OnReviveCloseClicked()
+        {
+            HideRevivePopup();
+            _returnToReviveOnLeaveClose = true;
+            ShowLeaveGamePopup();
+        }
+
+        private void OnReviveFreeAdsClicked()
+        {
+            Debug.Log("Revive Free Ads Clicked");
+            HideRevivePopup();
+        }
+
+        private void OnRevivePlayOnClicked()
+        {
+            Debug.Log("Revive Play On Clicked");
+            HideRevivePopup();
         }
 
         private void OnLevelStarted(LevelStartedEvent eventData)
