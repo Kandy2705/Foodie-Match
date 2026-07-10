@@ -31,6 +31,9 @@ namespace FoodieMatch.UI
         private GameplayHudView _gameplayHudView;
         private bool _hasConstructed;
         private bool _returnToReviveOnLeaveClose;
+        private int _currentLevelNumber = 1;
+        private int _currentServedCount;
+        private int _currentTotalCount;
 
         public event Action PlayGameRequested;
 
@@ -81,6 +84,7 @@ namespace FoodieMatch.UI
             }
 
             homeView.SetActions(new HomeViewActions(OnHomePlayRequested, OnHomeSettingRequested));
+            homeView.SetPlayLevelNumber(_currentLevelNumber);
         }
 
         public void HideHome()
@@ -294,7 +298,9 @@ namespace FoodieMatch.UI
 
         public void ShowWinPopup(
             Action claimCoinRewardClicked,
-            Action doubleCoinRewardClicked)
+            Action doubleCoinRewardClicked,
+            string rewardAmountText = null,
+            string rewardMultiplierText = null)
         {
             if (_popupManager == null)
             {
@@ -313,6 +319,16 @@ namespace FoodieMatch.UI
                 new WinViewActions(
                     claimCoinRewardClicked,
                     doubleCoinRewardClicked));
+
+            if (!string.IsNullOrEmpty(rewardAmountText))
+            {
+                winView.SetRewardAmount(rewardAmountText);
+            }
+
+            if (!string.IsNullOrEmpty(rewardMultiplierText))
+            {
+                winView.SetRewardMultiplier(rewardMultiplierText);
+            }
 
             _audioService?.PlaySfx(PopupShowSfxKey);
         }
@@ -390,6 +406,8 @@ namespace FoodieMatch.UI
             }
 
             _gameplayHudView.SetActions(new GameplayHudViewActions(OnGameplayPauseRequested));
+            _gameplayHudView.SetLevelNumber(_currentLevelNumber);
+            _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
         }
 
         private void SubscribeEvents()
@@ -523,11 +541,28 @@ namespace FoodieMatch.UI
 
         private void OnLevelStarted(LevelStartedEvent eventData)
         {
+            _currentLevelNumber = eventData.LevelNumber;
+
+            if (_gameplayHudView != null)
+            {
+                _gameplayHudView.SetLevelNumber(eventData.LevelNumber);
+            }
+
             Debug.Log($"Level Started: {eventData.LevelNumber}");
         }
 
         private void OnLevelProgressChanged(LevelProgressChangedEvent eventData)
         {
+            _currentServedCount = eventData.ServedCount;
+            _currentTotalCount = eventData.TotalCount;
+
+            if (_gameplayHudView != null)
+            {
+                _gameplayHudView.SetProgress(
+                    eventData.ServedCount,
+                    eventData.TotalCount);
+            }
+
             Debug.Log($"Progress: {eventData.ServedCount}/{eventData.TotalCount}");
         }
 
@@ -537,3 +572,4 @@ namespace FoodieMatch.UI
         }
     }
 }
+
