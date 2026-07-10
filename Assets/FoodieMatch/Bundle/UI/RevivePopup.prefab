@@ -859,6 +859,8 @@ MonoBehaviour:
   _freeAdsButton: {fileID: 8354418371459814741}
   _playOnButton: {fileID: 727163258812183704}
   _popupAnimController: {fileID: 4426387045453857657}
+  _costText: {fileID: 293875443505543227}
+  _bonusAmountText: {fileID: 2587775720095708}
 --- !u!1 &7388116517003901043
 GameObject:
   m_ObjectHideFlags: 0
@@ -1177,6 +1179,17 @@ PrefabInstance:
       addedObject: {fileID: 3137411498917015035}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+--- !u!114 &2587775720095708 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+  m_PrefabInstance: {fileID: 3118081513284576698}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &2288905725322234862 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}

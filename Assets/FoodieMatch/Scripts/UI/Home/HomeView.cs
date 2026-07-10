@@ -1,5 +1,7 @@
 using System;
+using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +11,7 @@ namespace FoodieMatch.UI.Home
     {
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
+        [SerializeField] private TMP_Text _playLevelText;
 
         private Action _playClicked;
         private Action _settingClicked;
@@ -16,6 +19,7 @@ namespace FoodieMatch.UI.Home
         private void Awake()
         {
             EnsureButtonReferences();
+            EnsureTextReferences();
 
             if (_playButton != null)
             {
@@ -51,6 +55,12 @@ namespace FoodieMatch.UI.Home
             _settingClicked = actions.SettingClicked;
         }
 
+        public void SetPlayLevelNumber(int levelNumber)
+        {
+            EnsureTextReferences();
+            UiTmpText.SetText(_playLevelText, $"Level {levelNumber}");
+        }
+
         public override void Dispose()
         {
             _playClicked = null;
@@ -74,6 +84,34 @@ namespace FoodieMatch.UI.Home
             if (_settingButton == null)
             {
                 _settingButton = FindChildButton("SettingsButton");
+            }
+
+            if (_playButton == null)
+            {
+                _playButton = FindChildButton("PlayLevelButton");
+            }
+
+            if (_playButton == null)
+            {
+                _playButton = FindChildButton("PlayButton");
+            }
+        }
+
+        private void EnsureTextReferences()
+        {
+            if (_playLevelText != null)
+            {
+                return;
+            }
+
+            if (_playButton != null)
+            {
+                _playLevelText = _playButton.GetComponentInChildren<TMP_Text>(true);
+            }
+
+            if (_playLevelText == null)
+            {
+                _playLevelText = UiTmpText.FindChild(transform, "Text (TMP)");
             }
         }
 

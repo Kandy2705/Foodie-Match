@@ -5843,6 +5843,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _claimCoinRewardButton: {fileID: 4232292020548953001}
   _doubleCoinRewardButton: {fileID: 4734722600863434005}
+  _rewardAmountText: {fileID: 5269161727345199203}
+  _rewardMultiplierText: {fileID: 5868891231373574247}
 --- !u!1 &7625564787570865888
 GameObject:
   m_ObjectHideFlags: 0
