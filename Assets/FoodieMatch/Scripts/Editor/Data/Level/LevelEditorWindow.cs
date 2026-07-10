@@ -13,7 +13,6 @@ namespace FoodieMatch.Editor.Data.Level
 
         private LevelDataSO _levelData;
         private SerializedObject _serializedLevelData;
-        private SerializedProperty _levelIdProperty;
         private SerializedProperty _waitingRackCapacityProperty;
         private SerializedProperty _maxPackageSlotCountProperty;
         private SerializedProperty _requiredPackageGenerationConfigProperty;
@@ -111,7 +110,6 @@ namespace FoodieMatch.Editor.Data.Level
 
         private void ClearProperties()
         {
-            _levelIdProperty = null;
             _waitingRackCapacityProperty = null;
             _maxPackageSlotCountProperty = null;
             _requiredPackageGenerationConfigProperty = null;
@@ -120,7 +118,6 @@ namespace FoodieMatch.Editor.Data.Level
 
         private void CacheProperties()
         {
-            _levelIdProperty = _serializedLevelData.FindProperty("_levelId");
             _waitingRackCapacityProperty = _serializedLevelData.FindProperty("_waitingRackCapacity");
             _maxPackageSlotCountProperty = _serializedLevelData.FindProperty("_maxPackageSlotCount");
             _requiredPackageGenerationConfigProperty = _serializedLevelData.FindProperty("_requiredPackageGenerationConfig");
@@ -130,7 +127,6 @@ namespace FoodieMatch.Editor.Data.Level
         private void DrawLevelSettings()
         {
             EditorGUILayout.LabelField("Level Settings", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_levelIdProperty);
             EditorGUILayout.PropertyField(_waitingRackCapacityProperty);
             EditorGUILayout.PropertyField(_maxPackageSlotCountProperty);
             EditorGUILayout.Space();

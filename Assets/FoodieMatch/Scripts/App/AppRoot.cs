@@ -1,5 +1,7 @@
+using FoodieMatch.Data.Level;
 using FoodieMatch.Features.LevelSystem;
 using FoodieMatch.Features.Board;
+using FoodieMatch.Features.Food;
 using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
@@ -19,6 +21,9 @@ namespace FoodieMatch.App
 
         [SerializeField] private UIManager _uiManager;
 
+        [Header("Data")]
+        [SerializeField] private LevelCatalogSO _levelCatalog;
+
         [Header("Gameplay Roots")]
         [SerializeField] private BoardLayoutView _boardLayoutView;
 
@@ -26,13 +31,17 @@ namespace FoodieMatch.App
 
         [SerializeField] private WaitingRackView _waitingRackView;
 
+        [SerializeField] private FoodVisualResolver _foodVisualResolver;
+
         public AppInstaller AppInstaller => _appInstaller;
         public AppController AppController => _appController;
         public GameplayController GameplayController => _gameplayController;
         public UIManager UIManager => _uiManager;
+        public LevelCatalogSO LevelCatalog => _levelCatalog;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;
+        public FoodVisualResolver FoodVisualResolver => _foodVisualResolver;
 
         public void Initialize()
         {
@@ -72,6 +81,11 @@ namespace FoodieMatch.App
                 return false;
             }
 
+            if (!HasValidLevels())
+            {
+                return false;
+            }
+
             if (_boardLayoutView == null)
             {
                 Debug.LogError("BoardLayoutView is missing.");
@@ -90,7 +104,36 @@ namespace FoodieMatch.App
                 return false;
             }
 
+            if (_foodVisualResolver == null)
+            {
+                Debug.LogError("FoodVisualResolver is missing.");
+                return false;
+            }
+
             return true;
+        }
+
+        private bool HasValidLevels()
+        {
+            if (_levelCatalog == null)
+            {
+                Debug.LogError("LevelCatalog is missing.");
+                return false;
+            }
+
+            LevelValidationResult result = _levelCatalog.Validate();
+
+            if (result.IsValid)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < result.Errors.Count; i++)
+            {
+                Debug.LogError(result.Errors[i], _levelCatalog);
+            }
+
+            return false;
         }
     }
 }

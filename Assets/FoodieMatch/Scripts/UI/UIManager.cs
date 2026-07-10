@@ -410,7 +410,7 @@ namespace FoodieMatch.UI
 
         private void OnLevelStarted(LevelStartedEvent eventData)
         {
-            Debug.Log($"Level Started: {eventData.LevelId}");
+            Debug.Log($"Level Started: {eventData.LevelNumber}");
         }
 
         private void OnLevelProgressChanged(LevelProgressChangedEvent eventData)
@@ -420,7 +420,7 @@ namespace FoodieMatch.UI
 
         private void OnLevelEnded(LevelEndedEvent eventData)
         {
-            Debug.Log($"Level Ended: {eventData.LevelId}, Win: {eventData.IsWin}, Reason: {eventData.Reason}");
+            Debug.Log($"Level Ended: {eventData.LevelNumber}, Win: {eventData.IsWin}, Reason: {eventData.Reason}");
         }
     }
 }
