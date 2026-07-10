@@ -546,7 +546,7 @@ MonoBehaviour:
   _closeButton: {fileID: 7478654549896017156}
   _soundToggle: {fileID: 8593540625850971741}
   _musicToggle: {fileID: 8266878275676437267}
-  _popupAnimController: {fileID: 0}
+  _popupAnimController: {fileID: 5764012389298729818}
 --- !u!1001 &4212972587421388171
 PrefabInstance:
   m_ObjectHideFlags: 0
