@@ -9,10 +9,18 @@ namespace FoodieMatch.Data.Level
         [SerializeField] private int _initialActivePackageCount = 2;
         [SerializeField] private int _minRequiredAmount = 1;
         [SerializeField] private int _maxRequiredAmount = 3;
+        [SerializeField] private int _waitingRackWeight = 3;
+        [SerializeField] private int _activeGrillWeight = 2;
+        [SerializeField] private int _topTrayWeight = 1;
+        [SerializeField] private int _deepTrayWeight = 1;
 
         public int InitialActivePackageCount => _initialActivePackageCount;
         public int MinRequiredAmount => _minRequiredAmount;
         public int MaxRequiredAmount => _maxRequiredAmount;
+        public int WaitingRackWeight => _waitingRackWeight;
+        public int ActiveGrillWeight => _activeGrillWeight;
+        public int TopTrayWeight => _topTrayWeight;
+        public int DeepTrayWeight => _deepTrayWeight;
 
         public void Validate(LevelValidationResult result, int maxPackageSlotCount)
         {
@@ -49,6 +57,28 @@ namespace FoodieMatch.Data.Level
             if (_minRequiredAmount > _maxRequiredAmount)
             {
                 result.AddError("MinRequiredAmount cannot be greater than MaxRequiredAmount.");
+            }
+
+            ValidateWeights(result);
+        }
+
+        private void ValidateWeights(LevelValidationResult result)
+        {
+            if (_waitingRackWeight < 0 ||
+                _activeGrillWeight < 0 ||
+                _topTrayWeight < 0 ||
+                _deepTrayWeight < 0)
+            {
+                result.AddError("Required package weights cannot be negative.");
+            }
+
+            if (_waitingRackWeight +
+                _activeGrillWeight +
+                _topTrayWeight +
+                _deepTrayWeight <= 0)
+            {
+                result.AddError(
+                    "At least one required package weight must be greater than 0.");
             }
         }
     }
