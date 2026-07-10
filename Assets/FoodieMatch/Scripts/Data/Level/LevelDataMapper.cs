@@ -26,9 +26,22 @@ namespace FoodieMatch.Data.Level
                         MapTrays(grillData.Trays)));
             }
 
+            RequiredPackageGenerationConfig generationConfig =
+                levelData.RequiredPackageGenerationConfig;
+            RequiredPackageGenerationSettings generationSettings =
+                new RequiredPackageGenerationSettings(
+                    generationConfig.InitialActivePackageCount,
+                    generationConfig.MinRequiredAmount,
+                    generationConfig.MaxRequiredAmount,
+                    generationConfig.WaitingRackWeight,
+                    generationConfig.ActiveGrillWeight,
+                    generationConfig.TopTrayWeight,
+                    generationConfig.DeepTrayWeight);
+
             return new LevelConfig(
                 levelData.WaitingRackCapacity,
                 levelData.MaxPackageSlotCount,
+                generationSettings,
                 grills);
         }
 

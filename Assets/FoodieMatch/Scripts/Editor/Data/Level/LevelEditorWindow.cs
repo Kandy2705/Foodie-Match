@@ -142,10 +142,22 @@ namespace FoodieMatch.Editor.Data.Level
                 _requiredPackageGenerationConfigProperty.FindPropertyRelative("_minRequiredAmount");
             var maxRequiredAmountProperty =
                 _requiredPackageGenerationConfigProperty.FindPropertyRelative("_maxRequiredAmount");
+            SerializedProperty waitingRackWeightProperty =
+                _requiredPackageGenerationConfigProperty.FindPropertyRelative("_waitingRackWeight");
+            SerializedProperty activeGrillWeightProperty =
+                _requiredPackageGenerationConfigProperty.FindPropertyRelative("_activeGrillWeight");
+            SerializedProperty topTrayWeightProperty =
+                _requiredPackageGenerationConfigProperty.FindPropertyRelative("_topTrayWeight");
+            SerializedProperty deepTrayWeightProperty =
+                _requiredPackageGenerationConfigProperty.FindPropertyRelative("_deepTrayWeight");
 
             EditorGUILayout.PropertyField(initialActivePackageCountProperty);
             EditorGUILayout.PropertyField(minRequiredAmountProperty);
             EditorGUILayout.PropertyField(maxRequiredAmountProperty);
+            EditorGUILayout.PropertyField(waitingRackWeightProperty);
+            EditorGUILayout.PropertyField(activeGrillWeightProperty);
+            EditorGUILayout.PropertyField(topTrayWeightProperty);
+            EditorGUILayout.PropertyField(deepTrayWeightProperty);
             EditorGUILayout.Space();
         }
 
