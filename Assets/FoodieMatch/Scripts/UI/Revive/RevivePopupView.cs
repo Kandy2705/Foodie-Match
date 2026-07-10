@@ -1,6 +1,7 @@
 using System;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ namespace FoodieMatch.UI.Revive
         [SerializeField] private Button _freeAdsButton;
         [SerializeField] private Button _playOnButton;
         [SerializeField] private PopupAnimController _popupAnimController;
+        [SerializeField] private TMP_Text _costText;
 
         private Action _closeClicked;
         private Action _freeAdsClicked;
@@ -26,6 +28,7 @@ namespace FoodieMatch.UI.Revive
             }
 
             EnsureButtonReferences();
+            EnsureTextReferences();
 
             if (_closeButton != null)
             {
@@ -66,6 +69,12 @@ namespace FoodieMatch.UI.Revive
             _closeClicked = actions.CloseClicked;
             _freeAdsClicked = actions.FreeAdsClicked;
             _playOnClicked = actions.PlayOnClicked;
+        }
+
+        public void SetCost(string costText)
+        {
+            EnsureTextReferences();
+            UiTmpText.SetText(_costText, costText);
         }
 
         public override void Show()
@@ -142,6 +151,14 @@ namespace FoodieMatch.UI.Revive
             if (_playOnButton == null)
             {
                 _playOnButton = FindChildButton("PlayOnButton");
+            }
+        }
+
+        private void EnsureTextReferences()
+        {
+            if (_costText == null)
+            {
+                _costText = UiTmpText.FindChild(transform, "CostText");
             }
         }
 
