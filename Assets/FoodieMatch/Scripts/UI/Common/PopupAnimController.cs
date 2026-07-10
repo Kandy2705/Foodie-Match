@@ -48,8 +48,6 @@ namespace FoodieMatch.UI.Common
             CacheHashes();
             _hasAwakened = true;
 
-            // Do not call Animator.Update here. During Awake the Animator may not
-            // have finished its own Awake yet, which triggers m_DidAwake assert.
             _isOpened = false;
             SetInteractable(false);
             gameObject.SetActive(false);

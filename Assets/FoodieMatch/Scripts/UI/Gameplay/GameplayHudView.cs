@@ -46,7 +46,6 @@ namespace FoodieMatch.UI.Gameplay
         {
             if (_pauseButton == null)
             {
-                // Prefab currently names this SettingsButton, but gameplay uses it as Pause.
                 _pauseButton = FindChildButton("SettingsButton");
             }
 
