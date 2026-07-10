@@ -1,6 +1,11 @@
 using System;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
+using FoodieMatch.Core.Domain.Level;
+using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
@@ -8,7 +13,6 @@ using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
 using UnityEngine;
-using RequiredPackageDomain = FoodieMatch.Core.Domain.RequiredPackage.RequiredPackage;
 
 namespace FoodieMatch.Features.LevelSystem
 {
@@ -22,12 +26,16 @@ namespace FoodieMatch.Features.LevelSystem
         private BoardLayoutView _boardLayoutView;
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
+        private FoodVisualResolver _foodVisualResolver;
         private SelectFoodUseCase _selectFoodUseCase;
+        private ILevelRepository _levelRepository;
+        private BoardModelFactory _boardModelFactory;
         private Action _homeRequested;
 
-        private RequiredPackageDomain[] _requiredPackages;
-        private WaitingRackState _waitingRackState;
-        private int _currentLevelId;
+        private BoardModel _board;
+        private RequiredPackageModel[] _requiredPackages;
+        private WaitingRackModel _waitingRack;
+        private int _currentLevelNumber;
         private bool _isInputEnabled;
 
         public void Construct(
@@ -36,14 +44,20 @@ namespace FoodieMatch.Features.LevelSystem
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
-            SelectFoodUseCase selectFoodUseCase)
+            FoodVisualResolver foodVisualResolver,
+            SelectFoodUseCase selectFoodUseCase,
+            ILevelRepository levelRepository,
+            BoardModelFactory boardModelFactory)
         {
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
             _boardLayoutView = boardLayoutView;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
+            _foodVisualResolver = foodVisualResolver;
             _selectFoodUseCase = selectFoodUseCase;
+            _levelRepository = levelRepository;
+            _boardModelFactory = boardModelFactory;
 
             if (_boardLayoutView != null)
             {
@@ -52,7 +66,7 @@ namespace FoodieMatch.Features.LevelSystem
         }
 
         public void StartLevel(
-            int levelId,
+            int levelNumber,
             Action homeRequested)
         {
             if (!HasDependencies())
@@ -60,16 +74,46 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
-            _currentLevelId = levelId;
+            if (!_levelRepository.TryGetLevel(
+                    levelNumber,
+                    out LevelConfig levelConfig))
+            {
+                Debug.LogError($"Level {levelNumber} could not be loaded.");
+                return;
+            }
+
+            if (_waitingRackView.Capacity != levelConfig.WaitingRackCapacity)
+            {
+                Debug.LogError(
+                    $"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
+                return;
+            }
+
+            _currentLevelNumber = levelNumber;
             _homeRequested = homeRequested;
+            _board = _boardModelFactory.Create(levelConfig);
+
+            if (!_foodVisualResolver.TryCreateRandomMapping(
+                    _board.GetAllFoodTokenIds()))
+            {
+                Debug.LogError(
+                    $"Food visual mapping could not be created " +
+                    $"for level {levelNumber}.");
+
+                _board = null;
+                return;
+            }
+
             _requiredPackages = _requiredPackageGroupView.CreatePackages();
-            _waitingRackState = new WaitingRackState(_waitingRackView.Capacity);
+            _waitingRack = new WaitingRackModel(levelConfig.WaitingRackCapacity);
+            _boardLayoutView.Setup(_board);
             _waitingRackView.Clear();
             _isInputEnabled = true;
 
-            Debug.Log($"Start Level {levelId}");
+            Debug.Log($"Start Level {levelNumber}");
 
-            _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelId));
+            _gameplayEvents.OnLevelStarted(
+                new LevelStartedEvent(levelNumber));
             _gameplayEvents.OnLevelProgressChanged(new LevelProgressChangedEvent(0, 10));
         }
 
@@ -84,7 +128,7 @@ namespace FoodieMatch.Features.LevelSystem
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _currentLevelId,
+                    _currentLevelNumber,
                     true,
                     WinReason));
 
@@ -104,7 +148,7 @@ namespace FoodieMatch.Features.LevelSystem
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _currentLevelId,
+                    _currentLevelNumber,
                     false,
                     LoseReason));
         }
@@ -148,9 +192,27 @@ namespace FoodieMatch.Features.LevelSystem
                 return false;
             }
 
+            if (_foodVisualResolver == null)
+            {
+                Debug.LogError("FoodVisualResolver has not been constructed.");
+                return false;
+            }
+
             if (_selectFoodUseCase == null)
             {
                 Debug.LogError("SelectFoodUseCase has not been constructed.");
+                return false;
+            }
+
+            if (_levelRepository == null)
+            {
+                Debug.LogError("LevelRepository has not been constructed.");
+                return false;
+            }
+
+            if (_boardModelFactory == null)
+            {
+                Debug.LogError("BoardModelFactory has not been constructed.");
                 return false;
             }
 
@@ -170,33 +232,41 @@ namespace FoodieMatch.Features.LevelSystem
             if (!_isInputEnabled ||
                 context.FoodItemView == null ||
                 _requiredPackages == null ||
-                _waitingRackState == null)
+                _waitingRack == null)
             {
                 return;
             }
 
             SelectFoodResult result = _selectFoodUseCase.Execute(
-                context.FoodTokenId,
+                context.Address,
+                _board,
                 _requiredPackages,
-                _waitingRackState);
+                _waitingRack);
 
-            ApplySelectionResult(context.FoodItemView, result);
-        }
-
-        private void ApplySelectionResult(
-            FoodItemView foodItemView,
-            SelectFoodResult result)
-        {
-            if (!result.IsPlaced)
+            if (!ApplySelectionResult(context, result))
             {
                 return;
             }
 
+            MoveTopTrayToGrill(
+                context.Address.GrillPositionIndex);
+        }
+
+        private bool ApplySelectionResult(
+            FoodSelectionContext context,
+            SelectFoodResult result)
+        {
+            if (!result.IsPlaced)
+            {
+                return false;
+            }
+
+            FoodItemView foodItemView = context.FoodItemView;
             _boardLayoutView.ReleaseFoodItem(foodItemView);
 
             if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
             {
-                RequiredPackageDomain requiredPackage =
+                RequiredPackageModel requiredPackage =
                     _requiredPackages[result.TargetIndex];
 
                 _requiredPackageGroupView.ApplyPackageAt(
@@ -204,27 +274,65 @@ namespace FoodieMatch.Features.LevelSystem
                     requiredPackage);
 
                 foodItemView.Clear();
-                return;
+                return true;
             }
 
             if (_waitingRackView.SetFoodAt(
                     result.TargetIndex,
                     foodItemView))
             {
-                return;
+                return true;
             }
 
-            _waitingRackState.TryRemoveFoodAt(
+            _waitingRack.TryRemoveFoodAt(
                 result.TargetIndex,
                 out _);
 
-            _boardLayoutView.RestoreFoodItem(foodItemView);
+            if (!_board.TryRestoreFood(
+                    context.Address,
+                    result.FoodTokenId))
+            {
+                Debug.LogError("Selected food could not be restored.");
+                return false;
+            }
+
+            _boardLayoutView.RestoreFoodItem(
+                foodItemView,
+                context.Address);
+
+            return false;
+        }
+
+        private void MoveTopTrayToGrill(
+            int grillPositionIndex)
+        {
+            if (!_board.TryMoveTopTrayToGrill(
+                    grillPositionIndex,
+                    out GrillModel grillModel))
+            {
+                return;
+            }
+
+            if (!_boardLayoutView.MoveTopTrayFoodToGrill(
+                    grillModel))
+            {
+                Debug.LogError(
+                    $"Could not move top tray to grill {grillPositionIndex}.");
+            }
         }
 
         private void OnNextLevelClicked()
         {
+            if (!_levelRepository.TryGetNextLevel(
+                    _currentLevelNumber,
+                    out _))
+            {
+                Debug.Log("No next level is available.");
+                return;
+            }
+
             _uiManager.HideAllPopups();
-            StartLevel(_currentLevelId + 1, _homeRequested);
+            StartLevel(_currentLevelNumber + 1, _homeRequested);
         }
 
         private void OnHomeClicked()

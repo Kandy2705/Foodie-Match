@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 
@@ -15,13 +16,22 @@ namespace FoodieMatch.Core.Application.UseCases
         }
 
         public SelectFoodResult Execute(
-            int foodTokenId,
-            IReadOnlyList<RequiredPackage> requiredPackages,
-            WaitingRackState waitingRackState)
+            FoodBoardAddress address,
+            BoardModel board,
+            IReadOnlyList<RequiredPackageModel> requiredPackages,
+            WaitingRackModel waitingRack)
         {
-            if (foodTokenId <= 0 ||
+            if (board == null ||
                 requiredPackages == null ||
-                waitingRackState == null)
+                waitingRack == null)
+            {
+                return SelectFoodResult.InvalidSelection(
+                    BoardRules.EmptyFoodTokenId);
+            }
+
+            int foodTokenId = board.GetFoodTokenId(address);
+
+            if (!board.CanRemoveFood(address, foodTokenId))
             {
                 return SelectFoodResult.InvalidSelection(foodTokenId);
             }
@@ -31,18 +41,28 @@ namespace FoodieMatch.Core.Application.UseCases
                     foodTokenId,
                     out int requiredPackageIndex))
             {
-                RequiredPackage requiredPackage =
+                RequiredPackageModel requiredPackage =
                     requiredPackages[requiredPackageIndex];
 
-                if (requiredPackage.TryPlaceFood(foodTokenId))
+                if (board.TryRemoveFood(address, foodTokenId) &&
+                    requiredPackage.TryPlaceFood(foodTokenId))
                 {
                     return SelectFoodResult.PlacedInRequiredPackage(
                         foodTokenId,
                         requiredPackageIndex);
                 }
+
+                board.TryRestoreFood(address, foodTokenId);
+                return SelectFoodResult.InvalidSelection(foodTokenId);
             }
 
-            if (waitingRackState.TryPlaceFood(
+            if (!waitingRack.CanPlace(foodTokenId))
+            {
+                return SelectFoodResult.NoAvailablePlacement(foodTokenId);
+            }
+
+            if (board.TryRemoveFood(address, foodTokenId) &&
+                waitingRack.TryPlaceFood(
                     foodTokenId,
                     out int waitingRackSlotIndex))
             {
@@ -51,7 +71,8 @@ namespace FoodieMatch.Core.Application.UseCases
                     waitingRackSlotIndex);
             }
 
-            return SelectFoodResult.NoAvailablePlacement(foodTokenId);
+            board.TryRestoreFood(address, foodTokenId);
+            return SelectFoodResult.InvalidSelection(foodTokenId);
         }
     }
 }

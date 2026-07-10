@@ -2,11 +2,11 @@ namespace FoodieMatch.Core.Application.Events
 {
     public readonly struct LevelStartedEvent
     {
-        public int LevelId { get; }
+        public int LevelNumber { get; }
 
-        public LevelStartedEvent(int levelId)
+        public LevelStartedEvent(int levelNumber)
         {
-            LevelId = levelId;
+            LevelNumber = levelNumber;
         }
     }
 }

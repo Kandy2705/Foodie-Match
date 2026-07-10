@@ -5,7 +5,7 @@ namespace FoodieMatch.Core.Domain.RequiredPackage
     public sealed class RequiredPackageMatcher
     {
         public bool TryFindBestMatchIndex(
-            IReadOnlyList<RequiredPackage> packages,
+            IReadOnlyList<RequiredPackageModel> packages,
             int foodTokenId,
             out int packageIndex)
         {
@@ -20,7 +20,7 @@ namespace FoodieMatch.Core.Domain.RequiredPackage
 
             for (int i = 0; i < packages.Count; i++)
             {
-                RequiredPackage package = packages[i];
+                RequiredPackageModel package = packages[i];
 
                 if (package == null || !package.CanAccept(foodTokenId))
                 {

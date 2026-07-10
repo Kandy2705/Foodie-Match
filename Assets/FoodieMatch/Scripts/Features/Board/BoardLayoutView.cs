@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using FoodieMatch.Data.Level;
+using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Features.Food;
 using UnityEngine;
 
@@ -12,12 +13,22 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private GrillView _grillPrefab;
         [SerializeField] private FoodItemView _foodItemPrefab;
         [SerializeField] private Transform _foodItemRoot;
-        [SerializeField] private FoodVisualResolver _foodVisualResolver;
-        [SerializeField] private LevelDataSO _levelData;
 
-        private readonly List<FoodItemView> _selectableFoodItems = new();
+        private readonly Dictionary<FoodItemView, FoodBoardAddress>
+            _foodAddresses = new();
+        private readonly Dictionary<int, GrillView> _grillViews = new();
+        private readonly Dictionary<int, List<FoodItemView>>
+            _topTrayFoodItems = new();
+
+        private FoodVisualResolver _foodVisualResolver;
 
         public event Action<FoodSelectionContext> FoodSelected;
+
+        public void Construct(
+            FoodVisualResolver foodVisualResolver)
+        {
+            _foodVisualResolver = foodVisualResolver;
+        }
 
         private void Awake()
         {
@@ -30,17 +41,15 @@ namespace FoodieMatch.Features.Board
             {
                 Debug.LogWarning("Food item root is missing.", this);
             }
-
-            Setup(_levelData);
         }
 
-        public void Setup(LevelDataSO levelData)
+        public void Setup(BoardModel board)
         {
             Clear();
 
-            if (levelData == null)
+            if (board == null)
             {
-                Debug.LogWarning("Level data is missing.", this);
+                Debug.LogWarning("Board model is missing.", this);
                 return;
             }
 
@@ -50,25 +59,28 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            foreach (GrillData grillData in levelData.Grills)
+            for (int i = 0; i < board.GrillCount; i++)
             {
-                if (grillData == null)
+                GrillModel grillModel = board.GetGrillAt(i);
+
+                if (grillModel == null)
                 {
                     continue;
                 }
 
-                Transform position = GetPosition(grillData.PositionIndex);
+                Transform position = GetPosition(grillModel.PositionIndex);
 
                 if (position == null)
                 {
-                    Debug.LogWarning($"Board position {grillData.PositionIndex} is missing.", this);
+                    Debug.LogWarning($"Board position {grillModel.PositionIndex} is missing.", this);
                     continue;
                 }
 
                 GrillView grillView = Instantiate(_grillPrefab, position);
-                grillView.SetupTrayStack(GetTrayCount(grillData));
-                SpawnTopTrayFoodItems(grillData, grillView);
-                SpawnInitialFoodItems(grillData, grillView);
+                _grillViews.Add(grillModel.PositionIndex, grillView);
+                grillView.SetupTrayStack(grillModel.TrayCount);
+                SpawnTopTrayFoodItems(grillModel, grillView);
+                SpawnInitialFoodItems(grillModel, grillView);
             }
         }
 
@@ -104,50 +116,124 @@ namespace FoodieMatch.Features.Board
 
             foodItemView.Selected -= HandleFoodSelected;
             foodItemView.SetInteractable(false);
-            _selectableFoodItems.Remove(foodItemView);
+            _foodAddresses.Remove(foodItemView);
         }
 
-        public void RestoreFoodItem(FoodItemView foodItemView)
+        public void RestoreFoodItem(
+            FoodItemView foodItemView,
+            FoodBoardAddress address)
         {
             if (foodItemView == null ||
-                _selectableFoodItems.Contains(foodItemView))
+                _foodAddresses.ContainsKey(foodItemView))
             {
                 return;
             }
 
+            _foodAddresses.Add(foodItemView, address);
             foodItemView.Selected += HandleFoodSelected;
             foodItemView.SetInteractable(true);
-            _selectableFoodItems.Add(foodItemView);
         }
 
-        private static int GetTrayCount(GrillData grillData)
+        public bool MoveTopTrayFoodToGrill(GrillModel grillModel)
         {
-            return grillData.Trays != null ? grillData.Trays.Count : 0;
+            if (grillModel == null ||
+                !_grillViews.TryGetValue(
+                    grillModel.PositionIndex,
+                    out GrillView grillView) ||
+                !_topTrayFoodItems.TryGetValue(
+                    grillModel.PositionIndex,
+                    out List<FoodItemView> foodItemViews))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < foodItemViews.Count; i++)
+            {
+                FoodItemView foodItemView = foodItemViews[i];
+
+                if (foodItemView == null)
+                {
+                    continue;
+                }
+
+                Transform foodAnchor = grillView.GetFoodAnchor(i);
+
+                if (foodAnchor == null ||
+                    foodItemView.FoodTokenId !=
+                    grillModel.GetFoodTokenIdAt(i))
+                {
+                    return false;
+                }
+            }
+
+            grillView.HideTopTray();
+            _topTrayFoodItems.Remove(grillModel.PositionIndex);
+
+            for (int i = 0; i < foodItemViews.Count; i++)
+            {
+                FoodItemView foodItemView = foodItemViews[i];
+
+                if (foodItemView == null)
+                {
+                    continue;
+                }
+
+                Transform foodAnchor = grillView.GetFoodAnchor(i);
+
+                foodItemView.transform.SetPositionAndRotation(
+                    foodAnchor.position,
+                    foodAnchor.rotation);
+
+                foodItemView.SetVisualState(FoodItemVisualState.OnGrill);
+                foodItemView.SetInteractable(true);
+                foodItemView.Selected += HandleFoodSelected;
+
+                FoodBoardAddress address = new FoodBoardAddress(
+                    grillModel.PositionIndex,
+                    i);
+
+                _foodAddresses.Add(foodItemView, address);
+            }
+
+            SpawnTopTrayFoodItems(grillModel, grillView);
+            return true;
         }
 
-        private void SpawnTopTrayFoodItems(GrillData grillData, GrillView grillView)
+        private void SpawnTopTrayFoodItems(
+            GrillModel grillModel,
+            GrillView grillView)
         {
-            if (grillData.Trays == null || grillData.Trays.Count == 0 || grillData.Trays[0] == null)
+            TrayModel topTray = grillModel.TopTray;
+
+            if (topTray == null)
             {
                 return;
             }
 
-            SpawnFoodItems(
-                grillData.Trays[0].FoodTokenIds,
+            List<FoodItemView> foodItemViews = SpawnFoodItems(
+                grillModel.PositionIndex,
+                topTray.SlotCount,
+                topTray.GetFoodTokenIdAt,
                 grillView.GetTopTrayFoodAnchor,
                 FoodItemVisualState.OnTray,
                 false,
-                $"top tray on grill position {grillData.PositionIndex}");
+                $"top tray on grill position {grillModel.PositionIndex}");
+
+            _topTrayFoodItems[grillModel.PositionIndex] = foodItemViews;
         }
 
-        private void SpawnInitialFoodItems(GrillData grillData, GrillView grillView)
+        private void SpawnInitialFoodItems(
+            GrillModel grillModel,
+            GrillView grillView)
         {
             SpawnFoodItems(
-                grillData.InitialFoodTokenIds,
+                grillModel.PositionIndex,
+                grillModel.ActiveFoodSlotCount,
+                grillModel.GetFoodTokenIdAt,
                 grillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
                 true,
-                $"grill position {grillData.PositionIndex}");
+                $"grill position {grillModel.PositionIndex}");
         }
 
         private Sprite ResolveFoodSprite(int foodTokenId)
@@ -157,36 +243,42 @@ namespace FoodieMatch.Features.Board
                 : null;
         }
 
-        private void SpawnFoodItems(
-            IReadOnlyList<int> foodTokenIds,
+        private List<FoodItemView> SpawnFoodItems(
+            int grillPositionIndex,
+            int foodSlotCount,
+            Func<int, int> resolveFoodTokenId,
             Func<int, Transform> resolveAnchor,
             FoodItemVisualState visualState,
             bool isInteractable,
             string context)
         {
+            List<FoodItemView> foodItemViews =
+                new List<FoodItemView>(foodSlotCount);
+
             if (_foodItemPrefab == null)
             {
                 Debug.LogWarning("Food item prefab is missing.", this);
-                return;
+                return foodItemViews;
             }
 
             if (_foodItemRoot == null)
             {
                 Debug.LogWarning("Food item root is missing.", this);
-                return;
+                return foodItemViews;
             }
 
-            if (foodTokenIds == null)
+            if (resolveFoodTokenId == null)
             {
-                return;
+                return foodItemViews;
             }
 
-            for (int i = 0; i < foodTokenIds.Count; i++)
+            for (int i = 0; i < foodSlotCount; i++)
             {
-                int foodTokenId = foodTokenIds[i];
+                int foodTokenId = resolveFoodTokenId(i);
 
                 if (foodTokenId <= 0)
                 {
+                    foodItemViews.Add(null);
                     continue;
                 }
 
@@ -195,6 +287,7 @@ namespace FoodieMatch.Features.Board
                 if (foodAnchor == null)
                 {
                     Debug.LogWarning($"Food anchor {i} is missing for {context}.", this);
+                    foodItemViews.Add(null);
                     continue;
                 }
 
@@ -203,26 +296,37 @@ namespace FoodieMatch.Features.Board
                 foodItemView.Setup(foodTokenId, ResolveFoodSprite(foodTokenId));
                 foodItemView.SetVisualState(visualState);
                 foodItemView.SetInteractable(isInteractable);
+                foodItemViews.Add(foodItemView);
 
-                if (isInteractable)
+                if (!isInteractable)
                 {
-                    foodItemView.Selected += HandleFoodSelected;
-                    _selectableFoodItems.Add(foodItemView);
+                    continue;
                 }
+
+                FoodBoardAddress address = new FoodBoardAddress(
+                    grillPositionIndex,
+                    i);
+
+                _foodAddresses.Add(foodItemView, address);
+                foodItemView.Selected += HandleFoodSelected;
             }
+
+            return foodItemViews;
         }
 
         private void ClearFoodItems()
         {
-            for (int i = 0; i < _selectableFoodItems.Count; i++)
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
             {
-                if (_selectableFoodItems[i] != null)
+                if (entry.Key != null)
                 {
-                    _selectableFoodItems[i].Selected -= HandleFoodSelected;
+                    entry.Key.Selected -= HandleFoodSelected;
                 }
             }
 
-            _selectableFoodItems.Clear();
+            _foodAddresses.Clear();
+            _topTrayFoodItems.Clear();
+            _grillViews.Clear();
 
             if (_foodItemRoot == null)
             {
@@ -237,7 +341,17 @@ namespace FoodieMatch.Features.Board
 
         private void HandleFoodSelected(FoodItemView foodItemView)
         {
-            FoodSelected?.Invoke(new FoodSelectionContext(foodItemView));
+            if (!_foodAddresses.TryGetValue(
+                    foodItemView,
+                    out FoodBoardAddress address))
+            {
+                return;
+            }
+
+            FoodSelected?.Invoke(
+                new FoodSelectionContext(
+                    foodItemView,
+                    address));
         }
 
         private Transform GetPosition(int positionIndex)
