@@ -27,6 +27,8 @@ namespace FoodieMatch.Features.LevelSystem
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
         private FoodVisualResolver _foodVisualResolver;
+        private RequiredPackageLifecycleUseCase
+            _requiredPackageLifecycleUseCase;
         private SelectFoodUseCase _selectFoodUseCase;
         private ILevelRepository _levelRepository;
         private BoardModelFactory _boardModelFactory;
@@ -34,6 +36,8 @@ namespace FoodieMatch.Features.LevelSystem
 
         private BoardModel _board;
         private RequiredPackageModel[] _requiredPackages;
+        private RequiredPackageGenerationSettings
+            _requiredPackageGenerationSettings;
         private WaitingRackModel _waitingRack;
         private int _currentLevelNumber;
         private bool _isInputEnabled;
@@ -45,6 +49,7 @@ namespace FoodieMatch.Features.LevelSystem
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
             FoodVisualResolver foodVisualResolver,
+            RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase,
             SelectFoodUseCase selectFoodUseCase,
             ILevelRepository levelRepository,
             BoardModelFactory boardModelFactory)
@@ -55,6 +60,8 @@ namespace FoodieMatch.Features.LevelSystem
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
             _foodVisualResolver = foodVisualResolver;
+            _requiredPackageLifecycleUseCase =
+                requiredPackageLifecycleUseCase;
             _selectFoodUseCase = selectFoodUseCase;
             _levelRepository = levelRepository;
             _boardModelFactory = boardModelFactory;
@@ -92,6 +99,8 @@ namespace FoodieMatch.Features.LevelSystem
             _currentLevelNumber = levelNumber;
             _homeRequested = homeRequested;
             _board = _boardModelFactory.Create(levelConfig);
+            _requiredPackageGenerationSettings =
+                levelConfig.RequiredPackageGenerationSettings;
 
             if (!_foodVisualResolver.TryCreateRandomMapping(
                     _board.GetAllFoodTokenIds()))
@@ -104,10 +113,37 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
-            _requiredPackages = _requiredPackageGroupView.CreatePackages();
             _waitingRack = new WaitingRackModel(levelConfig.WaitingRackCapacity);
+
+            if (_requiredPackageGroupView.PackageCount !=
+                _requiredPackageGenerationSettings
+                    .InitialActivePackageCount)
+            {
+                Debug.LogError(
+                    "Required package view count does not match the level config.");
+
+                _board = null;
+                return;
+            }
+
+            if (!_requiredPackageLifecycleUseCase
+                    .TryCreateInitialPackages(
+                        _board,
+                        _waitingRack,
+                        _requiredPackageGenerationSettings,
+                        out _requiredPackages))
+            {
+                Debug.LogError(
+                    $"Initial required packages could not be created for level {levelNumber}.");
+
+                _board = null;
+                _waitingRack = null;
+                return;
+            }
+
             _boardLayoutView.Setup(_board);
             _waitingRackView.Clear();
+            RefreshRequiredPackageViews();
             _isInputEnabled = true;
 
             Debug.Log($"Start Level {levelNumber}");
@@ -198,6 +234,13 @@ namespace FoodieMatch.Features.LevelSystem
                 return false;
             }
 
+            if (_requiredPackageLifecycleUseCase == null)
+            {
+                Debug.LogError(
+                    "RequiredPackageLifecycleUseCase has not been constructed.");
+                return false;
+            }
+
             if (_selectFoodUseCase == null)
             {
                 Debug.LogError("SelectFoodUseCase has not been constructed.");
@@ -250,6 +293,8 @@ namespace FoodieMatch.Features.LevelSystem
 
             MoveTopTrayToGrill(
                 context.Address.GrillPositionIndex);
+
+            ResolveRequiredPackageLifecycle(result);
         }
 
         private bool ApplySelectionResult(
@@ -269,11 +314,15 @@ namespace FoodieMatch.Features.LevelSystem
                 RequiredPackageModel requiredPackage =
                     _requiredPackages[result.TargetIndex];
 
-                _requiredPackageGroupView.ApplyPackageAt(
-                    result.TargetIndex,
-                    requiredPackage);
-
                 foodItemView.Clear();
+
+                if (!requiredPackage.IsComplete)
+                {
+                    _requiredPackageGroupView.UpdateFilledAmountAt(
+                        result.TargetIndex,
+                        requiredPackage);
+                }
+
                 return true;
             }
 
@@ -301,6 +350,90 @@ namespace FoodieMatch.Features.LevelSystem
                 context.Address);
 
             return false;
+        }
+
+        private void ResolveRequiredPackageLifecycle(
+            SelectFoodResult result)
+        {
+            if (result.Type !=
+                SelectFoodResultType.PlacedInRequiredPackage)
+            {
+                return;
+            }
+
+            RequiredPackageModel requiredPackage =
+                _requiredPackages[result.TargetIndex];
+
+            if (!requiredPackage.IsComplete)
+            {
+                return;
+            }
+
+            RequiredPackageLifecycleResult lifecycleResult =
+                _requiredPackageLifecycleUseCase
+                    .ResolveCompletedPackage(
+                        result.TargetIndex,
+                        _board,
+                        _waitingRack,
+                        _requiredPackages,
+                        _requiredPackageGenerationSettings);
+
+            ApplyLifecycleResult(lifecycleResult);
+        }
+
+        private void ApplyLifecycleResult(
+            RequiredPackageLifecycleResult lifecycleResult)
+        {
+            for (int i = 0;
+                 i < lifecycleResult.Transfers.Count;
+                 i++)
+            {
+                WaitingRackTransfer transfer =
+                    lifecycleResult.Transfers[i];
+                FoodItemView foodItemView =
+                    _waitingRackView.RemoveFoodAt(
+                        transfer.RackSlotIndex);
+
+                if (foodItemView != null)
+                {
+                    foodItemView.Clear();
+                }
+            }
+
+            for (int i = 0;
+                 i < lifecycleResult.UpdatedPackageIndexes.Count;
+                 i++)
+            {
+                RefreshRequiredPackageViewAt(
+                    lifecycleResult.UpdatedPackageIndexes[i]);
+            }
+        }
+
+        private void RefreshRequiredPackageViews()
+        {
+            for (int i = 0; i < _requiredPackages.Length; i++)
+            {
+                RefreshRequiredPackageViewAt(i);
+            }
+        }
+
+        private void RefreshRequiredPackageViewAt(int packageIndex)
+        {
+            RequiredPackageModel package =
+                _requiredPackages[packageIndex];
+            Sprite sprite = package != null
+                ? _foodVisualResolver.ResolveIcon(
+                    package.FoodTokenId)
+                : null;
+
+            if (!_requiredPackageGroupView.ShowPackageAt(
+                    packageIndex,
+                    package,
+                    sprite))
+            {
+                Debug.LogError(
+                    $"Required package view {packageIndex} could not be updated.");
+            }
         }
 
         private void MoveTopTrayToGrill(

@@ -1,4 +1,3 @@
-using FoodieMatch.Core.Domain.RequiredPackage;
 using UnityEngine;
 
 namespace FoodieMatch.Features.RequiredPackage
@@ -48,11 +47,6 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             FilledAmount = Mathf.Clamp(filledAmount, 0, RequiredAmount);
             RefreshActiveView();
-        }
-
-        public RequiredPackageModel CreatePackage()
-        {
-            return new RequiredPackageModel(FoodTokenId, RequiredAmount, FilledAmount);
         }
 
         public void Clear()

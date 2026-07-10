@@ -27,6 +27,13 @@ namespace FoodieMatch.App
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
+            System.Random random = new System.Random();
+            RequiredPackageGenerator requiredPackageGenerator =
+                new RequiredPackageGenerator(random);
+            RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase =
+                new RequiredPackageLifecycleUseCase(
+                    requiredPackageGenerator,
+                    requiredPackageMatcher);
             SelectFoodUseCase selectFoodUseCase =
                 new SelectFoodUseCase(requiredPackageMatcher);
             LevelDataMapper levelDataMapper = new LevelDataMapper();
@@ -47,6 +54,7 @@ namespace FoodieMatch.App
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,
                 appRoot.FoodVisualResolver,
+                requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
                 levelRepository,
                 boardModelFactory);
