@@ -81,9 +81,8 @@ namespace FoodieMatch.Data.Level
                 return;
             }
 
-            var minimumRequiredItemCount =
-                _requiredPackageGenerationConfig.InitialActivePackageCount *
-                _requiredPackageGenerationConfig.MinRequiredAmount;
+            int minimumRequiredItemCount =
+                _requiredPackageGenerationConfig.InitialActivePackageCount;
 
             if (CountFoodTokens() < minimumRequiredItemCount)
             {

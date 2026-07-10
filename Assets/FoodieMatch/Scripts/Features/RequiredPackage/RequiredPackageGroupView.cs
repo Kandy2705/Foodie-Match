@@ -9,29 +9,34 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public int PackageCount => _packages != null ? _packages.Length : 0;
 
-        public RequiredPackageModel[] CreatePackages()
+        public bool ShowPackageAt(
+            int packageIndex,
+            RequiredPackageModel package,
+            Sprite sprite)
         {
-            if (_packages == null)
+            RequiredPackageView packageView = GetPackageAt(packageIndex);
+
+            if (packageView == null)
             {
-                return new RequiredPackageModel[0];
+                return false;
             }
 
-            RequiredPackageModel[] packages =
-                new RequiredPackageModel[_packages.Length];
-
-            for (int i = 0; i < _packages.Length; i++)
+            if (package == null || package.IsEmpty)
             {
-                RequiredPackageView packageView = _packages[i];
-
-                packages[i] = packageView != null
-                    ? packageView.CreatePackage()
-                    : new RequiredPackageModel(0, 0, 0);
+                packageView.Clear();
+                return true;
             }
 
-            return packages;
+            packageView.Setup(
+                package.FoodTokenId,
+                package.RequiredAmount,
+                sprite);
+            packageView.SetFilledAmount(package.FilledAmount);
+
+            return true;
         }
 
-        public bool ApplyPackageAt(
+        public bool UpdateFilledAmountAt(
             int packageIndex,
             RequiredPackageModel package)
         {

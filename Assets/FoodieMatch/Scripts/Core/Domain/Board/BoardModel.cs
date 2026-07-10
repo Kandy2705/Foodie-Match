@@ -210,6 +210,63 @@ namespace FoodieMatch.Core.Domain.Board
             return foodTokenIds;
         }
 
+        public IReadOnlyList<int> GetDeepTrayFoodTokenIds()
+        {
+            List<int> foodTokenIds = new List<int>();
+
+            for (int grillIndex = 0;
+                 grillIndex < _grills.Count;
+                 grillIndex++)
+            {
+                GrillModel grill = _grills[grillIndex];
+
+                for (int trayIndex = 1;
+                     trayIndex < grill.TrayCount;
+                     trayIndex++)
+                {
+                    TrayModel tray = grill.GetTrayAt(trayIndex);
+
+                    AppendFoodTokenIds(
+                        tray.SlotCount,
+                        tray.GetFoodTokenIdAt,
+                        foodTokenIds);
+                }
+            }
+
+            return foodTokenIds;
+        }
+
+        public IReadOnlyList<int> GetAllRemainingFoodTokenIds()
+        {
+            List<int> foodTokenIds = new List<int>();
+
+            for (int grillIndex = 0;
+                 grillIndex < _grills.Count;
+                 grillIndex++)
+            {
+                GrillModel grill = _grills[grillIndex];
+
+                AppendFoodTokenIds(
+                    grill.ActiveFoodSlotCount,
+                    grill.GetFoodTokenIdAt,
+                    foodTokenIds);
+
+                for (int trayIndex = 0;
+                     trayIndex < grill.TrayCount;
+                     trayIndex++)
+                {
+                    TrayModel tray = grill.GetTrayAt(trayIndex);
+
+                    AppendFoodTokenIds(
+                        tray.SlotCount,
+                        tray.GetFoodTokenIdAt,
+                        foodTokenIds);
+                }
+            }
+
+            return foodTokenIds;
+        }
+
         public IReadOnlyList<int> GetAllFoodTokenIds()
         {
             HashSet<int> uniqueTokenIds = new HashSet<int>();
@@ -242,6 +299,24 @@ namespace FoodieMatch.Core.Domain.Board
             }
 
             return foodTokenIds;
+        }
+
+        private static void AppendFoodTokenIds(
+            int slotCount,
+            Func<int, int> getFoodTokenId,
+            List<int> foodTokenIds)
+        {
+            for (int slotIndex = 0;
+                 slotIndex < slotCount;
+                 slotIndex++)
+            {
+                int foodTokenId = getFoodTokenId(slotIndex);
+
+                if (foodTokenId > BoardRules.EmptyFoodTokenId)
+                {
+                    foodTokenIds.Add(foodTokenId);
+                }
+            }
         }
 
         private static void AddFoodTokenIds(
