@@ -1,5 +1,6 @@
 using System;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.GameState;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -39,7 +40,9 @@ namespace FoodieMatch.Features.LevelSystem
         private RequiredPackageGenerationSettings
             _requiredPackageGenerationSettings;
         private WaitingRackModel _waitingRack;
+        private LevelProgressModel _levelProgress;
         private int _currentLevelNumber;
+        private LevelSessionState _levelSessionState;
         private bool _isInputEnabled;
 
         public void Construct(
@@ -141,25 +144,34 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
+            _levelProgress = new LevelProgressModel(
+                _board.RemainingFoodCount);
+
             _boardLayoutView.Setup(_board);
             _waitingRackView.Clear();
             RefreshRequiredPackageViews();
+            _levelSessionState = LevelSessionState.Playing;
             _isInputEnabled = true;
 
             Debug.Log($"Start Level {levelNumber}");
 
             _gameplayEvents.OnLevelStarted(
                 new LevelStartedEvent(levelNumber));
-            _gameplayEvents.OnLevelProgressChanged(new LevelProgressChangedEvent(0, 10));
+            _gameplayEvents.OnLevelProgressChanged(
+                new LevelProgressChangedEvent(
+                    _levelProgress.ServedCount,
+                    _levelProgress.TotalCount));
         }
 
-        public void ResolveWin()
+        private void ResolveWin()
         {
-            if (!HasDependencies())
+            if (!HasDependencies() ||
+                _levelSessionState != LevelSessionState.Playing)
             {
                 return;
             }
 
+            _levelSessionState = LevelSessionState.Won;
             _isInputEnabled = false;
 
             _gameplayEvents.OnLevelEnded(
@@ -173,24 +185,10 @@ namespace FoodieMatch.Features.LevelSystem
                 OnHomeClicked);
         }
 
-        public void ResolveLose()
-        {
-            if (!HasDependencies())
-            {
-                return;
-            }
-
-            _isInputEnabled = false;
-
-            _gameplayEvents.OnLevelEnded(
-                new LevelEndedEvent(
-                    _currentLevelNumber,
-                    false,
-                    LoseReason));
-        }
-
         public void ClearLevel()
         {
+            _levelProgress = null;
+            _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
 
             Debug.Log("Clear Level");
@@ -272,7 +270,8 @@ namespace FoodieMatch.Features.LevelSystem
 
         private void HandleFoodSelected(FoodSelectionContext context)
         {
-            if (!_isInputEnabled ||
+            if (_levelSessionState != LevelSessionState.Playing ||
+                !_isInputEnabled ||
                 context.FoodItemView == null ||
                 _requiredPackages == null ||
                 _waitingRack == null)
@@ -291,10 +290,18 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
+            if (result.Type == SelectFoodResultType.PlacedInWaitingRack &&
+                _waitingRack.IsFull)
+            {
+                EnterAwaitingRevive();
+                return;
+            }
+
             MoveTopTrayToGrill(
                 context.Address.GrillPositionIndex);
 
             ResolveRequiredPackageLifecycle(result);
+            TryResolveWin();
         }
 
         private bool ApplySelectionResult(
@@ -315,6 +322,7 @@ namespace FoodieMatch.Features.LevelSystem
                     _requiredPackages[result.TargetIndex];
 
                 foodItemView.Clear();
+                RegisterServedFood();
 
                 if (!requiredPackage.IsComplete)
                 {
@@ -398,6 +406,8 @@ namespace FoodieMatch.Features.LevelSystem
                 {
                     foodItemView.Clear();
                 }
+
+                RegisterServedFood();
             }
 
             for (int i = 0;
@@ -407,6 +417,32 @@ namespace FoodieMatch.Features.LevelSystem
                 RefreshRequiredPackageViewAt(
                     lifecycleResult.UpdatedPackageIndexes[i]);
             }
+        }
+
+        private void RegisterServedFood()
+        {
+            if (_levelProgress == null ||
+                !_levelProgress.TryServeFood())
+            {
+                Debug.LogError("Level progress could not serve food.");
+                return;
+            }
+
+            _gameplayEvents.OnLevelProgressChanged(
+                new LevelProgressChangedEvent(
+                    _levelProgress.ServedCount,
+                    _levelProgress.TotalCount));
+        }
+
+        private void TryResolveWin()
+        {
+            if (_levelProgress == null ||
+                !_levelProgress.IsComplete)
+            {
+                return;
+            }
+
+            ResolveWin();
         }
 
         private void RefreshRequiredPackageViews()
@@ -454,6 +490,37 @@ namespace FoodieMatch.Features.LevelSystem
             }
         }
 
+        private void EnterAwaitingRevive()
+        {
+            if (_levelSessionState != LevelSessionState.Playing)
+            {
+                return;
+            }
+
+            _levelSessionState = LevelSessionState.AwaitingRevive;
+            _isInputEnabled = false;
+
+            _uiManager.ShowLosePopup(
+                OnTryAgainClicked,
+                OnHomeClicked);
+        }
+
+        private void FinalizeLose()
+        {
+            if (_levelSessionState != LevelSessionState.AwaitingRevive)
+            {
+                return;
+            }
+
+            _levelSessionState = LevelSessionState.Lost;
+
+            _gameplayEvents.OnLevelEnded(
+                new LevelEndedEvent(
+                    _currentLevelNumber,
+                    false,
+                    LoseReason));
+        }
+
         private void OnNextLevelClicked()
         {
             if (!_levelRepository.TryGetNextLevel(
@@ -468,8 +535,18 @@ namespace FoodieMatch.Features.LevelSystem
             StartLevel(_currentLevelNumber + 1, _homeRequested);
         }
 
+        private void OnTryAgainClicked()
+        {
+            FinalizeLose();
+
+            _uiManager.HideAllPopups();
+            StartLevel(_currentLevelNumber, _homeRequested);
+        }
+
         private void OnHomeClicked()
         {
+            FinalizeLose();
+
             _uiManager.HideAllPopups();
             ClearLevel();
 
