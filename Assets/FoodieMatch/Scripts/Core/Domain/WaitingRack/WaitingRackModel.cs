@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace FoodieMatch.Core.Domain.WaitingRack
 {
     public sealed class WaitingRackModel
@@ -92,6 +94,36 @@ namespace FoodieMatch.Core.Domain.WaitingRack
             _foodTokenIds[slotIndex] = 0;
 
             return true;
+        }
+
+        public bool TryRestoreFoodAt(
+            int slotIndex,
+            int foodTokenId)
+        {
+            if (!IsValidSlotIndex(slotIndex) ||
+                foodTokenId <= 0 ||
+                _foodTokenIds[slotIndex] != 0)
+            {
+                return false;
+            }
+
+            _foodTokenIds[slotIndex] = foodTokenId;
+            return true;
+        }
+
+        public IReadOnlyList<int> GetFoodTokenIds()
+        {
+            List<int> foodTokenIds = new List<int>();
+
+            for (int i = 0; i < _foodTokenIds.Length; i++)
+            {
+                if (_foodTokenIds[i] > 0)
+                {
+                    foodTokenIds.Add(_foodTokenIds[i]);
+                }
+            }
+
+            return foodTokenIds;
         }
 
         public void Clear()
