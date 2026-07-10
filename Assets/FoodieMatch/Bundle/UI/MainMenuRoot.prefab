@@ -65,6 +65,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playButton: {fileID: 8688958414376945172}
   _settingButton: {fileID: 4001627232094476255}
+  _playLevelText: {fileID: 823185715394620573}
 --- !u!1 &4715777797027945921
 GameObject:
   m_ObjectHideFlags: 0
@@ -492,6 +493,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+--- !u!114 &823185715394620573 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3725143549059234066, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+  m_PrefabInstance: {fileID: 4097947292626507151}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &4001627232094476255 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
