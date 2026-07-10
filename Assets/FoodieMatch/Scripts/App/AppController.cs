@@ -22,6 +22,7 @@ namespace FoodieMatch.App
             }
 
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
+            _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
         }
 
         public void Construct(
@@ -37,6 +38,9 @@ namespace FoodieMatch.App
 
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.PlayGameRequested += OnPlayGameRequested;
+
+            _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
+            _uiManager.LeaveGameRequested += OnLeaveGameRequested;
         }
 
         public void EnterHome()
@@ -136,6 +140,11 @@ namespace FoodieMatch.App
             }
 
             StartLevel(1);
+        }
+
+        private void OnLeaveGameRequested()
+        {
+            BackToHome();
         }
     }
 }

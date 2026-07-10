@@ -116,6 +116,16 @@ MonoBehaviour:
   _popupPrefabs:
   - _prefab: {fileID: 4849106369236042680, guid: f0650f64b95e148d7a30d2e64a051082, type: 3}
     _cacheAfterHide: 1
+  - _prefab: {fileID: 7240000822685251824, guid: 09e42893c3ab04430a77e9e4f35d4e7b, type: 3}
+    _cacheAfterHide: 1
+  - _prefab: {fileID: 918528150111377311, guid: 110cb2d7cb9044fc0b196bcf7fc25f76, type: 3}
+    _cacheAfterHide: 1
+  - _prefab: {fileID: 2425758460981329203, guid: a41b9b59eb1e740c3bb0df4c77316dd8, type: 3}
+    _cacheAfterHide: 1
+  - _prefab: {fileID: -6148076247100687793, guid: 4cd6b6f6773a943c7a6476e325843c4f, type: 3}
+    _cacheAfterHide: 1
+  - _prefab: {fileID: 544498732315584796, guid: be57f452adaa64c3eba300085f19bf2c, type: 3}
+    _cacheAfterHide: 1
 --- !u!1 &5414341360215047437
 GameObject:
   m_ObjectHideFlags: 0

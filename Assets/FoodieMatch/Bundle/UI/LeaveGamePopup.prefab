@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 6995581887781769160}
   - component: {fileID: 1365995192828837838}
   - component: {fileID: 3661237713985896467}
+  - component: {fileID: 544498732315584796}
   m_Layer: 0
   m_Name: LeaveGamePopup
   m_TagString: Untagged
@@ -230,6 +231,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &544498732315584796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2213491495731526193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cccbe5781d30463797109ea8d54c141, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _closeButton: {fileID: 7540329202547937374}
+  _leaveButton: {fileID: 612973010345243986}
 --- !u!1 &3552893815567989169
 GameObject:
   m_ObjectHideFlags: 0
@@ -1081,7 +1096,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6755109787351709839, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6755109787351709839, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -1142,6 +1157,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3025180612000679678, guid: f600b333c3a81435793212c0515baac3, type: 3}
   m_PrefabInstance: {fileID: 3826469764394592465}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7540329202547937374 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6755109787351709839, guid: f600b333c3a81435793212c0515baac3, type: 3}
+  m_PrefabInstance: {fileID: 3826469764394592465}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &8669439426572776265 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
@@ -1273,7 +1299,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5269308309055994439, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_Name
-      value: PrimaryButton
+      value: LeaveButton
       objectReference: {fileID: 0}
     - target: {fileID: 8112973387229562362, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1288,6 +1314,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+--- !u!114 &612973010345243986 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6392153387098845423, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+  m_PrefabInstance: {fileID: 5779466426139116989}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7256072141176253417 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
