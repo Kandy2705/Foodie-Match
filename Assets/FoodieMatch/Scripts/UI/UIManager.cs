@@ -7,6 +7,7 @@ using FoodieMatch.UI.LeaveGame;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Result;
+using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Setting;
 using UnityEngine;
 
@@ -32,6 +33,8 @@ namespace FoodieMatch.UI
         public event Action PlayGameRequested;
 
         public event Action LeaveGameRequested;
+
+        public event Action RestartGameRequested;
 
         private void OnDestroy()
         {
@@ -220,6 +223,39 @@ namespace FoodieMatch.UI
             _popupManager.Hide<LeaveGamePopupView>();
         }
 
+        public void ShowRetryGamePopup()
+        {
+            if (_popupManager == null)
+            {
+                Debug.LogError("Cannot show retry game popup because PopupManager is missing.");
+                return;
+            }
+
+            RetryGamePopupView retryGamePopup = _popupManager.Show<RetryGamePopupView>();
+
+            if (retryGamePopup == null)
+            {
+                return;
+            }
+
+            retryGamePopup.SetActions(
+                new RetryGamePopupViewActions(
+                    OnRetryGameCloseClicked,
+                    OnRetryGameRetryClicked));
+
+            _audioService?.PlaySfx(PopupShowSfxKey);
+        }
+
+        public void HideRetryGamePopup()
+        {
+            if (_popupManager == null)
+            {
+                return;
+            }
+
+            _popupManager.Hide<RetryGamePopupView>();
+        }
+
         public void ShowWinPopup(
             Action claimCoinRewardClicked,
             Action doubleCoinRewardClicked)
@@ -386,8 +422,8 @@ namespace FoodieMatch.UI
 
         private void OnPauseRestartClicked()
         {
-            Debug.Log("Pause Restart Clicked");
             HidePausePopup();
+            ShowRetryGamePopup();
         }
 
         private void OnPauseHomeClicked()
@@ -406,6 +442,18 @@ namespace FoodieMatch.UI
         {
             HideAllPopups();
             LeaveGameRequested?.Invoke();
+        }
+
+        private void OnRetryGameCloseClicked()
+        {
+            HideRetryGamePopup();
+            ShowPausePopup();
+        }
+
+        private void OnRetryGameRetryClicked()
+        {
+            HideAllPopups();
+            RestartGameRequested?.Invoke();
         }
 
         private void OnLevelStarted(LevelStartedEvent eventData)

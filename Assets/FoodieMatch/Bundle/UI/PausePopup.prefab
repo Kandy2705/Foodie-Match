@@ -338,7 +338,7 @@ MonoBehaviour:
   _resumeButton: {fileID: 5604134683408322693}
   _restartButton: {fileID: 6005682164474886619}
   _homeButton: {fileID: 6166979857907795379}
-  _closeButton: {fileID: 8123456789012345678}
+  _closeButton: {fileID: 3698172402874008995}
   _popupAnimController: {fileID: 4454833220311908803}
 --- !u!1 &4350290439390501240
 GameObject:
@@ -1481,12 +1481,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
   m_PrefabInstance: {fileID: 7992891786704567596}
   m_PrefabAsset: {fileID: 0}
---- !u!224 &5122823712610630610 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 3025180612000679678, guid: f600b333c3a81435793212c0515baac3, type: 3}
-  m_PrefabInstance: {fileID: 7992891786704567596}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8123456789012345678 stripped
+--- !u!114 &3698172402874008995 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6755109787351709839, guid: f600b333c3a81435793212c0515baac3, type: 3}
   m_PrefabInstance: {fileID: 7992891786704567596}
@@ -1497,3 +1492,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &5122823712610630610 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3025180612000679678, guid: f600b333c3a81435793212c0515baac3, type: 3}
+  m_PrefabInstance: {fileID: 7992891786704567596}
+  m_PrefabAsset: {fileID: 0}
