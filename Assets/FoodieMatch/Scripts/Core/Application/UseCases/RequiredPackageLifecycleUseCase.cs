@@ -67,48 +67,33 @@ namespace FoodieMatch.Core.Application.UseCases
             RequiredPackageLifecycleResult result =
                 new RequiredPackageLifecycleResult();
 
-            if (board == null ||
-                waitingRack == null ||
-                packages == null ||
-                settings == null ||
-                completedPackageIndex < 0 ||
-                completedPackageIndex >= packages.Length ||
-                packages[completedPackageIndex] == null ||
-                !packages[completedPackageIndex].IsComplete)
+            if (!TryReplaceCompletedPackage(
+                    completedPackageIndex,
+                    board,
+                    waitingRack,
+                    packages,
+                    settings,
+                    out _))
             {
                 return result;
             }
 
-            CompleteAndReplacePackage(
-                completedPackageIndex,
-                board,
-                waitingRack,
-                packages,
-                settings,
-                result);
+            result.AddCompletedPackage(completedPackageIndex);
+            result.MarkPackageUpdated(completedPackageIndex);
 
-            AutoFillWaitingRack(
-                board,
-                waitingRack,
-                packages,
-                settings,
-                result);
-
-            return result;
-        }
-
-        private void AutoFillWaitingRack(
-            BoardModel board,
-            WaitingRackModel waitingRack,
-            RequiredPackageModel[] packages,
-            RequiredPackageGenerationSettings settings,
-            RequiredPackageLifecycleResult result)
-        {
-            while (TryMoveFirstMatchingRackFood(
+            while (TryFindWaitingRackMatch(
                        waitingRack,
                        packages,
                        out WaitingRackTransfer transfer))
             {
+                if (!TryMoveFoodFromWaitingRack(
+                        transfer,
+                        waitingRack,
+                        packages))
+                {
+                    break;
+                }
+
                 result.AddTransfer(transfer);
                 result.MarkPackageUpdated(transfer.PackageIndex);
 
@@ -120,49 +105,71 @@ namespace FoodieMatch.Core.Application.UseCases
                     continue;
                 }
 
-                CompleteAndReplacePackage(
-                    transfer.PackageIndex,
-                    board,
-                    waitingRack,
-                    packages,
-                    settings,
-                    result);
+                if (!TryReplaceCompletedPackage(
+                        transfer.PackageIndex,
+                        board,
+                        waitingRack,
+                        packages,
+                        settings,
+                        out _))
+                {
+                    break;
+                }
+
+                result.AddCompletedPackage(transfer.PackageIndex);
+                result.MarkPackageUpdated(transfer.PackageIndex);
             }
+
+            return result;
         }
 
-        private void CompleteAndReplacePackage(
+        public bool TryReplaceCompletedPackage(
             int packageIndex,
             BoardModel board,
             WaitingRackModel waitingRack,
             RequiredPackageModel[] packages,
             RequiredPackageGenerationSettings settings,
-            RequiredPackageLifecycleResult result)
+            out RequiredPackageModel newPackage)
         {
-            result.AddCompletedPackage(packageIndex);
+            newPackage = null;
+
+            if (board == null ||
+                waitingRack == null ||
+                packages == null ||
+                settings == null ||
+                packageIndex < 0 ||
+                packageIndex >= packages.Length ||
+                packages[packageIndex] == null ||
+                !packages[packageIndex].IsComplete)
+            {
+                return false;
+            }
 
             if (_generator.TryCreatePackage(
                     board,
                     waitingRack,
                     packages,
                     settings,
-                    out RequiredPackageModel nextPackage))
+                    out RequiredPackageModel generatedPackage))
             {
-                packages[packageIndex] = nextPackage;
-            }
-            else
-            {
-                packages[packageIndex] = null;
+                newPackage = generatedPackage;
             }
 
-            result.MarkPackageUpdated(packageIndex);
+            packages[packageIndex] = newPackage;
+            return true;
         }
 
-        private bool TryMoveFirstMatchingRackFood(
+        public bool TryFindWaitingRackMatch(
             WaitingRackModel waitingRack,
             IReadOnlyList<RequiredPackageModel> packages,
             out WaitingRackTransfer transfer)
         {
             transfer = default;
+
+            if (waitingRack == null || packages == null)
+            {
+                return false;
+            }
 
             for (int rackSlotIndex = 0;
                  rackSlotIndex < waitingRack.Capacity;
@@ -179,25 +186,6 @@ namespace FoodieMatch.Core.Application.UseCases
                     continue;
                 }
 
-                RequiredPackageModel package = packages[packageIndex];
-
-                if (!waitingRack.TryRemoveFoodAt(
-                        rackSlotIndex,
-                        out int removedFoodTokenId))
-                {
-                    return false;
-                }
-
-                if (removedFoodTokenId != foodTokenId ||
-                    !package.TryPlaceFood(foodTokenId))
-                {
-                    waitingRack.TryRestoreFoodAt(
-                        rackSlotIndex,
-                        removedFoodTokenId);
-
-                    return false;
-                }
-
                 transfer = new WaitingRackTransfer(
                     rackSlotIndex,
                     packageIndex,
@@ -205,6 +193,54 @@ namespace FoodieMatch.Core.Application.UseCases
 
                 return true;
             }
+
+            return false;
+        }
+
+        public bool TryMoveFoodFromWaitingRack(
+            WaitingRackTransfer transfer,
+            WaitingRackModel waitingRack,
+            IReadOnlyList<RequiredPackageModel> packages)
+        {
+            if (waitingRack == null ||
+                packages == null ||
+                transfer.RackSlotIndex < 0 ||
+                transfer.RackSlotIndex >= waitingRack.Capacity ||
+                transfer.PackageIndex < 0 ||
+                transfer.PackageIndex >= packages.Count ||
+                transfer.FoodTokenId <= 0)
+            {
+                return false;
+            }
+
+            int foodTokenId = waitingRack.GetFoodTokenIdAt(
+                transfer.RackSlotIndex);
+            RequiredPackageModel package =
+                packages[transfer.PackageIndex];
+
+            if (foodTokenId != transfer.FoodTokenId ||
+                package == null ||
+                !package.CanAccept(foodTokenId))
+            {
+                return false;
+            }
+
+            if (!waitingRack.TryRemoveFoodAt(
+                    transfer.RackSlotIndex,
+                    out int removedFoodTokenId))
+            {
+                return false;
+            }
+
+            if (removedFoodTokenId == foodTokenId &&
+                package.TryPlaceFood(foodTokenId))
+            {
+                return true;
+            }
+
+            waitingRack.TryRestoreFoodAt(
+                transfer.RackSlotIndex,
+                removedFoodTokenId);
 
             return false;
         }
