@@ -9,6 +9,19 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public int PackageCount => _packages != null ? _packages.Length : 0;
 
+        public RequiredPackageSlotView GetTargetSlot(
+            int packageIndex,
+            int requiredAmount,
+            int filledSlotIndex)
+        {
+            RequiredPackageView packageView =
+                GetPackageAt(packageIndex);
+
+            return packageView?.GetTargetSlot(
+                requiredAmount,
+                filledSlotIndex);
+        }
+
         public bool ShowPackageAt(
             int packageIndex,
             RequiredPackageModel package,

@@ -19,6 +19,14 @@ namespace FoodieMatch.Features.RequiredPackage
         public bool IsEmpty => FoodTokenId == 0;
         public bool IsComplete => !IsEmpty && FilledAmount >= RequiredAmount;
 
+        public RequiredPackageSlotView GetTargetSlot(
+            int requiredAmount,
+            int filledSlotIndex)
+        {
+            RequiredPackageAmountView amountView = GetView(requiredAmount);
+            return amountView?.GetSlotAt(filledSlotIndex);
+        }
+
         public void Setup(int foodTokenId, int requiredAmount, Sprite sprite)
         {
             if (foodTokenId <= 0)
@@ -30,7 +38,11 @@ namespace FoodieMatch.Features.RequiredPackage
 
             if (requiredAmount < MinRequiredAmount || requiredAmount > MaxRequiredAmount)
             {
-                Debug.LogWarning($"Required package amount must be from {MinRequiredAmount} to {MaxRequiredAmount}: {requiredAmount}.", this);
+                Debug.LogWarning(
+                    "Required package amount must be from " +
+                    $"{MinRequiredAmount} to {MaxRequiredAmount}: " +
+                    $"{requiredAmount}.",
+                    this);
                 Clear();
                 return;
             }
@@ -73,7 +85,11 @@ namespace FoodieMatch.Features.RequiredPackage
 
             if (activeView.SlotCount != RequiredAmount)
             {
-                Debug.LogWarning($"Required package view for amount {RequiredAmount} must have {RequiredAmount} slots.", this);
+                Debug.LogWarning(
+                    "Required package view for amount " +
+                    $"{RequiredAmount} must have " +
+                    $"{RequiredAmount} slots.",
+                    this);
             }
 
             activeView.Show(_sprite, FilledAmount);
