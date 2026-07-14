@@ -29,7 +29,7 @@ namespace FoodieMatch.Features.Food
 
         private Tween _flightTween;
         private Tween _landingFeedbackTween;
-        private Action _onFlightCompleted;
+        private Action<FoodItemView> _onFlightCompleted;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -108,7 +108,7 @@ namespace FoodieMatch.Features.Food
         public bool TryPlayFlight(
             Vector3 targetPosition,
             float duration,
-            Action onFlightCompleted)
+            Action<FoodItemView> onFlightCompleted)
         {
             if (IsEmpty || IsFlying || duration < 0f)
             {
@@ -197,9 +197,10 @@ namespace FoodieMatch.Features.Food
         {
             _flightTween = default;
 
-            Action onFlightCompleted = _onFlightCompleted;
+            Action<FoodItemView> onFlightCompleted =
+                _onFlightCompleted;
             _onFlightCompleted = null;
-            onFlightCompleted?.Invoke();
+            onFlightCompleted?.Invoke(this);
         }
 
         private void ApplyColliderState()

@@ -47,6 +47,9 @@ namespace FoodieMatch.App
             appRoot.UIManager.Construct(GameplayEvents, audioService);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver);
+            appRoot.GameplayMotionPresenter.Construct(
+                appRoot.RequiredPackageGroupView,
+                appRoot.WaitingRackView);
             appRoot.GameplayController.Construct(
                 appRoot.UIManager,
                 GameplayEvents,
@@ -88,6 +91,13 @@ namespace FoodieMatch.App
             if (appRoot.UIManager == null)
             {
                 Debug.LogError("Cannot install app because UIManager is missing.");
+                return false;
+            }
+
+            if (appRoot.GameplayMotionPresenter == null)
+            {
+                Debug.LogError(
+                    "Cannot install app because GameplayMotionPresenter is missing.");
                 return false;
             }
 

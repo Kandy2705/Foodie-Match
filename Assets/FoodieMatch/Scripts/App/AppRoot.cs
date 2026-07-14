@@ -21,6 +21,10 @@ namespace FoodieMatch.App
 
         [SerializeField] private UIManager _uiManager;
 
+        [Header("Presentation")]
+        [SerializeField] private GameplayMotionPresenter
+            _gameplayMotionPresenter;
+
         [Header("Data")]
         [SerializeField] private LevelCatalogSO _levelCatalog;
 
@@ -37,6 +41,8 @@ namespace FoodieMatch.App
         public AppController AppController => _appController;
         public GameplayController GameplayController => _gameplayController;
         public UIManager UIManager => _uiManager;
+        public GameplayMotionPresenter GameplayMotionPresenter =>
+            _gameplayMotionPresenter;
         public LevelCatalogSO LevelCatalog => _levelCatalog;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
@@ -78,6 +84,12 @@ namespace FoodieMatch.App
             if (_uiManager == null)
             {
                 Debug.LogError("UIManager is missing.");
+                return false;
+            }
+
+            if (_gameplayMotionPresenter == null)
+            {
+                Debug.LogError("GameplayMotionPresenter is missing.");
                 return false;
             }
 
