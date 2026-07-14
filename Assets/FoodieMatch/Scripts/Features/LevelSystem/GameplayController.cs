@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
 using FoodieMatch.Core.Application.Repositories;
@@ -10,6 +11,7 @@ using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
+using FoodieMatch.Features.Motion;
 using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
@@ -45,6 +47,8 @@ namespace FoodieMatch.Features.LevelSystem
             _requiredPackageGenerationSettings;
         private WaitingRackModel _waitingRack;
         private LevelProgressModel _levelProgress;
+        private PackageMotionState[] _packageMotionStates;
+        private int _displayedServedCount;
         private int _currentLevelNumber;
         private LevelSessionState _levelSessionState;
         private bool _isInputEnabled;
@@ -152,6 +156,8 @@ namespace FoodieMatch.Features.LevelSystem
 
             _levelProgress = new LevelProgressModel(
                 _board.RemainingFoodCount);
+            _displayedServedCount = 0;
+            CreatePackageMotionStates();
 
             _sessionGuard.BeginSession();
             _gameplayMotionPresenter.CancelAllMotions();
@@ -200,6 +206,8 @@ namespace FoodieMatch.Features.LevelSystem
             _gameplayMotionPresenter?.CancelAllMotions();
 
             _levelProgress = null;
+            _packageMotionStates = null;
+            _displayedServedCount = 0;
             _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
 
@@ -292,6 +300,25 @@ namespace FoodieMatch.Features.LevelSystem
 
         private void HandleFoodSelected(FoodSelectionContext context)
         {
+            _ = ProcessFoodSelectionSafelyAsync(context);
+        }
+
+        private async Task ProcessFoodSelectionSafelyAsync(
+            FoodSelectionContext context)
+        {
+            try
+            {
+                await ProcessFoodSelectionAsync(context);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private async Task ProcessFoodSelectionAsync(
+            FoodSelectionContext context)
+        {
             if (_levelSessionState != LevelSessionState.Playing ||
                 !_isInputEnabled ||
                 context.FoodItemView == null ||
@@ -301,13 +328,30 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
+            int sessionId = _sessionGuard.CurrentSessionId;
             SelectFoodResult result = _selectFoodUseCase.Execute(
                 context.Address,
                 _board,
                 _requiredPackages,
                 _waitingRack);
 
-            if (!ApplySelectionResult(context, result))
+            if (!result.IsPlaced)
+            {
+                return;
+            }
+
+            if (result.Type ==
+                SelectFoodResultType.PlacedInRequiredPackage)
+            {
+                await ProcessRequiredPackageSelectionAsync(
+                    context,
+                    result,
+                    sessionId);
+
+                return;
+            }
+
+            if (!TryPlaceFoodInWaitingRack(context, result))
             {
                 return;
             }
@@ -321,40 +365,118 @@ namespace FoodieMatch.Features.LevelSystem
 
             MoveTopTrayToGrill(
                 context.Address.GrillPositionIndex);
-
-            ResolveRequiredPackageLifecycle(result);
-            TryResolveWin();
         }
 
-        private bool ApplySelectionResult(
+        private async Task ProcessRequiredPackageSelectionAsync(
+            FoodSelectionContext context,
+            SelectFoodResult result,
+            int sessionId)
+        {
+            FoodItemView foodItemView = context.FoodItemView;
+            _boardLayoutView.ReleaseFoodItem(foodItemView);
+            RegisterFoodInModelProgress();
+            MoveTopTrayToGrill(
+                context.Address.GrillPositionIndex);
+
+            if (!TryCreatePackageFlight(
+                    foodItemView,
+                    result.TargetIndex,
+                    out PackageFlight flight))
+            {
+                Debug.LogError(
+                    "Required package flight could not be created.");
+
+                foodItemView.Clear();
+
+                if (_requiredPackages != null &&
+                    result.TargetIndex >= 0 &&
+                    result.TargetIndex < _requiredPackages.Length)
+                {
+                    RefreshRequiredPackageViewAt(result.TargetIndex);
+                }
+
+                ShowFoodInProgress();
+                _isInputEnabled = false;
+                return;
+            }
+
+            PackageMotionState motionState =
+                _packageMotionStates[flight.PackageIndex];
+
+            if (!motionState.TryRegisterIncomingFlight(
+                    flight.ExpectedPackage))
+            {
+                Debug.LogError(
+                    $"Required package {flight.PackageIndex} " +
+                    "could not register an incoming flight.");
+
+                ReconcileFailedPackageFlight(flight);
+                ShowFoodInProgress();
+                _isInputEnabled = false;
+                return;
+            }
+
+            MotionResult motionResult;
+
+            try
+            {
+                motionResult = await _gameplayMotionPresenter
+                    .MoveFoodToRequiredPackageAsync(
+                        flight.FoodItemView,
+                        flight.PackageIndex,
+                        flight.RequiredAmount,
+                        flight.FilledSlotIndex);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                motionResult = MotionResult.Failed;
+            }
+            finally
+            {
+                if (!motionState.TryCompleteIncomingFlight(
+                        flight.ExpectedPackage))
+                {
+                    Debug.LogError(
+                        $"Required package {flight.PackageIndex} " +
+                        "could not complete an incoming flight.");
+                }
+            }
+
+            if (!CanContinueGameplay(sessionId) ||
+                !IsExpectedPackage(flight))
+            {
+                return;
+            }
+
+            if (motionResult == MotionResult.Cancelled)
+            {
+                return;
+            }
+
+            if (motionResult == MotionResult.Failed)
+            {
+                Debug.LogError(
+                    $"Food flight to required package " +
+                    $"{flight.PackageIndex} failed.");
+
+                ReconcileFailedPackageFlight(flight);
+            }
+
+            ShowFoodInProgress();
+            TryStartPackageCompletion(
+                flight.PackageIndex,
+                flight.ExpectedPackage,
+                sessionId);
+            TryResolveWin(sessionId);
+        }
+
+        private bool TryPlaceFoodInWaitingRack(
             FoodSelectionContext context,
             SelectFoodResult result)
         {
-            if (!result.IsPlaced)
-            {
-                return false;
-            }
-
             FoodItemView foodItemView = context.FoodItemView;
             _boardLayoutView.ReleaseFoodItem(foodItemView);
-
-            if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
-            {
-                RequiredPackageModel requiredPackage =
-                    _requiredPackages[result.TargetIndex];
-
-                foodItemView.Clear();
-                RegisterServedFood();
-
-                if (!requiredPackage.IsComplete)
-                {
-                    _requiredPackageGroupView.UpdateFilledAmountAt(
-                        result.TargetIndex,
-                        requiredPackage);
-                }
-
-                return true;
-            }
 
             if (_waitingRackView.SetFoodAt(
                     result.TargetIndex,
@@ -382,89 +504,243 @@ namespace FoodieMatch.Features.LevelSystem
             return false;
         }
 
-        private void ResolveRequiredPackageLifecycle(
-            SelectFoodResult result)
+        private bool TryCreatePackageFlight(
+            FoodItemView foodItemView,
+            int packageIndex,
+            out PackageFlight flight)
         {
-            if (result.Type !=
-                SelectFoodResultType.PlacedInRequiredPackage)
+            flight = default;
+
+            if (foodItemView == null ||
+                _requiredPackages == null ||
+                _packageMotionStates == null ||
+                packageIndex < 0 ||
+                packageIndex >= _requiredPackages.Length ||
+                packageIndex >= _packageMotionStates.Length)
             {
-                return;
+                return false;
             }
 
             RequiredPackageModel requiredPackage =
-                _requiredPackages[result.TargetIndex];
+                _requiredPackages[packageIndex];
 
-            if (!requiredPackage.IsComplete)
+            if (requiredPackage == null ||
+                requiredPackage.FilledAmount <= 0)
             {
-                return;
+                return false;
             }
 
-            RequiredPackageLifecycleResult lifecycleResult =
-                _requiredPackageLifecycleUseCase
-                    .ResolveCompletedPackage(
-                        result.TargetIndex,
-                        _board,
-                        _waitingRack,
-                        _requiredPackages,
-                        _requiredPackageGenerationSettings);
+            flight = new PackageFlight(
+                foodItemView,
+                requiredPackage,
+                packageIndex,
+                requiredPackage.RequiredAmount,
+                requiredPackage.FilledAmount - 1);
 
-            ApplyLifecycleResult(lifecycleResult);
+            return true;
         }
 
-        private void ApplyLifecycleResult(
-            RequiredPackageLifecycleResult lifecycleResult)
+        private void ReconcileFailedPackageFlight(
+            PackageFlight flight)
         {
-            for (int i = 0;
-                 i < lifecycleResult.Transfers.Count;
-                 i++)
-            {
-                WaitingRackTransfer transfer =
-                    lifecycleResult.Transfers[i];
-                FoodItemView foodItemView =
-                    _waitingRackView.RemoveFoodAt(
-                        transfer.RackSlotIndex);
-
-                if (foodItemView != null)
-                {
-                    foodItemView.Clear();
-                }
-
-                RegisterServedFood();
-            }
-
-            for (int i = 0;
-                 i < lifecycleResult.UpdatedPackageIndexes.Count;
-                 i++)
-            {
-                RefreshRequiredPackageViewAt(
-                    lifecycleResult.UpdatedPackageIndexes[i]);
-            }
+            flight.FoodItemView.Clear();
+            RefreshRequiredPackageViewAt(flight.PackageIndex);
         }
 
-        private void RegisterServedFood()
+        private void RegisterFoodInModelProgress()
         {
             if (_levelProgress == null ||
                 !_levelProgress.TryServeFood())
             {
                 Debug.LogError("Level progress could not serve food.");
+            }
+        }
+
+        private void ShowFoodInProgress()
+        {
+            if (_levelProgress == null ||
+                _displayedServedCount >= _levelProgress.ServedCount)
+            {
                 return;
             }
 
+            _displayedServedCount++;
             _gameplayEvents.OnLevelProgressChanged(
                 new LevelProgressChangedEvent(
-                    _levelProgress.ServedCount,
+                    _displayedServedCount,
                     _levelProgress.TotalCount));
         }
 
-        private void TryResolveWin()
+        private void TryStartPackageCompletion(
+            int packageIndex,
+            RequiredPackageModel expectedPackage,
+            int sessionId)
         {
-            if (_levelProgress == null ||
-                !_levelProgress.IsComplete)
+            if (!CanContinueGameplay(sessionId) ||
+                !TryGetPackageMotionState(
+                    packageIndex,
+                    expectedPackage,
+                    out PackageMotionState motionState) ||
+                !expectedPackage.IsComplete ||
+                motionState.IncomingFlightCount != 0 ||
+                motionState.IsCompleteMotionRunning)
+            {
+                return;
+            }
+
+            motionState.IsCompleteMotionRunning = true;
+            _ = CompletePackageSafelyAsync(
+                packageIndex,
+                expectedPackage,
+                sessionId);
+        }
+
+        private async Task CompletePackageSafelyAsync(
+            int packageIndex,
+            RequiredPackageModel expectedPackage,
+            int sessionId)
+        {
+            MotionResult motionResult;
+
+            try
+            {
+                motionResult = await _gameplayMotionPresenter
+                    .PlayRequiredPackageCompleteAsync(packageIndex);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                motionResult = MotionResult.Failed;
+            }
+
+            if (!CanContinueGameplay(sessionId) ||
+                !TryGetPackageMotionState(
+                    packageIndex,
+                    expectedPackage,
+                    out PackageMotionState motionState))
+            {
+                return;
+            }
+
+            if (motionResult == MotionResult.Cancelled)
+            {
+                motionState.IsCompleteMotionRunning = false;
+                return;
+            }
+
+            if (motionResult == MotionResult.Failed)
+            {
+                Debug.LogError(
+                    $"Required package {packageIndex} complete " +
+                    "feedback failed.");
+            }
+
+            if (!_requiredPackageLifecycleUseCase
+                    .TryReplaceCompletedPackage(
+                        packageIndex,
+                        _board,
+                        _waitingRack,
+                        _requiredPackages,
+                        _requiredPackageGenerationSettings,
+                        out RequiredPackageModel newPackage))
+            {
+                motionState.IsCompleteMotionRunning = false;
+                Debug.LogError(
+                    $"Required package {packageIndex} could not be replaced.");
+
+                return;
+            }
+
+            motionState.Reset(newPackage);
+            RefreshRequiredPackageViewAt(packageIndex);
+            TryResolveWin(sessionId);
+        }
+
+        private bool TryGetPackageMotionState(
+            int packageIndex,
+            RequiredPackageModel expectedPackage,
+            out PackageMotionState motionState)
+        {
+            motionState = null;
+
+            if (_requiredPackages == null ||
+                _packageMotionStates == null ||
+                packageIndex < 0 ||
+                packageIndex >= _requiredPackages.Length ||
+                packageIndex >= _packageMotionStates.Length ||
+                _requiredPackages[packageIndex] != expectedPackage)
+            {
+                return false;
+            }
+
+            motionState = _packageMotionStates[packageIndex];
+            return motionState != null &&
+                   motionState.Package == expectedPackage;
+        }
+
+        private bool IsExpectedPackage(PackageFlight flight)
+        {
+            return TryGetPackageMotionState(
+                flight.PackageIndex,
+                flight.ExpectedPackage,
+                out _);
+        }
+
+        private bool CanContinueGameplay(int sessionId)
+        {
+            return _sessionGuard.IsCurrentSession(sessionId) &&
+                   _levelSessionState == LevelSessionState.Playing;
+        }
+
+        private void TryResolveWin(int sessionId)
+        {
+            if (!CanContinueGameplay(sessionId) ||
+                _levelProgress == null ||
+                !_levelProgress.IsComplete ||
+                _displayedServedCount < _levelProgress.ServedCount ||
+                HasActivePackageMotion())
             {
                 return;
             }
 
             ResolveWin();
+        }
+
+        private bool HasActivePackageMotion()
+        {
+            if (_packageMotionStates == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < _packageMotionStates.Length; i++)
+            {
+                PackageMotionState motionState =
+                    _packageMotionStates[i];
+
+                if (motionState != null &&
+                    (motionState.IncomingFlightCount > 0 ||
+                     motionState.IsCompleteMotionRunning ||
+                     motionState.Package != null &&
+                     motionState.Package.IsComplete))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void CreatePackageMotionStates()
+        {
+            _packageMotionStates = new PackageMotionState[
+                _requiredPackages.Length];
+
+            for (int i = 0; i < _requiredPackages.Length; i++)
+            {
+                _packageMotionStates[i] = new PackageMotionState(
+                    _requiredPackages[i]);
+            }
         }
 
         private void RefreshRequiredPackageViews()
@@ -573,6 +849,74 @@ namespace FoodieMatch.Features.LevelSystem
             ClearLevel();
 
             _homeRequested?.Invoke();
+        }
+
+        private readonly struct PackageFlight
+        {
+            public PackageFlight(
+                FoodItemView foodItemView,
+                RequiredPackageModel expectedPackage,
+                int packageIndex,
+                int requiredAmount,
+                int filledSlotIndex)
+            {
+                FoodItemView = foodItemView;
+                ExpectedPackage = expectedPackage;
+                PackageIndex = packageIndex;
+                RequiredAmount = requiredAmount;
+                FilledSlotIndex = filledSlotIndex;
+            }
+
+            public FoodItemView FoodItemView { get; }
+            public RequiredPackageModel ExpectedPackage { get; }
+            public int PackageIndex { get; }
+            public int RequiredAmount { get; }
+            public int FilledSlotIndex { get; }
+        }
+
+        private sealed class PackageMotionState
+        {
+            public PackageMotionState(RequiredPackageModel package)
+            {
+                Package = package;
+            }
+
+            public RequiredPackageModel Package { get; private set; }
+            public int IncomingFlightCount { get; private set; }
+            public bool IsCompleteMotionRunning { get; set; }
+
+            public bool TryRegisterIncomingFlight(
+                RequiredPackageModel expectedPackage)
+            {
+                if (Package != expectedPackage ||
+                    IsCompleteMotionRunning)
+                {
+                    return false;
+                }
+
+                IncomingFlightCount++;
+                return true;
+            }
+
+            public bool TryCompleteIncomingFlight(
+                RequiredPackageModel expectedPackage)
+            {
+                if (Package != expectedPackage ||
+                    IncomingFlightCount <= 0)
+                {
+                    return false;
+                }
+
+                IncomingFlightCount--;
+                return true;
+            }
+
+            public void Reset(RequiredPackageModel package)
+            {
+                Package = package;
+                IncomingFlightCount = 0;
+                IsCompleteMotionRunning = false;
+            }
         }
     }
 }
