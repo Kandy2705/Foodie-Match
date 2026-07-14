@@ -351,20 +351,10 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
-            if (!TryPlaceFoodInWaitingRack(context, result))
-            {
-                return;
-            }
-
-            if (result.Type == SelectFoodResultType.PlacedInWaitingRack &&
-                _waitingRack.IsFull)
-            {
-                EnterAwaitingRevive();
-                return;
-            }
-
-            MoveTopTrayToGrill(
-                context.Address.GrillPositionIndex);
+            await ProcessWaitingRackSelectionAsync(
+                context,
+                result,
+                sessionId);
         }
 
         private async Task ProcessRequiredPackageSelectionAsync(
@@ -471,37 +461,95 @@ namespace FoodieMatch.Features.LevelSystem
             TryResolveWin(sessionId);
         }
 
-        private bool TryPlaceFoodInWaitingRack(
+        private async Task ProcessWaitingRackSelectionAsync(
             FoodSelectionContext context,
-            SelectFoodResult result)
+            SelectFoodResult result,
+            int sessionId)
         {
             FoodItemView foodItemView = context.FoodItemView;
             _boardLayoutView.ReleaseFoodItem(foodItemView);
 
-            if (_waitingRackView.SetFoodAt(
-                    result.TargetIndex,
+            Task<MotionResult> motionTask =
+                MoveFoodToWaitingRackSafelyAsync(
+                    foodItemView,
+                    result.TargetIndex);
+
+            MoveTopTrayToGrill(
+                context.Address.GrillPositionIndex);
+
+            bool causedWaitingRackFull = _waitingRack.IsFull;
+
+            if (causedWaitingRackFull)
+            {
+                EnterAwaitingRevive();
+            }
+
+            MotionResult motionResult = await motionTask;
+
+            if (!_sessionGuard.IsCurrentSession(sessionId))
+            {
+                return;
+            }
+
+            if (motionResult == MotionResult.Failed)
+            {
+                Debug.LogError(
+                    $"Food flight to waiting rack slot " +
+                    $"{result.TargetIndex} failed.");
+
+                if (!ReconcileWaitingRackPlacement(
+                        result.TargetIndex,
+                        foodItemView))
+                {
+                    _isInputEnabled = false;
+                    return;
+                }
+            }
+
+            if (motionResult == MotionResult.Cancelled)
+            {
+                return;
+            }
+
+            if (causedWaitingRackFull &&
+                _levelSessionState == LevelSessionState.AwaitingRevive)
+            {
+                ShowLosePopup();
+            }
+        }
+
+        private async Task<MotionResult> MoveFoodToWaitingRackSafelyAsync(
+            FoodItemView foodItemView,
+            int rackSlotIndex)
+        {
+            try
+            {
+                return await _gameplayMotionPresenter
+                    .MoveFoodToWaitingRackAsync(
+                        foodItemView,
+                        rackSlotIndex);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return MotionResult.Failed;
+            }
+        }
+
+        private bool ReconcileWaitingRackPlacement(
+            int rackSlotIndex,
+            FoodItemView foodItemView)
+        {
+            if (_waitingRackView.CompleteFoodPlacementAt(
+                    rackSlotIndex,
                     foodItemView))
             {
                 return true;
             }
 
-            _waitingRack.TryRemoveFoodAt(
-                result.TargetIndex,
-                out _);
-
-            if (!_board.TryRestoreFood(
-                    context.Address,
-                    result.FoodTokenId))
-            {
-                Debug.LogError("Selected food could not be restored.");
-                return false;
-            }
-
-            _boardLayoutView.RestoreFoodItem(
-                foodItemView,
-                context.Address);
-
-            return false;
+            return _waitingRackView.SetFoodAt(
+                rackSlotIndex,
+                foodItemView);
         }
 
         private bool TryCreatePackageFlight(
@@ -797,6 +845,14 @@ namespace FoodieMatch.Features.LevelSystem
 
             _levelSessionState = LevelSessionState.AwaitingRevive;
             _isInputEnabled = false;
+        }
+
+        private void ShowLosePopup()
+        {
+            if (_levelSessionState != LevelSessionState.AwaitingRevive)
+            {
+                return;
+            }
 
             _uiManager.ShowLosePopup(
                 OnTryAgainClicked,

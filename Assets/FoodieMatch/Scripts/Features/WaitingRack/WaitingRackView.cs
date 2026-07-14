@@ -1,4 +1,3 @@
-using System;
 using FoodieMatch.Features.Food;
 using UnityEngine;
 
@@ -8,14 +7,7 @@ namespace FoodieMatch.Features.WaitingRack
     {
         [SerializeField] private WaitingRackSlotView[] _slots;
 
-        private Action[] _placementCompletedCallbacks;
-
         public int Capacity => _slots != null ? _slots.Length : 0;
-
-        private void Awake()
-        {
-            ResetPlacementCompletedCallbacks();
-        }
 
         private void OnDestroy()
         {
@@ -66,54 +58,7 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            if (!slot.CompletePlacement(expectedFoodItem))
-            {
-                return false;
-            }
-
-            Action placementCompleted =
-                GetPlacementCompletedCallback(index);
-            SetPlacementCompletedCallback(index, null);
-            placementCompleted?.Invoke();
-
-            return true;
-        }
-
-        public bool IsPlacementComplete(int index)
-        {
-            WaitingRackSlotView slot = GetSlot(index);
-            return slot != null && slot.IsPlacementComplete;
-        }
-
-        public void WhenPlacementCompleted(
-            int index,
-            Action callback)
-        {
-            WaitingRackSlotView slot = GetSlot(index);
-
-            if (slot == null)
-            {
-                return;
-            }
-
-            if (slot.IsPlacementComplete)
-            {
-                callback?.Invoke();
-                return;
-            }
-
-            if (!slot.IsReserved || callback == null)
-            {
-                return;
-            }
-
-            Action placementCompleted =
-                GetPlacementCompletedCallback(index);
-            placementCompleted -= callback;
-            placementCompleted += callback;
-            SetPlacementCompletedCallback(
-                index,
-                placementCompleted);
+            return slot.CompletePlacement(expectedFoodItem);
         }
 
         public FoodItemView RemoveFoodAt(int index)
@@ -131,8 +76,6 @@ namespace FoodieMatch.Features.WaitingRack
 
         public void Clear()
         {
-            ResetPlacementCompletedCallbacks();
-
             if (_slots == null)
             {
                 return;
@@ -155,45 +98,6 @@ namespace FoodieMatch.Features.WaitingRack
             }
 
             return _slots[index];
-        }
-
-        private Action GetPlacementCompletedCallback(int index)
-        {
-            EnsurePlacementCompletedCallbacks();
-
-            return index >= 0 &&
-                   index < _placementCompletedCallbacks.Length
-                ? _placementCompletedCallbacks[index]
-                : null;
-        }
-
-        private void SetPlacementCompletedCallback(
-            int index,
-            Action callback)
-        {
-            EnsurePlacementCompletedCallbacks();
-
-            if (index < 0 ||
-                index >= _placementCompletedCallbacks.Length)
-            {
-                return;
-            }
-
-            _placementCompletedCallbacks[index] = callback;
-        }
-
-        private void EnsurePlacementCompletedCallbacks()
-        {
-            if (_placementCompletedCallbacks == null ||
-                _placementCompletedCallbacks.Length != Capacity)
-            {
-                _placementCompletedCallbacks = new Action[Capacity];
-            }
-        }
-
-        private void ResetPlacementCompletedCallbacks()
-        {
-            _placementCompletedCallbacks = new Action[Capacity];
         }
     }
 }

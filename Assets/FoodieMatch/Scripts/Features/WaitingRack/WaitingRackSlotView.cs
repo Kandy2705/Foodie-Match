@@ -28,9 +28,7 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            return CompletePlacement(
-                foodItemView,
-                playLandingFeedback: false);
+            return CompletePlacement(foodItemView);
         }
 
         public bool TryReserveFood(
