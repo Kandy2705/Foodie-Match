@@ -13,9 +13,6 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private Vector3 _landingPunchStrength =
             new Vector3(0.1f, 0.1f, 0f);
         [SerializeField] private float _landingFeedbackDuration = 0.16f;
-        [SerializeField] private Vector3 _completePunchStrength =
-            new Vector3(0.16f, 0.16f, 0f);
-        [SerializeField] private float _completeFeedbackDuration = 0.22f;
 
         private Tween _feedbackTween;
         private bool _hasInitialLocalScale;
@@ -86,13 +83,6 @@ namespace FoodieMatch.Features.RequiredPackage
             PlayFeedback(
                 _landingPunchStrength,
                 _landingFeedbackDuration);
-        }
-
-        public void PlayCompleteFeedback()
-        {
-            PlayFeedback(
-                _completePunchStrength,
-                _completeFeedbackDuration);
         }
 
         private void ApplyVisibility()

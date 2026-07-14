@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -29,12 +31,13 @@ namespace FoodieMatch.Features.Food
 
         private Tween _flightTween;
         private Tween _landingFeedbackTween;
-        private Action<FoodItemView> _onFlightCompleted;
+        private bool _isFlying;
+        private bool _didFlightComplete;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
         public bool IsInteractable { get; private set; }
-        public bool IsFlying => _flightTween.isAlive;
+        public bool IsFlying => _isFlying;
         public FoodItemVisualState VisualState { get; private set; }
 
         public event Action<FoodItemView> Selected;
@@ -62,6 +65,14 @@ namespace FoodieMatch.Features.Food
 
         public void Setup(int foodTokenId, Sprite sprite)
         {
+            if (_isFlying)
+            {
+                Debug.LogError(
+                    "Flying food item cannot be set up again.",
+                    this);
+                return;
+            }
+
             CancelMotion();
 
             if (foodTokenId < 0)
@@ -105,45 +116,55 @@ namespace FoodieMatch.Features.Food
             ApplyVisualState();
         }
 
-        public bool TryPlayFlight(
+        public async Task<MotionResult> PlayFlightAsync(
             Vector3 targetPosition,
             float duration,
-            Action<FoodItemView> onFlightCompleted)
+            float startDelay = 0f)
         {
-            if (IsEmpty || IsFlying || duration < 0f)
+            if (!CanStartFlight(duration, startDelay))
             {
-                return false;
+                return MotionResult.Failed;
             }
 
+            _isFlying = true;
+            _didFlightComplete = false;
             SetInteractable(false);
-            _onFlightCompleted = onFlightCompleted;
-            _flightTween = Tween
-                .Position(
-                    transform,
-                    targetPosition,
-                    duration)
-                .OnComplete(
-                    target: this,
-                    target => target.OnFlightCompleted());
 
-            return true;
+            try
+            {
+                _flightTween = Tween.Position(
+                        transform,
+                        targetPosition,
+                        duration,
+                        startDelay: startDelay)
+                    .OnComplete(
+                        target: this,
+                        target => target.MarkFlightCompleted());
+
+                await _flightTween;
+
+                return _didFlightComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _flightTween = default;
+                _isFlying = false;
+            }
         }
 
-        public void CancelFlight()
+        public void StopFlight()
         {
-            _onFlightCompleted = null;
-
             if (_flightTween.isAlive)
             {
                 _flightTween.Stop();
             }
-
-            _flightTween = default;
         }
 
         public void CancelMotion()
         {
-            CancelFlight();
+            StopFlight();
 
             if (_landingFeedbackTween.isAlive)
             {
@@ -155,7 +176,9 @@ namespace FoodieMatch.Features.Food
 
         public void PlayLandingFeedback()
         {
-            if (IsEmpty || _landingFeedbackDuration <= 0f)
+            if (IsEmpty ||
+                !IsValidTime(_landingFeedbackDuration) ||
+                _landingFeedbackDuration == 0f)
             {
                 return;
             }
@@ -193,14 +216,48 @@ namespace FoodieMatch.Features.Food
             Selected?.Invoke(this);
         }
 
-        private void OnFlightCompleted()
+        private bool CanStartFlight(
+            float duration,
+            float startDelay)
         {
-            _flightTween = default;
+            if (IsEmpty)
+            {
+                Debug.LogError(
+                    "Empty food item cannot start a flight.",
+                    this);
+                return false;
+            }
 
-            Action<FoodItemView> onFlightCompleted =
-                _onFlightCompleted;
-            _onFlightCompleted = null;
-            onFlightCompleted?.Invoke(this);
+            if (_isFlying)
+            {
+                Debug.LogError(
+                    "Food item is already flying.",
+                    this);
+                return false;
+            }
+
+            if (!IsValidTime(duration) ||
+                !IsValidTime(startDelay))
+            {
+                Debug.LogError(
+                    "Food flight time is invalid.",
+                    this);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void MarkFlightCompleted()
+        {
+            _didFlightComplete = true;
+        }
+
+        private static bool IsValidTime(float value)
+        {
+            return value >= 0f &&
+                   !float.IsNaN(value) &&
+                   !float.IsInfinity(value);
         }
 
         private void ApplyColliderState()
