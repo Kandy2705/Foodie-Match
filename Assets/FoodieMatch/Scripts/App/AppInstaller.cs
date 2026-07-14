@@ -56,6 +56,7 @@ namespace FoodieMatch.App
                 appRoot.BoardLayoutView,
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,
+                appRoot.GameplayMotionPresenter,
                 appRoot.FoodVisualResolver,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,

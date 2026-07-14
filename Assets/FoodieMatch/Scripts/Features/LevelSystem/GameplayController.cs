@@ -22,11 +22,15 @@ namespace FoodieMatch.Features.LevelSystem
         private const string WinReason = "Completed";
         private const string LoseReason = "WaitingRackFull";
 
+        private readonly GameplaySessionGuard _sessionGuard =
+            new GameplaySessionGuard();
+
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
         private BoardLayoutView _boardLayoutView;
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
+        private GameplayMotionPresenter _gameplayMotionPresenter;
         private FoodVisualResolver _foodVisualResolver;
         private RequiredPackageLifecycleUseCase
             _requiredPackageLifecycleUseCase;
@@ -51,6 +55,7 @@ namespace FoodieMatch.Features.LevelSystem
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
+            GameplayMotionPresenter gameplayMotionPresenter,
             FoodVisualResolver foodVisualResolver,
             RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase,
             SelectFoodUseCase selectFoodUseCase,
@@ -62,6 +67,7 @@ namespace FoodieMatch.Features.LevelSystem
             _boardLayoutView = boardLayoutView;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
+            _gameplayMotionPresenter = gameplayMotionPresenter;
             _foodVisualResolver = foodVisualResolver;
             _requiredPackageLifecycleUseCase =
                 requiredPackageLifecycleUseCase;
@@ -147,6 +153,9 @@ namespace FoodieMatch.Features.LevelSystem
             _levelProgress = new LevelProgressModel(
                 _board.RemainingFoodCount);
 
+            _sessionGuard.BeginSession();
+            _gameplayMotionPresenter.CancelAllMotions();
+
             _boardLayoutView.Setup(_board);
             _waitingRackView.Clear();
             RefreshRequiredPackageViews();
@@ -187,6 +196,9 @@ namespace FoodieMatch.Features.LevelSystem
 
         public void ClearLevel()
         {
+            _sessionGuard.EndSession();
+            _gameplayMotionPresenter?.CancelAllMotions();
+
             _levelProgress = null;
             _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
@@ -226,6 +238,13 @@ namespace FoodieMatch.Features.LevelSystem
                 return false;
             }
 
+            if (_gameplayMotionPresenter == null)
+            {
+                Debug.LogError(
+                    "GameplayMotionPresenter has not been constructed.");
+                return false;
+            }
+
             if (_foodVisualResolver == null)
             {
                 Debug.LogError("FoodVisualResolver has not been constructed.");
@@ -262,6 +281,9 @@ namespace FoodieMatch.Features.LevelSystem
 
         private void OnDestroy()
         {
+            _sessionGuard.EndSession();
+            _gameplayMotionPresenter?.CancelAllMotions();
+
             if (_boardLayoutView != null)
             {
                 _boardLayoutView.FoodSelected -= HandleFoodSelected;
