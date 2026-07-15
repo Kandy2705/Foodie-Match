@@ -48,8 +48,61 @@ namespace FoodieMatch.Features.Gameplay
         public LevelProgressModel Progress { get; }
         public RequiredPackageGenerationSettings PackageSettings { get; }
         public int DisplayedServedCount { get; private set; }
+        public LevelSessionState State { get; private set; }
+        public bool IsInputEnabled { get; private set; }
         public bool IsDisplayedProgressUpToDate =>
             DisplayedServedCount >= Progress.ServedCount;
+        public bool CanSelectFood =>
+            State == LevelSessionState.Playing && IsInputEnabled;
+        public bool CanContinueGameplay =>
+            State == LevelSessionState.Playing;
+
+        public void StartPlaying()
+        {
+            State = LevelSessionState.Playing;
+            IsInputEnabled = true;
+        }
+
+        public void DisableInput()
+        {
+            IsInputEnabled = false;
+        }
+
+        public bool TryEnterAwaitingRevive()
+        {
+            if (State != LevelSessionState.Playing)
+            {
+                return false;
+            }
+
+            State = LevelSessionState.AwaitingRevive;
+            IsInputEnabled = false;
+            return true;
+        }
+
+        public bool TryMarkAsWon()
+        {
+            if (State != LevelSessionState.Playing)
+            {
+                return false;
+            }
+
+            State = LevelSessionState.Won;
+            IsInputEnabled = false;
+            return true;
+        }
+
+        public bool TryMarkAsLost()
+        {
+            if (State != LevelSessionState.AwaitingRevive)
+            {
+                return false;
+            }
+
+            State = LevelSessionState.Lost;
+            IsInputEnabled = false;
+            return true;
+        }
 
         public bool TryIncreaseDisplayedServedCount()
         {

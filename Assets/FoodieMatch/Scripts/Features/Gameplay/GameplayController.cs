@@ -1,18 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
-using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
-using FoodieMatch.Features.Motion;
 using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
@@ -25,8 +22,7 @@ namespace FoodieMatch.Features.Gameplay
         private const string WinReason = "Completed";
         private const string LoseReason = "WaitingRackFull";
 
-        private readonly GameplaySessionGuard _sessionGuard =
-            new GameplaySessionGuard();
+        private readonly GameplaySessionGuard _sessionGuard = new();
 
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
@@ -35,20 +31,31 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackView _waitingRackView;
         private GameplayMotionPresenter _gameplayMotionPresenter;
         private FoodVisualResolver _foodVisualResolver;
-        private RequiredPackageLifecycleUseCase
-            _requiredPackageLifecycleUseCase;
+        private RequiredPackageLifecycleUseCase _requiredPackageLifecycleUseCase;
         private SelectFoodUseCase _selectFoodUseCase;
         private ILevelRepository _levelRepository;
         private BoardModelFactory _boardModelFactory;
+        private PackageDeliveryCoordinator _packageDeliveryCoordinator;
+        private WaitingRackPlacementCoordinator _waitingRackPlacementCoordinator;
+        private WaitingRackAutoFillCoordinator _waitingRackAutoFillCoordinator;
+        private TopTrayMoveCoordinator _topTrayMoveCoordinator;
+        private GameplaySession _session;
         private Action _homeRequested;
 
-        private GameplaySession _session;
-        private PackageMotionState[] _packageMotionStates;
-        private int _waitingRackAutoFillSessionId;
-        private LevelSessionState _levelSessionState;
-        private bool _isWaitingRackAutoFillRunning;
-        private bool _isWaitingRackAutoFillRetryRequested;
-        private bool _isInputEnabled;
+        private void OnDestroy()
+        {
+            _sessionGuard.EndSession();
+            _gameplayMotionPresenter?.CancelAllMotions();
+            _packageDeliveryCoordinator?.EndSession();
+            _waitingRackAutoFillCoordinator?.EndSession();
+
+            if (_boardLayoutView != null)
+            {
+                _boardLayoutView.FoodSelected -= HandleFoodSelected;
+            }
+
+            UnsubscribeCoordinatorEvents();
+        }
 
         public void Construct(
             UIManager uiManager,
@@ -70,11 +77,13 @@ namespace FoodieMatch.Features.Gameplay
             _waitingRackView = waitingRackView;
             _gameplayMotionPresenter = gameplayMotionPresenter;
             _foodVisualResolver = foodVisualResolver;
-            _requiredPackageLifecycleUseCase =
-                requiredPackageLifecycleUseCase;
+            _requiredPackageLifecycleUseCase = requiredPackageLifecycleUseCase;
             _selectFoodUseCase = selectFoodUseCase;
             _levelRepository = levelRepository;
             _boardModelFactory = boardModelFactory;
+
+            CreateCoordinators();
+            SubscribeCoordinatorEvents();
 
             if (_boardLayoutView != null)
             {
@@ -82,18 +91,14 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        public void StartLevel(
-            int levelNumber,
-            Action homeRequested)
+        public void StartLevel(int levelNumber, Action homeRequested)
         {
             if (!HasDependencies())
             {
                 return;
             }
 
-            if (!_levelRepository.TryGetLevel(
-                    levelNumber,
-                    out LevelConfig levelConfig))
+            if (!_levelRepository.TryGetLevel(levelNumber, out LevelConfig levelConfig))
             {
                 Debug.LogError($"Level {levelNumber} could not be loaded.");
                 return;
@@ -101,55 +106,41 @@ namespace FoodieMatch.Features.Gameplay
 
             if (_waitingRackView.Capacity != levelConfig.WaitingRackCapacity)
             {
-                Debug.LogError(
-                    $"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
+                Debug.LogError($"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
                 return;
             }
 
             _homeRequested = homeRequested;
             BoardModel board = _boardModelFactory.Create(levelConfig);
-            RequiredPackageGenerationSettings packageSettings =
-                levelConfig.RequiredPackageGenerationSettings;
+            RequiredPackageGenerationSettings packageSettings = levelConfig.RequiredPackageGenerationSettings;
 
-            if (!_foodVisualResolver.TryCreateRandomMapping(
-                    board.GetAllFoodTokenIds()))
+            if (!_foodVisualResolver.TryCreateRandomMapping(board.GetAllFoodTokenIds()))
             {
-                Debug.LogError(
-                    $"Food visual mapping could not be created " +
-                    $"for level {levelNumber}.");
-
+                Debug.LogError($"Food visual mapping could not be created for level {levelNumber}.");
                 return;
             }
 
-            WaitingRackModel waitingRack =
-                new WaitingRackModel(levelConfig.WaitingRackCapacity);
+            WaitingRackModel waitingRack = new(levelConfig.WaitingRackCapacity);
 
-            if (_requiredPackageGroupView.PackageCount !=
-                packageSettings.InitialActivePackageCount)
+            if (_requiredPackageGroupView.PackageCount != packageSettings.InitialActivePackageCount)
             {
-                Debug.LogError(
-                    "Required package view count does not match the level config.");
-
+                Debug.LogError("Required package view count does not match the level config.");
                 return;
             }
 
-            if (!_requiredPackageLifecycleUseCase
-                    .TryCreateInitialPackages(
-                        board,
-                        waitingRack,
-                        packageSettings,
-                        out RequiredPackageModel[] requiredPackages))
+            if (!_requiredPackageLifecycleUseCase.TryCreateInitialPackages(
+                    board,
+                    waitingRack,
+                    packageSettings,
+                    out RequiredPackageModel[] requiredPackages))
             {
-                Debug.LogError(
-                    $"Initial required packages could not be created for level {levelNumber}.");
-
+                Debug.LogError($"Initial required packages could not be created for level {levelNumber}.");
                 return;
             }
 
             int sessionId = _sessionGuard.BeginSession();
-            LevelProgressModel progress =
-                new LevelProgressModel(board.RemainingFoodCount);
-            _session = new GameplaySession(
+            LevelProgressModel progress = new(board.RemainingFoodCount);
+            _session = new(
                 sessionId,
                 levelNumber,
                 board,
@@ -158,60 +149,77 @@ namespace FoodieMatch.Features.Gameplay
                 progress,
                 packageSettings);
 
-            CreatePackageMotionStates();
-            ResetWaitingRackAutoFillState(sessionId);
             _gameplayMotionPresenter.CancelAllMotions();
-
             _boardLayoutView.Setup(_session.Board);
             _waitingRackView.Clear();
-            RefreshRequiredPackageViews();
-            _levelSessionState = LevelSessionState.Playing;
-            _isInputEnabled = true;
+            _packageDeliveryCoordinator.BeginSession(_session);
+            _waitingRackAutoFillCoordinator.BeginSession(_session);
+            _session.StartPlaying();
 
             Debug.Log($"Start Level {levelNumber}");
-
-            _gameplayEvents.OnLevelStarted(
-                new LevelStartedEvent(levelNumber));
+            _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelNumber));
             _gameplayEvents.OnLevelProgressChanged(
                 new LevelProgressChangedEvent(
                     _session.Progress.ServedCount,
                     _session.Progress.TotalCount));
         }
 
-        private void ResolveWin()
-        {
-            if (!HasDependencies() ||
-                _levelSessionState != LevelSessionState.Playing)
-            {
-                return;
-            }
-
-            _levelSessionState = LevelSessionState.Won;
-            _isInputEnabled = false;
-
-            _gameplayEvents.OnLevelEnded(
-                new LevelEndedEvent(
-                    _session.LevelNumber,
-                    true,
-                    WinReason));
-
-            _uiManager.ShowWinPopup(
-                OnNextLevelClicked,
-                OnHomeClicked);
-        }
-
         public void ClearLevel()
         {
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
-
+            _packageDeliveryCoordinator?.EndSession();
+            _waitingRackAutoFillCoordinator?.EndSession();
             _session = null;
-            _packageMotionStates = null;
-            ResetWaitingRackAutoFillState(0);
-            _levelSessionState = LevelSessionState.None;
-            _isInputEnabled = false;
 
             Debug.Log("Clear Level");
+        }
+
+        private void CreateCoordinators()
+        {
+            _packageDeliveryCoordinator = new(
+                _sessionGuard,
+                _gameplayMotionPresenter,
+                _requiredPackageLifecycleUseCase,
+                _requiredPackageGroupView,
+                _foodVisualResolver,
+                _gameplayEvents);
+            _waitingRackPlacementCoordinator = new(
+                _sessionGuard,
+                _gameplayMotionPresenter,
+                _waitingRackView);
+            _waitingRackAutoFillCoordinator = new(
+                _sessionGuard,
+                _requiredPackageLifecycleUseCase,
+                _waitingRackView,
+                _packageDeliveryCoordinator);
+            _topTrayMoveCoordinator = new(
+                _sessionGuard,
+                _gameplayMotionPresenter,
+                _boardLayoutView);
+        }
+
+        private void SubscribeCoordinatorEvents()
+        {
+            _packageDeliveryCoordinator.PackageReplaced += HandlePackageReplaced;
+            _packageDeliveryCoordinator.PackageDeliveryFailed += HandleGameplayFlowFailed;
+            _waitingRackAutoFillCoordinator.AutoFillFinished += HandleAutoFillFinished;
+            _waitingRackAutoFillCoordinator.AutoFillFailed += HandleGameplayFlowFailed;
+        }
+
+        private void UnsubscribeCoordinatorEvents()
+        {
+            if (_packageDeliveryCoordinator != null)
+            {
+                _packageDeliveryCoordinator.PackageReplaced -= HandlePackageReplaced;
+                _packageDeliveryCoordinator.PackageDeliveryFailed -= HandleGameplayFlowFailed;
+            }
+
+            if (_waitingRackAutoFillCoordinator != null)
+            {
+                _waitingRackAutoFillCoordinator.AutoFillFinished -= HandleAutoFillFinished;
+                _waitingRackAutoFillCoordinator.AutoFillFailed -= HandleGameplayFlowFailed;
+            }
         }
 
         private bool HasDependencies()
@@ -248,8 +256,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (_gameplayMotionPresenter == null)
             {
-                Debug.LogError(
-                    "GameplayMotionPresenter has not been constructed.");
+                Debug.LogError("GameplayMotionPresenter has not been constructed.");
                 return false;
             }
 
@@ -261,8 +268,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (_requiredPackageLifecycleUseCase == null)
             {
-                Debug.LogError(
-                    "RequiredPackageLifecycleUseCase has not been constructed.");
+                Debug.LogError("RequiredPackageLifecycleUseCase has not been constructed.");
                 return false;
             }
 
@@ -287,25 +293,12 @@ namespace FoodieMatch.Features.Gameplay
             return true;
         }
 
-        private void OnDestroy()
-        {
-            _sessionGuard.EndSession();
-            ResetWaitingRackAutoFillState(0);
-            _gameplayMotionPresenter?.CancelAllMotions();
-
-            if (_boardLayoutView != null)
-            {
-                _boardLayoutView.FoodSelected -= HandleFoodSelected;
-            }
-        }
-
         private void HandleFoodSelected(FoodSelectionContext context)
         {
             _ = ProcessFoodSelectionSafelyAsync(context);
         }
 
-        private async Task ProcessFoodSelectionSafelyAsync(
-            FoodSelectionContext context)
+        private async Task ProcessFoodSelectionSafelyAsync(FoodSelectionContext context)
         {
             try
             {
@@ -317,1013 +310,219 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task ProcessFoodSelectionAsync(
-            FoodSelectionContext context)
+        private async Task ProcessFoodSelectionAsync(FoodSelectionContext context)
         {
-            if (_levelSessionState != LevelSessionState.Playing ||
-                !_isInputEnabled ||
-                context.FoodItemView == null ||
-                _session == null)
+            GameplaySession session = _session;
+
+            if (session == null || !session.CanSelectFood || context.FoodItemView == null)
             {
                 return;
             }
 
-            int sessionId = _session.SessionId;
             SelectFoodResult result = _selectFoodUseCase.Execute(
                 context.Address,
-                _session.Board,
-                _session.RequiredPackages,
-                _session.WaitingRack);
+                session.Board,
+                session.RequiredPackages,
+                session.WaitingRack);
 
             if (!result.IsPlaced)
             {
                 return;
             }
 
-            if (result.Type ==
-                SelectFoodResultType.PlacedInRequiredPackage)
+            if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
             {
-                await ProcessRequiredPackageSelectionAsync(
-                    context,
-                    result,
-                    sessionId);
-
+                await ProcessRequiredPackageSelectionAsync(context, result, session);
                 return;
             }
 
-            await ProcessWaitingRackSelectionAsync(
-                context,
-                result,
-                sessionId);
+            await ProcessWaitingRackSelectionAsync(context, result, session);
         }
 
         private async Task ProcessRequiredPackageSelectionAsync(
             FoodSelectionContext context,
             SelectFoodResult result,
-            int sessionId)
+            GameplaySession session)
         {
-            FoodItemView foodItemView = context.FoodItemView;
-            _boardLayoutView.ReleaseFoodItem(foodItemView);
-            IncreaseServedFoodCount();
-            MoveTopTrayToGrill(
-                context.Address.GrillPositionIndex,
-                sessionId);
+            _boardLayoutView.ReleaseFoodItem(context.FoodItemView);
+            Task deliveryTask = _packageDeliveryCoordinator.DeliverSelectedFoodAsync(
+                context.FoodItemView,
+                result.TargetIndex,
+                session);
 
-            if (!TryCreatePackageFlight(
-                    foodItemView,
-                    result.TargetIndex,
-                    out PackageFlight flight))
-            {
-                Debug.LogError(
-                    "Required package flight could not be created.");
-
-                foodItemView.Clear();
-
-                if (_session != null &&
-                    result.TargetIndex >= 0 &&
-                    result.TargetIndex < _session.RequiredPackages.Length)
-                {
-                    RefreshRequiredPackageViewAt(result.TargetIndex);
-                }
-
-                IncreaseDisplayedServedFoodCount();
-                _isInputEnabled = false;
-                return;
-            }
-
-            PackageMotionState motionState =
-                _packageMotionStates[flight.PackageIndex];
-
-            if (!motionState.TryRegisterIncomingFlight(
-                    flight.ExpectedPackage))
-            {
-                Debug.LogError(
-                    $"Required package {flight.PackageIndex} " +
-                    "could not register an incoming flight.");
-
-                ReconcileFailedPackageFlight(flight);
-                IncreaseDisplayedServedFoodCount();
-                _isInputEnabled = false;
-                return;
-            }
-
-            await ProcessPackageFlightAsync(flight, sessionId);
-        }
-
-        private async Task ProcessPackageFlightAsync(
-            PackageFlight flight,
-            int sessionId)
-        {
-            PackageMotionState motionState =
-                _packageMotionStates[flight.PackageIndex];
-            MotionResult motionResult;
-
-            try
-            {
-                motionResult = await _gameplayMotionPresenter
-                    .MoveFoodToRequiredPackageAsync(
-                        flight.FoodItemView,
-                        flight.PackageIndex,
-                        flight.RequiredAmount,
-                        flight.FilledSlotIndex);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                motionResult = MotionResult.Failed;
-            }
-            finally
-            {
-                if (!motionState.TryCompleteIncomingFlight(
-                        flight.ExpectedPackage))
-                {
-                    Debug.LogError(
-                        $"Required package {flight.PackageIndex} " +
-                        "could not complete an incoming flight.");
-                }
-            }
-
-            if (!CanContinueGameplay(sessionId) ||
-                !IsExpectedPackage(flight))
-            {
-                return;
-            }
-
-            if (motionResult == MotionResult.Cancelled)
-            {
-                return;
-            }
-
-            if (motionResult == MotionResult.Failed)
-            {
-                Debug.LogError(
-                    $"Food flight to required package " +
-                    $"{flight.PackageIndex} failed.");
-
-                ReconcileFailedPackageFlight(flight);
-            }
-
-            IncreaseDisplayedServedFoodCount();
-            TryStartPackageCompletion(
-                flight.PackageIndex,
-                flight.ExpectedPackage,
-                sessionId);
-            TryResolveWin(sessionId);
+            _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            await deliveryTask;
+            TryResolveWin(session);
         }
 
         private async Task ProcessWaitingRackSelectionAsync(
             FoodSelectionContext context,
             SelectFoodResult result,
-            int sessionId)
+            GameplaySession session)
         {
-            FoodItemView foodItemView = context.FoodItemView;
-            _boardLayoutView.ReleaseFoodItem(foodItemView);
+            _boardLayoutView.ReleaseFoodItem(context.FoodItemView);
+            Task<WaitingRackPlacementResult> placementTask =
+                _waitingRackPlacementCoordinator.PlaceFoodAsync(
+                    context.FoodItemView,
+                    result.TargetIndex,
+                    session);
 
-            Task<MotionResult> motionTask =
-                MoveFoodToWaitingRackSafelyAsync(
-                    foodItemView,
-                    result.TargetIndex);
-
-            MoveTopTrayToGrill(
-                context.Address.GrillPositionIndex,
-                sessionId);
-
-            bool causedWaitingRackFull = _session.WaitingRack.IsFull;
+            _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            bool causedWaitingRackFull = session.WaitingRack.IsFull;
 
             if (causedWaitingRackFull)
             {
-                EnterAwaitingRevive();
+                session.TryEnterAwaitingRevive();
             }
 
-            MotionResult motionResult = await motionTask;
+            WaitingRackPlacementResult placementResult = await placementTask;
 
-            if (!_sessionGuard.IsCurrentSession(sessionId))
+            if (!IsCurrentSession(session) || placementResult == WaitingRackPlacementResult.Cancelled)
             {
                 return;
             }
 
-            if (motionResult == MotionResult.Failed)
+            if (placementResult == WaitingRackPlacementResult.Failed)
             {
-                Debug.LogError(
-                    $"Food flight to waiting rack slot " +
-                    $"{result.TargetIndex} failed.");
-
-                if (!ReconcileWaitingRackPlacement(
-                        result.TargetIndex,
-                        foodItemView))
-                {
-                    _isInputEnabled = false;
-                    return;
-                }
+                session.DisableInput();
+                return;
             }
 
-            if (motionResult == MotionResult.Cancelled)
+            if (session.CanContinueGameplay)
+            {
+                _waitingRackAutoFillCoordinator.StartOrRequestRetry(session);
+            }
+
+            if (causedWaitingRackFull && session.State == LevelSessionState.AwaitingRevive)
+            {
+                ShowLosePopup(session);
+            }
+        }
+
+        private void HandlePackageReplaced(GameplaySession session)
+        {
+            if (!IsCurrentSession(session))
             {
                 return;
             }
 
-            TryStartWaitingRackAutoFill(sessionId);
-
-            if (causedWaitingRackFull &&
-                _levelSessionState == LevelSessionState.AwaitingRevive)
+            if (session.CanContinueGameplay)
             {
-                ShowLosePopup();
+                _waitingRackAutoFillCoordinator.StartOrRequestRetry(session);
+            }
+
+            TryResolveWin(session);
+        }
+
+        private void HandleAutoFillFinished(GameplaySession session)
+        {
+            TryResolveWin(session);
+        }
+
+        private void HandleGameplayFlowFailed(GameplaySession session)
+        {
+            if (IsCurrentSession(session))
+            {
+                session.DisableInput();
             }
         }
 
-        private async Task<MotionResult> MoveFoodToWaitingRackSafelyAsync(
-            FoodItemView foodItemView,
-            int rackSlotIndex)
+        private void TryResolveWin(GameplaySession session)
         {
-            try
-            {
-                return await _gameplayMotionPresenter
-                    .MoveFoodToWaitingRackAsync(
-                        foodItemView,
-                        rackSlotIndex);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                return MotionResult.Failed;
-            }
-        }
-
-        private bool ReconcileWaitingRackPlacement(
-            int rackSlotIndex,
-            FoodItemView foodItemView)
-        {
-            if (_waitingRackView.CompleteFoodPlacementAt(
-                    rackSlotIndex,
-                    foodItemView))
-            {
-                return true;
-            }
-
-            return _waitingRackView.RestoreFoodAt(
-                rackSlotIndex,
-                foodItemView);
-        }
-
-        private void TryStartWaitingRackAutoFill(int sessionId)
-        {
-            if (!CanContinueGameplay(sessionId))
+            if (!IsCurrentSession(session) ||
+                !session.CanContinueGameplay ||
+                !session.Progress.IsComplete ||
+                !session.IsDisplayedProgressUpToDate ||
+                _waitingRackAutoFillCoordinator.IsRunning(session) ||
+                _packageDeliveryCoordinator.HasActiveMotion(session))
             {
                 return;
             }
 
-            if (_isWaitingRackAutoFillRunning &&
-                _waitingRackAutoFillSessionId == sessionId)
-            {
-                _isWaitingRackAutoFillRetryRequested = true;
-                return;
-            }
-
-            _waitingRackAutoFillSessionId = sessionId;
-            _isWaitingRackAutoFillRunning = true;
-            _isWaitingRackAutoFillRetryRequested = false;
-            _ = RunWaitingRackAutoFillSafelyAsync(sessionId);
+            ResolveWin(session);
         }
 
-        private async Task RunWaitingRackAutoFillSafelyAsync(
-            int sessionId)
+        private void ResolveWin(GameplaySession session)
         {
-            try
-            {
-                while (CanContinueGameplay(sessionId))
-                {
-                    List<PackageFlight> flights =
-                        BuildWaitingRackAutoFillBatch(sessionId);
-
-                    if (flights.Count == 0)
-                    {
-                        break;
-                    }
-
-                    if (!TryRegisterPackageFlights(flights))
-                    {
-                        Debug.LogError(
-                            "Waiting rack auto-fill flights " +
-                            "could not be registered.");
-
-                        ReconcileUnlaunchedPackageFlights(flights);
-                        _isInputEnabled = false;
-                        break;
-                    }
-
-                    Task[] motionTasks = new Task[flights.Count];
-
-                    for (int i = 0; i < flights.Count; i++)
-                    {
-                        motionTasks[i] = ProcessPackageFlightAsync(
-                            flights[i],
-                            sessionId);
-                    }
-
-                    await Task.WhenAll(motionTasks);
-                }
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
-            finally
-            {
-                FinishWaitingRackAutoFill(sessionId);
-            }
-        }
-
-        private List<PackageFlight> BuildWaitingRackAutoFillBatch(
-            int sessionId)
-        {
-            List<PackageFlight> flights = new List<PackageFlight>();
-
-            while (CanContinueGameplay(sessionId) &&
-                   _requiredPackageLifecycleUseCase
-                       .TryFindWaitingRackMatch(
-                           _session.WaitingRack,
-                           _session.RequiredPackages,
-                           out WaitingRackTransfer transfer))
-            {
-                FoodItemView foodItemView =
-                    _waitingRackView.RemoveFoodAt(
-                        transfer.RackSlotIndex);
-
-                if (foodItemView == null)
-                {
-                    break;
-                }
-
-                if (!TryCreateWaitingRackPackageFlight(
-                        transfer,
-                        foodItemView,
-                        out PackageFlight flight))
-                {
-                    Debug.LogError(
-                        "Waiting rack package flight " +
-                        "could not be created.");
-
-                    RestoreWaitingRackFood(
-                        transfer.RackSlotIndex,
-                        foodItemView);
-                    _isInputEnabled = false;
-                    break;
-                }
-
-                if (!_requiredPackageLifecycleUseCase
-                        .TryMoveFoodFromWaitingRack(
-                            transfer,
-                            _session.WaitingRack,
-                            _session.RequiredPackages))
-                {
-                    Debug.LogError(
-                        "Waiting rack food could not be moved " +
-                        "to its required package.");
-
-                    RestoreWaitingRackFood(
-                        transfer.RackSlotIndex,
-                        foodItemView);
-                    break;
-                }
-
-                IncreaseServedFoodCount();
-                flights.Add(flight);
-            }
-
-            return flights;
-        }
-
-        private bool TryCreateWaitingRackPackageFlight(
-            WaitingRackTransfer transfer,
-            FoodItemView foodItemView,
-            out PackageFlight flight)
-        {
-            flight = default;
-
-            if (foodItemView == null ||
-                foodItemView.FoodTokenId != transfer.FoodTokenId ||
-                _session == null ||
-                _packageMotionStates == null ||
-                transfer.PackageIndex < 0 ||
-                transfer.PackageIndex >= _session.RequiredPackages.Length ||
-                transfer.PackageIndex >= _packageMotionStates.Length)
-            {
-                return false;
-            }
-
-            RequiredPackageModel expectedPackage =
-                _session.RequiredPackages[transfer.PackageIndex];
-            PackageMotionState motionState =
-                _packageMotionStates[transfer.PackageIndex];
-
-            if (expectedPackage == null ||
-                !expectedPackage.CanAccept(transfer.FoodTokenId) ||
-                motionState == null ||
-                motionState.Package != expectedPackage ||
-                motionState.IsCompleteMotionRunning)
-            {
-                return false;
-            }
-
-            flight = new PackageFlight(
-                foodItemView,
-                expectedPackage,
-                transfer.PackageIndex,
-                expectedPackage.RequiredAmount,
-                expectedPackage.FilledAmount);
-
-            return true;
-        }
-
-        private bool TryRegisterPackageFlights(
-            IReadOnlyList<PackageFlight> flights)
-        {
-            int registeredFlightCount = 0;
-
-            for (int i = 0; i < flights.Count; i++)
-            {
-                PackageFlight flight = flights[i];
-
-                if (!TryGetPackageMotionState(
-                        flight.PackageIndex,
-                        flight.ExpectedPackage,
-                        out PackageMotionState motionState) ||
-                    !motionState.TryRegisterIncomingFlight(
-                        flight.ExpectedPackage))
-                {
-                    RollbackRegisteredPackageFlights(
-                        flights,
-                        registeredFlightCount);
-
-                    return false;
-                }
-
-                registeredFlightCount++;
-            }
-
-            return true;
-        }
-
-        private void RollbackRegisteredPackageFlights(
-            IReadOnlyList<PackageFlight> flights,
-            int registeredFlightCount)
-        {
-            for (int i = 0; i < registeredFlightCount; i++)
-            {
-                PackageFlight flight = flights[i];
-                PackageMotionState motionState =
-                    _packageMotionStates[flight.PackageIndex];
-
-                motionState.TryCompleteIncomingFlight(
-                    flight.ExpectedPackage);
-            }
-        }
-
-        private void ReconcileUnlaunchedPackageFlights(
-            IReadOnlyList<PackageFlight> flights)
-        {
-            for (int i = 0; i < flights.Count; i++)
-            {
-                ReconcileFailedPackageFlight(flights[i]);
-                IncreaseDisplayedServedFoodCount();
-            }
-        }
-
-        private bool RestoreWaitingRackFood(
-            int rackSlotIndex,
-            FoodItemView foodItemView)
-        {
-            if (_waitingRackView.RestoreFoodAt(
-                    rackSlotIndex,
-                    foodItemView))
-            {
-                return true;
-            }
-
-            Debug.LogError(
-                $"Waiting rack food at slot {rackSlotIndex} " +
-                "could not be restored.");
-
-            _isInputEnabled = false;
-            return false;
-        }
-
-        private void FinishWaitingRackAutoFill(int sessionId)
-        {
-            if (_waitingRackAutoFillSessionId != sessionId)
+            if (!HasDependencies() || !IsCurrentSession(session) || !session.TryMarkAsWon())
             {
                 return;
             }
 
-            bool shouldRetry =
-                _isWaitingRackAutoFillRetryRequested;
-
-            _isWaitingRackAutoFillRunning = false;
-            _isWaitingRackAutoFillRetryRequested = false;
-
-            if (shouldRetry)
-            {
-                TryStartWaitingRackAutoFill(sessionId);
-            }
-
-            TryResolveWin(sessionId);
+            _gameplayEvents.OnLevelEnded(
+                new LevelEndedEvent(
+                    session.LevelNumber,
+                    true,
+                    WinReason));
+            _uiManager.ShowWinPopup(OnNextLevelClicked, OnHomeClicked);
         }
 
-        private void ResetWaitingRackAutoFillState(int sessionId)
+        private void ShowLosePopup(GameplaySession session)
         {
-            _waitingRackAutoFillSessionId = sessionId;
-            _isWaitingRackAutoFillRunning = false;
-            _isWaitingRackAutoFillRetryRequested = false;
-        }
-
-        private bool TryCreatePackageFlight(
-            FoodItemView foodItemView,
-            int packageIndex,
-            out PackageFlight flight)
-        {
-            flight = default;
-
-            if (foodItemView == null ||
-                _session == null ||
-                _packageMotionStates == null ||
-                packageIndex < 0 ||
-                packageIndex >= _session.RequiredPackages.Length ||
-                packageIndex >= _packageMotionStates.Length)
-            {
-                return false;
-            }
-
-            RequiredPackageModel requiredPackage =
-                _session.RequiredPackages[packageIndex];
-
-            if (requiredPackage == null ||
-                requiredPackage.FilledAmount <= 0)
-            {
-                return false;
-            }
-
-            flight = new PackageFlight(
-                foodItemView,
-                requiredPackage,
-                packageIndex,
-                requiredPackage.RequiredAmount,
-                requiredPackage.FilledAmount - 1);
-
-            return true;
-        }
-
-        private void ReconcileFailedPackageFlight(
-            PackageFlight flight)
-        {
-            flight.FoodItemView.Clear();
-            RefreshRequiredPackageViewAt(flight.PackageIndex);
-        }
-
-        private void IncreaseServedFoodCount()
-        {
-            if (_session == null ||
-                !_session.Progress.TryServeFood())
-            {
-                Debug.LogError("Level progress could not serve food.");
-            }
-        }
-
-        private void IncreaseDisplayedServedFoodCount()
-        {
-            if (_session == null ||
-                !_session.TryIncreaseDisplayedServedCount())
+            if (!IsCurrentSession(session) || session.State != LevelSessionState.AwaitingRevive)
             {
                 return;
             }
 
-            _gameplayEvents.OnLevelProgressChanged(
-                new LevelProgressChangedEvent(
-                    _session.DisplayedServedCount,
-                    _session.Progress.TotalCount));
-        }
-
-        private void TryStartPackageCompletion(
-            int packageIndex,
-            RequiredPackageModel expectedPackage,
-            int sessionId)
-        {
-            if (!CanContinueGameplay(sessionId) ||
-                !TryGetPackageMotionState(
-                    packageIndex,
-                    expectedPackage,
-                    out PackageMotionState motionState) ||
-                !expectedPackage.IsComplete ||
-                motionState.IncomingFlightCount != 0 ||
-                motionState.IsCompleteMotionRunning)
-            {
-                return;
-            }
-
-            motionState.IsCompleteMotionRunning = true;
-            _ = CompletePackageSafelyAsync(
-                packageIndex,
-                expectedPackage,
-                sessionId);
-        }
-
-        private async Task CompletePackageSafelyAsync(
-            int packageIndex,
-            RequiredPackageModel expectedPackage,
-            int sessionId)
-        {
-            MotionResult motionResult;
-
-            try
-            {
-                motionResult = await _gameplayMotionPresenter
-                    .PlayRequiredPackageCompleteAsync(packageIndex);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                motionResult = MotionResult.Failed;
-            }
-
-            if (!CanContinueGameplay(sessionId) ||
-                !TryGetPackageMotionState(
-                    packageIndex,
-                    expectedPackage,
-                    out PackageMotionState motionState))
-            {
-                return;
-            }
-
-            if (motionResult == MotionResult.Cancelled)
-            {
-                motionState.IsCompleteMotionRunning = false;
-                return;
-            }
-
-            if (motionResult == MotionResult.Failed)
-            {
-                Debug.LogError(
-                    $"Required package {packageIndex} complete " +
-                    "feedback failed.");
-            }
-
-            if (!_requiredPackageLifecycleUseCase
-                    .TryReplaceCompletedPackage(
-                        packageIndex,
-                        _session.Board,
-                        _session.WaitingRack,
-                        _session.RequiredPackages,
-                        _session.PackageSettings,
-                        out RequiredPackageModel newPackage))
-            {
-                motionState.IsCompleteMotionRunning = false;
-                Debug.LogError(
-                    $"Required package {packageIndex} could not be replaced.");
-
-                return;
-            }
-
-            motionState.Reset(newPackage);
-            RefreshRequiredPackageViewAt(packageIndex);
-            TryStartWaitingRackAutoFill(sessionId);
-            TryResolveWin(sessionId);
-        }
-
-        private bool TryGetPackageMotionState(
-            int packageIndex,
-            RequiredPackageModel expectedPackage,
-            out PackageMotionState motionState)
-        {
-            motionState = null;
-
-            if (_session == null ||
-                _packageMotionStates == null ||
-                packageIndex < 0 ||
-                packageIndex >= _session.RequiredPackages.Length ||
-                packageIndex >= _packageMotionStates.Length ||
-                _session.RequiredPackages[packageIndex] != expectedPackage)
-            {
-                return false;
-            }
-
-            motionState = _packageMotionStates[packageIndex];
-            return motionState != null &&
-                   motionState.Package == expectedPackage;
-        }
-
-        private bool IsExpectedPackage(PackageFlight flight)
-        {
-            return TryGetPackageMotionState(
-                flight.PackageIndex,
-                flight.ExpectedPackage,
-                out _);
-        }
-
-        private bool CanContinueGameplay(int sessionId)
-        {
-            return _sessionGuard.IsCurrentSession(sessionId) &&
-                   _levelSessionState == LevelSessionState.Playing;
-        }
-
-        private void TryResolveWin(int sessionId)
-        {
-            if (!CanContinueGameplay(sessionId) ||
-                _session == null ||
-                !_session.Progress.IsComplete ||
-                !_session.IsDisplayedProgressUpToDate ||
-                IsWaitingRackAutoFillRunning(sessionId) ||
-                HasActivePackageMotion())
-            {
-                return;
-            }
-
-            ResolveWin();
-        }
-
-        private bool IsWaitingRackAutoFillRunning(int sessionId)
-        {
-            return _isWaitingRackAutoFillRunning &&
-                   _waitingRackAutoFillSessionId == sessionId;
-        }
-
-        private bool HasActivePackageMotion()
-        {
-            if (_packageMotionStates == null)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < _packageMotionStates.Length; i++)
-            {
-                PackageMotionState motionState =
-                    _packageMotionStates[i];
-
-                if (motionState != null &&
-                    (motionState.IncomingFlightCount > 0 ||
-                     motionState.IsCompleteMotionRunning ||
-                     motionState.Package != null &&
-                     motionState.Package.IsComplete))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private void CreatePackageMotionStates()
-        {
-            _packageMotionStates = new PackageMotionState[
-                _session.RequiredPackages.Length];
-
-            for (int i = 0; i < _session.RequiredPackages.Length; i++)
-            {
-                _packageMotionStates[i] = new PackageMotionState(
-                    _session.RequiredPackages[i]);
-            }
-        }
-
-        private void RefreshRequiredPackageViews()
-        {
-            for (int i = 0; i < _session.RequiredPackages.Length; i++)
-            {
-                RefreshRequiredPackageViewAt(i);
-            }
-        }
-
-        private void RefreshRequiredPackageViewAt(int packageIndex)
-        {
-            RequiredPackageModel package =
-                _session.RequiredPackages[packageIndex];
-            Sprite sprite = package != null
-                ? _foodVisualResolver.ResolveIcon(
-                    package.FoodTokenId)
-                : null;
-
-            if (!_requiredPackageGroupView.ShowPackageAt(
-                    packageIndex,
-                    package,
-                    sprite))
-            {
-                Debug.LogError(
-                    $"Required package view {packageIndex} could not be updated.");
-            }
-        }
-
-        private void MoveTopTrayToGrill(
-            int grillPositionIndex,
-            int sessionId)
-        {
-            if (!_session.Board.TryMoveTopTrayToGrill(
-                    grillPositionIndex,
-                    out GrillModel grillModel))
-            {
-                return;
-            }
-
-            if (!_boardLayoutView.TryPrepareTopTrayFoodMove(
-                    grillModel,
-                    out IReadOnlyList<FoodItemView> foodItemViews,
-                    out IReadOnlyList<Vector3> targetPositions))
-            {
-                Debug.LogError(
-                    $"Could not prepare top tray move " +
-                    $"to grill {grillPositionIndex}.");
-
-                return;
-            }
-
-            _ = MoveTopTrayFoodToGrillSafelyAsync(
-                grillModel,
-                foodItemViews,
-                targetPositions,
-                sessionId);
-        }
-
-        private async Task MoveTopTrayFoodToGrillSafelyAsync(
-            GrillModel grillModel,
-            IReadOnlyList<FoodItemView> foodItemViews,
-            IReadOnlyList<Vector3> targetPositions,
-            int sessionId)
-        {
-            MotionResult motionResult;
-
-            try
-            {
-                motionResult = await _gameplayMotionPresenter
-                    .MoveTopTrayFoodToGrillAsync(
-                        foodItemViews,
-                        targetPositions);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                motionResult = MotionResult.Failed;
-            }
-
-            if (!_sessionGuard.IsCurrentSession(sessionId))
-            {
-                return;
-            }
-
-            if (motionResult == MotionResult.Failed)
-            {
-                Debug.LogError(
-                    $"Top tray food flight to grill " +
-                    $"{grillModel.PositionIndex} failed.");
-            }
-
-            bool makeInteractable =
-                _levelSessionState == LevelSessionState.Playing &&
-                _isInputEnabled;
-
-            if (!_boardLayoutView.CompleteTopTrayFoodMove(
-                    grillModel,
-                    foodItemViews,
-                    makeInteractable))
-            {
-                Debug.LogError(
-                    $"Could not complete top tray move " +
-                    $"to grill {grillModel.PositionIndex}.");
-            }
-        }
-
-        private void EnterAwaitingRevive()
-        {
-            if (_levelSessionState != LevelSessionState.Playing)
-            {
-                return;
-            }
-
-            _levelSessionState = LevelSessionState.AwaitingRevive;
-            _isInputEnabled = false;
-        }
-
-        private void ShowLosePopup()
-        {
-            if (_levelSessionState != LevelSessionState.AwaitingRevive)
-            {
-                return;
-            }
-
-            _uiManager.ShowLosePopup(
-                OnTryAgainClicked,
-                OnHomeClicked);
+            _uiManager.ShowLosePopup(OnTryAgainClicked, OnHomeClicked);
         }
 
         private void FinalizeLose()
         {
-            if (_levelSessionState != LevelSessionState.AwaitingRevive)
+            GameplaySession session = _session;
+
+            if (session == null || !session.TryMarkAsLost())
             {
                 return;
             }
 
-            _levelSessionState = LevelSessionState.Lost;
-
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _session.LevelNumber,
+                    session.LevelNumber,
                     false,
                     LoseReason));
         }
 
+        private bool IsCurrentSession(GameplaySession session)
+        {
+            return session != null &&
+                   _session == session &&
+                   _sessionGuard.IsCurrentSession(session.SessionId);
+        }
+
         private void OnNextLevelClicked()
         {
-            if (!_levelRepository.TryGetNextLevel(
-                    _session.LevelNumber,
-                    out _))
+            GameplaySession session = _session;
+
+            if (session == null || !_levelRepository.TryGetNextLevel(session.LevelNumber, out _))
             {
                 Debug.Log("No next level is available.");
                 return;
             }
 
             _uiManager.HideAllPopups();
-            StartLevel(_session.LevelNumber + 1, _homeRequested);
+            StartLevel(session.LevelNumber + 1, _homeRequested);
         }
 
         private void OnTryAgainClicked()
         {
-            FinalizeLose();
+            if (_session == null)
+            {
+                return;
+            }
 
+            int levelNumber = _session.LevelNumber;
+            FinalizeLose();
             _uiManager.HideAllPopups();
-            StartLevel(_session.LevelNumber, _homeRequested);
+            StartLevel(levelNumber, _homeRequested);
         }
 
         private void OnHomeClicked()
         {
             FinalizeLose();
-
             _uiManager.HideAllPopups();
             ClearLevel();
-
             _homeRequested?.Invoke();
-        }
-
-        private readonly struct PackageFlight
-        {
-            public PackageFlight(
-                FoodItemView foodItemView,
-                RequiredPackageModel expectedPackage,
-                int packageIndex,
-                int requiredAmount,
-                int filledSlotIndex)
-            {
-                FoodItemView = foodItemView;
-                ExpectedPackage = expectedPackage;
-                PackageIndex = packageIndex;
-                RequiredAmount = requiredAmount;
-                FilledSlotIndex = filledSlotIndex;
-            }
-
-            public FoodItemView FoodItemView { get; }
-            public RequiredPackageModel ExpectedPackage { get; }
-            public int PackageIndex { get; }
-            public int RequiredAmount { get; }
-            public int FilledSlotIndex { get; }
-        }
-
-        private sealed class PackageMotionState
-        {
-            public PackageMotionState(RequiredPackageModel package)
-            {
-                Package = package;
-            }
-
-            public RequiredPackageModel Package { get; private set; }
-            public int IncomingFlightCount { get; private set; }
-            public bool IsCompleteMotionRunning { get; set; }
-
-            public bool TryRegisterIncomingFlight(
-                RequiredPackageModel expectedPackage)
-            {
-                if (Package != expectedPackage ||
-                    IsCompleteMotionRunning)
-                {
-                    return false;
-                }
-
-                IncomingFlightCount++;
-                return true;
-            }
-
-            public bool TryCompleteIncomingFlight(
-                RequiredPackageModel expectedPackage)
-            {
-                if (Package != expectedPackage ||
-                    IncomingFlightCount <= 0)
-                {
-                    return false;
-                }
-
-                IncomingFlightCount--;
-                return true;
-            }
-
-            public void Reset(RequiredPackageModel package)
-            {
-                Package = package;
-                IncomingFlightCount = 0;
-                IsCompleteMotionRunning = false;
-            }
         }
     }
 }
