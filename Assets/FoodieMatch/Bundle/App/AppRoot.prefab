@@ -521,6 +521,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3588690107982509502}
     m_Modifications:
+    - target: {fileID: 298983883624641772, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 624587568727948870, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
       propertyPath: m_Name
       value: GameplayRoot
@@ -531,7 +535,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7593385773710353304, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 7593385773710353304, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
       propertyPath: m_LocalPosition.z
