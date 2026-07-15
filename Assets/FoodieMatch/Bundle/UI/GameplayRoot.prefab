@@ -63,9 +63,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pauseButton: {fileID: 348668763945171684}
+  _boosterButtons: []
   _levelLabelText: {fileID: 281085784854979436}
   _progressText: {fileID: 5466885971055141098}
-  _comboTitleText: {fileID: 8385571646453588023}
   _comboMultiplierText: {fileID: 4835074968889739430}
   _boosterCountTexts:
   - {fileID: 2095657215401637735}
@@ -478,17 +478,6 @@ MonoBehaviour:
 --- !u!114 &5466885971055141098 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2898985322959800535, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
-  m_PrefabInstance: {fileID: 7198164088539179069}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8385571646453588023 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1709833910917908490, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
   m_PrefabInstance: {fileID: 7198164088539179069}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
