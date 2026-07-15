@@ -42,16 +42,9 @@ namespace FoodieMatch.Features.Gameplay
         private BoardModelFactory _boardModelFactory;
         private Action _homeRequested;
 
-        private BoardModel _board;
-        private RequiredPackageModel[] _requiredPackages;
-        private RequiredPackageGenerationSettings
-            _requiredPackageGenerationSettings;
-        private WaitingRackModel _waitingRack;
-        private LevelProgressModel _levelProgress;
+        private GameplaySession _session;
         private PackageMotionState[] _packageMotionStates;
         private int _waitingRackAutoFillSessionId;
-        private int _displayedServedCount;
-        private int _currentLevelNumber;
         private LevelSessionState _levelSessionState;
         private bool _isWaitingRackAutoFillRunning;
         private bool _isWaitingRackAutoFillRetryRequested;
@@ -113,61 +106,63 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            _currentLevelNumber = levelNumber;
             _homeRequested = homeRequested;
-            _board = _boardModelFactory.Create(levelConfig);
-            _requiredPackageGenerationSettings =
+            BoardModel board = _boardModelFactory.Create(levelConfig);
+            RequiredPackageGenerationSettings packageSettings =
                 levelConfig.RequiredPackageGenerationSettings;
 
             if (!_foodVisualResolver.TryCreateRandomMapping(
-                    _board.GetAllFoodTokenIds()))
+                    board.GetAllFoodTokenIds()))
             {
                 Debug.LogError(
                     $"Food visual mapping could not be created " +
                     $"for level {levelNumber}.");
 
-                _board = null;
                 return;
             }
 
-            _waitingRack = new WaitingRackModel(levelConfig.WaitingRackCapacity);
+            WaitingRackModel waitingRack =
+                new WaitingRackModel(levelConfig.WaitingRackCapacity);
 
             if (_requiredPackageGroupView.PackageCount !=
-                _requiredPackageGenerationSettings
-                    .InitialActivePackageCount)
+                packageSettings.InitialActivePackageCount)
             {
                 Debug.LogError(
                     "Required package view count does not match the level config.");
 
-                _board = null;
                 return;
             }
 
             if (!_requiredPackageLifecycleUseCase
                     .TryCreateInitialPackages(
-                        _board,
-                        _waitingRack,
-                        _requiredPackageGenerationSettings,
-                        out _requiredPackages))
+                        board,
+                        waitingRack,
+                        packageSettings,
+                        out RequiredPackageModel[] requiredPackages))
             {
                 Debug.LogError(
                     $"Initial required packages could not be created for level {levelNumber}.");
 
-                _board = null;
-                _waitingRack = null;
                 return;
             }
 
-            _levelProgress = new LevelProgressModel(
-                _board.RemainingFoodCount);
-            _displayedServedCount = 0;
-            CreatePackageMotionStates();
-
             int sessionId = _sessionGuard.BeginSession();
+            LevelProgressModel progress =
+                new LevelProgressModel(board.RemainingFoodCount);
+            _session = new GameplaySession(
+                sessionId,
+                levelNumber,
+                board,
+                requiredPackages,
+                waitingRack,
+                progress,
+                packageSettings);
+
+            CreatePackageMotionStates();
             ResetWaitingRackAutoFillState(sessionId);
             _gameplayMotionPresenter.CancelAllMotions();
 
-            _boardLayoutView.Setup(_board);
+            _boardLayoutView.Setup(_session.Board);
             _waitingRackView.Clear();
             RefreshRequiredPackageViews();
             _levelSessionState = LevelSessionState.Playing;
@@ -179,8 +174,8 @@ namespace FoodieMatch.Features.Gameplay
                 new LevelStartedEvent(levelNumber));
             _gameplayEvents.OnLevelProgressChanged(
                 new LevelProgressChangedEvent(
-                    _levelProgress.ServedCount,
-                    _levelProgress.TotalCount));
+                    _session.Progress.ServedCount,
+                    _session.Progress.TotalCount));
         }
 
         private void ResolveWin()
@@ -196,7 +191,7 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _currentLevelNumber,
+                    _session.LevelNumber,
                     true,
                     WinReason));
 
@@ -210,9 +205,8 @@ namespace FoodieMatch.Features.Gameplay
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
 
-            _levelProgress = null;
+            _session = null;
             _packageMotionStates = null;
-            _displayedServedCount = 0;
             ResetWaitingRackAutoFillState(0);
             _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
@@ -329,18 +323,17 @@ namespace FoodieMatch.Features.Gameplay
             if (_levelSessionState != LevelSessionState.Playing ||
                 !_isInputEnabled ||
                 context.FoodItemView == null ||
-                _requiredPackages == null ||
-                _waitingRack == null)
+                _session == null)
             {
                 return;
             }
 
-            int sessionId = _sessionGuard.CurrentSessionId;
+            int sessionId = _session.SessionId;
             SelectFoodResult result = _selectFoodUseCase.Execute(
                 context.Address,
-                _board,
-                _requiredPackages,
-                _waitingRack);
+                _session.Board,
+                _session.RequiredPackages,
+                _session.WaitingRack);
 
             if (!result.IsPlaced)
             {
@@ -386,9 +379,9 @@ namespace FoodieMatch.Features.Gameplay
 
                 foodItemView.Clear();
 
-                if (_requiredPackages != null &&
+                if (_session != null &&
                     result.TargetIndex >= 0 &&
-                    result.TargetIndex < _requiredPackages.Length)
+                    result.TargetIndex < _session.RequiredPackages.Length)
                 {
                     RefreshRequiredPackageViewAt(result.TargetIndex);
                 }
@@ -495,7 +488,7 @@ namespace FoodieMatch.Features.Gameplay
                 context.Address.GrillPositionIndex,
                 sessionId);
 
-            bool causedWaitingRackFull = _waitingRack.IsFull;
+            bool causedWaitingRackFull = _session.WaitingRack.IsFull;
 
             if (causedWaitingRackFull)
             {
@@ -648,8 +641,8 @@ namespace FoodieMatch.Features.Gameplay
             while (CanContinueGameplay(sessionId) &&
                    _requiredPackageLifecycleUseCase
                        .TryFindWaitingRackMatch(
-                           _waitingRack,
-                           _requiredPackages,
+                           _session.WaitingRack,
+                           _session.RequiredPackages,
                            out WaitingRackTransfer transfer))
             {
                 FoodItemView foodItemView =
@@ -680,8 +673,8 @@ namespace FoodieMatch.Features.Gameplay
                 if (!_requiredPackageLifecycleUseCase
                         .TryMoveFoodFromWaitingRack(
                             transfer,
-                            _waitingRack,
-                            _requiredPackages))
+                            _session.WaitingRack,
+                            _session.RequiredPackages))
                 {
                     Debug.LogError(
                         "Waiting rack food could not be moved " +
@@ -709,17 +702,17 @@ namespace FoodieMatch.Features.Gameplay
 
             if (foodItemView == null ||
                 foodItemView.FoodTokenId != transfer.FoodTokenId ||
-                _requiredPackages == null ||
+                _session == null ||
                 _packageMotionStates == null ||
                 transfer.PackageIndex < 0 ||
-                transfer.PackageIndex >= _requiredPackages.Length ||
+                transfer.PackageIndex >= _session.RequiredPackages.Length ||
                 transfer.PackageIndex >= _packageMotionStates.Length)
             {
                 return false;
             }
 
             RequiredPackageModel expectedPackage =
-                _requiredPackages[transfer.PackageIndex];
+                _session.RequiredPackages[transfer.PackageIndex];
             PackageMotionState motionState =
                 _packageMotionStates[transfer.PackageIndex];
 
@@ -851,17 +844,17 @@ namespace FoodieMatch.Features.Gameplay
             flight = default;
 
             if (foodItemView == null ||
-                _requiredPackages == null ||
+                _session == null ||
                 _packageMotionStates == null ||
                 packageIndex < 0 ||
-                packageIndex >= _requiredPackages.Length ||
+                packageIndex >= _session.RequiredPackages.Length ||
                 packageIndex >= _packageMotionStates.Length)
             {
                 return false;
             }
 
             RequiredPackageModel requiredPackage =
-                _requiredPackages[packageIndex];
+                _session.RequiredPackages[packageIndex];
 
             if (requiredPackage == null ||
                 requiredPackage.FilledAmount <= 0)
@@ -888,8 +881,8 @@ namespace FoodieMatch.Features.Gameplay
 
         private void IncreaseServedFoodCount()
         {
-            if (_levelProgress == null ||
-                !_levelProgress.TryServeFood())
+            if (_session == null ||
+                !_session.Progress.TryServeFood())
             {
                 Debug.LogError("Level progress could not serve food.");
             }
@@ -897,17 +890,16 @@ namespace FoodieMatch.Features.Gameplay
 
         private void IncreaseDisplayedServedFoodCount()
         {
-            if (_levelProgress == null ||
-                _displayedServedCount >= _levelProgress.ServedCount)
+            if (_session == null ||
+                !_session.TryIncreaseDisplayedServedCount())
             {
                 return;
             }
 
-            _displayedServedCount++;
             _gameplayEvents.OnLevelProgressChanged(
                 new LevelProgressChangedEvent(
-                    _displayedServedCount,
-                    _levelProgress.TotalCount));
+                    _session.DisplayedServedCount,
+                    _session.Progress.TotalCount));
         }
 
         private void TryStartPackageCompletion(
@@ -977,10 +969,10 @@ namespace FoodieMatch.Features.Gameplay
             if (!_requiredPackageLifecycleUseCase
                     .TryReplaceCompletedPackage(
                         packageIndex,
-                        _board,
-                        _waitingRack,
-                        _requiredPackages,
-                        _requiredPackageGenerationSettings,
+                        _session.Board,
+                        _session.WaitingRack,
+                        _session.RequiredPackages,
+                        _session.PackageSettings,
                         out RequiredPackageModel newPackage))
             {
                 motionState.IsCompleteMotionRunning = false;
@@ -1003,12 +995,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             motionState = null;
 
-            if (_requiredPackages == null ||
+            if (_session == null ||
                 _packageMotionStates == null ||
                 packageIndex < 0 ||
-                packageIndex >= _requiredPackages.Length ||
+                packageIndex >= _session.RequiredPackages.Length ||
                 packageIndex >= _packageMotionStates.Length ||
-                _requiredPackages[packageIndex] != expectedPackage)
+                _session.RequiredPackages[packageIndex] != expectedPackage)
             {
                 return false;
             }
@@ -1035,9 +1027,9 @@ namespace FoodieMatch.Features.Gameplay
         private void TryResolveWin(int sessionId)
         {
             if (!CanContinueGameplay(sessionId) ||
-                _levelProgress == null ||
-                !_levelProgress.IsComplete ||
-                _displayedServedCount < _levelProgress.ServedCount ||
+                _session == null ||
+                !_session.Progress.IsComplete ||
+                !_session.IsDisplayedProgressUpToDate ||
                 IsWaitingRackAutoFillRunning(sessionId) ||
                 HasActivePackageMotion())
             {
@@ -1081,18 +1073,18 @@ namespace FoodieMatch.Features.Gameplay
         private void CreatePackageMotionStates()
         {
             _packageMotionStates = new PackageMotionState[
-                _requiredPackages.Length];
+                _session.RequiredPackages.Length];
 
-            for (int i = 0; i < _requiredPackages.Length; i++)
+            for (int i = 0; i < _session.RequiredPackages.Length; i++)
             {
                 _packageMotionStates[i] = new PackageMotionState(
-                    _requiredPackages[i]);
+                    _session.RequiredPackages[i]);
             }
         }
 
         private void RefreshRequiredPackageViews()
         {
-            for (int i = 0; i < _requiredPackages.Length; i++)
+            for (int i = 0; i < _session.RequiredPackages.Length; i++)
             {
                 RefreshRequiredPackageViewAt(i);
             }
@@ -1101,7 +1093,7 @@ namespace FoodieMatch.Features.Gameplay
         private void RefreshRequiredPackageViewAt(int packageIndex)
         {
             RequiredPackageModel package =
-                _requiredPackages[packageIndex];
+                _session.RequiredPackages[packageIndex];
             Sprite sprite = package != null
                 ? _foodVisualResolver.ResolveIcon(
                     package.FoodTokenId)
@@ -1121,7 +1113,7 @@ namespace FoodieMatch.Features.Gameplay
             int grillPositionIndex,
             int sessionId)
         {
-            if (!_board.TryMoveTopTrayToGrill(
+            if (!_session.Board.TryMoveTopTrayToGrill(
                     grillPositionIndex,
                     out GrillModel grillModel))
             {
@@ -1229,7 +1221,7 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
-                    _currentLevelNumber,
+                    _session.LevelNumber,
                     false,
                     LoseReason));
         }
@@ -1237,7 +1229,7 @@ namespace FoodieMatch.Features.Gameplay
         private void OnNextLevelClicked()
         {
             if (!_levelRepository.TryGetNextLevel(
-                    _currentLevelNumber,
+                    _session.LevelNumber,
                     out _))
             {
                 Debug.Log("No next level is available.");
@@ -1245,7 +1237,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _uiManager.HideAllPopups();
-            StartLevel(_currentLevelNumber + 1, _homeRequested);
+            StartLevel(_session.LevelNumber + 1, _homeRequested);
         }
 
         private void OnTryAgainClicked()
@@ -1253,7 +1245,7 @@ namespace FoodieMatch.Features.Gameplay
             FinalizeLose();
 
             _uiManager.HideAllPopups();
-            StartLevel(_currentLevelNumber, _homeRequested);
+            StartLevel(_session.LevelNumber, _homeRequested);
         }
 
         private void OnHomeClicked()
