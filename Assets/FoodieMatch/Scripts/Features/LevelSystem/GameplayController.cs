@@ -373,7 +373,8 @@ namespace FoodieMatch.Features.LevelSystem
             _boardLayoutView.ReleaseFoodItem(foodItemView);
             IncreaseServedFoodCount();
             MoveTopTrayToGrill(
-                context.Address.GrillPositionIndex);
+                context.Address.GrillPositionIndex,
+                sessionId);
 
             if (!TryCreatePackageFlight(
                     foodItemView,
@@ -491,7 +492,8 @@ namespace FoodieMatch.Features.LevelSystem
                     result.TargetIndex);
 
             MoveTopTrayToGrill(
-                context.Address.GrillPositionIndex);
+                context.Address.GrillPositionIndex,
+                sessionId);
 
             bool causedWaitingRackFull = _waitingRack.IsFull;
 
@@ -1116,7 +1118,8 @@ namespace FoodieMatch.Features.LevelSystem
         }
 
         private void MoveTopTrayToGrill(
-            int grillPositionIndex)
+            int grillPositionIndex,
+            int sessionId)
         {
             if (!_board.TryMoveTopTrayToGrill(
                     grillPositionIndex,
@@ -1125,11 +1128,70 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
-            if (!_boardLayoutView.MoveTopTrayFoodToGrill(
-                    grillModel))
+            if (!_boardLayoutView.TryPrepareTopTrayFoodMove(
+                    grillModel,
+                    out IReadOnlyList<FoodItemView> foodItemViews,
+                    out IReadOnlyList<Vector3> targetPositions))
             {
                 Debug.LogError(
-                    $"Could not move top tray to grill {grillPositionIndex}.");
+                    $"Could not prepare top tray move " +
+                    $"to grill {grillPositionIndex}.");
+
+                return;
+            }
+
+            _ = MoveTopTrayFoodToGrillSafelyAsync(
+                grillModel,
+                foodItemViews,
+                targetPositions,
+                sessionId);
+        }
+
+        private async Task MoveTopTrayFoodToGrillSafelyAsync(
+            GrillModel grillModel,
+            IReadOnlyList<FoodItemView> foodItemViews,
+            IReadOnlyList<Vector3> targetPositions,
+            int sessionId)
+        {
+            MotionResult motionResult;
+
+            try
+            {
+                motionResult = await _gameplayMotionPresenter
+                    .MoveTopTrayFoodToGrillAsync(
+                        foodItemViews,
+                        targetPositions);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                motionResult = MotionResult.Failed;
+            }
+
+            if (!_sessionGuard.IsCurrentSession(sessionId))
+            {
+                return;
+            }
+
+            if (motionResult == MotionResult.Failed)
+            {
+                Debug.LogError(
+                    $"Top tray food flight to grill " +
+                    $"{grillModel.PositionIndex} failed.");
+            }
+
+            bool makeInteractable =
+                _levelSessionState == LevelSessionState.Playing &&
+                _isInputEnabled;
+
+            if (!_boardLayoutView.CompleteTopTrayFoodMove(
+                    grillModel,
+                    foodItemViews,
+                    makeInteractable))
+            {
+                Debug.LogError(
+                    $"Could not complete top tray move " +
+                    $"to grill {grillModel.PositionIndex}.");
             }
         }
 

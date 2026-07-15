@@ -34,6 +34,67 @@ namespace FoodieMatch.Features.LevelSystem
             _waitingRackView = waitingRackView;
         }
 
+        public async Task<MotionResult> MoveTopTrayFoodToGrillAsync(
+            IReadOnlyList<FoodItemView> foodItemViews,
+            IReadOnlyList<Vector3> targetPositions)
+        {
+            if (foodItemViews == null ||
+                targetPositions == null ||
+                foodItemViews.Count != targetPositions.Count)
+            {
+                return MotionResult.Failed;
+            }
+
+            for (int i = 0; i < foodItemViews.Count; i++)
+            {
+                FoodItemView foodItemView = foodItemViews[i];
+
+                if (foodItemView != null &&
+                    !CanStartFoodFlight(foodItemView, 0f))
+                {
+                    return MotionResult.Failed;
+                }
+            }
+
+            List<Task<MotionResult>> motionTasks =
+                new List<Task<MotionResult>>();
+
+            for (int i = 0; i < foodItemViews.Count; i++)
+            {
+                FoodItemView foodItemView = foodItemViews[i];
+
+                if (foodItemView == null)
+                {
+                    continue;
+                }
+
+                motionTasks.Add(
+                    PlayFoodFlightAsync(
+                        foodItemView,
+                        targetPositions[i],
+                        0f));
+            }
+
+            MotionResult[] motionResults =
+                await Task.WhenAll(motionTasks);
+            bool wasCancelled = false;
+
+            for (int i = 0; i < motionResults.Length; i++)
+            {
+                if (motionResults[i] == MotionResult.Failed)
+                {
+                    return MotionResult.Failed;
+                }
+
+                wasCancelled |=
+                    motionResults[i] == MotionResult.Cancelled;
+            }
+
+            return wasCancelled
+                ? MotionResult.Cancelled
+                : MotionResult.Completed;
+        }
+
         public async Task<MotionResult> MoveFoodToWaitingRackAsync(
             FoodItemView foodItemView,
             int rackSlotIndex,

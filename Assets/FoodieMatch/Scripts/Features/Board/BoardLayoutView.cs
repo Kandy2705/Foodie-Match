@@ -134,15 +134,69 @@ namespace FoodieMatch.Features.Board
             foodItemView.SetInteractable(true);
         }
 
-        public bool MoveTopTrayFoodToGrill(GrillModel grillModel)
+        public bool TryPrepareTopTrayFoodMove(
+            GrillModel grillModel,
+            out IReadOnlyList<FoodItemView> foodItemViews,
+            out IReadOnlyList<Vector3> targetPositions)
         {
+            foodItemViews = null;
+            targetPositions = null;
+
             if (grillModel == null ||
                 !_grillViews.TryGetValue(
                     grillModel.PositionIndex,
                     out GrillView grillView) ||
                 !_topTrayFoodItems.TryGetValue(
                     grillModel.PositionIndex,
-                    out List<FoodItemView> foodItemViews))
+                    out List<FoodItemView> topTrayFoodItems))
+            {
+                return false;
+            }
+
+            List<Vector3> grillTargetPositions =
+                new List<Vector3>(topTrayFoodItems.Count);
+
+            for (int i = 0; i < topTrayFoodItems.Count; i++)
+            {
+                FoodItemView foodItemView = topTrayFoodItems[i];
+
+                if (foodItemView == null)
+                {
+                    grillTargetPositions.Add(default);
+                    continue;
+                }
+
+                Transform foodAnchor = grillView.GetFoodAnchor(i);
+
+                if (foodAnchor == null ||
+                    foodItemView.FoodTokenId !=
+                    grillModel.GetFoodTokenIdAt(i))
+                {
+                    return false;
+                }
+
+                grillTargetPositions.Add(foodAnchor.position);
+            }
+
+            grillView.HideTopTray();
+            _topTrayFoodItems.Remove(grillModel.PositionIndex);
+            SpawnTopTrayFoodItems(grillModel, grillView);
+
+            foodItemViews = topTrayFoodItems;
+            targetPositions = grillTargetPositions;
+            return true;
+        }
+
+        public bool CompleteTopTrayFoodMove(
+            GrillModel grillModel,
+            IReadOnlyList<FoodItemView> foodItemViews,
+            bool makeInteractable)
+        {
+            if (grillModel == null ||
+                foodItemViews == null ||
+                !_grillViews.TryGetValue(
+                    grillModel.PositionIndex,
+                    out GrillView grillView))
             {
                 return false;
             }
@@ -160,14 +214,12 @@ namespace FoodieMatch.Features.Board
 
                 if (foodAnchor == null ||
                     foodItemView.FoodTokenId !=
-                    grillModel.GetFoodTokenIdAt(i))
+                    grillModel.GetFoodTokenIdAt(i) ||
+                    _foodAddresses.ContainsKey(foodItemView))
                 {
                     return false;
                 }
             }
-
-            grillView.HideTopTray();
-            _topTrayFoodItems.Remove(grillModel.PositionIndex);
 
             for (int i = 0; i < foodItemViews.Count; i++)
             {
@@ -185,17 +237,22 @@ namespace FoodieMatch.Features.Board
                     foodAnchor.rotation);
 
                 foodItemView.SetVisualState(FoodItemVisualState.OnGrill);
-                foodItemView.SetInteractable(true);
-                foodItemView.Selected += HandleFoodSelected;
+                foodItemView.PlayLandingFeedback();
+                foodItemView.SetInteractable(makeInteractable);
+
+                if (!makeInteractable)
+                {
+                    continue;
+                }
 
                 FoodBoardAddress address = new FoodBoardAddress(
                     grillModel.PositionIndex,
                     i);
 
                 _foodAddresses.Add(foodItemView, address);
+                foodItemView.Selected += HandleFoodSelected;
             }
 
-            SpawnTopTrayFoodItems(grillModel, grillView);
             return true;
         }
 
