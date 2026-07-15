@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _musicClips:
   - _key: ingame
-    _clip: {fileID: 8300000, guid: e573e829bb84c4056949ac2ccb4de068, type: 3}
+    _clip: {fileID: 8300000, guid: ed6457ae4b9e410db30ded2feb884305, type: 3}
     _volume: 1
   - _key: menu
-    _clip: {fileID: 8300000, guid: d9a41462e96ff4644b2bc38b2b5c54ec, type: 3}
+    _clip: {fileID: 8300000, guid: 28dc648396e243cd9557b9460dc56f81, type: 3}
     _volume: 1
   _sfxClips:
   - _key: popup_show
