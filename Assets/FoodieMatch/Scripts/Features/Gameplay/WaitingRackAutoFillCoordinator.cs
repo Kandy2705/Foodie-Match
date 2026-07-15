@@ -112,9 +112,7 @@ namespace FoodieMatch.Features.Gameplay
 
             while (CanContinue(session) &&
                    _packageLifecycleUseCase.TryFindWaitingRackMatch(
-                       session.WaitingRack,
-                       session.RequiredPackages,
-                       out WaitingRackTransfer transfer))
+                       session.WaitingRack, session.RequiredPackages, out WaitingRackTransfer transfer))
             {
                 FoodItemView foodItemView = _waitingRackView.RemoveFoodAt(transfer.RackSlotIndex);
 
@@ -124,10 +122,7 @@ namespace FoodieMatch.Features.Gameplay
                 }
 
                 if (!_packageDeliveryCoordinator.TryCreateWaitingRackFlight(
-                        transfer,
-                        foodItemView,
-                        session,
-                        out PackageFlight flight))
+                        transfer, foodItemView, session, out PackageFlight flight))
                 {
                     Debug.LogError("Waiting rack package flight could not be created.");
                     RestoreFood(transfer.RackSlotIndex, foodItemView, session);
@@ -136,9 +131,7 @@ namespace FoodieMatch.Features.Gameplay
                 }
 
                 if (!_packageLifecycleUseCase.TryMoveFoodFromWaitingRack(
-                        transfer,
-                        session.WaitingRack,
-                        session.RequiredPackages))
+                        transfer, session.WaitingRack, session.RequiredPackages))
                 {
                     Debug.LogError("Waiting rack food could not be moved to its required package.");
                     RestoreFood(transfer.RackSlotIndex, foodItemView, session);
@@ -152,10 +145,7 @@ namespace FoodieMatch.Features.Gameplay
             return flights;
         }
 
-        private bool RestoreFood(
-            int rackSlotIndex,
-            FoodItemView foodItemView,
-            GameplaySession session)
+        private bool RestoreFood(int rackSlotIndex, FoodItemView foodItemView, GameplaySession session)
         {
             if (_waitingRackView.RestoreFoodAt(rackSlotIndex, foodItemView))
             {

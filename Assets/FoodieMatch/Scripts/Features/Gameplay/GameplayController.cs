@@ -129,10 +129,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             if (!_requiredPackageLifecycleUseCase.TryCreateInitialPackages(
-                    board,
-                    waitingRack,
-                    packageSettings,
-                    out RequiredPackageModel[] requiredPackages))
+                    board, waitingRack, packageSettings, out RequiredPackageModel[] requiredPackages))
             {
                 Debug.LogError($"Initial required packages could not be created for level {levelNumber}.");
                 return;
@@ -159,9 +156,7 @@ namespace FoodieMatch.Features.Gameplay
             Debug.Log($"Start Level {levelNumber}");
             _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelNumber));
             _gameplayEvents.OnLevelProgressChanged(
-                new LevelProgressChangedEvent(
-                    _session.Progress.ServedCount,
-                    _session.Progress.TotalCount));
+                new LevelProgressChangedEvent(_session.Progress.ServedCount, _session.Progress.TotalCount));
         }
 
         public void ClearLevel()
@@ -178,25 +173,12 @@ namespace FoodieMatch.Features.Gameplay
         private void CreateCoordinators()
         {
             _packageDeliveryCoordinator = new(
-                _sessionGuard,
-                _gameplayMotionPresenter,
-                _requiredPackageLifecycleUseCase,
-                _requiredPackageGroupView,
-                _foodVisualResolver,
-                _gameplayEvents);
-            _waitingRackPlacementCoordinator = new(
-                _sessionGuard,
-                _gameplayMotionPresenter,
-                _waitingRackView);
+                _sessionGuard, _gameplayMotionPresenter, _requiredPackageLifecycleUseCase,
+                _requiredPackageGroupView, _foodVisualResolver, _gameplayEvents);
+            _waitingRackPlacementCoordinator = new(_sessionGuard, _gameplayMotionPresenter, _waitingRackView);
             _waitingRackAutoFillCoordinator = new(
-                _sessionGuard,
-                _requiredPackageLifecycleUseCase,
-                _waitingRackView,
-                _packageDeliveryCoordinator);
-            _topTrayMoveCoordinator = new(
-                _sessionGuard,
-                _gameplayMotionPresenter,
-                _boardLayoutView);
+                _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
+            _topTrayMoveCoordinator = new(_sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
         }
 
         private void SubscribeCoordinatorEvents()
@@ -320,10 +302,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             SelectFoodResult result = _selectFoodUseCase.Execute(
-                context.Address,
-                session.Board,
-                session.RequiredPackages,
-                session.WaitingRack);
+                context.Address, session.Board, session.RequiredPackages, session.WaitingRack);
 
             if (!result.IsPlaced)
             {
@@ -346,9 +325,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _boardLayoutView.ReleaseFoodItem(context.FoodItemView);
             Task deliveryTask = _packageDeliveryCoordinator.DeliverSelectedFoodAsync(
-                context.FoodItemView,
-                result.TargetIndex,
-                session);
+                context.FoodItemView, result.TargetIndex, session);
 
             _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
             await deliveryTask;
@@ -361,11 +338,8 @@ namespace FoodieMatch.Features.Gameplay
             GameplaySession session)
         {
             _boardLayoutView.ReleaseFoodItem(context.FoodItemView);
-            Task<WaitingRackPlacementResult> placementTask =
-                _waitingRackPlacementCoordinator.PlaceFoodAsync(
-                    context.FoodItemView,
-                    result.TargetIndex,
-                    session);
+            Task<WaitingRackPlacementResult> placementTask = _waitingRackPlacementCoordinator.PlaceFoodAsync(
+                context.FoodItemView, result.TargetIndex, session);
 
             _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
             bool causedWaitingRackFull = session.WaitingRack.IsFull;
@@ -449,11 +423,7 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            _gameplayEvents.OnLevelEnded(
-                new LevelEndedEvent(
-                    session.LevelNumber,
-                    true,
-                    WinReason));
+            _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
             _uiManager.ShowWinPopup(OnNextLevelClicked, OnHomeClicked);
         }
 
@@ -476,18 +446,12 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            _gameplayEvents.OnLevelEnded(
-                new LevelEndedEvent(
-                    session.LevelNumber,
-                    false,
-                    LoseReason));
+            _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, false, LoseReason));
         }
 
         private bool IsCurrentSession(GameplaySession session)
         {
-            return session != null &&
-                   _session == session &&
-                   _sessionGuard.IsCurrentSession(session.SessionId);
+            return session != null && _session == session && _sessionGuard.IsCurrentSession(session.SessionId);
         }
 
         private void OnNextLevelClicked()

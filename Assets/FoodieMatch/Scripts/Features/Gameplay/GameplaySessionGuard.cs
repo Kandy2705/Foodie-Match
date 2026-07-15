@@ -22,8 +22,7 @@ namespace FoodieMatch.Features.Gameplay
 
         public bool IsCurrentSession(int sessionId)
         {
-            return _hasActiveSession &&
-                   sessionId == _currentSessionId;
+            return _hasActiveSession && sessionId == _currentSessionId;
         }
     }
 }

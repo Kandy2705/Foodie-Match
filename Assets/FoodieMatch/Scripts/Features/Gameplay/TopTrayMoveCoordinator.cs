@@ -35,8 +35,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             if (!_boardLayoutView.TryPrepareTopTrayFoodMove(
-                    grillModel,
-                    out IReadOnlyList<FoodItemView> foodItemViews,
+                    grillModel, out IReadOnlyList<FoodItemView> foodItemViews,
                     out IReadOnlyList<Vector3> targetPositions))
             {
                 Debug.LogError($"Could not prepare top tray move to grill {grillPositionIndex}.");
@@ -56,9 +55,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                motionResult = await _motionPresenter.MoveTopTrayFoodToGrillAsync(
-                    foodItemViews,
-                    targetPositions);
+                motionResult = await _motionPresenter.MoveTopTrayFoodToGrillAsync(foodItemViews, targetPositions);
             }
             catch (Exception exception)
             {
@@ -77,9 +74,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             if (!_boardLayoutView.CompleteTopTrayFoodMove(
-                    grillModel,
-                    foodItemViews,
-                    session.CanSelectFood))
+                    grillModel, foodItemViews, session.CanSelectFood))
             {
                 Debug.LogError($"Could not complete top tray move to grill {grillModel.PositionIndex}.");
             }

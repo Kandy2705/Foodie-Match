@@ -75,10 +75,7 @@ namespace FoodieMatch.Features.Gameplay
             IncreaseServedFoodCount(session);
 
             if (!TryCreateSelectedFoodFlight(
-                    foodItemView,
-                    packageIndex,
-                    session,
-                    out PackageFlight flight))
+                    foodItemView, packageIndex, session, out PackageFlight flight))
             {
                 Debug.LogError("Required package flight could not be created.");
                 foodItemView?.Clear();
@@ -90,8 +87,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!TryRegisterFlight(flight, out _))
             {
-                Debug.LogError(
-                    $"Required package {flight.PackageIndex} could not register an incoming flight.");
+                Debug.LogError($"Required package {flight.PackageIndex} could not register an incoming flight.");
                 ReconcileFailedFlight(flight);
                 IncreaseDisplayedServedFoodCount(session);
                 OnPackageDeliveryFailed(session);
@@ -132,18 +128,13 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             flight = new(
-                foodItemView,
-                expectedPackage,
-                transfer.PackageIndex,
-                expectedPackage.RequiredAmount,
-                expectedPackage.FilledAmount);
+                foodItemView, expectedPackage, transfer.PackageIndex,
+                expectedPackage.RequiredAmount, expectedPackage.FilledAmount);
 
             return true;
         }
 
-        public async Task<bool> DeliverBatchAsync(
-            IReadOnlyList<PackageFlight> flights,
-            GameplaySession session)
+        public async Task<bool> DeliverBatchAsync(IReadOnlyList<PackageFlight> flights, GameplaySession session)
         {
             if (!CanContinue(session) || flights == null)
             {
@@ -276,11 +267,8 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             flight = new(
-                foodItemView,
-                requiredPackage,
-                packageIndex,
-                requiredPackage.RequiredAmount,
-                requiredPackage.FilledAmount - 1);
+                foodItemView, requiredPackage, packageIndex,
+                requiredPackage.RequiredAmount, requiredPackage.FilledAmount - 1);
 
             return true;
         }
@@ -319,9 +307,7 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private void ReconcileUnlaunchedFlights(
-            IReadOnlyList<PackageFlight> flights,
-            GameplaySession session)
+        private void ReconcileUnlaunchedFlights(IReadOnlyList<PackageFlight> flights, GameplaySession session)
         {
             for (int i = 0; i < flights.Count; i++)
             {
@@ -344,9 +330,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayEvents.OnLevelProgressChanged(
-                new LevelProgressChangedEvent(
-                    session.DisplayedServedCount,
-                    session.Progress.TotalCount));
+                new LevelProgressChangedEvent(session.DisplayedServedCount, session.Progress.TotalCount));
         }
 
         private void TryStartPackageCompletion(
@@ -402,12 +386,8 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             if (!_packageLifecycleUseCase.TryReplaceCompletedPackage(
-                    packageIndex,
-                    session.Board,
-                    session.WaitingRack,
-                    session.RequiredPackages,
-                    session.PackageSettings,
-                    out RequiredPackageModel newPackage))
+                    packageIndex, session.Board, session.WaitingRack,
+                    session.RequiredPackages, session.PackageSettings, out RequiredPackageModel newPackage))
             {
                 motionState.IsCompleteMotionRunning = false;
                 Debug.LogError($"Required package {packageIndex} could not be replaced.");
@@ -474,9 +454,7 @@ namespace FoodieMatch.Features.Gameplay
         private void RefreshPackageViewAt(int packageIndex)
         {
             RequiredPackageModel package = _session.RequiredPackages[packageIndex];
-            Sprite sprite = package != null
-                ? _foodVisualResolver.ResolveIcon(package.FoodTokenId)
-                : null;
+            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
 
             if (!_packageGroupView.ShowPackageAt(packageIndex, package, sprite))
             {

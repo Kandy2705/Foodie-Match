@@ -31,13 +31,10 @@ namespace FoodieMatch.Features.Gameplay
             SessionId = sessionId;
             LevelNumber = levelNumber;
             Board = board ?? throw new ArgumentNullException(nameof(board));
-            RequiredPackages = requiredPackages ??
-                throw new ArgumentNullException(nameof(requiredPackages));
-            WaitingRack = waitingRack ??
-                throw new ArgumentNullException(nameof(waitingRack));
+            RequiredPackages = requiredPackages ?? throw new ArgumentNullException(nameof(requiredPackages));
+            WaitingRack = waitingRack ?? throw new ArgumentNullException(nameof(waitingRack));
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
-            PackageSettings = packageSettings ??
-                throw new ArgumentNullException(nameof(packageSettings));
+            PackageSettings = packageSettings ?? throw new ArgumentNullException(nameof(packageSettings));
         }
 
         public int SessionId { get; }
@@ -50,12 +47,9 @@ namespace FoodieMatch.Features.Gameplay
         public int DisplayedServedCount { get; private set; }
         public LevelSessionState State { get; private set; }
         public bool IsInputEnabled { get; private set; }
-        public bool IsDisplayedProgressUpToDate =>
-            DisplayedServedCount >= Progress.ServedCount;
-        public bool CanSelectFood =>
-            State == LevelSessionState.Playing && IsInputEnabled;
-        public bool CanContinueGameplay =>
-            State == LevelSessionState.Playing;
+        public bool IsDisplayedProgressUpToDate => DisplayedServedCount >= Progress.ServedCount;
+        public bool CanSelectFood => State == LevelSessionState.Playing && IsInputEnabled;
+        public bool CanContinueGameplay => State == LevelSessionState.Playing;
 
         public void StartPlaying()
         {

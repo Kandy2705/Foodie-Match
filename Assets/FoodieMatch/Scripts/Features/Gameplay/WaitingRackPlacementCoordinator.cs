@@ -32,9 +32,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                motionResult = await _motionPresenter.MoveFoodToWaitingRackAsync(
-                    foodItemView,
-                    rackSlotIndex);
+                motionResult = await _motionPresenter.MoveFoodToWaitingRackAsync(foodItemView, rackSlotIndex);
             }
             catch (Exception exception)
             {
