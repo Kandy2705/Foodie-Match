@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
@@ -48,9 +49,12 @@ namespace FoodieMatch.Features.LevelSystem
         private WaitingRackModel _waitingRack;
         private LevelProgressModel _levelProgress;
         private PackageMotionState[] _packageMotionStates;
+        private int _waitingRackAutoFillSessionId;
         private int _displayedServedCount;
         private int _currentLevelNumber;
         private LevelSessionState _levelSessionState;
+        private bool _isWaitingRackAutoFillRunning;
+        private bool _isWaitingRackAutoFillRetryRequested;
         private bool _isInputEnabled;
 
         public void Construct(
@@ -159,7 +163,8 @@ namespace FoodieMatch.Features.LevelSystem
             _displayedServedCount = 0;
             CreatePackageMotionStates();
 
-            _sessionGuard.BeginSession();
+            int sessionId = _sessionGuard.BeginSession();
+            ResetWaitingRackAutoFillState(sessionId);
             _gameplayMotionPresenter.CancelAllMotions();
 
             _boardLayoutView.Setup(_board);
@@ -208,6 +213,7 @@ namespace FoodieMatch.Features.LevelSystem
             _levelProgress = null;
             _packageMotionStates = null;
             _displayedServedCount = 0;
+            ResetWaitingRackAutoFillState(0);
             _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
 
@@ -290,6 +296,7 @@ namespace FoodieMatch.Features.LevelSystem
         private void OnDestroy()
         {
             _sessionGuard.EndSession();
+            ResetWaitingRackAutoFillState(0);
             _gameplayMotionPresenter?.CancelAllMotions();
 
             if (_boardLayoutView != null)
@@ -364,7 +371,7 @@ namespace FoodieMatch.Features.LevelSystem
         {
             FoodItemView foodItemView = context.FoodItemView;
             _boardLayoutView.ReleaseFoodItem(foodItemView);
-            RegisterFoodInModelProgress();
+            IncreaseServedFoodCount();
             MoveTopTrayToGrill(
                 context.Address.GrillPositionIndex);
 
@@ -385,7 +392,7 @@ namespace FoodieMatch.Features.LevelSystem
                     RefreshRequiredPackageViewAt(result.TargetIndex);
                 }
 
-                ShowFoodInProgress();
+                IncreaseDisplayedServedFoodCount();
                 _isInputEnabled = false;
                 return;
             }
@@ -401,11 +408,20 @@ namespace FoodieMatch.Features.LevelSystem
                     "could not register an incoming flight.");
 
                 ReconcileFailedPackageFlight(flight);
-                ShowFoodInProgress();
+                IncreaseDisplayedServedFoodCount();
                 _isInputEnabled = false;
                 return;
             }
 
+            await ProcessPackageFlightAsync(flight, sessionId);
+        }
+
+        private async Task ProcessPackageFlightAsync(
+            PackageFlight flight,
+            int sessionId)
+        {
+            PackageMotionState motionState =
+                _packageMotionStates[flight.PackageIndex];
             MotionResult motionResult;
 
             try
@@ -453,7 +469,7 @@ namespace FoodieMatch.Features.LevelSystem
                 ReconcileFailedPackageFlight(flight);
             }
 
-            ShowFoodInProgress();
+            IncreaseDisplayedServedFoodCount();
             TryStartPackageCompletion(
                 flight.PackageIndex,
                 flight.ExpectedPackage,
@@ -511,6 +527,8 @@ namespace FoodieMatch.Features.LevelSystem
                 return;
             }
 
+            TryStartWaitingRackAutoFill(sessionId);
+
             if (causedWaitingRackFull &&
                 _levelSessionState == LevelSessionState.AwaitingRevive)
             {
@@ -550,6 +568,277 @@ namespace FoodieMatch.Features.LevelSystem
             return _waitingRackView.SetFoodAt(
                 rackSlotIndex,
                 foodItemView);
+        }
+
+        private void TryStartWaitingRackAutoFill(int sessionId)
+        {
+            if (!CanContinueGameplay(sessionId))
+            {
+                return;
+            }
+
+            if (_isWaitingRackAutoFillRunning &&
+                _waitingRackAutoFillSessionId == sessionId)
+            {
+                _isWaitingRackAutoFillRetryRequested = true;
+                return;
+            }
+
+            _waitingRackAutoFillSessionId = sessionId;
+            _isWaitingRackAutoFillRunning = true;
+            _isWaitingRackAutoFillRetryRequested = false;
+            _ = RunWaitingRackAutoFillSafelyAsync(sessionId);
+        }
+
+        private async Task RunWaitingRackAutoFillSafelyAsync(
+            int sessionId)
+        {
+            try
+            {
+                while (CanContinueGameplay(sessionId))
+                {
+                    List<PackageFlight> flights =
+                        BuildWaitingRackAutoFillBatch(sessionId);
+
+                    if (flights.Count == 0)
+                    {
+                        break;
+                    }
+
+                    if (!TryRegisterPackageFlights(flights))
+                    {
+                        Debug.LogError(
+                            "Waiting rack auto-fill flights " +
+                            "could not be registered.");
+
+                        ReconcileUnlaunchedPackageFlights(flights);
+                        _isInputEnabled = false;
+                        break;
+                    }
+
+                    Task[] motionTasks = new Task[flights.Count];
+
+                    for (int i = 0; i < flights.Count; i++)
+                    {
+                        motionTasks[i] = ProcessPackageFlightAsync(
+                            flights[i],
+                            sessionId);
+                    }
+
+                    await Task.WhenAll(motionTasks);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+            finally
+            {
+                FinishWaitingRackAutoFill(sessionId);
+            }
+        }
+
+        private List<PackageFlight> BuildWaitingRackAutoFillBatch(
+            int sessionId)
+        {
+            List<PackageFlight> flights = new List<PackageFlight>();
+
+            while (CanContinueGameplay(sessionId) &&
+                   _requiredPackageLifecycleUseCase
+                       .TryFindWaitingRackMatch(
+                           _waitingRack,
+                           _requiredPackages,
+                           out WaitingRackTransfer transfer))
+            {
+                FoodItemView foodItemView =
+                    _waitingRackView.RemoveFoodAt(
+                        transfer.RackSlotIndex);
+
+                if (foodItemView == null)
+                {
+                    break;
+                }
+
+                if (!TryCreateWaitingRackPackageFlight(
+                        transfer,
+                        foodItemView,
+                        out PackageFlight flight))
+                {
+                    Debug.LogError(
+                        "Waiting rack package flight " +
+                        "could not be created.");
+
+                    RestoreWaitingRackFood(
+                        transfer.RackSlotIndex,
+                        foodItemView);
+                    _isInputEnabled = false;
+                    break;
+                }
+
+                if (!_requiredPackageLifecycleUseCase
+                        .TryMoveFoodFromWaitingRack(
+                            transfer,
+                            _waitingRack,
+                            _requiredPackages))
+                {
+                    Debug.LogError(
+                        "Waiting rack food could not be moved " +
+                        "to its required package.");
+
+                    RestoreWaitingRackFood(
+                        transfer.RackSlotIndex,
+                        foodItemView);
+                    break;
+                }
+
+                IncreaseServedFoodCount();
+                flights.Add(flight);
+            }
+
+            return flights;
+        }
+
+        private bool TryCreateWaitingRackPackageFlight(
+            WaitingRackTransfer transfer,
+            FoodItemView foodItemView,
+            out PackageFlight flight)
+        {
+            flight = default;
+
+            if (foodItemView == null ||
+                foodItemView.FoodTokenId != transfer.FoodTokenId ||
+                _requiredPackages == null ||
+                _packageMotionStates == null ||
+                transfer.PackageIndex < 0 ||
+                transfer.PackageIndex >= _requiredPackages.Length ||
+                transfer.PackageIndex >= _packageMotionStates.Length)
+            {
+                return false;
+            }
+
+            RequiredPackageModel expectedPackage =
+                _requiredPackages[transfer.PackageIndex];
+            PackageMotionState motionState =
+                _packageMotionStates[transfer.PackageIndex];
+
+            if (expectedPackage == null ||
+                !expectedPackage.CanAccept(transfer.FoodTokenId) ||
+                motionState == null ||
+                motionState.Package != expectedPackage ||
+                motionState.IsCompleteMotionRunning)
+            {
+                return false;
+            }
+
+            flight = new PackageFlight(
+                foodItemView,
+                expectedPackage,
+                transfer.PackageIndex,
+                expectedPackage.RequiredAmount,
+                expectedPackage.FilledAmount);
+
+            return true;
+        }
+
+        private bool TryRegisterPackageFlights(
+            IReadOnlyList<PackageFlight> flights)
+        {
+            int registeredFlightCount = 0;
+
+            for (int i = 0; i < flights.Count; i++)
+            {
+                PackageFlight flight = flights[i];
+
+                if (!TryGetPackageMotionState(
+                        flight.PackageIndex,
+                        flight.ExpectedPackage,
+                        out PackageMotionState motionState) ||
+                    !motionState.TryRegisterIncomingFlight(
+                        flight.ExpectedPackage))
+                {
+                    RollbackRegisteredPackageFlights(
+                        flights,
+                        registeredFlightCount);
+
+                    return false;
+                }
+
+                registeredFlightCount++;
+            }
+
+            return true;
+        }
+
+        private void RollbackRegisteredPackageFlights(
+            IReadOnlyList<PackageFlight> flights,
+            int registeredFlightCount)
+        {
+            for (int i = 0; i < registeredFlightCount; i++)
+            {
+                PackageFlight flight = flights[i];
+                PackageMotionState motionState =
+                    _packageMotionStates[flight.PackageIndex];
+
+                motionState.TryCompleteIncomingFlight(
+                    flight.ExpectedPackage);
+            }
+        }
+
+        private void ReconcileUnlaunchedPackageFlights(
+            IReadOnlyList<PackageFlight> flights)
+        {
+            for (int i = 0; i < flights.Count; i++)
+            {
+                ReconcileFailedPackageFlight(flights[i]);
+                IncreaseDisplayedServedFoodCount();
+            }
+        }
+
+        private bool RestoreWaitingRackFood(
+            int rackSlotIndex,
+            FoodItemView foodItemView)
+        {
+            if (_waitingRackView.SetFoodAt(
+                    rackSlotIndex,
+                    foodItemView))
+            {
+                return true;
+            }
+
+            Debug.LogError(
+                $"Waiting rack food at slot {rackSlotIndex} " +
+                "could not be restored.");
+
+            _isInputEnabled = false;
+            return false;
+        }
+
+        private void FinishWaitingRackAutoFill(int sessionId)
+        {
+            if (_waitingRackAutoFillSessionId != sessionId)
+            {
+                return;
+            }
+
+            bool shouldRetry =
+                _isWaitingRackAutoFillRetryRequested;
+
+            _isWaitingRackAutoFillRunning = false;
+            _isWaitingRackAutoFillRetryRequested = false;
+
+            if (shouldRetry)
+            {
+                TryStartWaitingRackAutoFill(sessionId);
+            }
+
+            TryResolveWin(sessionId);
+        }
+
+        private void ResetWaitingRackAutoFillState(int sessionId)
+        {
+            _waitingRackAutoFillSessionId = sessionId;
+            _isWaitingRackAutoFillRunning = false;
+            _isWaitingRackAutoFillRetryRequested = false;
         }
 
         private bool TryCreatePackageFlight(
@@ -595,7 +884,7 @@ namespace FoodieMatch.Features.LevelSystem
             RefreshRequiredPackageViewAt(flight.PackageIndex);
         }
 
-        private void RegisterFoodInModelProgress()
+        private void IncreaseServedFoodCount()
         {
             if (_levelProgress == null ||
                 !_levelProgress.TryServeFood())
@@ -604,7 +893,7 @@ namespace FoodieMatch.Features.LevelSystem
             }
         }
 
-        private void ShowFoodInProgress()
+        private void IncreaseDisplayedServedFoodCount()
         {
             if (_levelProgress == null ||
                 _displayedServedCount >= _levelProgress.ServedCount)
@@ -701,6 +990,7 @@ namespace FoodieMatch.Features.LevelSystem
 
             motionState.Reset(newPackage);
             RefreshRequiredPackageViewAt(packageIndex);
+            TryStartWaitingRackAutoFill(sessionId);
             TryResolveWin(sessionId);
         }
 
@@ -746,12 +1036,19 @@ namespace FoodieMatch.Features.LevelSystem
                 _levelProgress == null ||
                 !_levelProgress.IsComplete ||
                 _displayedServedCount < _levelProgress.ServedCount ||
+                IsWaitingRackAutoFillRunning(sessionId) ||
                 HasActivePackageMotion())
             {
                 return;
             }
 
             ResolveWin();
+        }
+
+        private bool IsWaitingRackAutoFillRunning(int sessionId)
+        {
+            return _isWaitingRackAutoFillRunning &&
+                   _waitingRackAutoFillSessionId == sessionId;
         }
 
         private bool HasActivePackageMotion()
