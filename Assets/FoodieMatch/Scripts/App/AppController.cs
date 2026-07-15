@@ -1,4 +1,5 @@
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.UI;
@@ -13,6 +14,7 @@ namespace FoodieMatch.App
         private GameplayController _gameplayController;
         private ISaveService _saveService;
         private ILevelRepository _levelRepository;
+        private IAudioService _audioService;
 
         private void OnDestroy()
         {
@@ -29,12 +31,14 @@ namespace FoodieMatch.App
             UIManager uiManager,
             GameplayController gameplayController,
             ISaveService saveService,
-            ILevelRepository levelRepository)
+            ILevelRepository levelRepository,
+            IAudioService audioService)
         {
             _uiManager = uiManager;
             _gameplayController = gameplayController;
             _saveService = saveService;
             _levelRepository = levelRepository;
+            _audioService = audioService;
 
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.PlayGameRequested += OnPlayGameRequested;
@@ -52,6 +56,7 @@ namespace FoodieMatch.App
 
             _uiManager.HideGameplayHud();
             _uiManager.ShowHome();
+            _audioService?.PlayMusic(AudioKeys.MusicMenu);
         }
 
         public void StartLevel(int levelNumber)
@@ -70,6 +75,7 @@ namespace FoodieMatch.App
             _uiManager.HideAllPopups();
             _uiManager.HideHome();
             _uiManager.ShowGameplayHud();
+            _audioService?.PlayMusic(AudioKeys.MusicIngame);
 
             _saveService.SetInt(CurrentLevelNumberKey, levelNumber);
             _saveService.Save();

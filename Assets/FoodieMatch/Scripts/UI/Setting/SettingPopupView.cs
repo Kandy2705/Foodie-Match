@@ -66,6 +66,19 @@ namespace FoodieMatch.UI.Setting
             _musicChanged = actions.MusicChanged;
         }
 
+        public void SetToggleStates(bool isSoundOn, bool isMusicOn)
+        {
+            if (_soundToggle != null)
+            {
+                _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
+            }
+
+            if (_musicToggle != null)
+            {
+                _musicToggle.SetIsOnWithoutNotify(!isMusicOn);
+            }
+        }
+
         public override void Show()
         {
             _isClosing = false;
@@ -111,12 +124,14 @@ namespace FoodieMatch.UI.Setting
 
         private void OnSoundToggleChanged(bool isOn)
         {
-            _soundChanged?.Invoke(isOn);
+            bool isSoundOn = !isOn;
+            _soundChanged?.Invoke(isSoundOn);
         }
 
         private void OnMusicToggleChanged(bool isOn)
         {
-            _musicChanged?.Invoke(isOn);
+            bool isMusicOn = !isOn;
+            _musicChanged?.Invoke(isMusicOn);
         }
 
         private void OnCloseAnimationFinished()
