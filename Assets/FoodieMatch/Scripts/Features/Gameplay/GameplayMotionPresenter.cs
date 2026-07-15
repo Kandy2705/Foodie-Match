@@ -6,7 +6,7 @@ using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using UnityEngine;
 
-namespace FoodieMatch.Features.LevelSystem
+namespace FoodieMatch.Features.Gameplay
 {
     public sealed class GameplayMotionPresenter : MonoBehaviour
     {

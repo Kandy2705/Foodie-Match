@@ -1,4 +1,4 @@
-namespace FoodieMatch.Features.LevelSystem
+namespace FoodieMatch.Features.Gameplay
 {
     public sealed class GameplaySessionGuard
     {

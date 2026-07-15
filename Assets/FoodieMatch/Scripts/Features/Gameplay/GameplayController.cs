@@ -18,7 +18,7 @@ using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
 using UnityEngine;
 
-namespace FoodieMatch.Features.LevelSystem
+namespace FoodieMatch.Features.Gameplay
 {
     public sealed class GameplayController : MonoBehaviour
     {
