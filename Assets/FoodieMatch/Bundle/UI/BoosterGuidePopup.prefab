@@ -370,7 +370,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 3.4932785, y: 31.375816, z: 2.9942322, w: 15.938499}
+  m_margin: {x: 3.4932785, y: 2.2462387, z: 2.9942322, w: -0.24448395}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -852,14 +852,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 6516266630406967583}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63643047bbe64778b02fc8198276255f, type: 3}
+  m_Script: {fileID: 11500000, guid: 0b83dfc3bcb6431498cbe2c0bf027b87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _closeButton: {fileID: 2645923244829075094}
   _freeAdsButton: {fileID: 8354418371459814741}
-  _playOnButton: {fileID: 727163258812183704}
+  _buyButton: {fileID: 727163258812183704}
   _popupAnimController: {fileID: 4426387045453857657}
+  _titleText: {fileID: 0}
+  _descriptionText: {fileID: 7616854525686842689}
+  _iconImage: {fileID: 5924782844710106827}
   _costText: {fileID: 293875443505543227}
+  _bonusAmountText: {fileID: 1527252039483816727}
 --- !u!1 &7388116517003901043
 GameObject:
   m_ObjectHideFlags: 0

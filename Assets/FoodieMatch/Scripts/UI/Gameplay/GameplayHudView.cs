@@ -2,46 +2,42 @@ using System;
 using FoodieMatch.UI.Common;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Gameplay
 {
     public sealed class GameplayHudView : MonoBehaviour
     {
+        private const int BoosterButtonCount = 4;
+
         [SerializeField] private Button _pauseButton;
+        [SerializeField] private Button[] _boosterButtons;
         [SerializeField] private TMP_Text _levelLabelText;
         [SerializeField] private TMP_Text _progressText;
         [SerializeField] private TMP_Text _comboMultiplierText;
         [SerializeField] private TMP_Text[] _boosterCountTexts;
 
         private Action _pauseClicked;
+        private Action<int> _boosterClicked;
+        private readonly UnityAction[] _boosterButtonHandlers = new UnityAction[BoosterButtonCount];
 
         private void Awake()
         {
             EnsureButtonReferences();
             EnsureTextReferences();
-
-            if (_pauseButton != null)
-            {
-                _pauseButton.onClick.AddListener(OnPauseButtonClicked);
-            }
-            else
-            {
-                Debug.LogWarning($"{nameof(GameplayHudView)} on {name} has no pause button assigned.");
-            }
+            BindButtons();
         }
 
         private void OnDestroy()
         {
-            if (_pauseButton != null)
-            {
-                _pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
-            }
+            UnbindButtons();
         }
 
         public void SetActions(GameplayHudViewActions actions)
         {
             _pauseClicked = actions.PauseClicked;
+            _boosterClicked = actions.BoosterClicked;
         }
 
         public void SetLevelNumber(int levelNumber)
@@ -99,9 +95,73 @@ namespace FoodieMatch.UI.Gameplay
             }
         }
 
+        private void BindButtons()
+        {
+            if (_pauseButton != null)
+            {
+                _pauseButton.onClick.AddListener(OnPauseButtonClicked);
+            }
+            else
+            {
+                Debug.LogWarning($"{nameof(GameplayHudView)} on {name} has no pause button assigned.");
+            }
+
+            if (_boosterButtons == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _boosterButtons.Length && i < BoosterButtonCount; i++)
+            {
+                Button button = _boosterButtons[i];
+
+                if (button == null)
+                {
+                    continue;
+                }
+
+                int boosterIndex = i;
+                UnityAction handler = () => OnBoosterButtonClicked(boosterIndex);
+                _boosterButtonHandlers[i] = handler;
+                button.onClick.AddListener(handler);
+            }
+        }
+
+        private void UnbindButtons()
+        {
+            if (_pauseButton != null)
+            {
+                _pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
+            }
+
+            if (_boosterButtons == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _boosterButtons.Length && i < BoosterButtonCount; i++)
+            {
+                Button button = _boosterButtons[i];
+                UnityAction handler = _boosterButtonHandlers[i];
+
+                if (button == null || handler == null)
+                {
+                    continue;
+                }
+
+                button.onClick.RemoveListener(handler);
+                _boosterButtonHandlers[i] = null;
+            }
+        }
+
         private void OnPauseButtonClicked()
         {
             _pauseClicked?.Invoke();
+        }
+
+        private void OnBoosterButtonClicked(int boosterIndex)
+        {
+            _boosterClicked?.Invoke(boosterIndex);
         }
 
         private void EnsureButtonReferences()
@@ -114,6 +174,11 @@ namespace FoodieMatch.UI.Gameplay
             if (_pauseButton == null)
             {
                 _pauseButton = FindChildButton("PauseButton");
+            }
+
+            if (_boosterButtons == null || _boosterButtons.Length == 0)
+            {
+                _boosterButtons = FindBoosterButtons();
             }
         }
 
@@ -138,6 +203,19 @@ namespace FoodieMatch.UI.Gameplay
             {
                 _boosterCountTexts = FindBoosterCountTexts();
             }
+        }
+
+        private Button[] FindBoosterButtons()
+        {
+            Button[] buttons = new Button[BoosterButtonCount];
+
+            for (int i = 0; i < BoosterButtonCount; i++)
+            {
+                string objectName = $"BoosterButton_0{i + 1}";
+                buttons[i] = FindChildButton(objectName);
+            }
+
+            return buttons;
         }
 
         private TMP_Text[] FindBoosterCountTexts()

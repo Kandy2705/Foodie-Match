@@ -1,6 +1,8 @@
 using System;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
+using FoodieMatch.Data.Booster;
+using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
@@ -25,6 +27,9 @@ namespace FoodieMatch.UI
         [SerializeField] private GameObject _gameplayHudPrefab;
         [SerializeField] private Transform _hudRoot;
 
+        [Header("Booster Guide")]
+        [SerializeField] private BoosterGuideCatalogSO _boosterGuideCatalog;
+
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private GameObject _gameplayHud;
@@ -34,6 +39,7 @@ namespace FoodieMatch.UI
         private int _currentLevelNumber = 1;
         private int _currentServedCount;
         private int _currentTotalCount;
+        private BoosterType _currentBoosterGuideType;
 
         public event Action PlayGameRequested;
 
@@ -388,6 +394,55 @@ namespace FoodieMatch.UI
             _popupManager.HideAll();
         }
 
+        public void ShowBoosterGuidePopup(BoosterType boosterType)
+        {
+            if (_popupManager == null)
+            {
+                Debug.LogError("Cannot show booster guide popup because PopupManager is missing.");
+                return;
+            }
+
+            if (_boosterGuideCatalog == null)
+            {
+                Debug.LogError("Cannot show booster guide popup because BoosterGuideCatalog is missing.");
+                return;
+            }
+
+            if (!_boosterGuideCatalog.TryGet(boosterType, out BoosterGuideContentEntry entry))
+            {
+                Debug.LogError($"Booster guide content not found for type: {boosterType}");
+                return;
+            }
+
+            BoosterGuidePopupData popupData = BoosterGuidePopupData.FromCatalogEntry(entry);
+
+            BoosterGuidePopupView popup = _popupManager.Show<BoosterGuidePopupView>(popupData);
+
+            if (popup == null)
+            {
+                return;
+            }
+
+            _currentBoosterGuideType = boosterType;
+            popup.SetActions(
+                new BoosterGuidePopupViewActions(
+                    OnBoosterGuideCloseClicked,
+                    OnBoosterGuideFreeAdsClicked,
+                    OnBoosterGuideBuyClicked));
+
+            _audioService?.PlaySfx(PopupShowSfxKey);
+        }
+
+        public void HideBoosterGuidePopup()
+        {
+            if (_popupManager == null)
+            {
+                return;
+            }
+
+            _popupManager.Hide<BoosterGuidePopupView>();
+        }
+
         private void BindGameplayHudActions()
         {
             if (_gameplayHud == null)
@@ -405,7 +460,10 @@ namespace FoodieMatch.UI
                 }
             }
 
-            _gameplayHudView.SetActions(new GameplayHudViewActions(OnGameplayPauseRequested));
+            _gameplayHudView.SetActions(
+                new GameplayHudViewActions(
+                    OnGameplayPauseRequested,
+                    OnGameplayBoosterRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
         }
@@ -447,6 +505,34 @@ namespace FoodieMatch.UI
         private void OnGameplayPauseRequested()
         {
             ShowPausePopup();
+        }
+
+        private void OnGameplayBoosterRequested(int boosterIndex)
+        {
+            if (!BoosterGuideCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
+            {
+                Debug.LogWarning($"Unknown booster button index: {boosterIndex}");
+                return;
+            }
+
+            ShowBoosterGuidePopup(boosterType);
+        }
+
+        private void OnBoosterGuideCloseClicked()
+        {
+            HideBoosterGuidePopup();
+        }
+
+        private void OnBoosterGuideFreeAdsClicked()
+        {
+            Debug.Log($"Booster guide free ads clicked: {_currentBoosterGuideType}");
+            HideBoosterGuidePopup();
+        }
+
+        private void OnBoosterGuideBuyClicked()
+        {
+            Debug.Log($"Booster guide buy clicked: {_currentBoosterGuideType}");
+            HideBoosterGuidePopup();
         }
 
         private void OnSettingCloseClicked()
