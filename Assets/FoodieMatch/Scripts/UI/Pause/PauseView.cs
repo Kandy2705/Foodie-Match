@@ -114,7 +114,6 @@ namespace FoodieMatch.UI.Pause
 
         public void SetToggleStates(bool isSoundOn, bool isMusicOn)
         {
-            // Prefab graphic (checkmark) uses mute icons when isOn == true.
             if (_soundToggle != null)
             {
                 _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
