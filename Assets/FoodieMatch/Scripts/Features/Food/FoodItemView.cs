@@ -1,4 +1,7 @@
 using System;
+using System.Threading.Tasks;
+using FoodieMatch.Features.Motion;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -21,9 +24,20 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private Vector3 _waitingRackScale = Vector3.one;
         [SerializeField] private Vector3 _waitingRackRotation;
 
+        [Header("Motion")]
+        [SerializeField] private Vector3 _landingPunchStrength =
+            new Vector3(0.1f, 0.1f, 0f);
+        [SerializeField] private float _landingFeedbackDuration = 0.16f;
+
+        private Tween _flightTween;
+        private Tween _landingFeedbackTween;
+        private bool _isFlying;
+        private bool _didFlightComplete;
+
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
         public bool IsInteractable { get; private set; }
+        public bool IsFlying => _isFlying;
         public FoodItemVisualState VisualState { get; private set; }
 
         public event Action<FoodItemView> Selected;
@@ -44,8 +58,23 @@ namespace FoodieMatch.Features.Food
             ApplyVisualState();
         }
 
+        private void OnDestroy()
+        {
+            CancelMotion();
+        }
+
         public void Setup(int foodTokenId, Sprite sprite)
         {
+            if (_isFlying)
+            {
+                Debug.LogError(
+                    "Flying food item cannot be set up again.",
+                    this);
+                return;
+            }
+
+            CancelMotion();
+
             if (foodTokenId < 0)
             {
                 Debug.LogWarning($"Food token id cannot be negative: {foodTokenId}.", this);
@@ -74,6 +103,7 @@ namespace FoodieMatch.Features.Food
 
         public void Clear()
         {
+            CancelMotion();
             FoodTokenId = 0;
 
             if (_spriteRenderer != null)
@@ -84,6 +114,84 @@ namespace FoodieMatch.Features.Food
 
             ApplyColliderState();
             ApplyVisualState();
+        }
+
+        public async Task<MotionResult> PlayFlightAsync(
+            Vector3 targetPosition,
+            float duration,
+            float startDelay = 0f)
+        {
+            if (!CanStartFlight(duration, startDelay))
+            {
+                return MotionResult.Failed;
+            }
+
+            _isFlying = true;
+            _didFlightComplete = false;
+            SetInteractable(false);
+
+            try
+            {
+                _flightTween = Tween.Position(
+                        transform,
+                        targetPosition,
+                        duration,
+                        startDelay: startDelay)
+                    .OnComplete(
+                        target: this,
+                        target => target.MarkFlightCompleted());
+
+                await _flightTween;
+
+                return _didFlightComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _flightTween = default;
+                _isFlying = false;
+            }
+        }
+
+        public void StopFlight()
+        {
+            if (_flightTween.isAlive)
+            {
+                _flightTween.Stop();
+            }
+        }
+
+        public void CancelMotion()
+        {
+            StopFlight();
+
+            if (_landingFeedbackTween.isAlive)
+            {
+                _landingFeedbackTween.Stop();
+            }
+
+            _landingFeedbackTween = default;
+        }
+
+        public void PlayLandingFeedback()
+        {
+            if (IsEmpty ||
+                !IsValidTime(_landingFeedbackDuration) ||
+                _landingFeedbackDuration == 0f)
+            {
+                return;
+            }
+
+            if (_landingFeedbackTween.isAlive)
+            {
+                _landingFeedbackTween.Stop();
+            }
+
+            _landingFeedbackTween = Tween.PunchScale(
+                transform,
+                _landingPunchStrength,
+                _landingFeedbackDuration);
         }
 
         public void SetInteractable(bool isInteractable)
@@ -106,6 +214,50 @@ namespace FoodieMatch.Features.Food
             }
 
             Selected?.Invoke(this);
+        }
+
+        private bool CanStartFlight(
+            float duration,
+            float startDelay)
+        {
+            if (IsEmpty)
+            {
+                Debug.LogError(
+                    "Empty food item cannot start a flight.",
+                    this);
+                return false;
+            }
+
+            if (_isFlying)
+            {
+                Debug.LogError(
+                    "Food item is already flying.",
+                    this);
+                return false;
+            }
+
+            if (!IsValidTime(duration) ||
+                !IsValidTime(startDelay))
+            {
+                Debug.LogError(
+                    "Food flight time is invalid.",
+                    this);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void MarkFlightCompleted()
+        {
+            _didFlightComplete = true;
+        }
+
+        private static bool IsValidTime(float value)
+        {
+            return value >= 0f &&
+                   !float.IsNaN(value) &&
+                   !float.IsInfinity(value);
         }
 
         private void ApplyColliderState()

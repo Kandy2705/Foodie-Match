@@ -8,21 +8,37 @@ namespace FoodieMatch.Features.WaitingRack
         [SerializeField] private Transform _foodAnchor;
 
         private FoodItemView _foodItemView;
+        private WaitingRackSlotState _state;
 
-        public bool IsEmpty => _foodItemView == null;
-        public FoodItemView FoodItemView => _foodItemView;
+        private bool IsEmpty => _state == WaitingRackSlotState.Empty;
+        private bool IsReserved => _state == WaitingRackSlotState.Reserved;
+        private bool IsPlacementComplete =>
+            _state == WaitingRackSlotState.Occupied;
 
-        public bool SetFood(FoodItemView foodItemView)
+        private void OnDestroy()
         {
-            if (foodItemView == null)
+            Clear();
+        }
+
+        public bool RestoreFood(FoodItemView foodItemView)
+        {
+            if (!TryReserveFood(foodItemView, out _))
             {
-                Debug.LogWarning("Food item view is missing.", this);
                 return false;
             }
 
-            if (!IsEmpty)
+            return CompletePlacement(foodItemView);
+        }
+
+        public bool TryReserveFood(
+            FoodItemView foodItemView,
+            out Vector3 targetPosition)
+        {
+            targetPosition = default;
+
+            if (foodItemView == null)
             {
-                Debug.LogWarning("Waiting rack slot is already occupied.", this);
+                Debug.LogWarning("Food item view is missing.", this);
                 return false;
             }
 
@@ -32,24 +48,74 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
+            if (!IsEmpty)
+            {
+                Debug.LogWarning("Waiting rack slot is already occupied.", this);
+                return false;
+            }
+
             _foodItemView = foodItemView;
-            _foodItemView.transform.position = _foodAnchor.position;
-            _foodItemView.SetVisualState(FoodItemVisualState.OnWaitingRack);
+            _state = WaitingRackSlotState.Reserved;
             _foodItemView.SetInteractable(false);
+            targetPosition = _foodAnchor.position;
+
+            return true;
+        }
+
+        public bool CompletePlacement(FoodItemView expectedFoodItem)
+        {
+            if (!IsReserved ||
+                expectedFoodItem == null ||
+                _foodItemView != expectedFoodItem ||
+                _foodAnchor == null)
+            {
+                return false;
+            }
+
+            _foodItemView.transform.position = _foodAnchor.position;
+            _foodItemView.SetVisualState(
+                FoodItemVisualState.OnWaitingRack);
+            _state = WaitingRackSlotState.Occupied;
+
+            _foodItemView.PlayLandingFeedback();
 
             return true;
         }
 
         public FoodItemView RemoveFood()
         {
+            if (!IsPlacementComplete)
+            {
+                return null;
+            }
+
             FoodItemView foodItemView = _foodItemView;
-            _foodItemView = null;
+            ResetSlot();
+
             return foodItemView;
         }
 
         public void Clear()
         {
+            if (_foodItemView != null)
+            {
+                _foodItemView.CancelMotion();
+            }
+
+            ResetSlot();
+        }
+
+        private void ResetSlot()
+        {
             _foodItemView = null;
+            _state = WaitingRackSlotState.Empty;
+        }
+
+        private enum WaitingRackSlotState
+        {
+            Empty,
+            Reserved,
+            Occupied
         }
     }
 }
