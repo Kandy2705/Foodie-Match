@@ -49,21 +49,6 @@ namespace FoodieMatch.Features.RequiredPackage
             return true;
         }
 
-        public bool UpdateFilledAmountAt(
-            int packageIndex,
-            RequiredPackageModel package)
-        {
-            RequiredPackageView packageView = GetPackageAt(packageIndex);
-
-            if (packageView == null || package == null)
-            {
-                return false;
-            }
-
-            packageView.SetFilledAmount(package.FilledAmount);
-            return true;
-        }
-
         public RequiredPackageView GetPackageAt(int packageIndex)
         {
             if (_packages == null || packageIndex < 0 || packageIndex >= _packages.Length)

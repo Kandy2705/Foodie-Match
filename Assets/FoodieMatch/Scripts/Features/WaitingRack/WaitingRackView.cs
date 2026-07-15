@@ -14,7 +14,7 @@ namespace FoodieMatch.Features.WaitingRack
             Clear();
         }
 
-        public bool SetFoodAt(int index, FoodItemView foodItemView)
+        public bool RestoreFoodAt(int index, FoodItemView foodItemView)
         {
             WaitingRackSlotView slot = GetSlot(index);
 
@@ -24,7 +24,7 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            return slot.SetFood(foodItemView);
+            return slot.RestoreFood(foodItemView);
         }
 
         public bool TryReserveFoodAt(

@@ -567,7 +567,7 @@ namespace FoodieMatch.Features.LevelSystem
                 return true;
             }
 
-            return _waitingRackView.SetFoodAt(
+            return _waitingRackView.RestoreFoodAt(
                 rackSlotIndex,
                 foodItemView);
         }
@@ -800,7 +800,7 @@ namespace FoodieMatch.Features.LevelSystem
             int rackSlotIndex,
             FoodItemView foodItemView)
         {
-            if (_waitingRackView.SetFoodAt(
+            if (_waitingRackView.RestoreFoodAt(
                     rackSlotIndex,
                     foodItemView))
             {

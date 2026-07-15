@@ -10,18 +10,17 @@ namespace FoodieMatch.Features.WaitingRack
         private FoodItemView _foodItemView;
         private WaitingRackSlotState _state;
 
-        public bool IsEmpty => _state == WaitingRackSlotState.Empty;
-        public bool IsReserved => _state == WaitingRackSlotState.Reserved;
-        public bool IsPlacementComplete =>
+        private bool IsEmpty => _state == WaitingRackSlotState.Empty;
+        private bool IsReserved => _state == WaitingRackSlotState.Reserved;
+        private bool IsPlacementComplete =>
             _state == WaitingRackSlotState.Occupied;
-        public FoodItemView FoodItemView => _foodItemView;
 
         private void OnDestroy()
         {
             Clear();
         }
 
-        public bool SetFood(FoodItemView foodItemView)
+        public bool RestoreFood(FoodItemView foodItemView)
         {
             if (!TryReserveFood(foodItemView, out _))
             {
@@ -65,9 +64,22 @@ namespace FoodieMatch.Features.WaitingRack
 
         public bool CompletePlacement(FoodItemView expectedFoodItem)
         {
-            return CompletePlacement(
-                expectedFoodItem,
-                playLandingFeedback: true);
+            if (!IsReserved ||
+                expectedFoodItem == null ||
+                _foodItemView != expectedFoodItem ||
+                _foodAnchor == null)
+            {
+                return false;
+            }
+
+            _foodItemView.transform.position = _foodAnchor.position;
+            _foodItemView.SetVisualState(
+                FoodItemVisualState.OnWaitingRack);
+            _state = WaitingRackSlotState.Occupied;
+
+            _foodItemView.PlayLandingFeedback();
+
+            return true;
         }
 
         public FoodItemView RemoveFood()
@@ -91,31 +103,6 @@ namespace FoodieMatch.Features.WaitingRack
             }
 
             ResetSlot();
-        }
-
-        private bool CompletePlacement(
-            FoodItemView expectedFoodItem,
-            bool playLandingFeedback)
-        {
-            if (!IsReserved ||
-                expectedFoodItem == null ||
-                _foodItemView != expectedFoodItem ||
-                _foodAnchor == null)
-            {
-                return false;
-            }
-
-            _foodItemView.transform.position = _foodAnchor.position;
-            _foodItemView.SetVisualState(
-                FoodItemVisualState.OnWaitingRack);
-            _state = WaitingRackSlotState.Occupied;
-
-            if (playLandingFeedback)
-            {
-                _foodItemView.PlayLandingFeedback();
-            }
-
-            return true;
         }
 
         private void ResetSlot()
