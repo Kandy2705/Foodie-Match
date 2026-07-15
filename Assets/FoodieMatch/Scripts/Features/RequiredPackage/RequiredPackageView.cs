@@ -13,17 +13,28 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private RequiredPackageAmountView _amount1View;
         [SerializeField] private RequiredPackageAmountView _amount2View;
         [SerializeField] private RequiredPackageAmountView _amount3View;
+        [SerializeField] private GameObject _lid;
 
-        [Header("Motion")]
-        [SerializeField] private Vector3 _completePunchStrength =
-            new Vector3(0.16f, 0.16f, 0f);
+        [Header("Enter Motion")]
+        [SerializeField] private Vector3 _enterOffset = new(-10f, 0f, 0f);
+        [SerializeField] private float _enterDuration = 0.3f;
+        [SerializeField] private Ease _enterEase = Ease.OutCubic;
+        [SerializeField] private Vector3 _enterPunchStrength = new(0.16f, 0.16f, 0f);
+        [SerializeField] private float _enterPunchDuration = 0.18f;
+
+        [Header("Match Motion")]
+        [SerializeField] private Vector3 _completePunchStrength = new(0.16f, 0.16f, 0f);
         [SerializeField] private float _completeFeedbackDuration = 0.22f;
+        [SerializeField] private Vector3 _exitOffset = new(0f, 10f, 0f);
+        [SerializeField] private float _exitDuration = 0.3f;
+        [SerializeField] private Ease _exitEase = Ease.InCubic;
 
         private Sprite _sprite;
-        private Tween _completeFeedbackTween;
-        private bool _isCompleteFeedbackPlaying;
-        private bool _didCompleteFeedbackFinish;
-        private bool _hasInitialLocalScale;
+        private Sequence _motionSequence;
+        private bool _isMotionPlaying;
+        private bool _didMotionFinish;
+        private bool _hasInitialTransform;
+        private Vector3 _initialLocalPosition;
         private Vector3 _initialLocalScale;
 
         public int FoodTokenId { get; private set; }
@@ -34,12 +45,18 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void Awake()
         {
-            EnsureInitialLocalScale();
+            EnsureInitialTransform();
+            HideLid();
+
+            if (_lid == null)
+            {
+                Debug.LogWarning("Required package lid is missing.", this);
+            }
         }
 
         private void OnDestroy()
         {
-            StopCompleteFeedback(resetScale: false);
+            StopMotion(resetTransform: false, hideLid: false);
         }
 
         public RequiredPackageSlotView GetTargetSlot(
@@ -52,7 +69,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void Setup(int foodTokenId, int requiredAmount, Sprite sprite)
         {
-            StopCompleteFeedback(resetScale: true);
+            StopMotion();
 
             if (foodTokenId <= 0)
             {
@@ -88,7 +105,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void Clear()
         {
-            StopCompleteFeedback(resetScale: true);
+            StopMotion();
             FoodTokenId = 0;
             RequiredAmount = 0;
             FilledAmount = 0;
@@ -97,46 +114,81 @@ namespace FoodieMatch.Features.RequiredPackage
             HideAllViews();
         }
 
-        public async Task<MotionResult> PlayCompleteFeedbackAsync()
+        public async Task<MotionResult> PlayEnterAsync()
         {
             if (IsEmpty ||
-                _isCompleteFeedbackPlaying ||
-                !IsValidTime(_completeFeedbackDuration))
+                _isMotionPlaying ||
+                !IsValidTime(_enterDuration) ||
+                !IsValidTime(_enterPunchDuration) ||
+                !IsValidVector(_enterOffset))
             {
                 return MotionResult.Failed;
             }
 
-            EnsureInitialLocalScale();
-            _isCompleteFeedbackPlaying = true;
-            _didCompleteFeedbackFinish = false;
+            EnsureInitialTransform();
+            ResetTransform();
+            HideLid();
+            transform.localPosition = _initialLocalPosition + _enterOffset;
+            _isMotionPlaying = true;
+            _didMotionFinish = false;
 
             try
             {
-                _completeFeedbackTween = Tween.PunchScale(
-                        transform,
-                        _completePunchStrength,
-                        _completeFeedbackDuration)
-                    .OnComplete(
-                        target: this,
-                        target =>
-                            target.MarkCompleteFeedbackFinished());
+                _motionSequence = Sequence.Create()
+                    .Chain(Tween.LocalPosition(transform, _initialLocalPosition, _enterDuration, _enterEase))
+                    .Chain(Tween.PunchScale(transform, _enterPunchStrength, _enterPunchDuration))
+                    .ChainCallback(this, target => target.MarkMotionFinished());
 
-                await _completeFeedbackTween;
+                await _motionSequence;
 
-                return _didCompleteFeedbackFinish
-                    ? MotionResult.Completed
-                    : MotionResult.Cancelled;
+                return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
             }
             finally
             {
-                _completeFeedbackTween = default;
-                _isCompleteFeedbackPlaying = false;
+                _motionSequence = default;
+                _isMotionPlaying = false;
             }
         }
 
-        public void StopCompleteFeedback()
+        public async Task<MotionResult> PlayMatchAndExitAsync()
         {
-            StopCompleteFeedback(resetScale: true);
+            if (IsEmpty ||
+                _isMotionPlaying ||
+                !IsValidTime(_completeFeedbackDuration) ||
+                !IsValidTime(_exitDuration) ||
+                !IsValidVector(_exitOffset))
+            {
+                return MotionResult.Failed;
+            }
+
+            EnsureInitialTransform();
+            ResetTransform();
+            ShowLid();
+            _isMotionPlaying = true;
+            _didMotionFinish = false;
+
+            try
+            {
+                _motionSequence = Sequence.Create()
+                    .Chain(Tween.PunchScale(transform, _completePunchStrength, _completeFeedbackDuration))
+                    .Chain(Tween.LocalPosition(
+                        transform, _initialLocalPosition + _exitOffset, _exitDuration, _exitEase))
+                    .ChainCallback(this, target => target.MarkMotionFinished());
+
+                await _motionSequence;
+
+                return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _motionSequence = default;
+                _isMotionPlaying = false;
+            }
+        }
+
+        public void StopMotion()
+        {
+            StopMotion(resetTransform: true, hideLid: true);
         }
 
         private void RefreshActiveView()
@@ -181,41 +233,79 @@ namespace FoodieMatch.Features.RequiredPackage
             _amount3View?.Hide();
         }
 
-        private void MarkCompleteFeedbackFinished()
+        private void MarkMotionFinished()
         {
-            _didCompleteFeedbackFinish = true;
+            _didMotionFinish = true;
         }
 
-        private void StopCompleteFeedback(bool resetScale)
+        private void StopMotion(bool resetTransform, bool hideLid)
         {
-            if (_completeFeedbackTween.isAlive)
+            if (_motionSequence.isAlive)
             {
-                _completeFeedbackTween.Stop();
+                _motionSequence.Stop();
             }
 
-            if (resetScale)
+            _motionSequence = default;
+
+            if (resetTransform)
             {
-                EnsureInitialLocalScale();
-                transform.localScale = _initialLocalScale;
+                ResetTransform();
+            }
+
+            if (hideLid)
+            {
+                HideLid();
             }
         }
 
-        private void EnsureInitialLocalScale()
+        private void ResetTransform()
         {
-            if (_hasInitialLocalScale)
+            EnsureInitialTransform();
+            transform.localPosition = _initialLocalPosition;
+            transform.localScale = _initialLocalScale;
+        }
+
+        private void ShowLid()
+        {
+            if (_lid != null)
+            {
+                _lid.SetActive(true);
+            }
+        }
+
+        private void HideLid()
+        {
+            if (_lid != null)
+            {
+                _lid.SetActive(false);
+            }
+        }
+
+        private void EnsureInitialTransform()
+        {
+            if (_hasInitialTransform)
             {
                 return;
             }
 
+            _initialLocalPosition = transform.localPosition;
             _initialLocalScale = transform.localScale;
-            _hasInitialLocalScale = true;
+            _hasInitialTransform = true;
         }
 
         private static bool IsValidTime(float value)
         {
-            return value >= 0f &&
-                   !float.IsNaN(value) &&
-                   !float.IsInfinity(value);
+            return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static bool IsValidVector(Vector3 value)
+        {
+            return IsValidNumber(value.x) && IsValidNumber(value.y) && IsValidNumber(value.z);
+        }
+
+        private static bool IsValidNumber(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value);
         }
     }
 }

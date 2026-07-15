@@ -122,7 +122,7 @@ namespace FoodieMatch.Features.Gameplay
                 !expectedPackage.CanAccept(transfer.FoodTokenId) ||
                 motionState == null ||
                 motionState.Package != expectedPackage ||
-                motionState.IsCompleteMotionRunning)
+                motionState.IsReplacementRunning)
             {
                 return false;
             }
@@ -181,7 +181,7 @@ namespace FoodieMatch.Features.Gameplay
 
                 if (motionState != null &&
                     (motionState.IncomingFlightCount > 0 ||
-                     motionState.IsCompleteMotionRunning ||
+                     motionState.IsReplacementRunning ||
                      motionState.Package != null && motionState.Package.IsComplete))
                 {
                     return true;
@@ -239,7 +239,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             IncreaseDisplayedServedFoodCount(session);
-            TryStartPackageCompletion(flight.PackageIndex, flight.ExpectedPackage, session);
+            TryStartPackageReplacement(flight.PackageIndex, flight.ExpectedPackage, session);
         }
 
         private bool TryCreateSelectedFoodFlight(
@@ -333,7 +333,7 @@ namespace FoodieMatch.Features.Gameplay
                 new LevelProgressChangedEvent(session.DisplayedServedCount, session.Progress.TotalCount));
         }
 
-        private void TryStartPackageCompletion(
+        private void TryStartPackageReplacement(
             int packageIndex,
             RequiredPackageModel expectedPackage,
             GameplaySession session)
@@ -342,31 +342,21 @@ namespace FoodieMatch.Features.Gameplay
                 !TryGetMotionState(packageIndex, expectedPackage, out PackageMotionState motionState) ||
                 !expectedPackage.IsComplete ||
                 motionState.IncomingFlightCount != 0 ||
-                motionState.IsCompleteMotionRunning)
+                motionState.IsReplacementRunning)
             {
                 return;
             }
 
-            motionState.IsCompleteMotionRunning = true;
-            _ = CompletePackageSafelyAsync(packageIndex, expectedPackage, session);
+            motionState.IsReplacementRunning = true;
+            _ = ReplacePackageSafelyAsync(packageIndex, expectedPackage, session);
         }
 
-        private async Task CompletePackageSafelyAsync(
+        private async Task ReplacePackageSafelyAsync(
             int packageIndex,
             RequiredPackageModel expectedPackage,
             GameplaySession session)
         {
-            MotionResult motionResult;
-
-            try
-            {
-                motionResult = await _motionPresenter.PlayRequiredPackageCompleteAsync(packageIndex);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                motionResult = MotionResult.Failed;
-            }
+            MotionResult matchMotionResult = await PlayPackageMatchSafelyAsync(packageIndex);
 
             if (!CanContinue(session) ||
                 !TryGetMotionState(packageIndex, expectedPackage, out PackageMotionState motionState))
@@ -374,29 +364,120 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (motionResult == MotionResult.Cancelled)
+            if (matchMotionResult == MotionResult.Cancelled)
             {
-                motionState.IsCompleteMotionRunning = false;
+                motionState.IsReplacementRunning = false;
                 return;
             }
 
-            if (motionResult == MotionResult.Failed)
+            if (matchMotionResult == MotionResult.Failed)
             {
-                Debug.LogError($"Required package {packageIndex} complete feedback failed.");
+                Debug.LogError($"Required package {packageIndex} match motion failed.");
             }
 
-            if (!_packageLifecycleUseCase.TryReplaceCompletedPackage(
-                    packageIndex, session.Board, session.WaitingRack,
-                    session.RequiredPackages, session.PackageSettings, out RequiredPackageModel newPackage))
+            IReadOnlyList<RequiredPackageModel> packageReservations = CreatePackageReservations();
+
+            if (!_packageLifecycleUseCase.TryPrepareReplacementPackage(
+                    packageIndex, session.Board, session.WaitingRack, session.RequiredPackages,
+                    packageReservations, session.PackageSettings, out RequiredPackageModel replacementPackage))
             {
-                motionState.IsCompleteMotionRunning = false;
-                Debug.LogError($"Required package {packageIndex} could not be replaced.");
+                motionState.IsReplacementRunning = false;
+                RefreshPackageViewAt(packageIndex);
+                Debug.LogError($"Required package {packageIndex} replacement could not be prepared.");
                 return;
             }
 
-            motionState.Reset(newPackage);
-            RefreshPackageViewAt(packageIndex);
+            if (replacementPackage != null &&
+                (!motionState.TrySetPendingPackage(expectedPackage, replacementPackage) ||
+                 !ShowPackageViewAt(packageIndex, replacementPackage)))
+            {
+                motionState.CancelReplacement(expectedPackage);
+                RefreshPackageViewAt(packageIndex);
+                Debug.LogError($"Required package {packageIndex} pending view could not be prepared.");
+                return;
+            }
+
+            if (replacementPackage != null)
+            {
+                MotionResult enterMotionResult = await PlayPackageEnterSafelyAsync(packageIndex);
+
+                if (!CanContinue(session) ||
+                    !TryGetMotionState(packageIndex, expectedPackage, out motionState) ||
+                    motionState.PendingPackage != replacementPackage)
+                {
+                    return;
+                }
+
+                if (enterMotionResult == MotionResult.Cancelled)
+                {
+                    motionState.CancelReplacement(expectedPackage);
+                    RefreshPackageViewAt(packageIndex);
+                    return;
+                }
+
+                if (enterMotionResult == MotionResult.Failed)
+                {
+                    Debug.LogError($"Required package {packageIndex} enter motion failed.");
+                    _packageGroupView.GetPackageAt(packageIndex)?.StopMotion();
+                }
+            }
+
+            if (!_packageLifecycleUseCase.TryPublishReplacementPackage(
+                    packageIndex, expectedPackage, replacementPackage, session.RequiredPackages))
+            {
+                motionState.CancelReplacement(expectedPackage);
+                RefreshPackageViewAt(packageIndex);
+                Debug.LogError($"Required package {packageIndex} replacement could not be published.");
+                return;
+            }
+
+            motionState.Reset(replacementPackage);
+
+            if (replacementPackage == null)
+            {
+                RefreshPackageViewAt(packageIndex);
+            }
+
             PackageReplaced?.Invoke(session);
+        }
+
+        private async Task<MotionResult> PlayPackageMatchSafelyAsync(int packageIndex)
+        {
+            try
+            {
+                return await _motionPresenter.PlayRequiredPackageMatchAsync(packageIndex);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return MotionResult.Failed;
+            }
+        }
+
+        private async Task<MotionResult> PlayPackageEnterSafelyAsync(int packageIndex)
+        {
+            try
+            {
+                return await _motionPresenter.PlayRequiredPackageEnterAsync(packageIndex);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return MotionResult.Failed;
+            }
+        }
+
+        private IReadOnlyList<RequiredPackageModel> CreatePackageReservations()
+        {
+            RequiredPackageModel[] packageReservations = new RequiredPackageModel[_session.RequiredPackages.Length];
+
+            for (int i = 0; i < packageReservations.Length; i++)
+            {
+                PackageMotionState motionState = _motionStates[i];
+                packageReservations[i] = motionState?.PendingPackage ?? _session.RequiredPackages[i];
+            }
+
+            return packageReservations;
         }
 
         private bool TryGetMotionState(
@@ -454,12 +535,16 @@ namespace FoodieMatch.Features.Gameplay
         private void RefreshPackageViewAt(int packageIndex)
         {
             RequiredPackageModel package = _session.RequiredPackages[packageIndex];
-            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
-
-            if (!_packageGroupView.ShowPackageAt(packageIndex, package, sprite))
+            if (!ShowPackageViewAt(packageIndex, package))
             {
                 Debug.LogError($"Required package view {packageIndex} could not be updated.");
             }
+        }
+
+        private bool ShowPackageViewAt(int packageIndex, RequiredPackageModel package)
+        {
+            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
+            return _packageGroupView.ShowPackageAt(packageIndex, package, sprite);
         }
 
         private void OnPackageDeliveryFailed(GameplaySession session)
@@ -478,12 +563,13 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             public RequiredPackageModel Package { get; private set; }
+            public RequiredPackageModel PendingPackage { get; private set; }
             public int IncomingFlightCount { get; private set; }
-            public bool IsCompleteMotionRunning { get; set; }
+            public bool IsReplacementRunning { get; set; }
 
             public bool TryRegisterIncomingFlight(RequiredPackageModel expectedPackage)
             {
-                if (Package != expectedPackage || IsCompleteMotionRunning)
+                if (Package != expectedPackage || IsReplacementRunning)
                 {
                     return false;
                 }
@@ -503,11 +589,39 @@ namespace FoodieMatch.Features.Gameplay
                 return true;
             }
 
+            public bool TrySetPendingPackage(
+                RequiredPackageModel expectedPackage,
+                RequiredPackageModel pendingPackage)
+            {
+                if (Package != expectedPackage ||
+                    pendingPackage == null ||
+                    PendingPackage != null ||
+                    !IsReplacementRunning)
+                {
+                    return false;
+                }
+
+                PendingPackage = pendingPackage;
+                return true;
+            }
+
+            public void CancelReplacement(RequiredPackageModel expectedPackage)
+            {
+                if (Package != expectedPackage)
+                {
+                    return;
+                }
+
+                PendingPackage = null;
+                IsReplacementRunning = false;
+            }
+
             public void Reset(RequiredPackageModel package)
             {
                 Package = package;
+                PendingPackage = null;
                 IncomingFlightCount = 0;
-                IsCompleteMotionRunning = false;
+                IsReplacementRunning = false;
             }
         }
     }

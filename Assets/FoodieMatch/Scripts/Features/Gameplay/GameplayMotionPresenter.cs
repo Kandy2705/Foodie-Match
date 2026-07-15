@@ -13,7 +13,7 @@ namespace FoodieMatch.Features.Gameplay
         [SerializeField] private float _foodFlightDuration = 0.22f;
 
         private readonly HashSet<FoodItemView> _activeFoodFlights = new();
-        private readonly HashSet<RequiredPackageView> _activePackageFeedbacks = new();
+        private readonly HashSet<RequiredPackageView> _activePackageMotions = new();
 
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
@@ -143,21 +143,28 @@ namespace FoodieMatch.Features.Gameplay
             return MotionResult.Completed;
         }
 
-        public Task<MotionResult> PlayRequiredPackageCompleteAsync(int packageIndex)
+        public Task<MotionResult> PlayRequiredPackageMatchAsync(int packageIndex)
         {
-            if (_requiredPackageGroupView == null)
+            RequiredPackageView packageView = GetAvailablePackageView(packageIndex);
+
+            if (packageView == null)
             {
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            RequiredPackageView packageView = _requiredPackageGroupView.GetPackageAt(packageIndex);
+            return PlayPackageMatchAsync(packageView);
+        }
 
-            if (packageView == null || _activePackageFeedbacks.Contains(packageView))
+        public Task<MotionResult> PlayRequiredPackageEnterAsync(int packageIndex)
+        {
+            RequiredPackageView packageView = GetAvailablePackageView(packageIndex);
+
+            if (packageView == null)
             {
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            return PlayPackageFeedbackAsync(packageView);
+            return PlayPackageEnterAsync(packageView);
         }
 
         public void CancelAllMotions()
@@ -165,8 +172,8 @@ namespace FoodieMatch.Features.Gameplay
             FoodItemView[] foodItemViews = new FoodItemView[_activeFoodFlights.Count];
             _activeFoodFlights.CopyTo(foodItemViews);
 
-            RequiredPackageView[] packageViews = new RequiredPackageView[_activePackageFeedbacks.Count];
-            _activePackageFeedbacks.CopyTo(packageViews);
+            RequiredPackageView[] packageViews = new RequiredPackageView[_activePackageMotions.Count];
+            _activePackageMotions.CopyTo(packageViews);
 
             for (int i = 0; i < foodItemViews.Length; i++)
             {
@@ -175,7 +182,7 @@ namespace FoodieMatch.Features.Gameplay
 
             for (int i = 0; i < packageViews.Length; i++)
             {
-                packageViews[i]?.StopCompleteFeedback();
+                packageViews[i]?.StopMotion();
             }
         }
 
@@ -209,20 +216,48 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task<MotionResult> PlayPackageFeedbackAsync(RequiredPackageView packageView)
+        private RequiredPackageView GetAvailablePackageView(int packageIndex)
         {
-            if (!_activePackageFeedbacks.Add(packageView))
+            if (_requiredPackageGroupView == null)
+            {
+                return null;
+            }
+
+            RequiredPackageView packageView = _requiredPackageGroupView.GetPackageAt(packageIndex);
+            return packageView != null && !_activePackageMotions.Contains(packageView) ? packageView : null;
+        }
+
+        private async Task<MotionResult> PlayPackageMatchAsync(RequiredPackageView packageView)
+        {
+            if (!_activePackageMotions.Add(packageView))
             {
                 return MotionResult.Failed;
             }
 
             try
             {
-                return await packageView.PlayCompleteFeedbackAsync();
+                return await packageView.PlayMatchAndExitAsync();
             }
             finally
             {
-                _activePackageFeedbacks.Remove(packageView);
+                _activePackageMotions.Remove(packageView);
+            }
+        }
+
+        private async Task<MotionResult> PlayPackageEnterAsync(RequiredPackageView packageView)
+        {
+            if (!_activePackageMotions.Add(packageView))
+            {
+                return MotionResult.Failed;
+            }
+
+            try
+            {
+                return await packageView.PlayEnterAsync();
+            }
+            finally
+            {
+                _activePackageMotions.Remove(packageView);
             }
         }
 

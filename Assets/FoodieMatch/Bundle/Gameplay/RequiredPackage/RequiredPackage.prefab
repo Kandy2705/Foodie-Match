@@ -798,8 +798,17 @@ MonoBehaviour:
     - {fileID: 1164139820783536329}
     - {fileID: 7122299406155016687}
     - {fileID: 3691053841975879848}
+  _lid: {fileID: 4833298540697649703}
+  _enterOffset: {x: -10, y: 0, z: 0}
+  _enterDuration: 0.3
+  _enterEase: 9
+  _enterPunchStrength: {x: 0.16, y: 0.16, z: 0}
+  _enterPunchDuration: 0.18
   _completePunchStrength: {x: 0.16, y: 0.16, z: 0}
   _completeFeedbackDuration: 0.22
+  _exitOffset: {x: 0, y: 10, z: 0}
+  _exitDuration: 0.3
+  _exitEase: 8
 --- !u!1 &8638383665403139635
 GameObject:
   m_ObjectHideFlags: 0
