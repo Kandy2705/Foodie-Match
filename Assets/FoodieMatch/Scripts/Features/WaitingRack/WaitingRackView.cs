@@ -9,7 +9,12 @@ namespace FoodieMatch.Features.WaitingRack
 
         public int Capacity => _slots != null ? _slots.Length : 0;
 
-        public bool SetFoodAt(int index, FoodItemView foodItemView)
+        private void OnDestroy()
+        {
+            Clear();
+        }
+
+        public bool RestoreFoodAt(int index, FoodItemView foodItemView)
         {
             WaitingRackSlotView slot = GetSlot(index);
 
@@ -19,7 +24,41 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            return slot.SetFood(foodItemView);
+            return slot.RestoreFood(foodItemView);
+        }
+
+        public bool TryReserveFoodAt(
+            int index,
+            FoodItemView foodItemView,
+            out Vector3 targetPosition)
+        {
+            targetPosition = default;
+            WaitingRackSlotView slot = GetSlot(index);
+
+            if (slot == null)
+            {
+                Debug.LogWarning($"Waiting rack slot {index} is missing.", this);
+                return false;
+            }
+
+            return slot.TryReserveFood(
+                foodItemView,
+                out targetPosition);
+        }
+
+        public bool CompleteFoodPlacementAt(
+            int index,
+            FoodItemView expectedFoodItem)
+        {
+            WaitingRackSlotView slot = GetSlot(index);
+
+            if (slot == null)
+            {
+                Debug.LogWarning($"Waiting rack slot {index} is missing.", this);
+                return false;
+            }
+
+            return slot.CompletePlacement(expectedFoodItem);
         }
 
         public FoodItemView RemoveFoodAt(int index)

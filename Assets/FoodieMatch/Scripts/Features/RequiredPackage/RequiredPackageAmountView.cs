@@ -11,6 +11,15 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public int SlotCount => _slots != null ? _slots.Length : 0;
 
+        public RequiredPackageSlotView GetSlotAt(int slotIndex)
+        {
+            return _slots != null &&
+                   slotIndex >= 0 &&
+                   slotIndex < _slots.Length
+                ? _slots[slotIndex]
+                : null;
+        }
+
         public void Show(Sprite sprite, int filledAmount)
         {
             SetRootActive(true);
