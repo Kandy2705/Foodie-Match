@@ -434,7 +434,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8978866167505439493, guid: 2952f092d086a9f4ea0fb3465e2620ad, type: 3}
       propertyPath: _popupPrefabs.Array.size
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 8978866167505439493, guid: 2952f092d086a9f4ea0fb3465e2620ad, type: 3}
       propertyPath: _popupPrefabs.Array.data[7]._prefab
@@ -443,7 +443,7 @@ PrefabInstance:
     - target: {fileID: 8978866167505439493, guid: 2952f092d086a9f4ea0fb3465e2620ad, type: 3}
       propertyPath: _popupPrefabs.Array.data[8]._prefab
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5140699695291097497, guid: 481688a80bcc64abcb778c984f7eeb4b, type: 3}
     - target: {fileID: 8978866167505439493, guid: 2952f092d086a9f4ea0fb3465e2620ad, type: 3}
       propertyPath: _popupPrefabs.Array.data[8]._cacheAfterHide
       value: 1
