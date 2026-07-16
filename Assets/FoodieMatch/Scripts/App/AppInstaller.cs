@@ -23,8 +23,8 @@ namespace FoodieMatch.App
 
             GameplayEvents = new GameplayEvents();
 
-            IAudioService audioService = new NullAudioService();
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            IAudioService audioService = CreateAudioService(appRoot, saveService);
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
             System.Random random = new System.Random();
@@ -66,7 +66,23 @@ namespace FoodieMatch.App
                 appRoot.UIManager,
                 appRoot.GameplayController,
                 saveService,
-                levelRepository);
+                levelRepository,
+                audioService);
+        }
+
+        private static IAudioService CreateAudioService(
+            AppRoot appRoot,
+            ISaveService saveService)
+        {
+            if (appRoot.AudioService == null)
+            {
+                Debug.LogWarning(
+                    "UnityAudioService is missing. Falling back to NullAudioService.");
+                return new NullAudioService();
+            }
+
+            appRoot.AudioService.Construct(saveService);
+            return appRoot.AudioService;
         }
 
         private bool HasValidReferences(AppRoot appRoot)

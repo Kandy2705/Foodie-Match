@@ -8,12 +8,16 @@ namespace FoodieMatch.UI.Pause
             Action resumeClicked,
             Action restartClicked,
             Action homeClicked,
-            Action closeClicked)
+            Action closeClicked,
+            Action<bool> soundChanged = null,
+            Action<bool> musicChanged = null)
         {
             ResumeClicked = resumeClicked ?? throw new ArgumentNullException(nameof(resumeClicked));
             RestartClicked = restartClicked ?? throw new ArgumentNullException(nameof(restartClicked));
             HomeClicked = homeClicked ?? throw new ArgumentNullException(nameof(homeClicked));
             CloseClicked = closeClicked ?? throw new ArgumentNullException(nameof(closeClicked));
+            SoundChanged = soundChanged;
+            MusicChanged = musicChanged;
         }
 
         public Action ResumeClicked { get; }
@@ -23,5 +27,9 @@ namespace FoodieMatch.UI.Pause
         public Action HomeClicked { get; }
 
         public Action CloseClicked { get; }
+
+        public Action<bool> SoundChanged { get; }
+
+        public Action<bool> MusicChanged { get; }
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3588690107982509502}
   - component: {fileID: 4562025231821585959}
+  - component: {fileID: 7123456789012345678}
   m_Layer: 0
   m_Name: AppRoot
   m_TagString: Untagged
@@ -57,11 +58,30 @@ MonoBehaviour:
   _gameplayController: {fileID: 3376663949317477137}
   _uiManager: {fileID: 6535060838407858178}
   _gameplayMotionPresenter: {fileID: 86517351395246559}
+  _audioService: {fileID: 7123456789012345678}
   _levelCatalog: {fileID: 11400000, guid: c688b8a74a406174fb8685ded2bc4c1b, type: 2}
   _boardLayoutView: {fileID: 5535215390786423237}
   _requiredPackageGroupView: {fileID: 8855672181408796993}
   _waitingRackView: {fileID: 9095491401499760532}
   _foodVisualResolver: {fileID: 961911659323780000}
+--- !u!114 &7123456789012345678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2781783075422325079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daa2a15424b34d8d994f359a80da3f18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _library: {fileID: 11400000, guid: 31f06a3a984747af8841489be9ecf03f, type: 2}
+  _musicSource: {fileID: 0}
+  _sfxSources: []
+  _musicVolume: 0.7
+  _sfxVolume: 1
+  _sfxSourceCount: 6
 --- !u!1001 &161844419768465814
 PrefabInstance:
   m_ObjectHideFlags: 0
