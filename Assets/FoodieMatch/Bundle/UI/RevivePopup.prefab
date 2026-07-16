@@ -141,6 +141,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3443376543413754285}
   - {fileID: 3768560025975473537}
   m_Father: {fileID: 956811249053854302}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -860,7 +861,6 @@ MonoBehaviour:
   _playOnButton: {fileID: 727163258812183704}
   _popupAnimController: {fileID: 4426387045453857657}
   _costText: {fileID: 293875443505543227}
-  _bonusAmountText: {fileID: 2587775720095708}
 --- !u!1 &7388116517003901043
 GameObject:
   m_ObjectHideFlags: 0
@@ -1179,17 +1179,6 @@ PrefabInstance:
       addedObject: {fileID: 3137411498917015035}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
---- !u!114 &2587775720095708 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
-  m_PrefabInstance: {fileID: 3118081513284576698}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &2288905725322234862 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
@@ -1612,9 +1601,6 @@ PrefabInstance:
     - {fileID: 5670687708944069821, guid: f600b333c3a81435793212c0515baac3, type: 3}
     - {fileID: 7991091975011866760, guid: f600b333c3a81435793212c0515baac3, type: 3}
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
-      insertIndex: 0
-      addedObject: {fileID: 3443376543413754285}
     - targetCorrespondingSourceObject: {fileID: 3025180612000679678, guid: f600b333c3a81435793212c0515baac3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5581322038750977072}
@@ -1661,7 +1647,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 3768560025975473537}
+    m_TransformParent: {fileID: 7477920097495065390}
     m_Modifications:
     - target: {fileID: 1120338366130410837, guid: 36eb68073703c432a9fe5d7ad48dee75, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1781,7 +1767,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5920858044903863748, guid: 36eb68073703c432a9fe5d7ad48dee75, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 432.1328
+      value: -106.86719
       objectReference: {fileID: 0}
     - target: {fileID: 5920858044903863748, guid: 36eb68073703c432a9fe5d7ad48dee75, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

@@ -339,6 +339,8 @@ MonoBehaviour:
   _restartButton: {fileID: 6005682164474886619}
   _homeButton: {fileID: 6166979857907795379}
   _closeButton: {fileID: 3698172402874008995}
+  _soundToggle: {fileID: 0}
+  _musicToggle: {fileID: 0}
   _popupAnimController: {fileID: 4454833220311908803}
 --- !u!1 &4350290439390501240
 GameObject:

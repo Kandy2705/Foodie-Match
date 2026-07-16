@@ -884,8 +884,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a00a228db12446db18261902f1ed9c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _closeButton: {fileID: 8123456789012345671}
-  _retryButton: {fileID: 8123456789012345672}
+  _closeButton: {fileID: 6514664641314186238}
+  _retryButton: {fileID: 7369221715524853931}
   _popupAnimController: {fileID: 1111150378419549563}
 --- !u!1 &8205760409695523831
 GameObject:
@@ -1049,7 +1049,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 38.75976
+      value: -0.0000038146973
       objectReference: {fileID: 0}
     - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1163,7 +1163,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
   m_PrefabInstance: {fileID: 564714077373897585}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8123456789012345671 stripped
+--- !u!114 &6514664641314186238 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6755109787351709839, guid: f600b333c3a81435793212c0515baac3, type: 3}
   m_PrefabInstance: {fileID: 564714077373897585}
@@ -1324,7 +1324,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
   m_PrefabInstance: {fileID: 4535619296614813764}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8123456789012345672 stripped
+--- !u!114 &7369221715524853931 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6392153387098845423, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
   m_PrefabInstance: {fileID: 4535619296614813764}
