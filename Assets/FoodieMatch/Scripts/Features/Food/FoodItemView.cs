@@ -24,6 +24,11 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private Vector3 _waitingRackScale = Vector3.one;
         [SerializeField] private Vector3 _waitingRackRotation;
 
+        [Header("Flight Motion")]
+        [SerializeField] private float _flightDuration = 0.22f;
+        [SerializeField] private float _flightArcHeight = 1f;
+        [SerializeField, Range(0.1f, 0.9f)] private float _flightPeakProgress = 0.45f;
+
         [Header("Landing Motion")]
         [SerializeField] private Vector3 _landingSquashScaleMultiplier = new(1.18f, 0.72f, 1f);
         [SerializeField] private float _landingSquashDuration = 0.08f;
@@ -136,15 +141,13 @@ namespace FoodieMatch.Features.Food
 
         public Task<MotionResult> PlayFlightAsync(
             Vector3 targetPosition,
-            float duration,
             float startDelay = 0f)
         {
-            return PlayFlightAsync(targetPosition, null, duration, startDelay);
+            return PlayFlightAsync(targetPosition, null, startDelay);
         }
 
         public Task<MotionResult> PlayFlightAsync(
             Transform target,
-            float duration,
             float startDelay = 0f)
         {
             if (target == null)
@@ -153,18 +156,17 @@ namespace FoodieMatch.Features.Food
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            return PlayFlightAsync(target.position, target, duration, startDelay);
+            return PlayFlightAsync(target.position, target, startDelay);
         }
 
         private async Task<MotionResult> PlayFlightAsync(
             Vector3 targetPosition,
             Transform target,
-            float duration,
             float startDelay)
         {
             StopLandingFeedback(resetScale: true);
 
-            if (!CanStartFlight(duration, startDelay))
+            if (!CanStartFlight(startDelay))
             {
                 return MotionResult.Failed;
             }
@@ -182,7 +184,7 @@ namespace FoodieMatch.Features.Food
                         this,
                         0f,
                         1f,
-                        duration,
+                        _flightDuration,
                         (foodItem, progress) => foodItem.UpdateFlightPosition(progress),
                         startDelay: startDelay)
                     .OnComplete(
@@ -295,9 +297,7 @@ namespace FoodieMatch.Features.Food
             Selected?.Invoke(this);
         }
 
-        private bool CanStartFlight(
-            float duration,
-            float startDelay)
+        private bool CanStartFlight(float startDelay)
         {
             if (IsEmpty)
             {
@@ -315,7 +315,9 @@ namespace FoodieMatch.Features.Food
                 return false;
             }
 
-            if (!IsValidTime(duration) ||
+            if (!IsValidTime(_flightDuration) ||
+                !IsValidPositiveNumber(_flightArcHeight) ||
+                !IsValidPeakProgress(_flightPeakProgress) ||
                 !IsValidTime(startDelay))
             {
                 Debug.LogError(
@@ -344,10 +346,28 @@ namespace FoodieMatch.Features.Food
                 _latestFlightTargetPosition = _flightTarget.position;
             }
 
-            transform.position = Vector3.LerpUnclamped(
+            Vector3 position = Vector3.LerpUnclamped(
                 _flightStartPosition,
                 _latestFlightTargetPosition,
                 progress);
+            position.y = CalculateFlightPositionY(progress);
+            transform.position = position;
+        }
+
+        private float CalculateFlightPositionY(float progress)
+        {
+            float targetPositionY = _latestFlightTargetPosition.y;
+            float peakPositionY = Mathf.Max(_flightStartPosition.y, targetPositionY) + _flightArcHeight;
+
+            if (progress <= _flightPeakProgress)
+            {
+                float risingProgress = progress / _flightPeakProgress;
+                float easedProgress = 1f - (1f - risingProgress) * (1f - risingProgress);
+                return Mathf.LerpUnclamped(_flightStartPosition.y, peakPositionY, easedProgress);
+            }
+
+            float fallingProgress = (progress - _flightPeakProgress) / (1f - _flightPeakProgress);
+            return Mathf.LerpUnclamped(peakPositionY, targetPositionY, fallingProgress * fallingProgress);
         }
 
         private void UpdateLandingPosition()
@@ -364,6 +384,16 @@ namespace FoodieMatch.Features.Food
             return value >= 0f &&
                    !float.IsNaN(value) &&
                    !float.IsInfinity(value);
+        }
+
+        private static bool IsValidPositiveNumber(float value)
+        {
+            return value > 0f && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static bool IsValidPeakProgress(float value)
+        {
+            return value > 0f && value < 1f && !float.IsNaN(value);
         }
 
         private void StopLandingFeedback(bool resetScale)

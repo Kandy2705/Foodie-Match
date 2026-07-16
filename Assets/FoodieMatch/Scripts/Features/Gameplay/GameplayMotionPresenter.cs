@@ -10,8 +10,6 @@ namespace FoodieMatch.Features.Gameplay
 {
     public sealed class GameplayMotionPresenter : MonoBehaviour
     {
-        [SerializeField] private float _foodFlightDuration = 0.22f;
-
         private readonly HashSet<FoodItemView> _activeFoodMotions = new();
         private readonly HashSet<RequiredPackageView> _activePackageMotions = new();
 
@@ -99,8 +97,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                MotionResult flightResult = await foodItemView.PlayFlightAsync(
-                    targetPosition, _foodFlightDuration, startDelay);
+                MotionResult flightResult = await foodItemView.PlayFlightAsync(targetPosition, startDelay);
 
                 if (flightResult != MotionResult.Completed)
                 {
@@ -222,7 +219,6 @@ namespace FoodieMatch.Features.Gameplay
                    !foodItemView.IsEmpty &&
                    !foodItemView.IsFlying &&
                    !_activeFoodMotions.Contains(foodItemView) &&
-                   IsValidTime(_foodFlightDuration) &&
                    IsValidTime(startDelay);
         }
 
@@ -238,7 +234,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                return await foodItemView.PlayFlightAsync(targetPosition, _foodFlightDuration, startDelay);
+                return await foodItemView.PlayFlightAsync(targetPosition, startDelay);
             }
             finally
             {
@@ -258,8 +254,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                MotionResult flightResult = await foodItemView.PlayFlightAsync(
-                    target, _foodFlightDuration, startDelay);
+                MotionResult flightResult = await foodItemView.PlayFlightAsync(target, startDelay);
 
                 return flightResult == MotionResult.Completed
                     ? await foodItemView.PlayLandingFeedbackAsync(target)
