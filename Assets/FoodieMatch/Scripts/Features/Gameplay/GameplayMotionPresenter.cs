@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Features.Board;
@@ -180,7 +181,10 @@ namespace FoodieMatch.Features.Gameplay
             return MotionResult.Completed;
         }
 
-        public Task<MotionResult> PlayRequiredPackageMatchAsync(int packageIndex)
+        public Task<MotionResult> PlayRequiredPackageMatchAsync(
+            int packageIndex,
+            Action onMatchStarted,
+            Action onLidClosed)
         {
             RequiredPackageView packageView = GetAvailablePackageView(packageIndex);
 
@@ -189,10 +193,12 @@ namespace FoodieMatch.Features.Gameplay
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            return PlayPackageMatchAsync(packageView);
+            return PlayPackageMatchAsync(packageView, onMatchStarted, onLidClosed);
         }
 
-        public Task<MotionResult> PlayRequiredPackageEnterAsync(int packageIndex)
+        public Task<MotionResult> PlayRequiredPackageEnterAsync(
+            int packageIndex,
+            Action onEnterStarted)
         {
             RequiredPackageView packageView = GetAvailablePackageView(packageIndex);
 
@@ -201,7 +207,7 @@ namespace FoodieMatch.Features.Gameplay
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            return PlayPackageEnterAsync(packageView);
+            return PlayPackageEnterAsync(packageView, onEnterStarted);
         }
 
         public Task<MotionResult> RecenterRequiredPackagesAsync()
@@ -338,7 +344,10 @@ namespace FoodieMatch.Features.Gameplay
             return packageView != null && !_activePackageMotions.Contains(packageView) ? packageView : null;
         }
 
-        private async Task<MotionResult> PlayPackageMatchAsync(RequiredPackageView packageView)
+        private async Task<MotionResult> PlayPackageMatchAsync(
+            RequiredPackageView packageView,
+            Action onMatchStarted,
+            Action onLidClosed)
         {
             if (!_activePackageMotions.Add(packageView))
             {
@@ -347,7 +356,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                return await packageView.PlayMatchAndExitAsync();
+                return await packageView.PlayMatchAndExitAsync(onMatchStarted, onLidClosed);
             }
             finally
             {
@@ -355,7 +364,9 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task<MotionResult> PlayPackageEnterAsync(RequiredPackageView packageView)
+        private async Task<MotionResult> PlayPackageEnterAsync(
+            RequiredPackageView packageView,
+            Action onEnterStarted)
         {
             if (!_activePackageMotions.Add(packageView))
             {
@@ -364,7 +375,7 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                return await packageView.PlayEnterAsync();
+                return await packageView.PlayEnterAsync(onEnterStarted);
             }
             finally
             {

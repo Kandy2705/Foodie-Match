@@ -21,5 +21,20 @@ namespace FoodieMatch.Features.Gameplay
         {
             _audioService.PlaySfx(AudioKeys.SfxPickOff);
         }
+
+        public void PlayPackageEntering()
+        {
+            _audioService.PlaySfx(AudioKeys.SfxBoxMove);
+        }
+
+        public void PlayPackageCompleted()
+        {
+            _audioService.PlaySfx(AudioKeys.GetMergeComboSfx(1));
+        }
+
+        public void PlayPackageLidClosed()
+        {
+            _audioService.PlaySfx(AudioKeys.SfxBoxClose);
+        }
     }
 }

@@ -176,7 +176,7 @@ namespace FoodieMatch.Features.Gameplay
         private void CreateCoordinators()
         {
             _packageDeliveryCoordinator = new(
-                _sessionGuard, _gameplayMotionPresenter, _requiredPackageLifecycleUseCase,
+                _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _requiredPackageLifecycleUseCase,
                 _requiredPackageGroupView, _foodVisualResolver, _gameplayEvents);
             _waitingRackPlacementCoordinator = new(_sessionGuard, _gameplayMotionPresenter, _waitingRackView);
             _waitingRackAutoFillCoordinator = new(

@@ -16,6 +16,7 @@ namespace FoodieMatch.Features.Gameplay
     {
         private readonly GameplaySessionGuard _sessionGuard;
         private readonly GameplayMotionPresenter _motionPresenter;
+        private readonly GameplayAudioPresenter _audioPresenter;
         private readonly RequiredPackageLifecycleUseCase _packageLifecycleUseCase;
         private readonly RequiredPackageGroupView _packageGroupView;
         private readonly FoodVisualResolver _foodVisualResolver;
@@ -30,6 +31,7 @@ namespace FoodieMatch.Features.Gameplay
         public PackageDeliveryCoordinator(
             GameplaySessionGuard sessionGuard,
             GameplayMotionPresenter motionPresenter,
+            GameplayAudioPresenter audioPresenter,
             RequiredPackageLifecycleUseCase packageLifecycleUseCase,
             RequiredPackageGroupView packageGroupView,
             FoodVisualResolver foodVisualResolver,
@@ -37,6 +39,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _sessionGuard = sessionGuard;
             _motionPresenter = motionPresenter;
+            _audioPresenter = audioPresenter;
             _packageLifecycleUseCase = packageLifecycleUseCase;
             _packageGroupView = packageGroupView;
             _foodVisualResolver = foodVisualResolver;
@@ -463,7 +466,10 @@ namespace FoodieMatch.Features.Gameplay
         {
             try
             {
-                return await _motionPresenter.PlayRequiredPackageMatchAsync(packageIndex);
+                return await _motionPresenter.PlayRequiredPackageMatchAsync(
+                    packageIndex,
+                    _audioPresenter.PlayPackageCompleted,
+                    _audioPresenter.PlayPackageLidClosed);
             }
             catch (Exception exception)
             {
@@ -476,7 +482,9 @@ namespace FoodieMatch.Features.Gameplay
         {
             try
             {
-                return await _motionPresenter.PlayRequiredPackageEnterAsync(packageIndex);
+                return await _motionPresenter.PlayRequiredPackageEnterAsync(
+                    packageIndex,
+                    _audioPresenter.PlayPackageEntering);
             }
             catch (Exception exception)
             {
