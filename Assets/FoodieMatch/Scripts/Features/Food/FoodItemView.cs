@@ -9,6 +9,8 @@ namespace FoodieMatch.Features.Food
 {
     public sealed class FoodItemView : MonoBehaviour, IPointerClickHandler
     {
+        private static bool _didWarnAboutMissingFlyingSortingLayer;
+
         [Header("References")]
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Collider2D _clickCollider;
@@ -30,6 +32,7 @@ namespace FoodieMatch.Features.Food
         [SerializeField, Range(0.1f, 0.9f)] private float _flightPeakProgress = 0.45f;
         [SerializeField] private Ease _flightTransformEase = Ease.OutCubic;
         [SerializeField] private float _topTrayToGrillFlightDuration = 0.32f;
+        [SerializeField] private string _flyingSortingLayerName = "FlyingFood";
 
         [Header("Landing Motion")]
         [SerializeField] private Vector3 _landingSquashScaleMultiplier = new(1.18f, 0.72f, 1f);
@@ -55,6 +58,10 @@ namespace FoodieMatch.Features.Food
         private Vector3 _flightStartScale;
         private Quaternion _flightStartRotation;
         private FoodItemVisualState? _flightTargetVisualState;
+        private int _flyingSortingLayerId;
+        private int _sortingLayerBeforeFlightId;
+        private bool _hasFlyingSortingLayer;
+        private bool _hasSortingLayerBeforeFlight;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -77,6 +84,7 @@ namespace FoodieMatch.Features.Food
                 _clickCollider = GetComponent<Collider2D>();
             }
 
+            FindFlyingSortingLayer();
             ApplyColliderState();
             ApplyVisualState();
         }
@@ -202,6 +210,7 @@ namespace FoodieMatch.Features.Food
             _flightTargetVisualState = targetVisualState;
             _isFlying = true;
             _didFlightComplete = false;
+            UseFlyingSortingLayer();
             SetInteractable(false);
 
             try
@@ -230,6 +239,11 @@ namespace FoodieMatch.Features.Food
             }
             finally
             {
+                if (!_didFlightComplete)
+                {
+                    RestoreSortingLayerBeforeFlight();
+                }
+
                 _flightTween = default;
                 _flightTarget = null;
                 _flightTargetVisualState = null;
@@ -280,6 +294,7 @@ namespace FoodieMatch.Features.Food
             StopFlight();
             StopLandingFeedback(resetScale: true);
             StopFade(resetAlpha: true);
+            RestoreSortingLayerBeforeFlight();
         }
 
         public async Task<MotionResult> PlayLandingFeedbackAsync(Transform target = null)
@@ -347,6 +362,7 @@ namespace FoodieMatch.Features.Food
         public void SetVisualState(FoodItemVisualState visualState)
         {
             VisualState = visualState;
+            RestoreSortingLayerBeforeFlight();
             ApplyVisualState();
         }
 
@@ -518,6 +534,49 @@ namespace FoodieMatch.Features.Food
             Color color = _spriteRenderer.color;
             color.a = alpha;
             _spriteRenderer.color = color;
+        }
+
+        private void FindFlyingSortingLayer()
+        {
+            if (string.IsNullOrWhiteSpace(_flyingSortingLayerName))
+            {
+                return;
+            }
+
+            _flyingSortingLayerId = SortingLayer.NameToID(_flyingSortingLayerName);
+            _hasFlyingSortingLayer = SortingLayer.IDToName(_flyingSortingLayerId) == _flyingSortingLayerName;
+
+            if (!_hasFlyingSortingLayer && !_didWarnAboutMissingFlyingSortingLayer)
+            {
+                Debug.LogWarning($"Sorting layer '{_flyingSortingLayerName}' is missing.", this);
+                _didWarnAboutMissingFlyingSortingLayer = true;
+            }
+        }
+
+        private void UseFlyingSortingLayer()
+        {
+            if (_spriteRenderer == null || !_hasFlyingSortingLayer)
+            {
+                return;
+            }
+
+            if (!_hasSortingLayerBeforeFlight)
+            {
+                _sortingLayerBeforeFlightId = _spriteRenderer.sortingLayerID;
+                _hasSortingLayerBeforeFlight = true;
+            }
+
+            _spriteRenderer.sortingLayerID = _flyingSortingLayerId;
+        }
+
+        private void RestoreSortingLayerBeforeFlight()
+        {
+            if (_spriteRenderer != null && _hasSortingLayerBeforeFlight)
+            {
+                _spriteRenderer.sortingLayerID = _sortingLayerBeforeFlightId;
+            }
+
+            _hasSortingLayerBeforeFlight = false;
         }
 
         private static bool IsValidScale(Vector3 value)

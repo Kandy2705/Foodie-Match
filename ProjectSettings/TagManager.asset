@@ -44,17 +44,26 @@ TagManager:
   - name: Background
     uniqueID: 2441048695
     locked: 0
+  - name: Grill
+    uniqueID: 1324392069
+    locked: 0
   - name: Tray
     uniqueID: 2723730705
     locked: 0
-  - name: FoodOnWaitingRack
-    uniqueID: 740608909
+  - name: Package
+    uniqueID: 3970170595
+    locked: 0
+  - name: FoodOnPackage
+    uniqueID: 797275377
     locked: 0
   - name: Food
     uniqueID: 1922596459
     locked: 0
   - name: Lid
     uniqueID: 128870067
+    locked: 0
+  - name: FlyingFood
+    uniqueID: 740608909
     locked: 0
   m_RenderingLayers:
   - Default

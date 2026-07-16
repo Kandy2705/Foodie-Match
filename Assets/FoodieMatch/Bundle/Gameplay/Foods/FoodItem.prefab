@@ -159,6 +159,7 @@ MonoBehaviour:
   _flightPeakProgress: 0.82
   _flightTransformEase: 9
   _topTrayToGrillFlightDuration: 0.5
+  _flyingSortingLayerName: FlyingFood
   _landingSquashScaleMultiplier: {x: 1.18, y: 0.72, z: 1}
   _landingSquashDuration: 0.08
   _landingSquashEase: 9
