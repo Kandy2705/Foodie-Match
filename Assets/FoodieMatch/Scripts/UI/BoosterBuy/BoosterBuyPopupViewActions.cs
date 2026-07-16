@@ -1,10 +1,10 @@
 using System;
 
-namespace FoodieMatch.UI.BoosterGuide
+namespace FoodieMatch.UI.BoosterBuy
 {
-    public sealed class BoosterGuidePopupViewActions
+    public sealed class BoosterBuyPopupViewActions
     {
-        public BoosterGuidePopupViewActions(
+        public BoosterBuyPopupViewActions(
             Action closeClicked,
             Action freeAdsClicked,
             Action buyClicked)

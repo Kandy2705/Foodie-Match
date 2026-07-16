@@ -2,7 +2,7 @@ using System;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Booster;
-using FoodieMatch.UI.BoosterGuide;
+using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Home;
@@ -27,7 +27,7 @@ namespace FoodieMatch.UI
         [SerializeField] private Transform _hudRoot;
 
         [Header("Booster Guide")]
-        [SerializeField] private BoosterGuideCatalogSO _boosterGuideCatalog;
+        [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
@@ -41,7 +41,7 @@ namespace FoodieMatch.UI
         private int _currentTotalCount;
         private int _currentComboCount;
         private float _currentComboFill;
-        private BoosterType _currentBoosterGuideType;
+        private BoosterType _currentBoosterBuyType;
 
         public event Action PlayGameRequested;
 
@@ -415,7 +415,7 @@ namespace FoodieMatch.UI
             _popupManager.HideAll();
         }
 
-        public void ShowBoosterGuidePopup(BoosterType boosterType)
+        public void ShowBoosterBuyPopup(BoosterType boosterType)
         {
             if (_popupManager == null)
             {
@@ -423,43 +423,43 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            if (_boosterGuideCatalog == null)
+            if (_boosterBuyCatalog == null)
             {
-                Debug.LogError("Cannot show booster guide popup because BoosterGuideCatalog is missing.");
+                Debug.LogError("Cannot show booster buy popup because BoosterBuyCatalog is missing.");
                 return;
             }
 
-            if (!_boosterGuideCatalog.TryGet(boosterType, out BoosterGuideContentEntry entry))
+            if (!_boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
             {
-                Debug.LogError($"Booster guide content not found for type: {boosterType}");
+                Debug.LogError($"Booster buy content not found for type: {boosterType}");
                 return;
             }
 
-            BoosterGuidePopupData popupData = BoosterGuidePopupData.FromCatalogEntry(entry);
+            BoosterBuyPopupData popupData = BoosterBuyPopupData.FromCatalogEntry(entry);
 
-            BoosterGuidePopupView popup = _popupManager.Show<BoosterGuidePopupView>(popupData);
+            BoosterBuyPopupView popup = _popupManager.Show<BoosterBuyPopupView>(popupData);
 
             if (popup == null)
             {
                 return;
             }
 
-            _currentBoosterGuideType = boosterType;
+            _currentBoosterBuyType = boosterType;
             popup.SetActions(
-                new BoosterGuidePopupViewActions(
-                    OnBoosterGuideCloseClicked,
-                    OnBoosterGuideFreeAdsClicked,
-                    OnBoosterGuideBuyClicked));
+                new BoosterBuyPopupViewActions(
+                    OnBoosterBuyCloseClicked,
+                    OnBoosterBuyFreeAdsClicked,
+                    OnBoosterBuyBuyClicked));
         }
 
-        public void HideBoosterGuidePopup()
+        public void HideBoosterBuyPopup()
         {
             if (_popupManager == null)
             {
                 return;
             }
 
-            _popupManager.Hide<BoosterGuidePopupView>();
+            _popupManager.Hide<BoosterBuyPopupView>();
         }
 
         private void BindGameplayHudActions()
@@ -482,7 +482,8 @@ namespace FoodieMatch.UI
             _gameplayHudView.SetActions(
                 new GameplayHudViewActions(
                     OnGameplayPauseRequested,
-                    OnGameplayBoosterRequested));
+                    OnGameplayBoosterUseRequested,
+                    OnGameplayBoosterAddRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboFill);
@@ -529,32 +530,37 @@ namespace FoodieMatch.UI
             ShowPausePopup();
         }
 
-        private void OnGameplayBoosterRequested(int boosterIndex)
+        private void OnGameplayBoosterUseRequested(int boosterIndex)
         {
-            if (!BoosterGuideCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
+            Debug.Log($"Use booster at index: {boosterIndex}");
+        }
+
+        private void OnGameplayBoosterAddRequested(int boosterIndex)
+        {
+            if (!BoosterBuyCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
             {
                 Debug.LogWarning($"Unknown booster button index: {boosterIndex}");
                 return;
             }
 
-            ShowBoosterGuidePopup(boosterType);
+            ShowBoosterBuyPopup(boosterType);
         }
 
-        private void OnBoosterGuideCloseClicked()
+        private void OnBoosterBuyCloseClicked()
         {
-            HideBoosterGuidePopup();
+            HideBoosterBuyPopup();
         }
 
-        private void OnBoosterGuideFreeAdsClicked()
+        private void OnBoosterBuyFreeAdsClicked()
         {
-            Debug.Log($"Booster guide free ads clicked: {_currentBoosterGuideType}");
-            HideBoosterGuidePopup();
+            Debug.Log($"Booster guide free ads clicked: {_currentBoosterBuyType}");
+            HideBoosterBuyPopup();
         }
 
-        private void OnBoosterGuideBuyClicked()
+        private void OnBoosterBuyBuyClicked()
         {
-            Debug.Log($"Booster guide buy clicked: {_currentBoosterGuideType}");
-            HideBoosterGuidePopup();
+            Debug.Log($"Booster guide buy clicked: {_currentBoosterBuyType}");
+            HideBoosterBuyPopup();
         }
 
         private void OnSettingCloseClicked()
