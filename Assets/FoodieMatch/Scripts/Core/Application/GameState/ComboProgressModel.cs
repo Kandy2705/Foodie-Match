@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace FoodieMatch.Core.Application.GameState
 {
-    /// <summary>
-    /// Tracks consecutive order completions within a time window.
-    /// Progress is the remaining window ratio for the HUD fill bar.
-    /// </summary>
     public sealed class ComboProgressModel
     {
         private readonly float _windowDuration;
@@ -42,9 +38,6 @@ namespace FoodieMatch.Core.Application.GameState
             FillNormalized = 1f;
         }
 
-        /// <summary>
-        /// Advances the combo timer. Returns true when the combo chain just expired.
-        /// </summary>
         public bool Tick(float deltaTime)
         {
             if (!IsActive)
