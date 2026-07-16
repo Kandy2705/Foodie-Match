@@ -81,7 +81,7 @@ MonoBehaviour:
   _sfxSources: []
   _musicVolume: 0.7
   _sfxVolume: 1
-  _sfxSourceCount: 6
+  _sfxSourceCount: 1
 --- !u!1001 &161844419768465814
 PrefabInstance:
   m_ObjectHideFlags: 0
