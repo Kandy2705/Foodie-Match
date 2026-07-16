@@ -167,6 +167,13 @@ namespace FoodieMatch.Features.Gameplay
             return PlayPackageEnterAsync(packageView);
         }
 
+        public Task<MotionResult> RecenterRequiredPackagesAsync()
+        {
+            return _requiredPackageGroupView != null
+                ? _requiredPackageGroupView.RecenterVisibleItemsAsync()
+                : Task.FromResult(MotionResult.Failed);
+        }
+
         public void CancelAllMotions()
         {
             FoodItemView[] foodItemViews = new FoodItemView[_activeFoodFlights.Count];
@@ -184,6 +191,8 @@ namespace FoodieMatch.Features.Gameplay
             {
                 packageViews[i]?.StopMotion();
             }
+
+            _requiredPackageGroupView?.CancelLayoutMotion();
         }
 
         private bool CanStartFoodFlight(FoodItemView foodItemView, float startDelay)

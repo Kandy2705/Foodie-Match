@@ -46,6 +46,7 @@ namespace FoodieMatch.Features.Gameplay
         public void BeginSession(GameplaySession session)
         {
             _session = session;
+            _packageGroupView.ResetLayout();
             _motionStates = new PackageMotionState[session.RequiredPackages.Length];
 
             for (int i = 0; i < session.RequiredPackages.Length; i++)
@@ -431,13 +432,30 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            motionState.Reset(replacementPackage);
-
             if (replacementPackage == null)
             {
                 RefreshPackageViewAt(packageIndex);
+
+                MotionResult layoutMotionResult = await RecenterPackagesSafelyAsync();
+
+                if (!CanContinue(session) ||
+                    !IsCurrentMotionState(packageIndex, expectedPackage, motionState))
+                {
+                    return;
+                }
+
+                if (layoutMotionResult == MotionResult.Cancelled)
+                {
+                    return;
+                }
+
+                if (layoutMotionResult == MotionResult.Failed)
+                {
+                    Debug.LogError("Required package layout motion failed.");
+                }
             }
 
+            motionState.Reset(replacementPackage);
             PackageReplaced?.Invoke(session);
         }
 
@@ -459,6 +477,19 @@ namespace FoodieMatch.Features.Gameplay
             try
             {
                 return await _motionPresenter.PlayRequiredPackageEnterAsync(packageIndex);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return MotionResult.Failed;
+            }
+        }
+
+        private async Task<MotionResult> RecenterPackagesSafelyAsync()
+        {
+            try
+            {
+                return await _motionPresenter.RecenterRequiredPackagesAsync();
             }
             catch (Exception exception)
             {
@@ -504,6 +535,18 @@ namespace FoodieMatch.Features.Gameplay
         private bool IsExpectedPackage(PackageFlight flight)
         {
             return TryGetMotionState(flight.PackageIndex, flight.ExpectedPackage, out _);
+        }
+
+        private bool IsCurrentMotionState(
+            int packageIndex,
+            RequiredPackageModel expectedPackage,
+            PackageMotionState expectedMotionState)
+        {
+            return _motionStates != null &&
+                   packageIndex >= 0 &&
+                   packageIndex < _motionStates.Length &&
+                   _motionStates[packageIndex] == expectedMotionState &&
+                   expectedMotionState.Package == expectedPackage;
         }
 
         private bool CanContinue(GameplaySession session)
