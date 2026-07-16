@@ -53,7 +53,6 @@ namespace FoodieMatch.App
             appRoot.GameplayController.Construct(
                 appRoot.UIManager,
                 GameplayEvents,
-                audioService,
                 appRoot.BoardLayoutView,
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,

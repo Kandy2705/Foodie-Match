@@ -347,6 +347,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5353496739673673255}
     m_Modifications:
+    - target: {fileID: 2376958359423656091, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7601366822663529138, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
       propertyPath: m_Name
       value: TopHudRoot
@@ -471,28 +475,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8310504065135855700, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
   m_PrefabInstance: {fileID: 7198164088539179069}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &6590264561057957024 stripped
+--- !u!95 &3306768415498444374 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5620778496887223915, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
   m_PrefabInstance: {fileID: 7198164088539179069}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6939452389107633672}
---- !u!114 &8783834322706397129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6939452389107633672}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c67f9b9e2ba94a9b9686457a847a78d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _animator: {fileID: 6590264561057957024}
-  _startTrigger: Start
-  _continueTrigger: Continue
-  _breakTrigger: Break
 --- !u!114 &4835074968889739430 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2376958359423656091, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
@@ -531,3 +518,23 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 263714803760424501, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
   m_PrefabInstance: {fileID: 7198164088539179069}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8783834322706397129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6939452389107633672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c67f9b9e2ba94a9b9686457a847a78d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 3306768415498444374}
+  _startTrigger: Start
+  _continueTrigger: Continue
+  _breakTrigger: Break
+  _startState: ComboBar_Start
+  _continueState: ComboBar_Continue
+  _breakState: ComboBar_Break
+  _breakDuration: 0.6

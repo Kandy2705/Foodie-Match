@@ -10,7 +10,6 @@ using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
-using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
 using FoodieMatch.Features.Motion;
@@ -25,17 +24,12 @@ namespace FoodieMatch.Features.Gameplay
     {
         private const string WinReason = "Completed";
         private const string LoseReason = "WaitingRackFull";
-        private const float DefaultComboWindowDuration = 6f;
 
         private readonly GameplaySessionGuard _sessionGuard =
             new GameplaySessionGuard();
 
-        private float _comboWindowDuration = DefaultComboWindowDuration;
-
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
-        private IAudioService _audioService;
-        private GameplayWorldClickSfx _worldClickSfx;
         private BoardLayoutView _boardLayoutView;
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
@@ -54,7 +48,6 @@ namespace FoodieMatch.Features.Gameplay
             _requiredPackageGenerationSettings;
         private WaitingRackModel _waitingRack;
         private LevelProgressModel _levelProgress;
-        private ComboProgressModel _comboProgress;
         private PackageMotionState[] _packageMotionStates;
         private int _waitingRackAutoFillSessionId;
         private int _displayedServedCount;
@@ -67,7 +60,6 @@ namespace FoodieMatch.Features.Gameplay
         public void Construct(
             UIManager uiManager,
             GameplayEvents gameplayEvents,
-            IAudioService audioService,
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
@@ -80,8 +72,6 @@ namespace FoodieMatch.Features.Gameplay
         {
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
-            _audioService = audioService;
-            EnsureWorldClickSfx(audioService);
             _boardLayoutView = boardLayoutView;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
@@ -97,22 +87,6 @@ namespace FoodieMatch.Features.Gameplay
             {
                 _boardLayoutView.FoodSelected += HandleFoodSelected;
             }
-        }
-
-        private void EnsureWorldClickSfx(IAudioService audioService)
-        {
-            if (_worldClickSfx == null)
-            {
-                _worldClickSfx = GetComponent<GameplayWorldClickSfx>();
-
-                if (_worldClickSfx == null)
-                {
-                    _worldClickSfx =
-                        gameObject.AddComponent<GameplayWorldClickSfx>();
-                }
-            }
-
-            _worldClickSfx.Construct(audioService);
         }
 
         public void StartLevel(
@@ -187,10 +161,6 @@ namespace FoodieMatch.Features.Gameplay
             _levelProgress = new LevelProgressModel(
                 _board.RemainingFoodCount);
             _displayedServedCount = 0;
-            float comboWindow = _comboWindowDuration > 0f
-                ? _comboWindowDuration
-                : DefaultComboWindowDuration;
-            _comboProgress = new ComboProgressModel(comboWindow);
             CreatePackageMotionStates();
 
             int sessionId = _sessionGuard.BeginSession();
@@ -211,7 +181,6 @@ namespace FoodieMatch.Features.Gameplay
                 new LevelProgressChangedEvent(
                     _levelProgress.ServedCount,
                     _levelProgress.TotalCount));
-            PublishComboChanged();
         }
 
         private void ResolveWin()
@@ -224,8 +193,6 @@ namespace FoodieMatch.Features.Gameplay
 
             _levelSessionState = LevelSessionState.Won;
             _isInputEnabled = false;
-
-            PlaySfx(AudioKeys.SfxWinGame);
 
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
@@ -246,32 +213,11 @@ namespace FoodieMatch.Features.Gameplay
             _levelProgress = null;
             _packageMotionStates = null;
             _displayedServedCount = 0;
-            _comboProgress?.Reset();
-            _comboProgress = null;
             ResetWaitingRackAutoFillState(0);
             _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
-            PublishComboChanged();
 
             Debug.Log("Clear Level");
-        }
-
-        private void Update()
-        {
-            if (_levelSessionState != LevelSessionState.Playing ||
-                _comboProgress == null ||
-                !_comboProgress.IsActive)
-            {
-                return;
-            }
-
-            bool didExpire = _comboProgress.Tick(Time.deltaTime);
-            PublishComboChanged();
-
-            if (didExpire)
-            {
-                Debug.Log("Combo chain expired.");
-            }
         }
 
         private bool HasDependencies()
@@ -982,7 +928,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             motionState.IsCompleteMotionRunning = true;
-            RegisterOrderCompletedCombo();
             _ = CompletePackageSafelyAsync(
                 packageIndex,
                 expectedPackage,
@@ -1268,54 +1213,9 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            PlaySfx(AudioKeys.SfxLoseGame);
-
             _uiManager.ShowLosePopup(
                 OnTryAgainClicked,
                 OnHomeClicked);
-        }
-
-        private void RegisterOrderCompletedCombo()
-        {
-            if (_comboProgress == null)
-            {
-                return;
-            }
-
-            _comboProgress.RegisterOrderCompleted();
-            PlaySfx(AudioKeys.GetMergeComboSfx(_comboProgress.ComboCount));
-            PublishComboChanged();
-        }
-
-        private void PublishComboChanged()
-        {
-            if (_gameplayEvents == null)
-            {
-                return;
-            }
-
-            if (_comboProgress == null)
-            {
-                _gameplayEvents.OnComboChanged(
-                    new ComboChangedEvent(0, 0f, false));
-                return;
-            }
-
-            _gameplayEvents.OnComboChanged(
-                new ComboChangedEvent(
-                    _comboProgress.ComboCount,
-                    _comboProgress.FillNormalized,
-                    _comboProgress.IsActive));
-        }
-
-        private void PlaySfx(string sfxKey)
-        {
-            if (string.IsNullOrEmpty(sfxKey))
-            {
-                return;
-            }
-
-            _audioService?.PlaySfx(sfxKey);
         }
 
         private void FinalizeLose()
