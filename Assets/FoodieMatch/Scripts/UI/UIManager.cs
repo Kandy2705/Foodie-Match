@@ -482,7 +482,8 @@ namespace FoodieMatch.UI
             _gameplayHudView.SetActions(
                 new GameplayHudViewActions(
                     OnGameplayPauseRequested,
-                    OnGameplayBoosterRequested));
+                    OnGameplayBoosterUseRequested,
+                    OnGameplayBoosterAddRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboFill);
@@ -529,7 +530,12 @@ namespace FoodieMatch.UI
             ShowPausePopup();
         }
 
-        private void OnGameplayBoosterRequested(int boosterIndex)
+        private void OnGameplayBoosterUseRequested(int boosterIndex)
+        {
+            Debug.Log($"Use booster at index: {boosterIndex}");
+        }
+
+        private void OnGameplayBoosterAddRequested(int boosterIndex)
         {
             if (!BoosterBuyCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
             {

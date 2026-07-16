@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 2759524533913436152}
   - component: {fileID: 8501738097333339970}
   - component: {fileID: 4644793168154665413}
+  - component: {fileID: 1444895719429835627}
   m_Layer: 5
   m_Name: BoosterButton
   m_TagString: Untagged
@@ -256,6 +257,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1444895719429835627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3109605400886524729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d77fbe46ed1854cf88cfb7bee61c93c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _button: {fileID: 8501738097333339970}
+  _badgeBackgroundImage: {fileID: 3052072093746421443}
+  _countText: {fileID: 4330917716738976557}
+  _countBadgeSprite: {fileID: -8183088363656670384, guid: 3c9a9ccc8a08d474082fbf84ce75a8b5, type: 3}
+  _addBadgeSprite: {fileID: 8230488904728474184, guid: 4ea3c9891d75f421c91d3c44b387b528, type: 3}
 --- !u!1 &4366511773717946748
 GameObject:
   m_ObjectHideFlags: 0
