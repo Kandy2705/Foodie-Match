@@ -15,7 +15,9 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField] private Button[] _boosterButtons;
         [SerializeField] private TMP_Text _levelLabelText;
         [SerializeField] private TMP_Text _progressText;
+        [SerializeField] private GameObject _comboProgressBarRoot;
         [SerializeField] private TMP_Text _comboMultiplierText;
+        [SerializeField] private Image _comboBarFillImage;
         [SerializeField] private TMP_Text[] _boosterCountTexts;
 
         private Action _pauseClicked;
@@ -26,7 +28,9 @@ namespace FoodieMatch.UI.Gameplay
         {
             EnsureButtonReferences();
             EnsureTextReferences();
+            EnsureComboReferences();
             BindButtons();
+            SetCombo(0, 0f);
         }
 
         private void OnDestroy()
@@ -52,15 +56,38 @@ namespace FoodieMatch.UI.Gameplay
             UiTmpText.SetText(_progressText, $"{servedCount}/{totalCount}");
         }
 
+        public void SetCombo(int comboCount, float fillNormalized)
+        {
+            EnsureComboReferences();
+
+            if (comboCount <= 0)
+            {
+                UiTmpText.SetText(_comboMultiplierText, string.Empty);
+
+                if (_comboBarFillImage != null)
+                {
+                    _comboBarFillImage.fillAmount = 0f;
+                }
+
+                return;
+            }
+
+            UiTmpText.SetText(_comboMultiplierText, $"x{comboCount}");
+
+            if (_comboBarFillImage != null)
+            {
+                _comboBarFillImage.fillAmount = Mathf.Clamp01(fillNormalized);
+            }
+        }
+
         public void SetComboMultiplier(int multiplier)
         {
-            EnsureTextReferences();
-            UiTmpText.SetText(_comboMultiplierText, $"x{multiplier}");
+            SetCombo(multiplier, multiplier > 0 ? 1f : 0f);
         }
 
         public void SetComboMultiplier(string multiplierText)
         {
-            EnsureTextReferences();
+            EnsureComboReferences();
             UiTmpText.SetText(_comboMultiplierText, multiplierText);
         }
 
@@ -202,6 +229,37 @@ namespace FoodieMatch.UI.Gameplay
             if (_boosterCountTexts == null || _boosterCountTexts.Length == 0)
             {
                 _boosterCountTexts = FindBoosterCountTexts();
+            }
+        }
+
+        private void EnsureComboReferences()
+        {
+            if (_comboProgressBarRoot == null)
+            {
+                Transform comboRoot = FindChildTransform("ComboProgressBarRoot");
+
+                if (comboRoot != null)
+                {
+                    _comboProgressBarRoot = comboRoot.gameObject;
+                }
+            }
+
+            if (_comboMultiplierText == null)
+            {
+                Transform searchRoot = _comboProgressBarRoot != null
+                    ? _comboProgressBarRoot.transform
+                    : transform;
+                _comboMultiplierText = UiTmpText.FindChild(searchRoot, "ComboMultiplierText");
+            }
+
+            if (_comboBarFillImage == null)
+            {
+                Transform fillTransform = FindChildTransform("BarFillImage");
+
+                if (fillTransform != null)
+                {
+                    _comboBarFillImage = fillTransform.GetComponent<Image>();
+                }
             }
         }
 

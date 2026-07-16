@@ -39,6 +39,8 @@ namespace FoodieMatch.UI
         private int _currentLevelNumber = 1;
         private int _currentServedCount;
         private int _currentTotalCount;
+        private int _currentComboCount;
+        private float _currentComboFill;
         private BoosterType _currentBoosterGuideType;
 
         public event Action PlayGameRequested;
@@ -483,6 +485,7 @@ namespace FoodieMatch.UI
                     OnGameplayBoosterRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
+            _gameplayHudView.SetCombo(_currentComboCount, _currentComboFill);
         }
 
         private void SubscribeEvents()
@@ -495,6 +498,7 @@ namespace FoodieMatch.UI
             _gameplayEvents.LevelStarted += OnLevelStarted;
             _gameplayEvents.LevelProgressChanged += OnLevelProgressChanged;
             _gameplayEvents.LevelEnded += OnLevelEnded;
+            _gameplayEvents.ComboChanged += OnComboChanged;
         }
 
         private void UnsubscribeEvents()
@@ -507,6 +511,7 @@ namespace FoodieMatch.UI
             _gameplayEvents.LevelStarted -= OnLevelStarted;
             _gameplayEvents.LevelProgressChanged -= OnLevelProgressChanged;
             _gameplayEvents.LevelEnded -= OnLevelEnded;
+            _gameplayEvents.ComboChanged -= OnComboChanged;
         }
 
         private void OnHomePlayRequested()
@@ -667,6 +672,19 @@ namespace FoodieMatch.UI
             }
 
             Debug.Log($"Progress: {eventData.ServedCount}/{eventData.TotalCount}");
+        }
+
+        private void OnComboChanged(ComboChangedEvent eventData)
+        {
+            _currentComboCount = eventData.ComboCount;
+            _currentComboFill = eventData.FillNormalized;
+
+            if (_gameplayHudView != null)
+            {
+                _gameplayHudView.SetCombo(
+                    eventData.ComboCount,
+                    eventData.FillNormalized);
+            }
         }
 
         private void OnLevelEnded(LevelEndedEvent eventData)
