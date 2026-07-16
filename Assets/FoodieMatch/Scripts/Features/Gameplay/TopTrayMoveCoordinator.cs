@@ -13,15 +13,18 @@ namespace FoodieMatch.Features.Gameplay
     {
         private readonly GameplaySessionGuard _sessionGuard;
         private readonly GameplayMotionPresenter _motionPresenter;
+        private readonly GameplayAudioPresenter _audioPresenter;
         private readonly BoardLayoutView _boardLayoutView;
 
         public TopTrayMoveCoordinator(
             GameplaySessionGuard sessionGuard,
             GameplayMotionPresenter motionPresenter,
+            GameplayAudioPresenter audioPresenter,
             BoardLayoutView boardLayoutView)
         {
             _sessionGuard = sessionGuard;
             _motionPresenter = motionPresenter;
+            _audioPresenter = audioPresenter;
             _boardLayoutView = boardLayoutView;
         }
 
@@ -137,6 +140,12 @@ namespace FoodieMatch.Features.Gameplay
                 Debug.LogError(
                     $"Could not complete top tray food {foodItemIndex} move " +
                     $"to grill {grillModel.PositionIndex}.");
+                return;
+            }
+
+            if (motionResult == MotionResult.Completed)
+            {
+                _audioPresenter.PlayFoodMovedToGrill();
             }
         }
 

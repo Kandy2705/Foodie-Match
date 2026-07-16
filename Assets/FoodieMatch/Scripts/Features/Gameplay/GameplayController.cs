@@ -30,6 +30,7 @@ namespace FoodieMatch.Features.Gameplay
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
         private GameplayMotionPresenter _gameplayMotionPresenter;
+        private GameplayAudioPresenter _gameplayAudioPresenter;
         private FoodVisualResolver _foodVisualResolver;
         private RequiredPackageLifecycleUseCase _requiredPackageLifecycleUseCase;
         private SelectFoodUseCase _selectFoodUseCase;
@@ -64,6 +65,7 @@ namespace FoodieMatch.Features.Gameplay
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
             GameplayMotionPresenter gameplayMotionPresenter,
+            GameplayAudioPresenter gameplayAudioPresenter,
             FoodVisualResolver foodVisualResolver,
             RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase,
             SelectFoodUseCase selectFoodUseCase,
@@ -76,6 +78,7 @@ namespace FoodieMatch.Features.Gameplay
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
             _gameplayMotionPresenter = gameplayMotionPresenter;
+            _gameplayAudioPresenter = gameplayAudioPresenter;
             _foodVisualResolver = foodVisualResolver;
             _requiredPackageLifecycleUseCase = requiredPackageLifecycleUseCase;
             _selectFoodUseCase = selectFoodUseCase;
@@ -178,7 +181,8 @@ namespace FoodieMatch.Features.Gameplay
             _waitingRackPlacementCoordinator = new(_sessionGuard, _gameplayMotionPresenter, _waitingRackView);
             _waitingRackAutoFillCoordinator = new(
                 _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
-            _topTrayMoveCoordinator = new(_sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
+            _topTrayMoveCoordinator = new(
+                _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _boardLayoutView);
         }
 
         private void SubscribeCoordinatorEvents()
@@ -239,6 +243,12 @@ namespace FoodieMatch.Features.Gameplay
             if (_gameplayMotionPresenter == null)
             {
                 Debug.LogError("GameplayMotionPresenter has not been constructed.");
+                return false;
+            }
+
+            if (_gameplayAudioPresenter == null)
+            {
+                Debug.LogError("GameplayAudioPresenter has not been constructed.");
                 return false;
             }
 
@@ -308,6 +318,8 @@ namespace FoodieMatch.Features.Gameplay
             {
                 return;
             }
+
+            _gameplayAudioPresenter.PlayFoodSelected();
 
             if (result.Type == SelectFoodResultType.PlacedInRequiredPackage)
             {
