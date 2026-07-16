@@ -1,0 +1,406 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!74 &7400000
+AnimationClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ComboBar_Start
+  serializedVersion: 7
+  m_Legacy: 0
+  m_Compressed: 0
+  m_UseHighQualityCurve: 1
+  m_RotationCurves: []
+  m_CompressedRotationCurves: []
+  m_EulerCurves: []
+  m_PositionCurves: []
+  m_ScaleCurves:
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: {x: 1, y: 1, z: 1}
+        inSlope: {x: 0.01652133, y: 0.01652133, z: 0.019613435}
+        outSlope: {x: 0.01652133, y: 0.01652133, z: 0.019613435}
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+        outWeight: {x: 0.6930322, y: 0.6930322, z: 0.6952191}
+      - serializedVersion: 3
+        time: 0.16666667
+        value: {x: 1.05, y: 1.05, z: 1.05}
+        inSlope: {x: 0.0004646434, y: -0.004711807, z: -0.0029954514}
+        outSlope: {x: 0.0004646434, y: -0.004711807, z: -0.0029954514}
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: {x: 0.53569895, y: 0.53585654, z: 0.53585654}
+        outWeight: {x: 0.5059761, y: 0.5059761, z: 0.5059761}
+      - serializedVersion: 3
+        time: 0.33333334
+        value: {x: 1, y: 1, z: 1}
+        inSlope: {x: -0.01893217, y: -0.01893217, z: -0.01893217}
+        outSlope: {x: -0.01893217, y: -0.01893217, z: -0.01893217}
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: {x: 0.61354584, y: 0.61354584, z: 0.61354584}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    path: ComboProgressBarRoot/BarBackgroundImage
+  - curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: {x: 0.7, y: 0.7, z: 0.7}
+        inSlope: {x: 0.097139284, y: 0.10115414, z: 0.101024956}
+        outSlope: {x: 0.097139284, y: 0.10115414, z: 0.101024956}
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+        outWeight: {x: 0.7798804, y: 0.7788844, z: 0.7798804}
+      - serializedVersion: 3
+        time: 0.33333334
+        value: {x: 1, y: 1, z: 1}
+        inSlope: {x: 0.011396069, y: 0.011396069, z: 0.011374767}
+        outSlope: {x: 0.011396069, y: 0.011396069, z: 0.011374767}
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: {x: 0.5318725, y: 0.5318725, z: 0.53286856}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    path: ComboProgressBarRoot/ComboMultiplierText
+  m_FloatCurves:
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0.015530496
+        outSlope: 0.015530496
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.6503984
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: 0.22046544
+        outSlope: 0.22046544
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.59561753
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_fontColor.a
+    path: ComboProgressBarRoot/ComboMultiplierText
+    classID: 114
+    script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+    flags: 0
+  m_PPtrCurves: []
+  m_SampleRate: 60
+  m_WrapMode: 0
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_ClipBindingConstant:
+    genericBindings:
+    - serializedVersion: 2
+      path: 4102687989
+      attribute: 3
+      script: {fileID: 0}
+      typeID: 4
+      customType: 0
+      isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
+    - serializedVersion: 2
+      path: 2979545715
+      attribute: 3
+      script: {fileID: 0}
+      typeID: 4
+      customType: 0
+      isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
+    - serializedVersion: 2
+      path: 2979545715
+      attribute: 4185109675
+      script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+      typeID: 114
+      customType: 0
+      isPPtrCurve: 0
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
+    pptrCurveMapping: []
+  m_AnimationClipSettings:
+    serializedVersion: 2
+    m_AdditiveReferencePoseClip: {fileID: 0}
+    m_AdditiveReferencePoseTime: 0
+    m_StartTime: 0
+    m_StopTime: 0.33333334
+    m_OrientationOffsetY: 0
+    m_Level: 0
+    m_CycleOffset: 0
+    m_HasAdditiveReferencePose: 0
+    m_LoopTime: 0
+    m_LoopBlend: 0
+    m_LoopBlendOrientation: 0
+    m_LoopBlendPositionY: 0
+    m_LoopBlendPositionXZ: 0
+    m_KeepOriginalOrientation: 0
+    m_KeepOriginalPositionY: 1
+    m_KeepOriginalPositionXZ: 0
+    m_HeightFromFeet: 0
+    m_Mirror: 0
+  m_EditorCurves:
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0.01652133
+        outSlope: 0.01652133
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.6930322
+      - serializedVersion: 3
+        time: 0.16666667
+        value: 1.05
+        inSlope: 0.0004646434
+        outSlope: 0.0004646434
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.53569895
+        outWeight: 0.5059761
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: -0.01893217
+        outSlope: -0.01893217
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.61354584
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_LocalScale.x
+    path: ComboProgressBarRoot/BarBackgroundImage
+    classID: 224
+    script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0.01652133
+        outSlope: 0.01652133
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.6930322
+      - serializedVersion: 3
+        time: 0.16666667
+        value: 1.05
+        inSlope: -0.004711807
+        outSlope: -0.004711807
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.53585654
+        outWeight: 0.5059761
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: -0.01893217
+        outSlope: -0.01893217
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.61354584
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_LocalScale.y
+    path: ComboProgressBarRoot/BarBackgroundImage
+    classID: 224
+    script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0.019613435
+        outSlope: 0.019613435
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.6952191
+      - serializedVersion: 3
+        time: 0.16666667
+        value: 1.05
+        inSlope: -0.0029954514
+        outSlope: -0.0029954514
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.53585654
+        outWeight: 0.5059761
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: -0.01893217
+        outSlope: -0.01893217
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.61354584
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_LocalScale.z
+    path: ComboProgressBarRoot/BarBackgroundImage
+    classID: 224
+    script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0.015530496
+        outSlope: 0.015530496
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.6503984
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: 0.22046544
+        outSlope: 0.22046544
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.59561753
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_fontColor.a
+    path: ComboProgressBarRoot/ComboMultiplierText
+    classID: 114
+    script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.7
+        inSlope: 0.097139284
+        outSlope: 0.097139284
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.7798804
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: 0.011396069
+        outSlope: 0.011396069
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.5318725
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_LocalScale.x
+    path: ComboProgressBarRoot/ComboMultiplierText
+    classID: 224
+    script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.7
+        inSlope: 0.10115414
+        outSlope: 0.10115414
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.7788844
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: 0.011396069
+        outSlope: 0.011396069
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.5318725
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_LocalScale.y
+    path: ComboProgressBarRoot/ComboMultiplierText
+    classID: 224
+    script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.7
+        inSlope: 0.101024956
+        outSlope: 0.101024956
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.33333334
+        outWeight: 0.7798804
+      - serializedVersion: 3
+        time: 0.33333334
+        value: 1
+        inSlope: 0.011374767
+        outSlope: 0.011374767
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0.53286856
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: m_LocalScale.z
+    path: ComboProgressBarRoot/ComboMultiplierText
+    classID: 224
+    script: {fileID: 0}
+    flags: 0
+  m_EulerEditorCurves: []
+  m_HasGenericRootTransform: 0
+  m_HasMotionFloatCurves: 0
+  m_Events: []

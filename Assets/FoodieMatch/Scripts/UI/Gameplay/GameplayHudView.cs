@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using FoodieMatch.UI.Common;
 using TMPro;
 using UnityEngine;
@@ -15,22 +16,31 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField] private Button[] _boosterButtons;
         [SerializeField] private TMP_Text _levelLabelText;
         [SerializeField] private TMP_Text _progressText;
+        [SerializeField] private GameObject _comboProgressBarRoot;
         [SerializeField] private TMP_Text _comboMultiplierText;
+        [SerializeField] private Image _comboBarFillImage;
+        [SerializeField] private ComboBarAnimController _comboBarAnimController;
         [SerializeField] private TMP_Text[] _boosterCountTexts;
 
         private Action _pauseClicked;
         private Action<int> _boosterClicked;
         private readonly UnityAction[] _boosterButtonHandlers = new UnityAction[BoosterButtonCount];
+        private int _lastComboCount;
+        private Coroutine _breakClearCoroutine;
 
         private void Awake()
         {
             EnsureButtonReferences();
             EnsureTextReferences();
+            EnsureComboReferences();
             BindButtons();
+            _lastComboCount = 0;
+            SetCombo(0, 0f);
         }
 
         private void OnDestroy()
         {
+            StopBreakClearCoroutine();
             UnbindButtons();
         }
 
@@ -52,15 +62,138 @@ namespace FoodieMatch.UI.Gameplay
             UiTmpText.SetText(_progressText, $"{servedCount}/{totalCount}");
         }
 
+        public void SetCombo(int comboCount, float fillNormalized)
+        {
+            EnsureComboReferences();
+
+            bool isBreaking = comboCount <= 0 && _lastComboCount > 0;
+
+            if (comboCount > 0)
+            {
+                StopBreakClearCoroutine();
+                UiTmpText.SetText(_comboMultiplierText, $"x{comboCount}");
+
+                if (_comboBarFillImage != null)
+                {
+                    _comboBarFillImage.fillAmount = Mathf.Clamp01(fillNormalized);
+                }
+
+                ResetComboMultiplierVisual();
+            }
+            else if (isBreaking)
+            {
+                if (_comboBarFillImage != null)
+                {
+                    _comboBarFillImage.fillAmount = 0f;
+                }
+            }
+            else
+            {
+                ClearComboVisualImmediate();
+            }
+
+            PlayComboAnimIfNeeded(comboCount);
+        }
+
+        private void PlayComboAnimIfNeeded(int comboCount)
+        {
+            if (comboCount == _lastComboCount)
+            {
+                return;
+            }
+
+            if (_comboBarAnimController != null)
+            {
+                if (comboCount > _lastComboCount)
+                {
+                    StopBreakClearCoroutine();
+
+                    if (_lastComboCount <= 0)
+                    {
+                        _comboBarAnimController.PlayStart();
+                    }
+                    else
+                    {
+                        _comboBarAnimController.PlayContinue();
+                    }
+                }
+                else if (comboCount <= 0 && _lastComboCount > 0)
+                {
+                    _comboBarAnimController.PlayBreak();
+                    StopBreakClearCoroutine();
+                    _breakClearCoroutine = StartCoroutine(ClearComboVisualAfterBreak());
+                }
+            }
+            else if (comboCount <= 0)
+            {
+                ClearComboVisualImmediate();
+            }
+
+            _lastComboCount = comboCount;
+        }
+
+        private IEnumerator ClearComboVisualAfterBreak()
+        {
+            float wait = _comboBarAnimController != null
+                ? _comboBarAnimController.BreakDuration
+                : 0.6f;
+
+            yield return new WaitForSecondsRealtime(wait);
+
+            if (_lastComboCount <= 0)
+            {
+                ClearComboVisualImmediate();
+            }
+
+            _breakClearCoroutine = null;
+        }
+
+        private void ClearComboVisualImmediate()
+        {
+            UiTmpText.SetText(_comboMultiplierText, string.Empty);
+
+            if (_comboBarFillImage != null)
+            {
+                _comboBarFillImage.fillAmount = 0f;
+            }
+
+            ResetComboMultiplierVisual();
+        }
+
+        private void ResetComboMultiplierVisual()
+        {
+            if (_comboMultiplierText == null)
+            {
+                return;
+            }
+
+            Transform textTransform = _comboMultiplierText.transform;
+            textTransform.localScale = Vector3.one;
+
+            Color color = _comboMultiplierText.color;
+            color.a = 1f;
+            _comboMultiplierText.color = color;
+        }
+
+        private void StopBreakClearCoroutine()
+        {
+            if (_breakClearCoroutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(_breakClearCoroutine);
+            _breakClearCoroutine = null;
+        }
+
         public void SetComboMultiplier(int multiplier)
         {
-            EnsureTextReferences();
-            UiTmpText.SetText(_comboMultiplierText, $"x{multiplier}");
+            SetCombo(multiplier, multiplier > 0 ? 1f : 0f);
         }
 
         public void SetComboMultiplier(string multiplierText)
         {
-            EnsureTextReferences();
+            EnsureComboReferences();
             UiTmpText.SetText(_comboMultiplierText, multiplierText);
         }
 
@@ -205,6 +338,85 @@ namespace FoodieMatch.UI.Gameplay
             }
         }
 
+        private void EnsureComboReferences()
+        {
+            Transform comboRootTransform = null;
+
+            if (_comboProgressBarRoot != null)
+            {
+                if (_comboProgressBarRoot.name != "ComboProgressBarRoot")
+                {
+                    Transform nested = FindChildTransform(
+                        _comboProgressBarRoot.transform,
+                        "ComboProgressBarRoot");
+
+                    if (nested != null)
+                    {
+                        _comboProgressBarRoot = nested.gameObject;
+                    }
+                }
+
+                comboRootTransform = _comboProgressBarRoot.transform;
+            }
+
+            if (_comboProgressBarRoot == null)
+            {
+                comboRootTransform = FindChildTransform(transform, "ComboProgressBarRoot");
+
+                if (comboRootTransform != null)
+                {
+                    _comboProgressBarRoot = comboRootTransform.gameObject;
+                }
+            }
+
+            if (_comboMultiplierText == null)
+            {
+                Transform searchRoot = _comboProgressBarRoot != null
+                    ? _comboProgressBarRoot.transform
+                    : transform;
+                _comboMultiplierText = UiTmpText.FindChild(searchRoot, "ComboMultiplierText");
+            }
+
+            if (_comboBarFillImage == null)
+            {
+                Transform fillTransform = FindChildTransform(transform, "BarFillImage");
+
+                if (fillTransform != null)
+                {
+                    _comboBarFillImage = fillTransform.GetComponent<Image>();
+                }
+            }
+
+            if (_comboBarAnimController == null)
+            {
+                Transform comboButton = FindChildTransform(transform, "ComboProgressButton");
+
+                if (comboButton != null)
+                {
+                    _comboBarAnimController =
+                        comboButton.GetComponent<ComboBarAnimController>();
+                }
+
+                if (_comboBarAnimController == null && _comboProgressBarRoot != null)
+                {
+                    _comboBarAnimController =
+                        _comboProgressBarRoot.GetComponentInParent<ComboBarAnimController>();
+
+                    if (_comboBarAnimController == null)
+                    {
+                        _comboBarAnimController =
+                            _comboProgressBarRoot.GetComponent<ComboBarAnimController>();
+                    }
+                }
+
+                if (_comboBarAnimController == null)
+                {
+                    _comboBarAnimController =
+                        GetComponentInChildren<ComboBarAnimController>(true);
+                }
+            }
+        }
+
         private Button[] FindBoosterButtons()
         {
             Button[] buttons = new Button[BoosterButtonCount];
@@ -245,7 +457,22 @@ namespace FoodieMatch.UI.Gameplay
 
         private Transform FindChildTransform(string objectName)
         {
-            Transform[] transforms = GetComponentsInChildren<Transform>(true);
+            return FindChildTransform(transform, objectName);
+        }
+
+        private static Transform FindChildTransform(Transform root, string objectName)
+        {
+            if (root == null || string.IsNullOrEmpty(objectName))
+            {
+                return null;
+            }
+
+            if (root.name == objectName)
+            {
+                return root;
+            }
+
+            Transform[] transforms = root.GetComponentsInChildren<Transform>(true);
 
             for (int i = 0; i < transforms.Length; i++)
             {
