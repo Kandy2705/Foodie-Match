@@ -10,6 +10,7 @@ namespace FoodieMatch.Features.RequiredPackage
         private const int MinRequiredAmount = 1;
         private const int MaxRequiredAmount = 3;
 
+        [SerializeField] private Transform _motionRoot;
         [SerializeField] private RequiredPackageAmountView _amount1View;
         [SerializeField] private RequiredPackageAmountView _amount2View;
         [SerializeField] private RequiredPackageAmountView _amount3View;
@@ -33,9 +34,9 @@ namespace FoodieMatch.Features.RequiredPackage
         private Sequence _motionSequence;
         private bool _isMotionPlaying;
         private bool _didMotionFinish;
-        private bool _hasInitialTransform;
-        private Vector3 _initialLocalPosition;
-        private Vector3 _initialLocalScale;
+        private bool _hasInitialMotionRootTransform;
+        private Vector3 _initialMotionRootLocalPosition;
+        private Vector3 _initialMotionRootLocalScale;
 
         public int FoodTokenId { get; private set; }
         public int RequiredAmount { get; private set; }
@@ -45,8 +46,13 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void Awake()
         {
-            EnsureInitialTransform();
+            EnsureInitialMotionRootTransform();
             HideLid();
+
+            if (_motionRoot == null)
+            {
+                Debug.LogWarning("Required package motion root is missing.", this);
+            }
 
             if (_lid == null)
             {
@@ -117,6 +123,7 @@ namespace FoodieMatch.Features.RequiredPackage
         public async Task<MotionResult> PlayEnterAsync()
         {
             if (IsEmpty ||
+                _motionRoot == null ||
                 _isMotionPlaying ||
                 !IsValidTime(_enterDuration) ||
                 !IsValidTime(_enterPunchDuration) ||
@@ -125,18 +132,19 @@ namespace FoodieMatch.Features.RequiredPackage
                 return MotionResult.Failed;
             }
 
-            EnsureInitialTransform();
-            ResetTransform();
+            EnsureInitialMotionRootTransform();
+            ResetMotionRootTransform();
             HideLid();
-            transform.localPosition = _initialLocalPosition + _enterOffset;
+            _motionRoot.localPosition = _initialMotionRootLocalPosition + _enterOffset;
             _isMotionPlaying = true;
             _didMotionFinish = false;
 
             try
             {
                 _motionSequence = Sequence.Create()
-                    .Chain(Tween.LocalPosition(transform, _initialLocalPosition, _enterDuration, _enterEase))
-                    .Chain(Tween.PunchScale(transform, _enterPunchStrength, _enterPunchDuration))
+                    .Chain(Tween.LocalPosition(
+                        _motionRoot, _initialMotionRootLocalPosition, _enterDuration, _enterEase))
+                    .Chain(Tween.PunchScale(_motionRoot, _enterPunchStrength, _enterPunchDuration))
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
                 await _motionSequence;
@@ -153,6 +161,7 @@ namespace FoodieMatch.Features.RequiredPackage
         public async Task<MotionResult> PlayMatchAndExitAsync()
         {
             if (IsEmpty ||
+                _motionRoot == null ||
                 _isMotionPlaying ||
                 !IsValidTime(_completeFeedbackDuration) ||
                 !IsValidTime(_exitDuration) ||
@@ -161,8 +170,8 @@ namespace FoodieMatch.Features.RequiredPackage
                 return MotionResult.Failed;
             }
 
-            EnsureInitialTransform();
-            ResetTransform();
+            EnsureInitialMotionRootTransform();
+            ResetMotionRootTransform();
             ShowLid();
             _isMotionPlaying = true;
             _didMotionFinish = false;
@@ -170,9 +179,12 @@ namespace FoodieMatch.Features.RequiredPackage
             try
             {
                 _motionSequence = Sequence.Create()
-                    .Chain(Tween.PunchScale(transform, _completePunchStrength, _completeFeedbackDuration))
+                    .Chain(Tween.PunchScale(_motionRoot, _completePunchStrength, _completeFeedbackDuration))
                     .Chain(Tween.LocalPosition(
-                        transform, _initialLocalPosition + _exitOffset, _exitDuration, _exitEase))
+                        _motionRoot,
+                        _initialMotionRootLocalPosition + _exitOffset,
+                        _exitDuration,
+                        _exitEase))
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
                 await _motionSequence;
@@ -249,7 +261,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
             if (resetTransform)
             {
-                ResetTransform();
+                ResetMotionRootTransform();
             }
 
             if (hideLid)
@@ -258,11 +270,16 @@ namespace FoodieMatch.Features.RequiredPackage
             }
         }
 
-        private void ResetTransform()
+        private void ResetMotionRootTransform()
         {
-            EnsureInitialTransform();
-            transform.localPosition = _initialLocalPosition;
-            transform.localScale = _initialLocalScale;
+            if (_motionRoot == null)
+            {
+                return;
+            }
+
+            EnsureInitialMotionRootTransform();
+            _motionRoot.localPosition = _initialMotionRootLocalPosition;
+            _motionRoot.localScale = _initialMotionRootLocalScale;
         }
 
         private void ShowLid()
@@ -281,16 +298,16 @@ namespace FoodieMatch.Features.RequiredPackage
             }
         }
 
-        private void EnsureInitialTransform()
+        private void EnsureInitialMotionRootTransform()
         {
-            if (_hasInitialTransform)
+            if (_hasInitialMotionRootTransform || _motionRoot == null)
             {
                 return;
             }
 
-            _initialLocalPosition = transform.localPosition;
-            _initialLocalScale = transform.localScale;
-            _hasInitialTransform = true;
+            _initialMotionRootLocalPosition = _motionRoot.localPosition;
+            _initialMotionRootLocalScale = _motionRoot.localScale;
+            _hasInitialMotionRootTransform = true;
         }
 
         private static bool IsValidTime(float value)
