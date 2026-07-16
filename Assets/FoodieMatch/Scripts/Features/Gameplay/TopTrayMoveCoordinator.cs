@@ -34,28 +34,81 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (!_boardLayoutView.TryPrepareTopTrayFoodMove(
-                    grillModel, out IReadOnlyList<FoodItemView> foodItemViews,
-                    out IReadOnlyList<Vector3> targetPositions))
+            if (!_boardLayoutView.TryPrepareTopTrayFoodMove(grillModel, out TopTrayMoveVisuals moveVisuals))
             {
                 Debug.LogError($"Could not prepare top tray move to grill {grillPositionIndex}.");
                 return;
             }
 
-            _ = MoveFoodSafelyAsync(grillModel, foodItemViews, targetPositions, session);
+            _ = MoveFoodSafelyAsync(grillModel, moveVisuals, session);
         }
 
         private async Task MoveFoodSafelyAsync(
             GrillModel grillModel,
-            IReadOnlyList<FoodItemView> foodItemViews,
-            IReadOnlyList<Vector3> targetPositions,
+            TopTrayMoveVisuals moveVisuals,
+            GameplaySession session)
+        {
+            List<Task> motionTasks = new();
+            int flightOrder = 0;
+            float transitionDuration = 0f;
+            float startInterval = _motionPresenter.TopTrayFlightStartInterval;
+
+            if (!IsValidTime(startInterval))
+            {
+                Debug.LogError("Top tray flight start interval is invalid.");
+                startInterval = 0f;
+            }
+
+            for (int foodItemIndex = 0; foodItemIndex < moveVisuals.MovingFoodItems.Count; foodItemIndex++)
+            {
+                FoodItemView foodItemView = moveVisuals.MovingFoodItems[foodItemIndex];
+
+                if (foodItemView == null)
+                {
+                    continue;
+                }
+
+                float startDelay = flightOrder * startInterval;
+                float flightDuration = IsValidTime(foodItemView.TopTrayToGrillFlightDuration)
+                    ? foodItemView.TopTrayToGrillFlightDuration
+                    : 0f;
+
+                transitionDuration = Mathf.Max(transitionDuration, startDelay + flightDuration);
+                motionTasks.Add(MoveFoodItemSafelyAsync(
+                    grillModel,
+                    moveVisuals,
+                    foodItemView,
+                    foodItemIndex,
+                    startDelay,
+                    session));
+                flightOrder++;
+            }
+
+            motionTasks.Add(PlayFadeTransitionSafelyAsync(
+                grillModel,
+                moveVisuals,
+                transitionDuration,
+                session));
+
+            await Task.WhenAll(motionTasks);
+        }
+
+        private async Task MoveFoodItemSafelyAsync(
+            GrillModel grillModel,
+            TopTrayMoveVisuals moveVisuals,
+            FoodItemView foodItemView,
+            int foodItemIndex,
+            float startDelay,
             GameplaySession session)
         {
             MotionResult motionResult;
 
             try
             {
-                motionResult = await _motionPresenter.MoveTopTrayFoodToGrillAsync(foodItemViews, targetPositions);
+                motionResult = await _motionPresenter.MoveTopTrayFoodToGrillAsync(
+                    foodItemView,
+                    moveVisuals.TargetPositions[foodItemIndex],
+                    startDelay);
             }
             catch (Exception exception)
             {
@@ -70,14 +123,63 @@ namespace FoodieMatch.Features.Gameplay
 
             if (motionResult == MotionResult.Failed)
             {
-                Debug.LogError($"Top tray food flight to grill {grillModel.PositionIndex} failed.");
+                Debug.LogError(
+                    $"Top tray food {foodItemIndex} flight to grill " +
+                    $"{grillModel.PositionIndex} failed.");
             }
 
-            if (!_boardLayoutView.CompleteTopTrayFoodMove(
-                    grillModel, foodItemViews, session.CanSelectFood))
+            if (!_boardLayoutView.CompleteTopTrayFoodMoveAt(
+                    grillModel,
+                    moveVisuals,
+                    foodItemIndex,
+                    session.CanSelectFood))
             {
-                Debug.LogError($"Could not complete top tray move to grill {grillModel.PositionIndex}.");
+                Debug.LogError(
+                    $"Could not complete top tray food {foodItemIndex} move " +
+                    $"to grill {grillModel.PositionIndex}.");
             }
+        }
+
+        private async Task PlayFadeTransitionSafelyAsync(
+            GrillModel grillModel,
+            TopTrayMoveVisuals moveVisuals,
+            float duration,
+            GameplaySession session)
+        {
+            MotionResult motionResult;
+
+            try
+            {
+                motionResult = await _motionPresenter.PlayTopTrayFadeTransitionAsync(
+                    moveVisuals.DepartingTray,
+                    moveVisuals.NewTopTrayFoodItems,
+                    duration);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                motionResult = MotionResult.Failed;
+            }
+
+            if (!_sessionGuard.IsCurrentSession(session.SessionId))
+            {
+                return;
+            }
+
+            if (motionResult == MotionResult.Failed)
+            {
+                Debug.LogError($"Top tray fade transition on grill {grillModel.PositionIndex} failed.");
+            }
+
+            if (!_boardLayoutView.CompleteTopTrayTransition(grillModel, moveVisuals))
+            {
+                Debug.LogError($"Could not complete top tray transition on grill {grillModel.PositionIndex}.");
+            }
+        }
+
+        private static bool IsValidTime(float value)
+        {
+            return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
         }
     }
 }

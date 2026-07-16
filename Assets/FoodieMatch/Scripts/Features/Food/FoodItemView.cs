@@ -28,6 +28,8 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private float _flightDuration = 0.22f;
         [SerializeField] private float _flightArcHeight = 1f;
         [SerializeField, Range(0.1f, 0.9f)] private float _flightPeakProgress = 0.45f;
+        [SerializeField] private Ease _flightTransformEase = Ease.OutCubic;
+        [SerializeField] private float _topTrayToGrillFlightDuration = 0.32f;
 
         [Header("Landing Motion")]
         [SerializeField] private Vector3 _landingSquashScaleMultiplier = new(1.18f, 0.72f, 1f);
@@ -37,9 +39,11 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private Ease _landingRestoreEase = Ease.OutBack;
 
         private Tween _flightTween;
+        private Tween _fadeTween;
         private Sequence _landingSequence;
         private bool _isFlying;
         private bool _didFlightComplete;
+        private bool _didFadeComplete;
         private bool _isLandingFeedbackPlaying;
         private bool _didLandingFeedbackComplete;
         private Transform _flightTarget;
@@ -48,11 +52,15 @@ namespace FoodieMatch.Features.Food
         private Vector3 _latestFlightTargetPosition;
         private Vector3 _latestLandingTargetPosition;
         private Vector3 _scaleBeforeLanding;
+        private Vector3 _flightStartScale;
+        private Quaternion _flightStartRotation;
+        private FoodItemVisualState? _flightTargetVisualState;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
         public bool IsInteractable { get; private set; }
         public bool IsFlying => _isFlying;
+        public float TopTrayToGrillFlightDuration => _topTrayToGrillFlightDuration;
         public FoodItemVisualState VisualState { get; private set; }
 
         public event Action<FoodItemView> Selected;
@@ -118,6 +126,7 @@ namespace FoodieMatch.Features.Food
             {
                 _spriteRenderer.sprite = sprite;
                 _spriteRenderer.enabled = sprite != null;
+                SetSpriteAlpha(1f);
             }
 
             ApplyColliderState();
@@ -143,7 +152,7 @@ namespace FoodieMatch.Features.Food
             Vector3 targetPosition,
             float startDelay = 0f)
         {
-            return PlayFlightAsync(targetPosition, null, startDelay);
+            return PlayFlightAsync(targetPosition, null, null, _flightDuration, startDelay);
         }
 
         public Task<MotionResult> PlayFlightAsync(
@@ -156,17 +165,31 @@ namespace FoodieMatch.Features.Food
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            return PlayFlightAsync(target.position, target, startDelay);
+            return PlayFlightAsync(target.position, target, null, _flightDuration, startDelay);
+        }
+
+        public Task<MotionResult> PlayFlightToGrillAsync(
+            Vector3 targetPosition,
+            float startDelay = 0f)
+        {
+            return PlayFlightAsync(
+                targetPosition,
+                null,
+                FoodItemVisualState.OnGrill,
+                _topTrayToGrillFlightDuration,
+                startDelay);
         }
 
         private async Task<MotionResult> PlayFlightAsync(
             Vector3 targetPosition,
             Transform target,
+            FoodItemVisualState? targetVisualState,
+            float duration,
             float startDelay)
         {
             StopLandingFeedback(resetScale: true);
 
-            if (!CanStartFlight(startDelay))
+            if (!CanStartFlight(duration, startDelay))
             {
                 return MotionResult.Failed;
             }
@@ -174,6 +197,9 @@ namespace FoodieMatch.Features.Food
             _flightTarget = target;
             _flightStartPosition = transform.position;
             _latestFlightTargetPosition = targetPosition;
+            _flightStartScale = transform.localScale;
+            _flightStartRotation = transform.localRotation;
+            _flightTargetVisualState = targetVisualState;
             _isFlying = true;
             _didFlightComplete = false;
             SetInteractable(false);
@@ -184,7 +210,7 @@ namespace FoodieMatch.Features.Food
                         this,
                         0f,
                         1f,
-                        _flightDuration,
+                        duration,
                         (foodItem, progress) => foodItem.UpdateFlightPosition(progress),
                         startDelay: startDelay)
                     .OnComplete(
@@ -192,6 +218,11 @@ namespace FoodieMatch.Features.Food
                         target => target.MarkFlightCompleted());
 
                 await _flightTween;
+
+                if (_didFlightComplete && _flightTargetVisualState.HasValue)
+                {
+                    SetVisualState(_flightTargetVisualState.Value);
+                }
 
                 return _didFlightComplete
                     ? MotionResult.Completed
@@ -201,7 +232,38 @@ namespace FoodieMatch.Features.Food
             {
                 _flightTween = default;
                 _flightTarget = null;
+                _flightTargetVisualState = null;
                 _isFlying = false;
+            }
+        }
+
+        public async Task<MotionResult> PlayFadeInAsync(float duration)
+        {
+            if (IsEmpty ||
+                _spriteRenderer == null ||
+                _fadeTween.isAlive ||
+                !IsValidTime(duration))
+            {
+                return MotionResult.Failed;
+            }
+
+            SetSpriteAlpha(0f);
+            _didFadeComplete = false;
+
+            try
+            {
+                _fadeTween = Tween.Alpha(_spriteRenderer, 1f, duration)
+                    .OnComplete(this, target => target.MarkFadeCompleted());
+
+                await _fadeTween;
+
+                return _didFadeComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _fadeTween = default;
             }
         }
 
@@ -217,6 +279,7 @@ namespace FoodieMatch.Features.Food
         {
             StopFlight();
             StopLandingFeedback(resetScale: true);
+            StopFade(resetAlpha: true);
         }
 
         public async Task<MotionResult> PlayLandingFeedbackAsync(Transform target = null)
@@ -297,7 +360,7 @@ namespace FoodieMatch.Features.Food
             Selected?.Invoke(this);
         }
 
-        private bool CanStartFlight(float startDelay)
+        private bool CanStartFlight(float duration, float startDelay)
         {
             if (IsEmpty)
             {
@@ -315,7 +378,7 @@ namespace FoodieMatch.Features.Food
                 return false;
             }
 
-            if (!IsValidTime(_flightDuration) ||
+            if (!IsValidTime(duration) ||
                 !IsValidPositiveNumber(_flightArcHeight) ||
                 !IsValidPeakProgress(_flightPeakProgress) ||
                 !IsValidTime(startDelay))
@@ -332,6 +395,11 @@ namespace FoodieMatch.Features.Food
         private void MarkFlightCompleted()
         {
             _didFlightComplete = true;
+        }
+
+        private void MarkFadeCompleted()
+        {
+            _didFadeComplete = true;
         }
 
         private void MarkLandingFeedbackCompleted()
@@ -352,6 +420,24 @@ namespace FoodieMatch.Features.Food
                 progress);
             position.y = CalculateFlightPositionY(progress);
             transform.position = position;
+
+            if (_flightTargetVisualState.HasValue)
+            {
+                UpdateFlightTransform(progress, _flightTargetVisualState.Value);
+            }
+        }
+
+        private void UpdateFlightTransform(float progress, FoodItemVisualState targetVisualState)
+        {
+            float easedProgress = Easing.Evaluate(progress, _flightTransformEase);
+            Vector3 targetScale = GetVisualScale(targetVisualState);
+            Quaternion targetRotation = GetVisualRotation(targetVisualState);
+
+            transform.localScale = Vector3.LerpUnclamped(_flightStartScale, targetScale, easedProgress);
+            transform.localRotation = Quaternion.SlerpUnclamped(
+                _flightStartRotation,
+                targetRotation,
+                easedProgress);
         }
 
         private float CalculateFlightPositionY(float progress)
@@ -412,6 +498,28 @@ namespace FoodieMatch.Features.Food
             }
         }
 
+        private void StopFade(bool resetAlpha)
+        {
+            if (_fadeTween.isAlive)
+            {
+                _fadeTween.Stop();
+            }
+
+            _fadeTween = default;
+
+            if (resetAlpha && _spriteRenderer != null)
+            {
+                SetSpriteAlpha(1f);
+            }
+        }
+
+        private void SetSpriteAlpha(float alpha)
+        {
+            Color color = _spriteRenderer.color;
+            color.a = alpha;
+            _spriteRenderer.color = color;
+        }
+
         private static bool IsValidScale(Vector3 value)
         {
             return IsValidScaleValue(value.x) &&
@@ -451,22 +559,28 @@ namespace FoodieMatch.Features.Food
                 _spriteRenderer.enabled = _spriteRenderer.sprite != null;
             }
 
-            if (VisualState == FoodItemVisualState.OnTray)
-            {
-                transform.localScale = _trayScale;
-                transform.localEulerAngles = _trayRotation;
-                return;
-            }
+            transform.localScale = GetVisualScale(VisualState);
+            transform.localRotation = GetVisualRotation(VisualState);
+        }
 
-            if (VisualState == FoodItemVisualState.OnWaitingRack)
+        private Vector3 GetVisualScale(FoodItemVisualState visualState)
+        {
+            return visualState switch
             {
-                transform.localScale = _waitingRackScale;
-                transform.localEulerAngles = _waitingRackRotation;
-                return;
-            }
+                FoodItemVisualState.OnTray => _trayScale,
+                FoodItemVisualState.OnWaitingRack => _waitingRackScale,
+                _ => _grillScale
+            };
+        }
 
-            transform.localScale = _grillScale;
-            transform.localRotation = Quaternion.identity;
+        private Quaternion GetVisualRotation(FoodItemVisualState visualState)
+        {
+            return visualState switch
+            {
+                FoodItemVisualState.OnTray => Quaternion.Euler(_trayRotation),
+                FoodItemVisualState.OnWaitingRack => Quaternion.Euler(_waitingRackRotation),
+                _ => Quaternion.identity
+            };
         }
     }
 }
