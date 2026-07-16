@@ -1,3 +1,4 @@
+using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Level;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Features.Board;
@@ -25,6 +26,9 @@ namespace FoodieMatch.App
         [SerializeField] private GameplayMotionPresenter
             _gameplayMotionPresenter;
 
+        [Header("Audio")]
+        [SerializeField] private UnityAudioService _audioService;
+
         [Header("Data")]
         [SerializeField] private LevelCatalogSO _levelCatalog;
 
@@ -43,6 +47,7 @@ namespace FoodieMatch.App
         public UIManager UIManager => _uiManager;
         public GameplayMotionPresenter GameplayMotionPresenter =>
             _gameplayMotionPresenter;
+        public UnityAudioService AudioService => _audioService;
         public LevelCatalogSO LevelCatalog => _levelCatalog;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
@@ -85,6 +90,12 @@ namespace FoodieMatch.App
             {
                 Debug.LogError("UIManager is missing.");
                 return false;
+            }
+
+            if (_audioService == null)
+            {
+                Debug.LogWarning(
+                    "UnityAudioService is missing. Audio will use NullAudioService.");
             }
 
             if (_gameplayMotionPresenter == null)

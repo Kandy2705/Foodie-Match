@@ -1,0 +1,163 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ec5e7a6569448d995e8edb0a9d81c0f, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: 
+  _musicClips:
+  - _key: ingame
+    _clip: {fileID: 8300000, guid: ed6457ae4b9e410db30ded2feb884305, type: 3}
+    _volume: 1
+  - _key: menu
+    _clip: {fileID: 8300000, guid: 28dc648396e243cd9557b9460dc56f81, type: 3}
+    _volume: 1
+  _sfxClips:
+  - _key: popup_show
+    _clip: {fileID: 8300000, guid: 38765235308944ec69e27930a3a45759, type: 3}
+    _volume: 1
+  - _key: board_close
+    _clip: {fileID: 8300000, guid: 01103e93aab2e4e98979da85d4dfbac9, type: 3}
+    _volume: 1
+  - _key: Booster_Collect
+    _clip: {fileID: 8300000, guid: 91073741e34da4ac7b25a691ea51279a, type: 3}
+    _volume: 1
+  - _key: booster_shuffle
+    _clip: {fileID: 8300000, guid: 4798a626612674447a0766bd1ad4a4e8, type: 3}
+    _volume: 1
+  - _key: boxClose
+    _clip: {fileID: 8300000, guid: 2a214893475274f7d802ca0d33054877, type: 3}
+    _volume: 1
+  - _key: boxMove
+    _clip: {fileID: 8300000, guid: 9e17d831321724516b3b5dcbf68eec30, type: 3}
+    _volume: 1
+  - _key: click
+    _clip: {fileID: 8300000, guid: 38765235308944ec69e27930a3a45759, type: 3}
+    _volume: 1
+  - _key: coin_receive
+    _clip: {fileID: 8300000, guid: ce965206636494a2fbdfd2ea5371a576, type: 3}
+    _volume: 1
+  - _key: danut
+    _clip: {fileID: 8300000, guid: aab7f546b7f4d4d69bdd6262cf16fa81, type: 3}
+    _volume: 1
+  - _key: Finish-combo-1
+    _clip: {fileID: 8300000, guid: 04e0e0759216c46a58732739bdb50ebe, type: 3}
+    _volume: 1
+  - _key: Finish-combo-2
+    _clip: {fileID: 8300000, guid: 48e7c5e7338414ee2b5ef2dc654564df, type: 3}
+    _volume: 1
+  - _key: Finish-combo-3
+    _clip: {fileID: 8300000, guid: 99ba788d00c7d4f748dbc6502d9edf8e, type: 3}
+    _volume: 1
+  - _key: Finish-combo-4
+    _clip: {fileID: 8300000, guid: 94df19624bac640dcb743e0704740ce5, type: 3}
+    _volume: 1
+  - _key: Fly to Booster
+    _clip: {fileID: 8300000, guid: f18b9213fb68548b6b961d04355e741e, type: 3}
+    _volume: 1
+  - _key: Get-reward
+    _clip: {fileID: 8300000, guid: 04982d99618ba446e943088830266b48, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_1
+    _clip: {fileID: 8300000, guid: 8f256ce5dd64b4c83a8320a9a6e5ce1a, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_10
+    _clip: {fileID: 8300000, guid: bfc2264c1687a42f583fe4826a9793b4, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_2
+    _clip: {fileID: 8300000, guid: 8427c9131458548febec7c406b18e623, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_3
+    _clip: {fileID: 8300000, guid: bd4ce9eccf73049af811ad391ba951d6, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_4
+    _clip: {fileID: 8300000, guid: d03d496cc32ac45a1b8005f54cd7eea1, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_5
+    _clip: {fileID: 8300000, guid: 692607896cb8c4f4cb9f7f9b3b6c6353, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_6
+    _clip: {fileID: 8300000, guid: fc463a9c08ec24a92b86b0fa95e899cc, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_7
+    _clip: {fileID: 8300000, guid: 2958297a5435b4b818276c0f04adb114, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_8
+    _clip: {fileID: 8300000, guid: 599ec375ccb7a4fd083efab8b3a36406, type: 3}
+    _volume: 1
+  - _key: Items_Merge_combo_9
+    _clip: {fileID: 8300000, guid: eafe3c4d2c0c043e283b0051a5556305, type: 3}
+    _volume: 1
+  - _key: kholua
+    _clip: {fileID: 8300000, guid: 899adcafa0ae1423d84b9bda11a9b7dd, type: 3}
+    _volume: 1
+  - _key: Lose-game
+    _clip: {fileID: 8300000, guid: 0f846107ccc7b40c19ec3bd7d7930277, type: 3}
+    _volume: 1
+  - _key: notification-alert
+    _clip: {fileID: 8300000, guid: 7c19d589fc38a4d8a8a793c0fbe0ccaa, type: 3}
+    _volume: 1
+  - _key: Order done
+    _clip: {fileID: 8300000, guid: 32a5e325feafb4b5c969c892df2d586b, type: 3}
+    _volume: 1
+  - _key: PickOff
+    _clip: {fileID: 8300000, guid: 10a20db91ef644b429d325882643fe87, type: 3}
+    _volume: 1
+  - _key: Pickup object from grill
+    _clip: {fileID: 8300000, guid: 7e8c66db72d284ce78b4356383c7263b, type: 3}
+    _volume: 1
+  - _key: Pop-Prize-1
+    _clip: {fileID: 8300000, guid: 655f897be50c94b5580fcea849a2d931, type: 3}
+    _volume: 1
+  - _key: Pop-Prize-2
+    _clip: {fileID: 8300000, guid: d4df38ba42c064e75bb8d96bf98b31c0, type: 3}
+    _volume: 1
+  - _key: Pop-Prize-3
+    _clip: {fileID: 8300000, guid: 92537b286bef1480590f4d71e11fa2ff, type: 3}
+    _volume: 1
+  - _key: Pop-Prize-4
+    _clip: {fileID: 8300000, guid: 470505e39de564b0f823a7eaf7827419, type: 3}
+    _volume: 1
+  - _key: Pop-Prize-5
+    _clip: {fileID: 8300000, guid: d39112594333440dcb9ed071856aea43, type: 3}
+    _volume: 1
+  - _key: screen-tap
+    _clip: {fileID: 8300000, guid: 757f238f8470946809c1d7ad9c1297d3, type: 3}
+    _volume: 1
+  - _key: select_skewer
+    _clip: {fileID: 8300000, guid: c7a8ee3ac06cb4b33b479d5cf8d79637, type: 3}
+    _volume: 1
+  - _key: sfx_claim
+    _clip: {fileID: 8300000, guid: 8297f9d1e4a2243ef985871c4a1e277b, type: 3}
+    _volume: 1
+  - _key: sfx_fail
+    _clip: {fileID: 8300000, guid: 81ab0e4d71a294080a7dd30816500dda, type: 3}
+    _volume: 1
+  - _key: sfx_idle_loop
+    _clip: {fileID: 8300000, guid: 81f53586d290c4651ba574f3ae1ebe65, type: 3}
+    _volume: 1
+  - _key: sfx_rocket
+    _clip: {fileID: 8300000, guid: 06402f2727dba4438bf5f407acaa95d8, type: 3}
+    _volume: 1
+  - _key: Shipper Comming
+    _clip: {fileID: 8300000, guid: 31614d6e9d92a44599c42e94bd5c977b, type: 3}
+    _volume: 1
+  - _key: Shipper Order
+    _clip: {fileID: 8300000, guid: 2ad2e89fea09440289cfb0aa4564008d, type: 3}
+    _volume: 1
+  - _key: Shipper time almost up
+    _clip: {fileID: 8300000, guid: 2e32ded88e50b469a92c200cd1ece948, type: 3}
+    _volume: 1
+  - _key: Win game
+    _clip: {fileID: 8300000, guid: 875ed80f74cb44a3babceb3b93b57c77, type: 3}
+    _volume: 1
+  - _key: win_screen
+    _clip: {fileID: 8300000, guid: 79c773b1eb7ef4e9a80f28dd46d3be78, type: 3}
+    _volume: 1

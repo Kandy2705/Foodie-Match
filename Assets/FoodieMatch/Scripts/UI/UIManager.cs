@@ -18,7 +18,7 @@ namespace FoodieMatch.UI
 {
     public sealed class UIManager : MonoBehaviour
     {
-        private const string PopupShowSfxKey = "popup_show";
+        private const string PopupShowSfxKey = AudioKeys.SfxPopupShow;
 
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
@@ -154,6 +154,13 @@ namespace FoodieMatch.UI
                     OnSettingSoundChanged,
                     OnSettingMusicChanged));
 
+            if (_audioService != null)
+            {
+                settingPopup.SetToggleStates(
+                    _audioService.IsSfxEnabled,
+                    _audioService.IsMusicEnabled);
+            }
+
             _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
@@ -187,7 +194,16 @@ namespace FoodieMatch.UI
                     OnPauseResumeClicked,
                     OnPauseRestartClicked,
                     OnPauseHomeClicked,
-                    OnPauseCloseClicked));
+                    OnPauseCloseClicked,
+                    OnSettingSoundChanged,
+                    OnSettingMusicChanged));
+
+            if (_audioService != null)
+            {
+                pauseView.SetToggleStates(
+                    _audioService.IsSfxEnabled,
+                    _audioService.IsMusicEnabled);
+            }
 
             _audioService?.PlaySfx(PopupShowSfxKey);
         }
@@ -542,12 +558,12 @@ namespace FoodieMatch.UI
 
         private void OnSettingSoundChanged(bool isOn)
         {
-            Debug.Log($"Sound changed: {isOn}");
+            _audioService?.SetSfxEnabled(isOn);
         }
 
         private void OnSettingMusicChanged(bool isOn)
         {
-            Debug.Log($"Music changed: {isOn}");
+            _audioService?.SetMusicEnabled(isOn);
         }
 
         private void OnPauseResumeClicked()

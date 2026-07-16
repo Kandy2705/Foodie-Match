@@ -12,12 +12,16 @@ namespace FoodieMatch.UI.Pause
         [SerializeField] private Button _restartButton;
         [SerializeField] private Button _homeButton;
         [SerializeField] private Button _closeButton;
+        [SerializeField] private Toggle _soundToggle;
+        [SerializeField] private Toggle _musicToggle;
         [SerializeField] private PopupAnimController _popupAnimController;
 
         private Action _resumeClicked;
         private Action _restartClicked;
         private Action _homeClicked;
         private Action _closeClicked;
+        private Action<bool> _soundChanged;
+        private Action<bool> _musicChanged;
         private bool _isClosing;
 
         private void Awake()
@@ -28,6 +32,7 @@ namespace FoodieMatch.UI.Pause
             }
 
             EnsureButtonReferences();
+            EnsureToggleReferences();
 
             if (_resumeButton != null)
             {
@@ -52,6 +57,16 @@ namespace FoodieMatch.UI.Pause
             {
                 Debug.LogWarning($"{nameof(PauseView)} on {name} has no close button assigned.");
             }
+
+            if (_soundToggle != null)
+            {
+                _soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
+            }
+
+            if (_musicToggle != null)
+            {
+                _musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
+            }
         }
 
         private void OnDestroy()
@@ -75,6 +90,16 @@ namespace FoodieMatch.UI.Pause
             {
                 _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
             }
+
+            if (_soundToggle != null)
+            {
+                _soundToggle.onValueChanged.RemoveListener(OnSoundToggleChanged);
+            }
+
+            if (_musicToggle != null)
+            {
+                _musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
+            }
         }
 
         public void SetActions(PauseViewActions actions)
@@ -83,6 +108,21 @@ namespace FoodieMatch.UI.Pause
             _restartClicked = actions.RestartClicked;
             _homeClicked = actions.HomeClicked;
             _closeClicked = actions.CloseClicked;
+            _soundChanged = actions.SoundChanged;
+            _musicChanged = actions.MusicChanged;
+        }
+
+        public void SetToggleStates(bool isSoundOn, bool isMusicOn)
+        {
+            if (_soundToggle != null)
+            {
+                _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
+            }
+
+            if (_musicToggle != null)
+            {
+                _musicToggle.SetIsOnWithoutNotify(!isMusicOn);
+            }
         }
 
         public override void Show()
@@ -119,6 +159,8 @@ namespace FoodieMatch.UI.Pause
             _restartClicked = null;
             _homeClicked = null;
             _closeClicked = null;
+            _soundChanged = null;
+            _musicChanged = null;
             _isClosing = false;
 
             base.Dispose();
@@ -144,6 +186,18 @@ namespace FoodieMatch.UI.Pause
             _closeClicked?.Invoke();
         }
 
+        private void OnSoundToggleChanged(bool isOn)
+        {
+            bool isSoundOn = !isOn;
+            _soundChanged?.Invoke(isSoundOn);
+        }
+
+        private void OnMusicToggleChanged(bool isOn)
+        {
+            bool isMusicOn = !isOn;
+            _musicChanged?.Invoke(isMusicOn);
+        }
+
         private void OnCloseAnimationFinished()
         {
             _isClosing = false;
@@ -155,6 +209,34 @@ namespace FoodieMatch.UI.Pause
             if (_closeButton == null)
             {
                 _closeButton = FindChildButton("CloseButton");
+            }
+
+            if (_resumeButton == null)
+            {
+                _resumeButton = FindChildButton("ResumeButton");
+            }
+
+            if (_restartButton == null)
+            {
+                _restartButton = FindChildButton("RestartButton");
+            }
+
+            if (_homeButton == null)
+            {
+                _homeButton = FindChildButton("HomeButton");
+            }
+        }
+
+        private void EnsureToggleReferences()
+        {
+            if (_soundToggle == null)
+            {
+                _soundToggle = FindChildToggle("SoundToggleRoot");
+            }
+
+            if (_musicToggle == null)
+            {
+                _musicToggle = FindChildToggle("MusicToggleRoot");
             }
         }
 
@@ -169,6 +251,23 @@ namespace FoodieMatch.UI.Pause
                 if (button != null && button.gameObject.name == objectName)
                 {
                     return button;
+                }
+            }
+
+            return null;
+        }
+
+        private Toggle FindChildToggle(string objectName)
+        {
+            Toggle[] toggles = GetComponentsInChildren<Toggle>(true);
+
+            for (int i = 0; i < toggles.Length; i++)
+            {
+                Toggle toggle = toggles[i];
+
+                if (toggle != null && toggle.gameObject.name == objectName)
+                {
+                    return toggle;
                 }
             }
 
