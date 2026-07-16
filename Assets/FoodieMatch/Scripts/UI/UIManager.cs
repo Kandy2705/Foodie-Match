@@ -3,6 +3,7 @@ using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.UI.BoosterGuide;
+using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
@@ -18,8 +19,6 @@ namespace FoodieMatch.UI
 {
     public sealed class UIManager : MonoBehaviour
     {
-        private const string PopupShowSfxKey = AudioKeys.SfxPopupShow;
-
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
 
@@ -32,6 +31,7 @@ namespace FoodieMatch.UI
 
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
+        private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
         private GameObject _gameplayHud;
         private GameplayHudView _gameplayHudView;
         private bool _hasConstructed;
@@ -62,6 +62,7 @@ namespace FoodieMatch.UI
             }
 
             _audioService = audioService;
+            EnsureGlobalButtonClickSfx(audioService);
 
             _gameplayEvents = gameplayEvents;
             SubscribeEvents();
@@ -72,6 +73,22 @@ namespace FoodieMatch.UI
             {
                 Debug.LogError("PopupManager is missing.");
             }
+        }
+
+        private void EnsureGlobalButtonClickSfx(IAudioService audioService)
+        {
+            if (_uiGlobalButtonClickSfx == null)
+            {
+                _uiGlobalButtonClickSfx = GetComponent<UiGlobalButtonClickSfx>();
+
+                if (_uiGlobalButtonClickSfx == null)
+                {
+                    _uiGlobalButtonClickSfx =
+                        gameObject.AddComponent<UiGlobalButtonClickSfx>();
+                }
+            }
+
+            _uiGlobalButtonClickSfx.Construct(audioService);
         }
 
         public void ShowHome()
@@ -160,8 +177,6 @@ namespace FoodieMatch.UI
                     _audioService.IsSfxEnabled,
                     _audioService.IsMusicEnabled);
             }
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideSettingPopup()
@@ -204,8 +219,6 @@ namespace FoodieMatch.UI
                     _audioService.IsSfxEnabled,
                     _audioService.IsMusicEnabled);
             }
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HidePausePopup()
@@ -237,8 +250,6 @@ namespace FoodieMatch.UI
                 new LeaveGamePopupViewActions(
                     OnLeaveGameCloseClicked,
                     OnLeaveGameLeaveClicked));
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideLeaveGamePopup()
@@ -270,8 +281,6 @@ namespace FoodieMatch.UI
                 new RetryGamePopupViewActions(
                     OnRetryGameCloseClicked,
                     OnRetryGameRetryClicked));
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideRetryGamePopup()
@@ -304,8 +313,6 @@ namespace FoodieMatch.UI
                     OnReviveCloseClicked,
                     OnReviveFreeAdsClicked,
                     OnRevivePlayOnClicked));
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideRevivePopup()
@@ -351,8 +358,6 @@ namespace FoodieMatch.UI
             {
                 winView.SetRewardMultiplier(rewardMultiplierText);
             }
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideWinPopup()
@@ -386,8 +391,6 @@ namespace FoodieMatch.UI
                 new LoseViewActions(
                     tryAgainClicked,
                     homeClicked));
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideLosePopup()
@@ -445,8 +448,6 @@ namespace FoodieMatch.UI
                     OnBoosterGuideCloseClicked,
                     OnBoosterGuideFreeAdsClicked,
                     OnBoosterGuideBuyClicked));
-
-            _audioService?.PlaySfx(PopupShowSfxKey);
         }
 
         public void HideBoosterGuidePopup()

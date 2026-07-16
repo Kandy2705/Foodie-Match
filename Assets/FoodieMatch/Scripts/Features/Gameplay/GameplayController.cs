@@ -10,6 +10,7 @@ using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
+using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
 using FoodieMatch.Features.Motion;
@@ -30,6 +31,8 @@ namespace FoodieMatch.Features.Gameplay
 
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
+        private IAudioService _audioService;
+        private GameplayWorldClickSfx _worldClickSfx;
         private BoardLayoutView _boardLayoutView;
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
@@ -51,6 +54,7 @@ namespace FoodieMatch.Features.Gameplay
         private PackageMotionState[] _packageMotionStates;
         private int _waitingRackAutoFillSessionId;
         private int _displayedServedCount;
+        private int _mergeComboCount;
         private int _currentLevelNumber;
         private LevelSessionState _levelSessionState;
         private bool _isWaitingRackAutoFillRunning;
@@ -60,6 +64,7 @@ namespace FoodieMatch.Features.Gameplay
         public void Construct(
             UIManager uiManager,
             GameplayEvents gameplayEvents,
+            IAudioService audioService,
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
@@ -72,6 +77,8 @@ namespace FoodieMatch.Features.Gameplay
         {
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
+            _audioService = audioService;
+            EnsureWorldClickSfx(audioService);
             _boardLayoutView = boardLayoutView;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
@@ -87,6 +94,22 @@ namespace FoodieMatch.Features.Gameplay
             {
                 _boardLayoutView.FoodSelected += HandleFoodSelected;
             }
+        }
+
+        private void EnsureWorldClickSfx(IAudioService audioService)
+        {
+            if (_worldClickSfx == null)
+            {
+                _worldClickSfx = GetComponent<GameplayWorldClickSfx>();
+
+                if (_worldClickSfx == null)
+                {
+                    _worldClickSfx =
+                        gameObject.AddComponent<GameplayWorldClickSfx>();
+                }
+            }
+
+            _worldClickSfx.Construct(audioService);
         }
 
         public void StartLevel(
@@ -161,6 +184,7 @@ namespace FoodieMatch.Features.Gameplay
             _levelProgress = new LevelProgressModel(
                 _board.RemainingFoodCount);
             _displayedServedCount = 0;
+            _mergeComboCount = 0;
             CreatePackageMotionStates();
 
             int sessionId = _sessionGuard.BeginSession();
@@ -194,6 +218,8 @@ namespace FoodieMatch.Features.Gameplay
             _levelSessionState = LevelSessionState.Won;
             _isInputEnabled = false;
 
+            PlaySfx(AudioKeys.SfxWinGame);
+
             _gameplayEvents.OnLevelEnded(
                 new LevelEndedEvent(
                     _currentLevelNumber,
@@ -213,6 +239,7 @@ namespace FoodieMatch.Features.Gameplay
             _levelProgress = null;
             _packageMotionStates = null;
             _displayedServedCount = 0;
+            _mergeComboCount = 0;
             ResetWaitingRackAutoFillState(0);
             _levelSessionState = LevelSessionState.None;
             _isInputEnabled = false;
@@ -928,6 +955,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             motionState.IsCompleteMotionRunning = true;
+            PlayMergeComboSfx();
             _ = CompletePackageSafelyAsync(
                 packageIndex,
                 expectedPackage,
@@ -1213,9 +1241,27 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
+            PlaySfx(AudioKeys.SfxLoseGame);
+
             _uiManager.ShowLosePopup(
                 OnTryAgainClicked,
                 OnHomeClicked);
+        }
+
+        private void PlayMergeComboSfx()
+        {
+            _mergeComboCount++;
+            PlaySfx(AudioKeys.GetMergeComboSfx(_mergeComboCount));
+        }
+
+        private void PlaySfx(string sfxKey)
+        {
+            if (string.IsNullOrEmpty(sfxKey))
+            {
+                return;
+            }
+
+            _audioService?.PlaySfx(sfxKey);
         }
 
         private void FinalizeLose()
