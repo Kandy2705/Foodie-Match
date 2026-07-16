@@ -33,6 +33,9 @@ namespace FoodieMatch.Features.Food
         private Tween _landingFeedbackTween;
         private bool _isFlying;
         private bool _didFlightComplete;
+        private Transform _flightTarget;
+        private Vector3 _flightStartPosition;
+        private Vector3 _latestFlightTargetPosition;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -116,26 +119,54 @@ namespace FoodieMatch.Features.Food
             ApplyVisualState();
         }
 
-        public async Task<MotionResult> PlayFlightAsync(
+        public Task<MotionResult> PlayFlightAsync(
             Vector3 targetPosition,
             float duration,
             float startDelay = 0f)
+        {
+            return PlayFlightAsync(targetPosition, null, duration, startDelay);
+        }
+
+        public Task<MotionResult> PlayFlightAsync(
+            Transform target,
+            float duration,
+            float startDelay = 0f)
+        {
+            if (target == null)
+            {
+                Debug.LogError("Food flight target is missing.", this);
+                return Task.FromResult(MotionResult.Failed);
+            }
+
+            return PlayFlightAsync(target.position, target, duration, startDelay);
+        }
+
+        private async Task<MotionResult> PlayFlightAsync(
+            Vector3 targetPosition,
+            Transform target,
+            float duration,
+            float startDelay)
         {
             if (!CanStartFlight(duration, startDelay))
             {
                 return MotionResult.Failed;
             }
 
+            _flightTarget = target;
+            _flightStartPosition = transform.position;
+            _latestFlightTargetPosition = targetPosition;
             _isFlying = true;
             _didFlightComplete = false;
             SetInteractable(false);
 
             try
             {
-                _flightTween = Tween.Position(
-                        transform,
-                        targetPosition,
+                _flightTween = Tween.Custom(
+                        this,
+                        0f,
+                        1f,
                         duration,
+                        (foodItem, progress) => foodItem.UpdateFlightPosition(progress),
                         startDelay: startDelay)
                     .OnComplete(
                         target: this,
@@ -150,6 +181,7 @@ namespace FoodieMatch.Features.Food
             finally
             {
                 _flightTween = default;
+                _flightTarget = null;
                 _isFlying = false;
             }
         }
@@ -251,6 +283,19 @@ namespace FoodieMatch.Features.Food
         private void MarkFlightCompleted()
         {
             _didFlightComplete = true;
+        }
+
+        private void UpdateFlightPosition(float progress)
+        {
+            if (_flightTarget != null)
+            {
+                _latestFlightTargetPosition = _flightTarget.position;
+            }
+
+            transform.position = Vector3.LerpUnclamped(
+                _flightStartPosition,
+                _latestFlightTargetPosition,
+                progress);
         }
 
         private static bool IsValidTime(float value)

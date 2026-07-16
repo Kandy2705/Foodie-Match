@@ -20,7 +20,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public bool IsVisible { get; private set; }
         public bool IsFilled { get; private set; }
-        public Vector3 WorldPosition => transform.position;
 
         private void Awake()
         {

@@ -129,7 +129,7 @@ namespace FoodieMatch.Features.Gameplay
                 return MotionResult.Failed;
             }
 
-            MotionResult result = await PlayFoodFlightAsync(foodItemView, targetSlot.WorldPosition, startDelay);
+            MotionResult result = await PlayFoodFlightAsync(foodItemView, targetSlot.transform, startDelay);
 
             if (result != MotionResult.Completed || targetSlot == null)
             {
@@ -218,6 +218,26 @@ namespace FoodieMatch.Features.Gameplay
             try
             {
                 return await foodItemView.PlayFlightAsync(targetPosition, _foodFlightDuration, startDelay);
+            }
+            finally
+            {
+                _activeFoodFlights.Remove(foodItemView);
+            }
+        }
+
+        private async Task<MotionResult> PlayFoodFlightAsync(
+            FoodItemView foodItemView,
+            Transform target,
+            float startDelay)
+        {
+            if (!_activeFoodFlights.Add(foodItemView))
+            {
+                return MotionResult.Failed;
+            }
+
+            try
+            {
+                return await foodItemView.PlayFlightAsync(target, _foodFlightDuration, startDelay);
             }
             finally
             {
