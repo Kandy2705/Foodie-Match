@@ -237,7 +237,7 @@ namespace FoodieMatch.Features.Board
                     foodAnchor.rotation);
 
                 foodItemView.SetVisualState(FoodItemVisualState.OnGrill);
-                foodItemView.PlayLandingFeedback();
+                _ = foodItemView.PlayLandingFeedbackAsync();
                 foodItemView.SetInteractable(makeInteractable);
 
                 if (!makeInteractable)

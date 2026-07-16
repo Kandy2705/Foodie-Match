@@ -61,6 +61,21 @@ namespace FoodieMatch.Features.WaitingRack
             return slot.CompletePlacement(expectedFoodItem);
         }
 
+        public bool PrepareFoodLandingAt(
+            int index,
+            FoodItemView expectedFoodItem)
+        {
+            WaitingRackSlotView slot = GetSlot(index);
+
+            if (slot == null)
+            {
+                Debug.LogWarning($"Waiting rack slot {index} is missing.", this);
+                return false;
+            }
+
+            return slot.PrepareLanding(expectedFoodItem);
+        }
+
         public FoodItemView RemoveFoodAt(int index)
         {
             WaitingRackSlotView slot = GetSlot(index);

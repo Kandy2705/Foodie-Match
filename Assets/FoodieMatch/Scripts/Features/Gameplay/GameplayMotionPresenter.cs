@@ -12,7 +12,7 @@ namespace FoodieMatch.Features.Gameplay
     {
         [SerializeField] private float _foodFlightDuration = 0.22f;
 
-        private readonly HashSet<FoodItemView> _activeFoodFlights = new();
+        private readonly HashSet<FoodItemView> _activeFoodMotions = new();
         private readonly HashSet<RequiredPackageView> _activePackageMotions = new();
 
         private RequiredPackageGroupView _requiredPackageGroupView;
@@ -92,21 +92,42 @@ namespace FoodieMatch.Features.Gameplay
                 return MotionResult.Failed;
             }
 
-            MotionResult result = await PlayFoodFlightAsync(foodItemView, targetPosition, startDelay);
-
-            if (result != MotionResult.Completed)
-            {
-                return result;
-            }
-
-            if (_waitingRackView == null)
+            if (!_activeFoodMotions.Add(foodItemView))
             {
                 return MotionResult.Failed;
             }
 
-            return _waitingRackView.CompleteFoodPlacementAt(rackSlotIndex, foodItemView)
-                ? MotionResult.Completed
-                : MotionResult.Failed;
+            try
+            {
+                MotionResult flightResult = await foodItemView.PlayFlightAsync(
+                    targetPosition, _foodFlightDuration, startDelay);
+
+                if (flightResult != MotionResult.Completed)
+                {
+                    return flightResult;
+                }
+
+                if (_waitingRackView == null ||
+                    !_waitingRackView.PrepareFoodLandingAt(rackSlotIndex, foodItemView))
+                {
+                    return MotionResult.Failed;
+                }
+
+                MotionResult landingResult = await foodItemView.PlayLandingFeedbackAsync();
+
+                if (landingResult != MotionResult.Completed)
+                {
+                    return landingResult;
+                }
+
+                return _waitingRackView.CompleteFoodPlacementAt(rackSlotIndex, foodItemView)
+                    ? MotionResult.Completed
+                    : MotionResult.Failed;
+            }
+            finally
+            {
+                _activeFoodMotions.Remove(foodItemView);
+            }
         }
 
         public async Task<MotionResult> MoveFoodToRequiredPackageAsync(
@@ -129,7 +150,8 @@ namespace FoodieMatch.Features.Gameplay
                 return MotionResult.Failed;
             }
 
-            MotionResult result = await PlayFoodFlightAsync(foodItemView, targetSlot.transform, startDelay);
+            MotionResult result = await PlayFoodFlightAndLandingAsync(
+                foodItemView, targetSlot.transform, startDelay);
 
             if (result != MotionResult.Completed || targetSlot == null)
             {
@@ -138,7 +160,6 @@ namespace FoodieMatch.Features.Gameplay
 
             foodItemView.Clear();
             targetSlot.SetFilled();
-            targetSlot.PlayLandingFeedback();
 
             return MotionResult.Completed;
         }
@@ -176,15 +197,15 @@ namespace FoodieMatch.Features.Gameplay
 
         public void CancelAllMotions()
         {
-            FoodItemView[] foodItemViews = new FoodItemView[_activeFoodFlights.Count];
-            _activeFoodFlights.CopyTo(foodItemViews);
+            FoodItemView[] foodItemViews = new FoodItemView[_activeFoodMotions.Count];
+            _activeFoodMotions.CopyTo(foodItemViews);
 
             RequiredPackageView[] packageViews = new RequiredPackageView[_activePackageMotions.Count];
             _activePackageMotions.CopyTo(packageViews);
 
             for (int i = 0; i < foodItemViews.Length; i++)
             {
-                foodItemViews[i]?.StopFlight();
+                foodItemViews[i]?.CancelMotion();
             }
 
             for (int i = 0; i < packageViews.Length; i++)
@@ -200,7 +221,7 @@ namespace FoodieMatch.Features.Gameplay
             return foodItemView != null &&
                    !foodItemView.IsEmpty &&
                    !foodItemView.IsFlying &&
-                   !_activeFoodFlights.Contains(foodItemView) &&
+                   !_activeFoodMotions.Contains(foodItemView) &&
                    IsValidTime(_foodFlightDuration) &&
                    IsValidTime(startDelay);
         }
@@ -210,7 +231,7 @@ namespace FoodieMatch.Features.Gameplay
             Vector3 targetPosition,
             float startDelay)
         {
-            if (!_activeFoodFlights.Add(foodItemView))
+            if (!_activeFoodMotions.Add(foodItemView))
             {
                 return MotionResult.Failed;
             }
@@ -221,27 +242,32 @@ namespace FoodieMatch.Features.Gameplay
             }
             finally
             {
-                _activeFoodFlights.Remove(foodItemView);
+                _activeFoodMotions.Remove(foodItemView);
             }
         }
 
-        private async Task<MotionResult> PlayFoodFlightAsync(
+        private async Task<MotionResult> PlayFoodFlightAndLandingAsync(
             FoodItemView foodItemView,
             Transform target,
             float startDelay)
         {
-            if (!_activeFoodFlights.Add(foodItemView))
+            if (!_activeFoodMotions.Add(foodItemView))
             {
                 return MotionResult.Failed;
             }
 
             try
             {
-                return await foodItemView.PlayFlightAsync(target, _foodFlightDuration, startDelay);
+                MotionResult flightResult = await foodItemView.PlayFlightAsync(
+                    target, _foodFlightDuration, startDelay);
+
+                return flightResult == MotionResult.Completed
+                    ? await foodItemView.PlayLandingFeedbackAsync(target)
+                    : flightResult;
             }
             finally
             {
-                _activeFoodFlights.Remove(foodItemView);
+                _activeFoodMotions.Remove(foodItemView);
             }
         }
 

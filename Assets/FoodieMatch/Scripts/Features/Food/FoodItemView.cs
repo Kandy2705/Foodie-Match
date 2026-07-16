@@ -24,18 +24,25 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private Vector3 _waitingRackScale = Vector3.one;
         [SerializeField] private Vector3 _waitingRackRotation;
 
-        [Header("Motion")]
-        [SerializeField] private Vector3 _landingPunchStrength =
-            new Vector3(0.1f, 0.1f, 0f);
-        [SerializeField] private float _landingFeedbackDuration = 0.16f;
+        [Header("Landing Motion")]
+        [SerializeField] private Vector3 _landingSquashScaleMultiplier = new(1.18f, 0.72f, 1f);
+        [SerializeField] private float _landingSquashDuration = 0.08f;
+        [SerializeField] private Ease _landingSquashEase = Ease.OutCubic;
+        [SerializeField] private float _landingRestoreDuration = 0.1f;
+        [SerializeField] private Ease _landingRestoreEase = Ease.OutBack;
 
         private Tween _flightTween;
-        private Tween _landingFeedbackTween;
+        private Sequence _landingSequence;
         private bool _isFlying;
         private bool _didFlightComplete;
+        private bool _isLandingFeedbackPlaying;
+        private bool _didLandingFeedbackComplete;
         private Transform _flightTarget;
+        private Transform _landingTarget;
         private Vector3 _flightStartPosition;
         private Vector3 _latestFlightTargetPosition;
+        private Vector3 _latestLandingTargetPosition;
+        private Vector3 _scaleBeforeLanding;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -64,6 +71,14 @@ namespace FoodieMatch.Features.Food
         private void OnDestroy()
         {
             CancelMotion();
+        }
+
+        private void LateUpdate()
+        {
+            if (_isLandingFeedbackPlaying)
+            {
+                UpdateLandingPosition();
+            }
         }
 
         public void Setup(int foodTokenId, Sprite sprite)
@@ -147,6 +162,8 @@ namespace FoodieMatch.Features.Food
             float duration,
             float startDelay)
         {
+            StopLandingFeedback(resetScale: true);
+
             if (!CanStartFlight(duration, startDelay))
             {
                 return MotionResult.Failed;
@@ -197,33 +214,63 @@ namespace FoodieMatch.Features.Food
         public void CancelMotion()
         {
             StopFlight();
-
-            if (_landingFeedbackTween.isAlive)
-            {
-                _landingFeedbackTween.Stop();
-            }
-
-            _landingFeedbackTween = default;
+            StopLandingFeedback(resetScale: true);
         }
 
-        public void PlayLandingFeedback()
+        public async Task<MotionResult> PlayLandingFeedbackAsync(Transform target = null)
         {
             if (IsEmpty ||
-                !IsValidTime(_landingFeedbackDuration) ||
-                _landingFeedbackDuration == 0f)
+                _isLandingFeedbackPlaying ||
+                !IsValidScale(_landingSquashScaleMultiplier) ||
+                !IsValidTime(_landingSquashDuration) ||
+                !IsValidTime(_landingRestoreDuration))
             {
-                return;
+                return MotionResult.Failed;
             }
 
-            if (_landingFeedbackTween.isAlive)
+            if (_landingSquashDuration == 0f && _landingRestoreDuration == 0f)
             {
-                _landingFeedbackTween.Stop();
+                return MotionResult.Completed;
             }
 
-            _landingFeedbackTween = Tween.PunchScale(
-                transform,
-                _landingPunchStrength,
-                _landingFeedbackDuration);
+            _scaleBeforeLanding = transform.localScale;
+            Vector3 squashScale = Vector3.Scale(_scaleBeforeLanding, _landingSquashScaleMultiplier);
+            _landingTarget = target;
+
+            if (_landingTarget != null)
+            {
+                _latestLandingTargetPosition = _landingTarget.position;
+            }
+
+            _isLandingFeedbackPlaying = true;
+            _didLandingFeedbackComplete = false;
+
+            try
+            {
+                _landingSequence = Sequence.Create()
+                    .Chain(Tween.Scale(
+                        transform, squashScale, _landingSquashDuration, _landingSquashEase))
+                    .Chain(Tween.Scale(
+                        transform, _scaleBeforeLanding, _landingRestoreDuration, _landingRestoreEase))
+                    .ChainCallback(this, target => target.MarkLandingFeedbackCompleted());
+
+                await _landingSequence;
+
+                if (_didLandingFeedbackComplete)
+                {
+                    UpdateLandingPosition();
+                }
+
+                return _didLandingFeedbackComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _landingSequence = default;
+                _landingTarget = null;
+                _isLandingFeedbackPlaying = false;
+            }
         }
 
         public void SetInteractable(bool isInteractable)
@@ -285,6 +332,11 @@ namespace FoodieMatch.Features.Food
             _didFlightComplete = true;
         }
 
+        private void MarkLandingFeedbackCompleted()
+        {
+            _didLandingFeedbackComplete = true;
+        }
+
         private void UpdateFlightPosition(float progress)
         {
             if (_flightTarget != null)
@@ -298,11 +350,48 @@ namespace FoodieMatch.Features.Food
                 progress);
         }
 
+        private void UpdateLandingPosition()
+        {
+            if (_landingTarget != null)
+            {
+                _latestLandingTargetPosition = _landingTarget.position;
+                transform.position = _latestLandingTargetPosition;
+            }
+        }
+
         private static bool IsValidTime(float value)
         {
             return value >= 0f &&
                    !float.IsNaN(value) &&
                    !float.IsInfinity(value);
+        }
+
+        private void StopLandingFeedback(bool resetScale)
+        {
+            if (_landingSequence.isAlive)
+            {
+                _landingSequence.Stop();
+            }
+
+            _landingSequence = default;
+            _landingTarget = null;
+
+            if (resetScale && _isLandingFeedbackPlaying)
+            {
+                transform.localScale = _scaleBeforeLanding;
+            }
+        }
+
+        private static bool IsValidScale(Vector3 value)
+        {
+            return IsValidScaleValue(value.x) &&
+                   IsValidScaleValue(value.y) &&
+                   IsValidScaleValue(value.z);
+        }
+
+        private static bool IsValidScaleValue(float value)
+        {
+            return value > 0f && !float.IsNaN(value) && !float.IsInfinity(value);
         }
 
         private void ApplyColliderState()
