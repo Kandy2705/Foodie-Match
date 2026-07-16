@@ -1,4 +1,3 @@
-using PrimeTween;
 using UnityEngine;
 
 namespace FoodieMatch.Features.RequiredPackage
@@ -9,23 +8,11 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private float _previewAlpha = 0.45f;
         [SerializeField] private float _filledAlpha = 1f;
 
-        [Header("Motion")]
-        [SerializeField] private Vector3 _landingPunchStrength =
-            new Vector3(0.1f, 0.1f, 0f);
-        [SerializeField] private float _landingFeedbackDuration = 0.16f;
-
-        private Tween _feedbackTween;
-        private bool _hasInitialLocalScale;
-        private Vector3 _initialLocalScale;
-
         public bool IsVisible { get; private set; }
         public bool IsFilled { get; private set; }
-        public Vector3 WorldPosition => transform.position;
 
         private void Awake()
         {
-            EnsureInitialLocalScale();
-
             if (_spriteRenderer == null)
             {
                 _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
@@ -34,14 +21,8 @@ namespace FoodieMatch.Features.RequiredPackage
             ApplyVisibility();
         }
 
-        private void OnDestroy()
-        {
-            StopFeedback(resetScale: false);
-        }
-
         public void Show(Sprite sprite, bool isFilled)
         {
-            StopFeedback(resetScale: true);
             IsVisible = true;
             IsFilled = isFilled;
 
@@ -55,7 +36,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void Hide()
         {
-            StopFeedback(resetScale: true);
             IsVisible = false;
             IsFilled = false;
 
@@ -78,13 +58,6 @@ namespace FoodieMatch.Features.RequiredPackage
             ApplyVisibility();
         }
 
-        public void PlayLandingFeedback()
-        {
-            PlayFeedback(
-                _landingPunchStrength,
-                _landingFeedbackDuration);
-        }
-
         private void ApplyVisibility()
         {
             if (_spriteRenderer != null)
@@ -105,49 +78,6 @@ namespace FoodieMatch.Features.RequiredPackage
             Color color = _spriteRenderer.color;
             color.a = IsFilled ? _filledAlpha : _previewAlpha;
             return color;
-        }
-
-        private void PlayFeedback(
-            Vector3 punchStrength,
-            float duration)
-        {
-            if (!IsVisible || duration <= 0f)
-            {
-                return;
-            }
-
-            StopFeedback(resetScale: true);
-            _feedbackTween = Tween.PunchScale(
-                transform,
-                punchStrength,
-                duration);
-        }
-
-        private void StopFeedback(bool resetScale)
-        {
-            if (_feedbackTween.isAlive)
-            {
-                _feedbackTween.Stop();
-            }
-
-            _feedbackTween = default;
-
-            if (resetScale)
-            {
-                EnsureInitialLocalScale();
-                transform.localScale = _initialLocalScale;
-            }
-        }
-
-        private void EnsureInitialLocalScale()
-        {
-            if (_hasInitialLocalScale)
-            {
-                return;
-            }
-
-            _initialLocalScale = transform.localScale;
-            _hasInitialLocalScale = true;
         }
     }
 }

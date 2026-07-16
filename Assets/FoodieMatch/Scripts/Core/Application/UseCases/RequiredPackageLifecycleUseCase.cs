@@ -57,19 +57,22 @@ namespace FoodieMatch.Core.Application.UseCases
             return true;
         }
 
-        public bool TryReplaceCompletedPackage(
+        public bool TryPrepareReplacementPackage(
             int packageIndex,
             BoardModel board,
             WaitingRackModel waitingRack,
             RequiredPackageModel[] packages,
+            IReadOnlyList<RequiredPackageModel> packageReservations,
             RequiredPackageGenerationSettings settings,
-            out RequiredPackageModel newPackage)
+            out RequiredPackageModel replacementPackage)
         {
-            newPackage = null;
+            replacementPackage = null;
 
             if (board == null ||
                 waitingRack == null ||
                 packages == null ||
+                packageReservations == null ||
+                packageReservations.Count != packages.Length ||
                 settings == null ||
                 packageIndex < 0 ||
                 packageIndex >= packages.Length ||
@@ -82,14 +85,33 @@ namespace FoodieMatch.Core.Application.UseCases
             if (_generator.TryCreatePackage(
                     board,
                     waitingRack,
-                    packages,
+                    packageReservations,
                     settings,
                     out RequiredPackageModel generatedPackage))
             {
-                newPackage = generatedPackage;
+                replacementPackage = generatedPackage;
             }
 
-            packages[packageIndex] = newPackage;
+            return true;
+        }
+
+        public bool TryPublishReplacementPackage(
+            int packageIndex,
+            RequiredPackageModel expectedPackage,
+            RequiredPackageModel replacementPackage,
+            RequiredPackageModel[] packages)
+        {
+            if (packages == null ||
+                packageIndex < 0 ||
+                packageIndex >= packages.Length ||
+                expectedPackage == null ||
+                !expectedPackage.IsComplete ||
+                packages[packageIndex] != expectedPackage)
+            {
+                return false;
+            }
+
+            packages[packageIndex] = replacementPackage;
             return true;
         }
 

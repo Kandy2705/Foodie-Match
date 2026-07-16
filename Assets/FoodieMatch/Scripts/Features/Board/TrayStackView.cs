@@ -60,18 +60,17 @@ namespace FoodieMatch.Features.Board
             }
         }
 
-        public void HideTopTray()
+        public bool HideTopTray(TrayView expectedTray)
         {
-            for (var i = 0; i < _trays.Count; i++)
-            {
-                if (_trays[i] == null || !_trays[i].gameObject.activeSelf)
-                {
-                    continue;
-                }
+            TrayView topTray = GetVisibleTrayAt(0);
 
-                _trays[i].gameObject.SetActive(false);
-                return;
+            if (topTray == null || topTray != expectedTray)
+            {
+                return false;
             }
+
+            topTray.gameObject.SetActive(false);
+            return true;
         }
 
         public void Clear()
@@ -89,7 +88,7 @@ namespace FoodieMatch.Features.Board
 
         public Transform GetTopTrayFoodAnchor(int index)
         {
-            var topTray = GetTopVisibleTray();
+            TrayView topTray = GetVisibleTrayAt(0);
 
             if (topTray == null)
             {
@@ -99,14 +98,36 @@ namespace FoodieMatch.Features.Board
             return topTray.GetFoodAnchor(index);
         }
 
-        private TrayView GetTopVisibleTray()
+        public Transform GetNextTrayFoodAnchor(int index)
         {
-            for (var i = 0; i < _trays.Count; i++)
+            TrayView nextTray = GetVisibleTrayAt(1);
+            return nextTray != null ? nextTray.GetFoodAnchor(index) : null;
+        }
+
+        public TrayView GetTopTray()
+        {
+            return GetVisibleTrayAt(0);
+        }
+
+        private TrayView GetVisibleTrayAt(int visibleIndex)
+        {
+            int currentVisibleIndex = 0;
+
+            for (int i = 0; i < _trays.Count; i++)
             {
-                if (_trays[i] != null && _trays[i].gameObject.activeSelf)
+                TrayView tray = _trays[i];
+
+                if (tray == null || !tray.gameObject.activeSelf)
                 {
-                    return _trays[i];
+                    continue;
                 }
+
+                if (currentVisibleIndex == visibleIndex)
+                {
+                    return tray;
+                }
+
+                currentVisibleIndex++;
             }
 
             return null;

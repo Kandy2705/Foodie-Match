@@ -72,13 +72,23 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            _foodItemView.transform.position = _foodAnchor.position;
-            _foodItemView.SetVisualState(
-                FoodItemVisualState.OnWaitingRack);
+            PlaceFoodAtAnchor();
             _state = WaitingRackSlotState.Occupied;
 
-            _foodItemView.PlayLandingFeedback();
+            return true;
+        }
 
+        public bool PrepareLanding(FoodItemView expectedFoodItem)
+        {
+            if (!IsReserved ||
+                expectedFoodItem == null ||
+                _foodItemView != expectedFoodItem ||
+                _foodAnchor == null)
+            {
+                return false;
+            }
+
+            PlaceFoodAtAnchor();
             return true;
         }
 
@@ -109,6 +119,12 @@ namespace FoodieMatch.Features.WaitingRack
         {
             _foodItemView = null;
             _state = WaitingRackSlotState.Empty;
+        }
+
+        private void PlaceFoodAtAnchor()
+        {
+            _foodItemView.transform.position = _foodAnchor.position;
+            _foodItemView.SetVisualState(FoodItemVisualState.OnWaitingRack);
         }
 
         private enum WaitingRackSlotState

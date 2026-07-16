@@ -40,14 +40,26 @@ namespace FoodieMatch.Features.Board
             return _trayStackView.GetTopTrayFoodAnchor(index);
         }
 
-        public void HideTopTray()
+        public Transform GetNextTrayFoodAnchor(int index)
         {
-            if (_trayStackView == null)
+            return _trayStackView != null
+                ? _trayStackView.GetNextTrayFoodAnchor(index)
+                : null;
+        }
+
+        public TrayView GetTopTray()
+        {
+            return _trayStackView != null ? _trayStackView.GetTopTray() : null;
+        }
+
+        public bool HideTopTray(TrayView expectedTray)
+        {
+            if (_trayStackView == null || expectedTray == null)
             {
-                return;
+                return false;
             }
 
-            _trayStackView.HideTopTray();
+            return _trayStackView.HideTopTray(expectedTray);
         }
     }
 }

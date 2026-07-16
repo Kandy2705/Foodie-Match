@@ -76,7 +76,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1922596459
-  m_SortingLayer: 3
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 281652535026622303, guid: cb708b1f75a3443098c1c67dc50e1cfa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -152,3 +152,16 @@ MonoBehaviour:
   _grillScale: {x: 1, y: 1, z: 1}
   _trayScale: {x: 0.5, y: 0.5, z: 1}
   _trayRotation: {x: 0, y: 0, z: -30}
+  _waitingRackScale: {x: 1, y: 1, z: 1}
+  _waitingRackRotation: {x: 0, y: 0, z: 0}
+  _flightDuration: 0.38
+  _flightArcHeight: 1
+  _flightPeakProgress: 0.82
+  _flightTransformEase: 9
+  _topTrayToGrillFlightDuration: 0.5
+  _flyingSortingLayerName: FlyingFood
+  _landingSquashScaleMultiplier: {x: 1.18, y: 0.72, z: 1}
+  _landingSquashDuration: 0.08
+  _landingSquashEase: 9
+  _landingRestoreDuration: 0.1
+  _landingRestoreEase: 27

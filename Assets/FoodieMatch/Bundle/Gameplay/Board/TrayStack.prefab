@@ -46,6 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _trayPrefab: {fileID: 1697640428665721169, guid: 1ea8885710f10784897b02ccc0425634, type: 3}
   _trayRoot: {fileID: 7474771138570572501}
-  _trayOffset: {x: 0, y: -0.05, z: 0}
+  _trayOffset: {x: 0, y: -0.06, z: 0}
   _baseSortingOrder: 100
   _sortingOrderStep: 1

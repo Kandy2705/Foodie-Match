@@ -10,21 +10,59 @@ namespace FoodieMatch.Features.RequiredPackage
         private const int MinRequiredAmount = 1;
         private const int MaxRequiredAmount = 3;
 
+        [SerializeField] private Transform _motionRoot;
         [SerializeField] private RequiredPackageAmountView _amount1View;
         [SerializeField] private RequiredPackageAmountView _amount2View;
         [SerializeField] private RequiredPackageAmountView _amount3View;
+        [SerializeField] private GameObject _lid;
+        [SerializeField] private SpriteRenderer _lidSpriteRenderer;
 
-        [Header("Motion")]
-        [SerializeField] private Vector3 _completePunchStrength =
-            new Vector3(0.16f, 0.16f, 0f);
-        [SerializeField] private float _completeFeedbackDuration = 0.22f;
+        [Header("Enter Motion")]
+        [SerializeField] private Vector3 _enterOffset = new(-10f, 0f, 0f);
+        [SerializeField] private float _enterDuration = 0.32f;
+        [SerializeField] private Ease _enterEase = Ease.OutBack;
+
+        [Header("Enter Scale Motion")]
+        [SerializeField] private float _enterScaleStartDelay = 0.18f;
+        [SerializeField] private Vector3 _enterNarrowScaleMultiplier = new(0.82f, 1.14f, 1f);
+        [SerializeField] private float _enterNarrowScaleDuration = 0.07f;
+        [SerializeField] private Ease _enterNarrowScaleEase = Ease.OutCubic;
+        [SerializeField] private Vector3 _enterWideScaleMultiplier = new(1.12f, 0.86f, 1f);
+        [SerializeField] private float _enterWideScaleDuration = 0.08f;
+        [SerializeField] private Ease _enterWideScaleEase = Ease.InOutSine;
+        [SerializeField] private float _enterRestoreScaleDuration = 0.09f;
+        [SerializeField] private Ease _enterRestoreScaleEase = Ease.OutCubic;
+
+        [Header("Match Lid Motion")]
+        [SerializeField] private Vector3 _lidDropOffset = new(0f, 0.35f, 0f);
+        [SerializeField] private float _lidDropDuration = 0.12f;
+        [SerializeField] private Ease _lidDropEase = Ease.OutCubic;
+
+        [Header("Match Scale Motion")]
+        [SerializeField] private Vector3 _horizontalSquashScaleMultiplier = new(1.16f, 0.78f, 1f);
+        [SerializeField] private float _horizontalSquashDuration = 0.09f;
+        [SerializeField] private Ease _horizontalSquashEase = Ease.OutCubic;
+        [SerializeField] private Vector3 _verticalStretchScaleMultiplier = new(0.88f, 1.14f, 1f);
+        [SerializeField] private float _verticalStretchDuration = 0.11f;
+        [SerializeField] private Ease _verticalStretchEase = Ease.InOutSine;
+        [SerializeField] private float _restoreScaleDuration = 0.12f;
+        [SerializeField] private Ease _restoreScaleEase = Ease.OutCubic;
+
+        [Header("Match Exit Motion")]
+        [SerializeField] private Vector3 _exitOffset = new(0f, 10f, 0f);
+        [SerializeField] private float _exitDuration = 0.3f;
+        [SerializeField] private Ease _exitEase = Ease.InBack;
 
         private Sprite _sprite;
-        private Tween _completeFeedbackTween;
-        private bool _isCompleteFeedbackPlaying;
-        private bool _didCompleteFeedbackFinish;
-        private bool _hasInitialLocalScale;
-        private Vector3 _initialLocalScale;
+        private Sequence _motionSequence;
+        private bool _isMotionPlaying;
+        private bool _didMotionFinish;
+        private bool _hasInitialMotionRootTransform;
+        private bool _hasInitialLidVisual;
+        private Vector3 _initialMotionRootLocalPosition;
+        private Vector3 _initialMotionRootLocalScale;
+        private Vector3 _initialLidLocalPosition;
+        private Color _lidVisibleColor;
 
         public int FoodTokenId { get; private set; }
         public int RequiredAmount { get; private set; }
@@ -34,12 +72,30 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void Awake()
         {
-            EnsureInitialLocalScale();
+            EnsureInitialMotionRootTransform();
+            FindLidSpriteRenderer();
+            EnsureInitialLidVisual();
+            HideLid();
+
+            if (_motionRoot == null)
+            {
+                Debug.LogWarning("Required package motion root is missing.", this);
+            }
+
+            if (_lid == null)
+            {
+                Debug.LogWarning("Required package lid is missing.", this);
+            }
+
+            if (_lidSpriteRenderer == null)
+            {
+                Debug.LogWarning("Required package lid sprite renderer is missing.", this);
+            }
         }
 
         private void OnDestroy()
         {
-            StopCompleteFeedback(resetScale: false);
+            StopMotion(resetTransform: false, hideLid: false);
         }
 
         public RequiredPackageSlotView GetTargetSlot(
@@ -52,7 +108,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void Setup(int foodTokenId, int requiredAmount, Sprite sprite)
         {
-            StopCompleteFeedback(resetScale: true);
+            StopMotion();
 
             if (foodTokenId <= 0)
             {
@@ -88,7 +144,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void Clear()
         {
-            StopCompleteFeedback(resetScale: true);
+            StopMotion();
             FoodTokenId = 0;
             RequiredAmount = 0;
             FilledAmount = 0;
@@ -97,46 +153,161 @@ namespace FoodieMatch.Features.RequiredPackage
             HideAllViews();
         }
 
-        public async Task<MotionResult> PlayCompleteFeedbackAsync()
+        public async Task<MotionResult> PlayEnterAsync()
         {
             if (IsEmpty ||
-                _isCompleteFeedbackPlaying ||
-                !IsValidTime(_completeFeedbackDuration))
+                _motionRoot == null ||
+                _isMotionPlaying ||
+                !IsValidTime(_enterDuration) ||
+                !IsValidTime(_enterScaleStartDelay) ||
+                !IsValidTime(_enterNarrowScaleDuration) ||
+                !IsValidTime(_enterWideScaleDuration) ||
+                !IsValidTime(_enterRestoreScaleDuration) ||
+                !IsValidVector(_enterOffset) ||
+                !IsValidScaleMultiplier(_enterNarrowScaleMultiplier) ||
+                !IsValidScaleMultiplier(_enterWideScaleMultiplier))
             {
                 return MotionResult.Failed;
             }
 
-            EnsureInitialLocalScale();
-            _isCompleteFeedbackPlaying = true;
-            _didCompleteFeedbackFinish = false;
+            EnsureInitialMotionRootTransform();
+            ResetMotionRootTransform();
+            HideLid();
+            _motionRoot.localPosition = _initialMotionRootLocalPosition + _enterOffset;
+            _isMotionPlaying = true;
+            _didMotionFinish = false;
+
+            Vector3 narrowScale = Vector3.Scale(
+                _initialMotionRootLocalScale,
+                _enterNarrowScaleMultiplier);
+            Vector3 wideScale = Vector3.Scale(
+                _initialMotionRootLocalScale,
+                _enterWideScaleMultiplier);
 
             try
             {
-                _completeFeedbackTween = Tween.PunchScale(
-                        transform,
-                        _completePunchStrength,
-                        _completeFeedbackDuration)
-                    .OnComplete(
-                        target: this,
-                        target =>
-                            target.MarkCompleteFeedbackFinished());
+                Sequence scaleSequence = Sequence.Create()
+                    .ChainDelay(_enterScaleStartDelay)
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        narrowScale,
+                        _enterNarrowScaleDuration,
+                        _enterNarrowScaleEase))
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        wideScale,
+                        _enterWideScaleDuration,
+                        _enterWideScaleEase))
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        _initialMotionRootLocalScale,
+                        _enterRestoreScaleDuration,
+                        _enterRestoreScaleEase));
 
-                await _completeFeedbackTween;
+                _motionSequence = Sequence.Create(Tween.LocalPosition(
+                        _motionRoot,
+                        _initialMotionRootLocalPosition,
+                        _enterDuration,
+                        _enterEase))
+                    .Group(scaleSequence)
+                    .ChainCallback(this, target => target.MarkMotionFinished());
 
-                return _didCompleteFeedbackFinish
-                    ? MotionResult.Completed
-                    : MotionResult.Cancelled;
+                await _motionSequence;
+
+                return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
             }
             finally
             {
-                _completeFeedbackTween = default;
-                _isCompleteFeedbackPlaying = false;
+                _motionSequence = default;
+                _isMotionPlaying = false;
             }
         }
 
-        public void StopCompleteFeedback()
+        public async Task<MotionResult> PlayMatchAndExitAsync()
         {
-            StopCompleteFeedback(resetScale: true);
+            if (IsEmpty ||
+                _motionRoot == null ||
+                _lid == null ||
+                _lidSpriteRenderer == null ||
+                _isMotionPlaying ||
+                !IsValidTime(_lidDropDuration) ||
+                !IsValidTime(_horizontalSquashDuration) ||
+                !IsValidTime(_verticalStretchDuration) ||
+                !IsValidTime(_restoreScaleDuration) ||
+                !IsValidTime(_exitDuration) ||
+                !IsValidVector(_lidDropOffset) ||
+                !IsValidScaleMultiplier(_horizontalSquashScaleMultiplier) ||
+                !IsValidScaleMultiplier(_verticalStretchScaleMultiplier) ||
+                !IsValidVector(_exitOffset))
+            {
+                return MotionResult.Failed;
+            }
+
+            EnsureInitialMotionRootTransform();
+            EnsureInitialLidVisual();
+            ResetMotionRootTransform();
+            PrepareLidForDrop();
+            _isMotionPlaying = true;
+            _didMotionFinish = false;
+
+            Vector3 horizontalSquashScale = Vector3.Scale(
+                _initialMotionRootLocalScale,
+                _horizontalSquashScaleMultiplier);
+            Vector3 verticalStretchScale = Vector3.Scale(
+                _initialMotionRootLocalScale,
+                _verticalStretchScaleMultiplier);
+
+            try
+            {
+                Sequence lidSequence = Sequence.Create(Tween.LocalPosition(
+                        _lid.transform,
+                        _initialLidLocalPosition,
+                        _lidDropDuration,
+                        _lidDropEase))
+                    .Group(Tween.Alpha(
+                        _lidSpriteRenderer,
+                        endValue: 1f,
+                        duration: _lidDropDuration,
+                        ease: _lidDropEase));
+
+                _motionSequence = Sequence.Create()
+                    .Chain(lidSequence)
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        horizontalSquashScale,
+                        _horizontalSquashDuration,
+                        _horizontalSquashEase))
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        verticalStretchScale,
+                        _verticalStretchDuration,
+                        _verticalStretchEase))
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        _initialMotionRootLocalScale,
+                        _restoreScaleDuration,
+                        _restoreScaleEase))
+                    .Chain(Tween.LocalPosition(
+                        _motionRoot,
+                        _initialMotionRootLocalPosition + _exitOffset,
+                        _exitDuration,
+                        _exitEase))
+                    .ChainCallback(this, target => target.MarkMotionFinished());
+
+                await _motionSequence;
+
+                return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _motionSequence = default;
+                _isMotionPlaying = false;
+            }
+        }
+
+        public void StopMotion()
+        {
+            StopMotion(resetTransform: true, hideLid: true);
         }
 
         private void RefreshActiveView()
@@ -181,41 +352,134 @@ namespace FoodieMatch.Features.RequiredPackage
             _amount3View?.Hide();
         }
 
-        private void MarkCompleteFeedbackFinished()
+        private void MarkMotionFinished()
         {
-            _didCompleteFeedbackFinish = true;
+            _didMotionFinish = true;
         }
 
-        private void StopCompleteFeedback(bool resetScale)
+        private void StopMotion(bool resetTransform, bool hideLid)
         {
-            if (_completeFeedbackTween.isAlive)
+            if (_motionSequence.isAlive)
             {
-                _completeFeedbackTween.Stop();
+                _motionSequence.Stop();
             }
 
-            if (resetScale)
+            _motionSequence = default;
+
+            if (resetTransform)
             {
-                EnsureInitialLocalScale();
-                transform.localScale = _initialLocalScale;
+                ResetMotionRootTransform();
+            }
+
+            if (hideLid)
+            {
+                HideLid();
             }
         }
 
-        private void EnsureInitialLocalScale()
+        private void ResetMotionRootTransform()
         {
-            if (_hasInitialLocalScale)
+            if (_motionRoot == null)
             {
                 return;
             }
 
-            _initialLocalScale = transform.localScale;
-            _hasInitialLocalScale = true;
+            EnsureInitialMotionRootTransform();
+            _motionRoot.localPosition = _initialMotionRootLocalPosition;
+            _motionRoot.localScale = _initialMotionRootLocalScale;
+        }
+
+        private void PrepareLidForDrop()
+        {
+            ResetLidVisual();
+            _lid.transform.localPosition = _initialLidLocalPosition + _lidDropOffset;
+            SetLidAlpha(0f);
+            _lid.SetActive(true);
+        }
+
+        private void HideLid()
+        {
+            if (_lid != null)
+            {
+                ResetLidVisual();
+                _lid.SetActive(false);
+            }
+        }
+
+        private void ResetLidVisual()
+        {
+            EnsureInitialLidVisual();
+
+            if (!_hasInitialLidVisual)
+            {
+                return;
+            }
+
+            _lid.transform.localPosition = _initialLidLocalPosition;
+            _lidSpriteRenderer.color = _lidVisibleColor;
+        }
+
+        private void SetLidAlpha(float alpha)
+        {
+            Color color = _lidSpriteRenderer.color;
+            color.a = alpha;
+            _lidSpriteRenderer.color = color;
+        }
+
+        private void FindLidSpriteRenderer()
+        {
+            if (_lidSpriteRenderer == null && _lid != null)
+            {
+                _lidSpriteRenderer = _lid.GetComponentInChildren<SpriteRenderer>(includeInactive: true);
+            }
+        }
+
+        private void EnsureInitialLidVisual()
+        {
+            if (_hasInitialLidVisual || _lid == null || _lidSpriteRenderer == null)
+            {
+                return;
+            }
+
+            _initialLidLocalPosition = _lid.transform.localPosition;
+            _lidVisibleColor = _lidSpriteRenderer.color;
+            _lidVisibleColor.a = 1f;
+            _hasInitialLidVisual = true;
+        }
+
+        private void EnsureInitialMotionRootTransform()
+        {
+            if (_hasInitialMotionRootTransform || _motionRoot == null)
+            {
+                return;
+            }
+
+            _initialMotionRootLocalPosition = _motionRoot.localPosition;
+            _initialMotionRootLocalScale = _motionRoot.localScale;
+            _hasInitialMotionRootTransform = true;
         }
 
         private static bool IsValidTime(float value)
         {
-            return value >= 0f &&
-                   !float.IsNaN(value) &&
-                   !float.IsInfinity(value);
+            return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static bool IsValidVector(Vector3 value)
+        {
+            return IsValidNumber(value.x) && IsValidNumber(value.y) && IsValidNumber(value.z);
+        }
+
+        private static bool IsValidScaleMultiplier(Vector3 value)
+        {
+            return value.x > 0f &&
+                   value.y > 0f &&
+                   value.z > 0f &&
+                   IsValidVector(value);
+        }
+
+        private static bool IsValidNumber(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value);
         }
     }
 }

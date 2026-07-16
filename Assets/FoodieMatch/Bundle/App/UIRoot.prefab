@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6605339517566366066}
+  - component: {fileID: 693405113158243426}
   m_Layer: 0
   m_Name: UIRoot
   m_TagString: Untagged
@@ -24,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 323289546553143958}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -33,6 +34,24 @@ Transform:
   - {fileID: 3612331460484704028}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &693405113158243426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 323289546553143958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ca1fb50ea6bae84a90662b96b304cf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _popupManager: {fileID: 1080891133631342676}
+  _gameplayHudPrefab: {fileID: 572790035337981529, guid: 4145a9f26e87944388702bdb7387eb66, type: 3}
+  _hudRoot: {fileID: 3452430392946768677}
+  _loadingScreenPrefab: {fileID: 0}
+  _loadingRoot: {fileID: 0}
+  _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
 --- !u!1 &2238115760142046326
 GameObject:
   m_ObjectHideFlags: 0
