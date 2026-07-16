@@ -136,8 +136,6 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 4766843844919302194}
   _previewAlpha: 0.45
   _filledAlpha: 1
-  _landingPunchStrength: {x: 0.1, y: 0.1, z: 0}
-  _landingFeedbackDuration: 0.16
 --- !u!1 &1639861202619343691
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,8 +239,6 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 4181805928181315108}
   _previewAlpha: 0.45
   _filledAlpha: 1
-  _landingPunchStrength: {x: 0.1, y: 0.1, z: 0}
-  _landingFeedbackDuration: 0.16
 --- !u!1 &3418658238262398298
 GameObject:
   m_ObjectHideFlags: 0
@@ -437,8 +433,6 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 6376813077055041210}
   _previewAlpha: 0.45
   _filledAlpha: 1
-  _landingPunchStrength: {x: 0.1, y: 0.1, z: 0}
-  _landingFeedbackDuration: 0.16
 --- !u!1 &4833298540697649703
 GameObject:
   m_ObjectHideFlags: 0
@@ -663,8 +657,6 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 2574467541512016672}
   _previewAlpha: 0.45
   _filledAlpha: 1
-  _landingPunchStrength: {x: 0.1, y: 0.1, z: 0}
-  _landingFeedbackDuration: 0.16
 --- !u!1 &6999695875900427290
 GameObject:
   m_ObjectHideFlags: 0
@@ -768,8 +760,6 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 5188995903431163470}
   _previewAlpha: 0.45
   _filledAlpha: 1
-  _landingPunchStrength: {x: 0.1, y: 0.1, z: 0}
-  _landingFeedbackDuration: 0.16
 --- !u!1 &7550832807010274248
 GameObject:
   m_ObjectHideFlags: 0
@@ -832,13 +822,30 @@ MonoBehaviour:
     - {fileID: 7122299406155016687}
     - {fileID: 3691053841975879848}
   _lid: {fileID: 4833298540697649703}
+  _lidSpriteRenderer: {fileID: 3831658636382885378}
   _enterOffset: {x: -10, y: 0, z: 0}
   _enterDuration: 0.3
-  _enterEase: 9
-  _enterPunchStrength: {x: 0.16, y: 0.16, z: 0}
-  _enterPunchDuration: 0.18
-  _completePunchStrength: {x: 0.16, y: 0.16, z: 0}
-  _completeFeedbackDuration: 0.22
+  _enterEase: 27
+  _enterScaleStartDelay: 0.18
+  _enterNarrowScaleMultiplier: {x: 0.82, y: 1.14, z: 1}
+  _enterNarrowScaleDuration: 0.07
+  _enterNarrowScaleEase: 9
+  _enterWideScaleMultiplier: {x: 1.12, y: 0.86, z: 1}
+  _enterWideScaleDuration: 0.08
+  _enterWideScaleEase: 4
+  _enterRestoreScaleDuration: 0.09
+  _enterRestoreScaleEase: 9
+  _lidDropOffset: {x: 0, y: 0.35, z: 0}
+  _lidDropDuration: 0.12
+  _lidDropEase: 9
+  _horizontalSquashScaleMultiplier: {x: 1.16, y: 0.78, z: 1}
+  _horizontalSquashDuration: 0.09
+  _horizontalSquashEase: 9
+  _verticalStretchScaleMultiplier: {x: 0.88, y: 1.14, z: 1}
+  _verticalStretchDuration: 0.11
+  _verticalStretchEase: 4
+  _restoreScaleDuration: 0.12
+  _restoreScaleEase: 9
   _exitOffset: {x: 0, y: 10, z: 0}
   _exitDuration: 0.3
   _exitEase: 8
@@ -977,5 +984,3 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 8974993316061883198}
   _previewAlpha: 0.45
   _filledAlpha: 1
-  _landingPunchStrength: {x: 0.1, y: 0.1, z: 0}
-  _landingFeedbackDuration: 0.16

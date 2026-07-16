@@ -19,10 +19,19 @@ namespace FoodieMatch.Features.RequiredPackage
 
         [Header("Enter Motion")]
         [SerializeField] private Vector3 _enterOffset = new(-10f, 0f, 0f);
-        [SerializeField] private float _enterDuration = 0.3f;
-        [SerializeField] private Ease _enterEase = Ease.OutCubic;
-        [SerializeField] private Vector3 _enterPunchStrength = new(0.16f, 0.16f, 0f);
-        [SerializeField] private float _enterPunchDuration = 0.18f;
+        [SerializeField] private float _enterDuration = 0.32f;
+        [SerializeField] private Ease _enterEase = Ease.OutBack;
+
+        [Header("Enter Scale Motion")]
+        [SerializeField] private float _enterScaleStartDelay = 0.18f;
+        [SerializeField] private Vector3 _enterNarrowScaleMultiplier = new(0.82f, 1.14f, 1f);
+        [SerializeField] private float _enterNarrowScaleDuration = 0.07f;
+        [SerializeField] private Ease _enterNarrowScaleEase = Ease.OutCubic;
+        [SerializeField] private Vector3 _enterWideScaleMultiplier = new(1.12f, 0.86f, 1f);
+        [SerializeField] private float _enterWideScaleDuration = 0.08f;
+        [SerializeField] private Ease _enterWideScaleEase = Ease.InOutSine;
+        [SerializeField] private float _enterRestoreScaleDuration = 0.09f;
+        [SerializeField] private Ease _enterRestoreScaleEase = Ease.OutCubic;
 
         [Header("Match Lid Motion")]
         [SerializeField] private Vector3 _lidDropOffset = new(0f, 0.35f, 0f);
@@ -150,8 +159,13 @@ namespace FoodieMatch.Features.RequiredPackage
                 _motionRoot == null ||
                 _isMotionPlaying ||
                 !IsValidTime(_enterDuration) ||
-                !IsValidTime(_enterPunchDuration) ||
-                !IsValidVector(_enterOffset))
+                !IsValidTime(_enterScaleStartDelay) ||
+                !IsValidTime(_enterNarrowScaleDuration) ||
+                !IsValidTime(_enterWideScaleDuration) ||
+                !IsValidTime(_enterRestoreScaleDuration) ||
+                !IsValidVector(_enterOffset) ||
+                !IsValidScaleMultiplier(_enterNarrowScaleMultiplier) ||
+                !IsValidScaleMultiplier(_enterWideScaleMultiplier))
             {
                 return MotionResult.Failed;
             }
@@ -163,12 +177,39 @@ namespace FoodieMatch.Features.RequiredPackage
             _isMotionPlaying = true;
             _didMotionFinish = false;
 
+            Vector3 narrowScale = Vector3.Scale(
+                _initialMotionRootLocalScale,
+                _enterNarrowScaleMultiplier);
+            Vector3 wideScale = Vector3.Scale(
+                _initialMotionRootLocalScale,
+                _enterWideScaleMultiplier);
+
             try
             {
-                _motionSequence = Sequence.Create()
-                    .Chain(Tween.LocalPosition(
-                        _motionRoot, _initialMotionRootLocalPosition, _enterDuration, _enterEase))
-                    .Chain(Tween.PunchScale(_motionRoot, _enterPunchStrength, _enterPunchDuration))
+                Sequence scaleSequence = Sequence.Create()
+                    .ChainDelay(_enterScaleStartDelay)
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        narrowScale,
+                        _enterNarrowScaleDuration,
+                        _enterNarrowScaleEase))
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        wideScale,
+                        _enterWideScaleDuration,
+                        _enterWideScaleEase))
+                    .Chain(Tween.Scale(
+                        _motionRoot,
+                        _initialMotionRootLocalScale,
+                        _enterRestoreScaleDuration,
+                        _enterRestoreScaleEase));
+
+                _motionSequence = Sequence.Create(Tween.LocalPosition(
+                        _motionRoot,
+                        _initialMotionRootLocalPosition,
+                        _enterDuration,
+                        _enterEase))
+                    .Group(scaleSequence)
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
                 await _motionSequence;
