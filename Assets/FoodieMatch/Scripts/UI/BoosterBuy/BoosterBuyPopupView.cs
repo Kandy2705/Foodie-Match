@@ -5,9 +5,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FoodieMatch.UI.BoosterGuide
+namespace FoodieMatch.UI.BoosterBuy
 {
-    public sealed class BoosterGuidePopupView : PopupBase
+    public sealed class BoosterBuyPopupView : PopupBase
     {
         private const float IconNativeSizeScale = 1.4f;
 
@@ -70,7 +70,7 @@ namespace FoodieMatch.UI.BoosterGuide
             }
         }
 
-        public void SetActions(BoosterGuidePopupViewActions actions)
+        public void SetActions(BoosterBuyPopupViewActions actions)
         {
             _closeClicked = actions.CloseClicked;
             _freeAdsClicked = actions.FreeAdsClicked;
@@ -79,7 +79,7 @@ namespace FoodieMatch.UI.BoosterGuide
 
         public override void Setup(IPopupData data)
         {
-            if (data is not BoosterGuidePopupData popupData)
+            if (data is not BoosterBuyPopupData popupData)
             {
                 return;
             }
@@ -87,7 +87,7 @@ namespace FoodieMatch.UI.BoosterGuide
             ApplyContent(popupData);
         }
 
-        public void ApplyContent(BoosterGuidePopupData popupData)
+        public void ApplyContent(BoosterBuyPopupData popupData)
         {
             if (popupData == null)
             {
@@ -212,7 +212,7 @@ namespace FoodieMatch.UI.BoosterGuide
         {
             if (_titleText == null)
             {
-                _titleText = UiTmpText.FindChild(transform, "BoosterGuideTitleText");
+                _titleText = UiTmpText.FindChild(transform, "BoosterBuyTitleText");
             }
 
             if (_descriptionText == null)
@@ -232,7 +232,7 @@ namespace FoodieMatch.UI.BoosterGuide
 
             if (_iconImage == null)
             {
-                _iconImage = FindChildImage("BoosterGuideIconImage");
+                _iconImage = FindChildImage("BoosterBuyIconImage");
             }
         }
 

@@ -7,7 +7,7 @@ namespace FoodieMatch.Core.Infrastructure.Audio
     {
         private const string MusicEnabledSaveKey = "Audio.MusicEnabled";
         private const string SfxEnabledSaveKey = "Audio.SfxEnabled";
-        private const int DefaultSfxSourceCount = 6;
+        private const int DefaultSfxSourceCount = 1;
 
         [Header("Library")]
         [SerializeField] private AudioLibrarySO _library;

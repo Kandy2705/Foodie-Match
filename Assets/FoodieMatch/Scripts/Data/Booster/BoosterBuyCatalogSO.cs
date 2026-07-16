@@ -4,15 +4,15 @@ using UnityEngine;
 namespace FoodieMatch.Data.Booster
 {
     [CreateAssetMenu(
-        fileName = "BoosterGuideCatalog",
+        fileName = "BoosterBuyCatalog",
         menuName = "FoodieMatch/Booster/Booster Guide Catalog")]
-    public sealed class BoosterGuideCatalogSO : ScriptableObject
+    public sealed class BoosterBuyCatalogSO : ScriptableObject
     {
-        [SerializeField] private List<BoosterGuideContentEntry> _entries = new();
+        [SerializeField] private List<BoosterBuyContentEntry> _entries = new();
 
-        public IReadOnlyList<BoosterGuideContentEntry> Entries => _entries;
+        public IReadOnlyList<BoosterBuyContentEntry> Entries => _entries;
 
-        public bool TryGet(BoosterType boosterType, out BoosterGuideContentEntry entry)
+        public bool TryGet(BoosterType boosterType, out BoosterBuyContentEntry entry)
         {
             if (_entries == null)
             {
@@ -22,7 +22,7 @@ namespace FoodieMatch.Data.Booster
 
             for (int i = 0; i < _entries.Count; i++)
             {
-                BoosterGuideContentEntry candidate = _entries[i];
+                BoosterBuyContentEntry candidate = _entries[i];
 
                 if (candidate != null && candidate.BoosterType == boosterType)
                 {

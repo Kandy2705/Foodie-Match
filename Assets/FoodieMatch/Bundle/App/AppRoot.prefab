@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3588690107982509502}
   - component: {fileID: 4562025231821585959}
-  - component: {fileID: 7123456789012345678}
   m_Layer: 0
   m_Name: AppRoot
   m_TagString: Untagged
@@ -39,6 +38,7 @@ Transform:
   - {fileID: 360033873203913279}
   - {fileID: 2132597356948764152}
   - {fileID: 2896288158901391907}
+  - {fileID: 5633421830922122181}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4562025231821585959
@@ -58,19 +58,51 @@ MonoBehaviour:
   _gameplayController: {fileID: 3376663949317477137}
   _uiManager: {fileID: 6535060838407858178}
   _gameplayMotionPresenter: {fileID: 86517351395246559}
-  _audioService: {fileID: 7123456789012345678}
+  _audioService: {fileID: 7935935628349520364}
   _levelCatalog: {fileID: 11400000, guid: c688b8a74a406174fb8685ded2bc4c1b, type: 2}
   _boardLayoutView: {fileID: 5535215390786423237}
   _requiredPackageGroupView: {fileID: 8855672181408796993}
   _waitingRackView: {fileID: 9095491401499760532}
   _foodVisualResolver: {fileID: 961911659323780000}
---- !u!114 &7123456789012345678
+--- !u!1 &8130978412423493448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5633421830922122181}
+  - component: {fileID: 7935935628349520364}
+  m_Layer: 0
+  m_Name: AudioService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5633421830922122181
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8130978412423493448}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 61.033543, y: 57.236145, z: -0.5491004}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3588690107982509502}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7935935628349520364
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2781783075422325079}
+  m_GameObject: {fileID: 8130978412423493448}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: daa2a15424b34d8d994f359a80da3f18, type: 3}
@@ -81,7 +113,7 @@ MonoBehaviour:
   _sfxSources: []
   _musicVolume: 0.7
   _sfxVolume: 1
-  _sfxSourceCount: 6
+  _sfxSourceCount: 1
 --- !u!1001 &161844419768465814
 PrefabInstance:
   m_ObjectHideFlags: 0
