@@ -40,7 +40,7 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackAutoFillCoordinator _waitingRackAutoFillCoordinator;
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
         private GameplaySession _session;
-        private Action _homeRequested;
+        private GameplayNavigationActions _navigationActions;
 
         private void OnDestroy()
         {
@@ -91,7 +91,7 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        public void StartLevel(int levelNumber, Action homeRequested)
+        public void StartLevel(int levelNumber, GameplayNavigationActions navigationActions)
         {
             if (!HasDependencies())
             {
@@ -110,7 +110,7 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            _homeRequested = homeRequested;
+            _navigationActions = navigationActions ?? throw new ArgumentNullException(nameof(navigationActions));
             BoardModel board = _boardModelFactory.Create(levelConfig);
             RequiredPackageGenerationSettings packageSettings = levelConfig.RequiredPackageGenerationSettings;
 
@@ -424,7 +424,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
-            _uiManager.ShowWinPopup(OnNextLevelClicked, OnHomeClicked);
+            _uiManager.ShowWinPopup(OnWinRewardClicked, OnWinRewardClicked);
         }
 
         private void ShowLosePopup(GameplaySession session)
@@ -454,18 +454,16 @@ namespace FoodieMatch.Features.Gameplay
             return session != null && _session == session && _sessionGuard.IsCurrentSession(session.SessionId);
         }
 
-        private void OnNextLevelClicked()
+        private void OnWinRewardClicked()
         {
             GameplaySession session = _session;
 
-            if (session == null || !_levelRepository.TryGetNextLevel(session.LevelNumber, out _))
+            if (session == null)
             {
-                Debug.Log("No next level is available.");
                 return;
             }
 
-            _uiManager.HideAllPopups();
-            StartLevel(session.LevelNumber + 1, _homeRequested);
+            _navigationActions?.WinRewardClaimed.Invoke(session.LevelNumber);
         }
 
         private void OnTryAgainClicked()
@@ -477,16 +475,13 @@ namespace FoodieMatch.Features.Gameplay
 
             int levelNumber = _session.LevelNumber;
             FinalizeLose();
-            _uiManager.HideAllPopups();
-            StartLevel(levelNumber, _homeRequested);
+            _navigationActions?.RetryRequested.Invoke(levelNumber);
         }
 
         private void OnHomeClicked()
         {
             FinalizeLose();
-            _uiManager.HideAllPopups();
-            ClearLevel();
-            _homeRequested?.Invoke();
+            _navigationActions?.HomeRequested.Invoke();
         }
     }
 }

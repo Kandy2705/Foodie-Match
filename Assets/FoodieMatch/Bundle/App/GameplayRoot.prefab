@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -3.68, z: 0}
-  m_LocalScale: {x: 1.5, y: 2, z: 1.5}
+  m_LocalScale: {x: 2, y: 2, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7802744079942507910}
@@ -183,6 +183,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7593385773710353304}
+  - component: {fileID: 462668978251810072}
   m_Layer: 0
   m_Name: GameplayRoot
   m_TagString: Untagged
@@ -209,6 +210,18 @@ Transform:
   - {fileID: 1094579716567942294}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &462668978251810072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624587568727948870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0311819aae9a6c4ab7bd86721eb52d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &895875049853616791
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,6 +306,8 @@ MonoBehaviour:
   _packages:
   - {fileID: 7190910915413207861}
   - {fileID: 8719123833767130706}
+  _layoutMotionDuration: 0.25
+  _layoutMotionEase: 9
 --- !u!1001 &2030306045712370647
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Booster;
@@ -7,6 +8,7 @@ using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
+using FoodieMatch.UI.Loading;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Result;
@@ -26,6 +28,10 @@ namespace FoodieMatch.UI
         [SerializeField] private GameObject _gameplayHudPrefab;
         [SerializeField] private Transform _hudRoot;
 
+        [Header("Loading")]
+        [SerializeField] private LoadingScreenView _loadingScreenPrefab;
+        [SerializeField] private Transform _loadingRoot;
+
         [Header("Booster Guide")]
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
@@ -34,6 +40,7 @@ namespace FoodieMatch.UI
         private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
         private GameObject _gameplayHud;
         private GameplayHudView _gameplayHudView;
+        private LoadingScreenView _loadingScreenView;
         private bool _hasConstructed;
         private bool _returnToReviveOnLeaveClose;
         private int _currentLevelNumber = 1;
@@ -51,6 +58,7 @@ namespace FoodieMatch.UI
 
         private void OnDestroy()
         {
+            HideLoading();
             UnsubscribeEvents();
         }
 
@@ -112,6 +120,16 @@ namespace FoodieMatch.UI
             homeView.SetPlayLevelNumber(_currentLevelNumber);
         }
 
+        public void SetCurrentLevelNumber(int levelNumber)
+        {
+            _currentLevelNumber = levelNumber;
+
+            if (_gameplayHudView != null)
+            {
+                _gameplayHudView.SetLevelNumber(levelNumber);
+            }
+        }
+
         public void HideHome()
         {
             if (_popupManager == null)
@@ -150,6 +168,21 @@ namespace FoodieMatch.UI
             }
 
             _gameplayHud.SetActive(false);
+        }
+
+        public Task PlayLoadingAsync()
+        {
+            if (!TryGetLoadingScreen(out LoadingScreenView loadingScreenView))
+            {
+                return Task.CompletedTask;
+            }
+
+            return loadingScreenView.PlayAsync();
+        }
+
+        public void HideLoading()
+        {
+            _loadingScreenView?.Hide();
         }
 
         public void ShowSettingPopup()
@@ -487,6 +520,28 @@ namespace FoodieMatch.UI
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboFill);
+        }
+
+        private bool TryGetLoadingScreen(out LoadingScreenView loadingScreenView)
+        {
+            if (_loadingScreenView != null)
+            {
+                loadingScreenView = _loadingScreenView;
+                return true;
+            }
+
+            if (_loadingScreenPrefab == null || _loadingRoot == null)
+            {
+                Debug.LogError("Loading screen prefab or loading root is missing.");
+                loadingScreenView = null;
+                return false;
+            }
+
+            _loadingRoot.SetAsLastSibling();
+            _loadingScreenView = Instantiate(_loadingScreenPrefab, _loadingRoot);
+            _loadingScreenView.gameObject.name = _loadingScreenPrefab.gameObject.name;
+            loadingScreenView = _loadingScreenView;
+            return true;
         }
 
         private void SubscribeEvents()
