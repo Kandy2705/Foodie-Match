@@ -178,7 +178,7 @@ GameObject:
   - component: {fileID: 6308239428365830433}
   - component: {fileID: 5924782844710106827}
   m_Layer: 0
-  m_Name: BoosterGuideIconImage
+  m_Name: BoosterBuyIconImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -763,7 +763,7 @@ GameObject:
   - component: {fileID: 5905198233159991407}
   - component: {fileID: 5140699695291097497}
   m_Layer: 0
-  m_Name: BoosterGuidePopup
+  m_Name: BoosterBuyPopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1586,7 +1586,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8310157652424187057, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_Name
-      value: BoosterGuideTitleText
+      value: BoosterBuyTitleText
       objectReference: {fileID: 0}
     - target: {fileID: 8503843817086359383, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_text

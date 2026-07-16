@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FoodieMatch.Data.Booster
 {
     [Serializable]
-    public sealed class BoosterGuideContentEntry
+    public sealed class BoosterBuyContentEntry
     {
         [SerializeField] private BoosterType _boosterType;
         [SerializeField] private string _title;

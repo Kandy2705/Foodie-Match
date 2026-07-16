@@ -2,11 +2,11 @@ using FoodieMatch.Data.Booster;
 using FoodieMatch.UI.Popup;
 using UnityEngine;
 
-namespace FoodieMatch.UI.BoosterGuide
+namespace FoodieMatch.UI.BoosterBuy
 {
-    public sealed class BoosterGuidePopupData : IPopupData
+    public sealed class BoosterBuyPopupData : IPopupData
     {
-        public BoosterGuidePopupData(
+        public BoosterBuyPopupData(
             BoosterType boosterType,
             string title,
             string description,
@@ -34,8 +34,8 @@ namespace FoodieMatch.UI.BoosterGuide
 
         public string BonusAmountText { get; }
 
-        public static BoosterGuidePopupData FromCatalogEntry(
-            BoosterGuideContentEntry entry,
+        public static BoosterBuyPopupData FromCatalogEntry(
+            BoosterBuyContentEntry entry,
             string costText = null,
             string bonusAmountText = null)
         {
@@ -44,7 +44,7 @@ namespace FoodieMatch.UI.BoosterGuide
                 return null;
             }
 
-            return new BoosterGuidePopupData(
+            return new BoosterBuyPopupData(
                 entry.BoosterType,
                 entry.Title,
                 entry.Description,

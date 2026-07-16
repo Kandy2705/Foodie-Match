@@ -47,4 +47,4 @@ MonoBehaviour:
   _popupManager: {fileID: 0}
   _gameplayHudPrefab: {fileID: 572790035337981529, guid: 4145a9f26e87944388702bdb7387eb66, type: 3}
   _hudRoot: {fileID: 0}
-  _boosterGuideCatalog: {fileID: 11400000, guid: 966c3385eed64239847511621f659af7, type: 2}
+  _boosterBuyCatalog: {fileID: 11400000, guid: 966c3385eed64239847511621f659af7, type: 2}
