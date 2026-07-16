@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
@@ -63,6 +64,7 @@ namespace FoodieMatch.Features.RequiredPackage
         private Vector3 _initialMotionRootLocalScale;
         private Vector3 _initialLidLocalPosition;
         private Color _lidVisibleColor;
+        private Action _lidClosed;
 
         public int FoodTokenId { get; private set; }
         public int RequiredAmount { get; private set; }
@@ -153,7 +155,7 @@ namespace FoodieMatch.Features.RequiredPackage
             HideAllViews();
         }
 
-        public async Task<MotionResult> PlayEnterAsync()
+        public async Task<MotionResult> PlayEnterAsync(Action onEnterStarted)
         {
             if (IsEmpty ||
                 _motionRoot == null ||
@@ -212,6 +214,7 @@ namespace FoodieMatch.Features.RequiredPackage
                     .Group(scaleSequence)
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
+                InvokeMotionCallback(onEnterStarted);
                 await _motionSequence;
 
                 return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
@@ -223,7 +226,9 @@ namespace FoodieMatch.Features.RequiredPackage
             }
         }
 
-        public async Task<MotionResult> PlayMatchAndExitAsync()
+        public async Task<MotionResult> PlayMatchAndExitAsync(
+            Action onMatchStarted,
+            Action onLidClosed)
         {
             if (IsEmpty ||
                 _motionRoot == null ||
@@ -249,6 +254,7 @@ namespace FoodieMatch.Features.RequiredPackage
             PrepareLidForDrop();
             _isMotionPlaying = true;
             _didMotionFinish = false;
+            _lidClosed = onLidClosed;
 
             Vector3 horizontalSquashScale = Vector3.Scale(
                 _initialMotionRootLocalScale,
@@ -268,7 +274,8 @@ namespace FoodieMatch.Features.RequiredPackage
                         _lidSpriteRenderer,
                         endValue: 1f,
                         duration: _lidDropDuration,
-                        ease: _lidDropEase));
+                        ease: _lidDropEase))
+                    .ChainCallback(this, target => target.NotifyLidClosed());
 
                 _motionSequence = Sequence.Create()
                     .Chain(lidSequence)
@@ -294,12 +301,14 @@ namespace FoodieMatch.Features.RequiredPackage
                         _exitEase))
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
+                InvokeMotionCallback(onMatchStarted);
                 await _motionSequence;
 
                 return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
             }
             finally
             {
+                _lidClosed = null;
                 _motionSequence = default;
                 _isMotionPlaying = false;
             }
@@ -357,8 +366,27 @@ namespace FoodieMatch.Features.RequiredPackage
             _didMotionFinish = true;
         }
 
+        private void NotifyLidClosed()
+        {
+            InvokeMotionCallback(_lidClosed);
+        }
+
+        private static void InvokeMotionCallback(Action callback)
+        {
+            try
+            {
+                callback?.Invoke();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
         private void StopMotion(bool resetTransform, bool hideLid)
         {
+            _lidClosed = null;
+
             if (_motionSequence.isAlive)
             {
                 _motionSequence.Stop();
