@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6220105f36599475c810b39b358a3c74, type: 3}
   m_Name: BoosterBuyCatalog
   m_EditorClassIdentifier: 
+  _lockedButtonSprite: {fileID: 8843225534474778812, guid: 9b5dfc4af510142b5b76722fa7537064, type: 3}
   _entries:
   - _boosterType: 0
     _title: Plate
@@ -19,27 +20,37 @@ MonoBehaviour:
     _icon: {fileID: 347840636878216627, guid: fe0141235759c4523974356e826a9b19, type: 3}
     _defaultCostText: 80
     _defaultBonusAmountText: +1
+    _unlockLevel: 1
+    _lockedIconSprite: {fileID: -1125447046586616126, guid: 9e2dcf34231c84cc28c32fd260ccd144, type: 3}
   - _boosterType: 1
     _title: Storage
     _description: Complete a box
     _icon: {fileID: -1625834913553564709, guid: 3aae3ad16a8634f03aa9089ef736f32d, type: 3}
     _defaultCostText: 60
     _defaultBonusAmountText: +1
+    _unlockLevel: 4
+    _lockedIconSprite: {fileID: -8063468701033099242, guid: 3cc93f3a897c54e6db2639f5f6567cb7, type: 3}
   - _boosterType: 2
     _title: Swap
     _description: Shuffle the skewers!
     _icon: {fileID: -7647276179965007834, guid: f2d97e20fc3b34e3ea2d729008eb41f7, type: 3}
     _defaultCostText: 120
     _defaultBonusAmountText: +1
+    _unlockLevel: 5
+    _lockedIconSprite: {fileID: 6140152361714372599, guid: 18ca5dc0829674b3db114de4a3f942c0, type: 3}
   - _boosterType: 3
     _title: Fridge
     _description: Clear all plates
     _icon: {fileID: -4709088927621829093, guid: 4581619a9f2bf47798a0511b658ddffc, type: 3}
     _defaultCostText: 120
     _defaultBonusAmountText: +1
+    _unlockLevel: 2
+    _lockedIconSprite: {fileID: 6187142768345093, guid: 06dead6559ac241fa81a7e39155c0fbd, type: 3}
   - _boosterType: 4
     _title: Add Box
     _description: Add 1 Box and continue!
     _icon: {fileID: 6719627732990584302, guid: e2e7d11042a604dc19ab6f790b8cdf78, type: 3}
     _defaultCostText: 190
     _defaultBonusAmountText: +1
+    _unlockLevel: 1
+    _lockedIconSprite: {fileID: 0}

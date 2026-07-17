@@ -8,7 +8,11 @@ namespace FoodieMatch.Data.Booster
         menuName = "FoodieMatch/Booster/Booster Guide Catalog")]
     public sealed class BoosterBuyCatalogSO : ScriptableObject
     {
+        [SerializeField] private Sprite _lockedButtonSprite;
+
         [SerializeField] private List<BoosterBuyContentEntry> _entries = new();
+
+        public Sprite LockedButtonSprite => _lockedButtonSprite;
 
         public IReadOnlyList<BoosterBuyContentEntry> Entries => _entries;
 
@@ -33,6 +37,28 @@ namespace FoodieMatch.Data.Booster
 
             entry = null;
             return false;
+        }
+
+        public bool IsUnlocked(BoosterType boosterType, int currentLevel)
+        {
+            if (!TryGet(boosterType, out BoosterBuyContentEntry entry))
+            {
+                return false;
+            }
+
+            return currentLevel >= entry.UnlockLevel;
+        }
+
+        public bool TryGetUnlockLevel(BoosterType boosterType, out int unlockLevel)
+        {
+            if (!TryGet(boosterType, out BoosterBuyContentEntry entry))
+            {
+                unlockLevel = 0;
+                return false;
+            }
+
+            unlockLevel = entry.UnlockLevel;
+            return true;
         }
 
         public static bool TryFromButtonIndex(int buttonIndex, out BoosterType boosterType)

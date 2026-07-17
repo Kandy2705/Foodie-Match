@@ -12,6 +12,8 @@ namespace FoodieMatch.Data.Booster
         [SerializeField] private Sprite _icon;
         [SerializeField] private string _defaultCostText = "80";
         [SerializeField] private string _defaultBonusAmountText = "+1";
+        [SerializeField] private int _unlockLevel = 1;
+        [SerializeField] private Sprite _lockedIconSprite;
 
         public BoosterType BoosterType => _boosterType;
 
@@ -24,5 +26,9 @@ namespace FoodieMatch.Data.Booster
         public string DefaultCostText => _defaultCostText;
 
         public string DefaultBonusAmountText => _defaultBonusAmountText;
+
+        public int UnlockLevel => Mathf.Max(1, _unlockLevel);
+
+        public Sprite LockedIconSprite => _lockedIconSprite;
     }
 }

@@ -621,6 +621,12 @@ namespace FoodieMatch.UI
                 return;
             }
 
+            if (!IsBoosterUnlocked(boosterType))
+            {
+                Debug.Log($"Booster {boosterType} is locked until a later level.");
+                return;
+            }
+
             if (_boosterManager.TryUse(boosterType))
             {
                 Debug.Log($"Used {boosterType} booster. Remaining: {_boosterManager.GetCount(boosterType)}");
@@ -637,6 +643,12 @@ namespace FoodieMatch.UI
             if (!BoosterBuyCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
             {
                 Debug.LogWarning($"Unknown booster button index: {boosterIndex}");
+                return;
+            }
+
+            if (!IsBoosterUnlocked(boosterType))
+            {
+                Debug.Log($"Booster {boosterType} is locked until a later level.");
                 return;
             }
 
@@ -791,6 +803,7 @@ namespace FoodieMatch.UI
                 _gameplayHudView.SetLevelNumber(eventData.LevelNumber);
             }
 
+            RefreshBoosterHud();
             Debug.Log($"Level Started: {eventData.LevelNumber}");
         }
 
@@ -835,6 +848,51 @@ namespace FoodieMatch.UI
             }
 
             _gameplayHudView.SetBoosterCounts(_boosterManager.GetCounts());
+            RefreshBoosterUnlockStates();
+        }
+
+        private void RefreshBoosterUnlockStates()
+        {
+            if (_gameplayHudView == null)
+            {
+                return;
+            }
+
+            bool[] unlockedStates = new bool[5];
+
+            for (int i = 0; i < unlockedStates.Length; i++)
+            {
+                if (!BoosterBuyCatalogSO.TryFromButtonIndex(i, out BoosterType boosterType))
+                {
+                    unlockedStates[i] = false;
+                    continue;
+                }
+
+                unlockedStates[i] = IsBoosterUnlocked(boosterType);
+
+                if (_boosterBuyCatalog != null &&
+                    _boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
+                {
+                    // Shared locked button art; icon + unlock level are per booster.
+                    _gameplayHudView.SetBoosterLockedSprites(
+                        i,
+                        _boosterBuyCatalog.LockedButtonSprite,
+                        entry.LockedIconSprite);
+                    _gameplayHudView.SetBoosterUnlockLevel(i, entry.UnlockLevel);
+                }
+            }
+
+            _gameplayHudView.SetBoosterUnlockedStates(unlockedStates);
+        }
+
+        private bool IsBoosterUnlocked(BoosterType boosterType)
+        {
+            if (_boosterBuyCatalog == null)
+            {
+                return true;
+            }
+
+            return _boosterBuyCatalog.IsUnlocked(boosterType, _currentLevelNumber);
         }
     }
 }

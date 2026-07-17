@@ -221,6 +221,50 @@ namespace FoodieMatch.UI.Gameplay
             }
         }
 
+        public void SetBoosterUnlocked(int boosterIndex, bool isUnlocked)
+        {
+            if (_boosterButtonViews == null ||
+                boosterIndex < 0 ||
+                boosterIndex >= _boosterButtonViews.Length ||
+                _boosterButtonViews[boosterIndex] == null)
+            {
+                return;
+            }
+
+            _boosterButtonViews[boosterIndex].SetUnlocked(isUnlocked);
+        }
+
+        public void SetBoosterLockedSprites(
+            int boosterIndex,
+            Sprite lockedButtonSprite,
+            Sprite lockedIconSprite)
+        {
+            if (_boosterButtonViews == null ||
+                boosterIndex < 0 ||
+                boosterIndex >= _boosterButtonViews.Length ||
+                _boosterButtonViews[boosterIndex] == null)
+            {
+                return;
+            }
+
+            _boosterButtonViews[boosterIndex].SetLockedSprites(
+                lockedButtonSprite,
+                lockedIconSprite);
+        }
+
+        public void SetBoosterUnlockLevel(int boosterIndex, int unlockLevel)
+        {
+            if (_boosterButtonViews == null ||
+                boosterIndex < 0 ||
+                boosterIndex >= _boosterButtonViews.Length ||
+                _boosterButtonViews[boosterIndex] == null)
+            {
+                return;
+            }
+
+            _boosterButtonViews[boosterIndex].SetUnlockLevel(unlockLevel);
+        }
+
         public void SetBoosterCounts(int[] counts)
         {
             EnsureTextReferences();
@@ -239,6 +283,24 @@ namespace FoodieMatch.UI.Gameplay
                 if (_boosterButtonViews != null && i < _boosterButtonViews.Length && _boosterButtonViews[i] != null)
                 {
                     _boosterButtonViews[i].SetCount(counts[i]);
+                }
+            }
+        }
+
+        public void SetBoosterUnlockedStates(bool[] unlockedStates)
+        {
+            if (unlockedStates == null || _boosterButtonViews == null)
+            {
+                return;
+            }
+
+            int length = Mathf.Min(unlockedStates.Length, _boosterButtonViews.Length);
+
+            for (int i = 0; i < length; i++)
+            {
+                if (_boosterButtonViews[i] != null)
+                {
+                    _boosterButtonViews[i].SetUnlocked(unlockedStates[i]);
                 }
             }
         }
