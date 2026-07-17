@@ -584,6 +584,7 @@ GameObject:
   - component: {fileID: 5862368522971879745}
   - component: {fileID: 4426387045453857657}
   - component: {fileID: 5905198233159991407}
+  - component: {fileID: 8123456789012345701}
   m_Layer: 0
   m_Name: BoosterGuidePopup
   m_TagString: Untagged
@@ -666,6 +667,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8123456789012345701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6516266630406967583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b0090f27e254c518064d4b0dfffdd05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _confirmButton: {fileID: 727163258812183704}
+  _popupAnimController: {fileID: 4426387045453857657}
+  _titleText: {fileID: 1082400232952891726}
+  _descriptionText: {fileID: 7616854525686842689}
+  _iconImage: {fileID: 5924782844710106827}
 --- !u!1 &7388116517003901043
 GameObject:
   m_ObjectHideFlags: 0
@@ -887,7 +905,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5269308309055994439, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_Name
-      value: PlayOnButton
+      value: ConfirmButton
       objectReference: {fileID: 0}
     - target: {fileID: 6227632056255342835, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_AnchorMax.x
@@ -934,6 +952,17 @@ PrefabInstance:
       addedObject: {fileID: 5792760090207414214}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+--- !u!114 &727163258812183704 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6392153387098845423, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+  m_PrefabInstance: {fileID: 5954350806825239671}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7360130553315306019 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
@@ -1160,6 +1189,17 @@ PrefabInstance:
       addedObject: {fileID: 8558595533303632966}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f600b333c3a81435793212c0515baac3, type: 3}
+--- !u!114 &1082400232952891726 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8503843817086359383, guid: f600b333c3a81435793212c0515baac3, type: 3}
+  m_PrefabInstance: {fileID: 8720883831015513625}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &2539198681316860234 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6502008314042826579, guid: f600b333c3a81435793212c0515baac3, type: 3}

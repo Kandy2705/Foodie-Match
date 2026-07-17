@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
+using FoodieMatch.Data.Booster;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.UI;
 using UnityEngine;
@@ -35,6 +36,7 @@ namespace FoodieMatch.App
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
+            _uiManager.BoosterApplyHandler = null;
             _uiManager.HideLoading();
         }
 
@@ -61,6 +63,7 @@ namespace FoodieMatch.App
             _uiManager.LeaveGameRequested += OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
             _uiManager.RestartGameRequested += OnRestartGameRequested;
+            _uiManager.BoosterApplyHandler = OnBoosterApplyRequested;
         }
 
         public void EnterHome()
@@ -278,6 +281,16 @@ namespace FoodieMatch.App
             {
                 StartLevel(levelNumber);
             }
+        }
+
+        private bool OnBoosterApplyRequested(BoosterType boosterType)
+        {
+            if (_gameplayController == null)
+            {
+                return false;
+            }
+
+            return _gameplayController.TryApplyBooster(boosterType);
         }
 
         private void OnLeaveGameRequested()
