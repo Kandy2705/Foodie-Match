@@ -54,7 +54,8 @@ namespace FoodieMatch.App
             appRoot.UIManager.Construct(
                 GameplayEvents,
                 audioService,
-                boosterManager);
+                boosterManager,
+                saveService);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver);
             appRoot.GameplayMotionPresenter.Construct(

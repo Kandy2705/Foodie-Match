@@ -61,6 +61,28 @@ namespace FoodieMatch.Data.Booster
             return true;
         }
 
+        public void CollectBoostersUnlockedAtLevel(
+            int levelNumber,
+            List<BoosterBuyContentEntry> results)
+        {
+            if (results == null || _entries == null)
+            {
+                return;
+            }
+
+            results.Clear();
+
+            for (int i = 0; i < _entries.Count; i++)
+            {
+                BoosterBuyContentEntry entry = _entries[i];
+
+                if (entry != null && entry.UnlockLevel == levelNumber)
+                {
+                    results.Add(entry);
+                }
+            }
+        }
+
         public static bool TryFromButtonIndex(int buttonIndex, out BoosterType boosterType)
         {
             switch (buttonIndex)
