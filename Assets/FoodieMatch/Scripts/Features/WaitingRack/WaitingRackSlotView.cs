@@ -100,6 +100,12 @@ namespace FoodieMatch.Features.WaitingRack
             }
 
             FoodItemView foodItemView = _foodItemView;
+
+            if (foodItemView != null)
+            {
+                foodItemView.transform.SetParent(null, worldPositionStays: true);
+            }
+
             ResetSlot();
 
             return foodItemView;
@@ -123,6 +129,7 @@ namespace FoodieMatch.Features.WaitingRack
 
         private void PlaceFoodAtAnchor()
         {
+            _foodItemView.transform.SetParent(_foodAnchor, worldPositionStays: true);
             _foodItemView.transform.position = _foodAnchor.position;
             _foodItemView.SetVisualState(FoodItemVisualState.OnWaitingRack);
         }

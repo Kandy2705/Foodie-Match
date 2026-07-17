@@ -137,12 +137,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0c2bcd0ae7438642805860ae412ac6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _slots:
+  _initialSlots:
   - {fileID: 4937250448999574682}
   - {fileID: 4891047529246046572}
   - {fileID: 9194275506357360346}
   - {fileID: 3413251351301784815}
   - {fileID: 6338124752896610576}
+  _slotPrefab: {fileID: 8702243123443402920, guid: 114fe5a73c642f34d8c79cad10a4aaac, type: 3}
+  _slotRoot: {fileID: 7135773757774331791}
+  _slotSpacing: 1.3
+  _addSlotDuration: 0.35
+  _newSlotEnterOffset: 2.5
 --- !u!1001 &530356991633088114
 PrefabInstance:
   m_ObjectHideFlags: 0

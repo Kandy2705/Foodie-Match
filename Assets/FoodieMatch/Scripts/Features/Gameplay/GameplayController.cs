@@ -8,6 +8,7 @@ using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
+using FoodieMatch.Data.Booster;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
 using FoodieMatch.Features.RequiredPackage;
@@ -107,6 +108,8 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
+            _waitingRackView.ResetToCapacity(levelConfig.WaitingRackCapacity);
+
             if (_waitingRackView.Capacity != levelConfig.WaitingRackCapacity)
             {
                 Debug.LogError($"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
@@ -168,9 +171,59 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayMotionPresenter?.CancelAllMotions();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
+            _waitingRackView?.Clear();
             _session = null;
 
             Debug.Log("Clear Level");
+        }
+
+        public bool TryApplyBooster(BoosterType boosterType)
+        {
+            if (_session == null ||
+                !_session.CanContinueGameplay ||
+                !_session.IsInputEnabled)
+            {
+                return false;
+            }
+
+            switch (boosterType)
+            {
+                case BoosterType.Plate:
+                    return TryApplyPlateBooster();
+                default:
+                    Debug.Log($"Booster {boosterType} is not implemented yet.");
+                    return false;
+            }
+        }
+
+        private bool TryApplyPlateBooster()
+        {
+            if (_waitingRackView == null ||
+                _session.WaitingRack == null ||
+                !_waitingRackView.CanAddSlot())
+            {
+                return false;
+            }
+
+            if (!_session.WaitingRack.TryExpandBy(1))
+            {
+                return false;
+            }
+
+            _ = PlayPlateBoosterMotionSafelyAsync();
+            return true;
+        }
+
+        private async Task PlayPlateBoosterMotionSafelyAsync()
+        {
+            try
+            {
+                await _waitingRackView.PlayAddSlotAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
 
         private void CreateCoordinators()
