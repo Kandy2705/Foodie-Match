@@ -37,3 +37,9 @@ MonoBehaviour:
     _icon: {fileID: -4709088927621829093, guid: 4581619a9f2bf47798a0511b658ddffc, type: 3}
     _defaultCostText: 120
     _defaultBonusAmountText: +1
+  - _boosterType: 4
+    _title: Add Box
+    _description: Add 1 Box and continue!
+    _icon: {fileID: 6719627732990584302, guid: e2e7d11042a604dc19ab6f790b8cdf78, type: 3}
+    _defaultCostText: 190
+    _defaultBonusAmountText: +1
