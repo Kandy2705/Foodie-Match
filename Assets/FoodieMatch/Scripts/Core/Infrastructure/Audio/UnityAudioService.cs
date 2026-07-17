@@ -74,7 +74,7 @@ namespace FoodieMatch.Core.Infrastructure.Audio
                 return;
             }
 
-            source.PlayOneShot(entry.Clip, _sfxVolume * entry.Volume);
+            source.PlayOneShot(entry.Clip, entry.Volume);
         }
 
         public void PlayMusic(string musicKey)

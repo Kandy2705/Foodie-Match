@@ -15,6 +15,9 @@ namespace FoodieMatch.Core.Infrastructure.Audio
         public const string SfxFail = "sfx_fail";
         public const string SfxCoinReceive = "coin_receive";
         public const string SfxSelectSkewer = "select_skewer";
+        public const string SfxPickOff = "PickOff";
+        public const string SfxBoxMove = "boxMove";
+        public const string SfxBoxClose = "boxClose";
         public const string SfxBoosterCollect = "Booster_Collect";
         public const string SfxBoosterShuffle = "booster_shuffle";
 

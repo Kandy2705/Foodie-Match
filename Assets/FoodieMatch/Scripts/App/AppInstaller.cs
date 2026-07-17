@@ -7,6 +7,7 @@ using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.Data.Level;
+using FoodieMatch.Features.Gameplay;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -26,6 +27,7 @@ namespace FoodieMatch.App
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
             IAudioService audioService = CreateAudioService(appRoot, saveService);
+            GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
             System.Random random = new System.Random();
@@ -65,6 +67,7 @@ namespace FoodieMatch.App
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,
                 appRoot.GameplayMotionPresenter,
+                gameplayAudioPresenter,
                 appRoot.FoodVisualResolver,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
