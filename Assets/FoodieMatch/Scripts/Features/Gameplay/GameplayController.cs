@@ -381,7 +381,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (causedWaitingRackFull && session.State == LevelSessionState.AwaitingRevive)
             {
-                ShowReviveFlow(session);
+                ShowLosePopup(session);
             }
         }
 
@@ -439,15 +439,14 @@ namespace FoodieMatch.Features.Gameplay
             _uiManager.ShowWinPopup(OnWinRewardClicked, OnWinRewardClicked);
         }
 
-        private void ShowReviveFlow(GameplaySession session)
+        private void ShowLosePopup(GameplaySession session)
         {
-            if (!IsCurrentSession(session) ||
-                session.State != LevelSessionState.AwaitingRevive)
+            if (!IsCurrentSession(session) || session.State != LevelSessionState.AwaitingRevive)
             {
                 return;
             }
 
-            _uiManager.ShowRevivePopup(OnTryAgainClicked, OnHomeClicked);
+            _uiManager.ShowLosePopup(OnTryAgainClicked, OnHomeClicked);
         }
 
         private void FinalizeLose()
