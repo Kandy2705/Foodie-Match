@@ -89,7 +89,6 @@ namespace FoodieMatch.UI.Result
                 return;
             }
 
-            // Play lose once, then switch to looping idle when lose finishes.
             _chefMascotSkeletonGraphic.AnimationState.ClearTracks();
             _chefMascotSkeletonGraphic.AnimationState.SetAnimation(
                 0,

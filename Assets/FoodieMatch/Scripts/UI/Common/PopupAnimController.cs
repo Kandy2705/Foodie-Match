@@ -196,11 +196,8 @@ namespace FoodieMatch.UI.Common
                 return;
             }
 
-            // Buttons only after open finishes.
             _canvasGroup.interactable = interactable;
 
-            // While the popup GO is active (open / close anim), block clicks
-            // from reaching UI underneath. Cleared in OnCloseAnimationFinished.
             _canvasGroup.blocksRaycasts = gameObject.activeSelf;
         }
 
@@ -215,12 +212,6 @@ namespace FoodieMatch.UI.Common
             _waitCoroutine = null;
         }
 
-        /// <summary>
-        /// Waits until the target animator state has finished playing.
-        /// Close transitions into Hidden at exit time 1, so requiring
-        /// "still in target state AND not transitioning" can hang forever.
-        /// Completing when we leave the target state (or timeout) fixes reopen.
-        /// </summary>
         private IEnumerator WaitForState(string stateName, Action onComplete)
         {
             if (_animator == null || string.IsNullOrEmpty(stateName))
@@ -234,7 +225,6 @@ namespace FoodieMatch.UI.Common
             float elapsed = 0f;
             bool hasEnteredState = false;
 
-            // Let the animator process the trigger for one frame.
             yield return null;
             elapsed += Time.unscaledDeltaTime;
 
@@ -247,7 +237,6 @@ namespace FoodieMatch.UI.Common
                 {
                     hasEnteredState = true;
 
-                    // Finished the clip and not blending out yet.
                     if (stateInfo.normalizedTime >= 1f && !_animator.IsInTransition(0))
                     {
                         break;
@@ -255,7 +244,6 @@ namespace FoodieMatch.UI.Common
                 }
                 else if (hasEnteredState)
                 {
-                    // Left the target state (e.g. Close -> Hidden). Treat as done.
                     break;
                 }
 
