@@ -7,6 +7,8 @@ namespace FoodieMatch.UI.Common
     [DisallowMultipleComponent]
     public sealed class PopupAnimController : MonoBehaviour
     {
+        private const float WaitTimeoutSeconds = 3f;
+
         [Header("References")]
         [SerializeField]
         private Animator _animator;
@@ -170,6 +172,13 @@ namespace FoodieMatch.UI.Common
         public void OnCloseAnimationFinished()
         {
             _isOpened = false;
+
+            if (_canvasGroup != null)
+            {
+                _canvasGroup.interactable = false;
+                _canvasGroup.blocksRaycasts = false;
+            }
+
             gameObject.SetActive(false);
         }
 
@@ -187,8 +196,12 @@ namespace FoodieMatch.UI.Common
                 return;
             }
 
+            // Buttons only after open finishes.
             _canvasGroup.interactable = interactable;
-            _canvasGroup.blocksRaycasts = interactable;
+
+            // While the popup GO is active (open / close anim), block clicks
+            // from reaching UI underneath. Cleared in OnCloseAnimationFinished.
+            _canvasGroup.blocksRaycasts = gameObject.activeSelf;
         }
 
         private void StopWaiting()
@@ -202,30 +215,51 @@ namespace FoodieMatch.UI.Common
             _waitCoroutine = null;
         }
 
+        /// <summary>
+        /// Waits until the target animator state has finished playing.
+        /// Close transitions into Hidden at exit time 1, so requiring
+        /// "still in target state AND not transitioning" can hang forever.
+        /// Completing when we leave the target state (or timeout) fixes reopen.
+        /// </summary>
         private IEnumerator WaitForState(string stateName, Action onComplete)
         {
             if (_animator == null || string.IsNullOrEmpty(stateName))
             {
                 onComplete?.Invoke();
+                _waitCoroutine = null;
                 yield break;
             }
 
-            yield return null;
-
-            AnimatorStateInfo stateInfo;
             int stateHash = Animator.StringToHash(stateName);
+            float elapsed = 0f;
+            bool hasEnteredState = false;
 
-            while (true)
+            // Let the animator process the trigger for one frame.
+            yield return null;
+            elapsed += Time.unscaledDeltaTime;
+
+            while (elapsed < WaitTimeoutSeconds)
             {
-                stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+                AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+                bool isInTargetState = stateInfo.shortNameHash == stateHash;
 
-                if (stateInfo.shortNameHash == stateHash &&
-                    stateInfo.normalizedTime >= 1f &&
-                    !_animator.IsInTransition(0))
+                if (isInTargetState)
                 {
+                    hasEnteredState = true;
+
+                    // Finished the clip and not blending out yet.
+                    if (stateInfo.normalizedTime >= 1f && !_animator.IsInTransition(0))
+                    {
+                        break;
+                    }
+                }
+                else if (hasEnteredState)
+                {
+                    // Left the target state (e.g. Close -> Hidden). Treat as done.
                     break;
                 }
 
+                elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 

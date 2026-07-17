@@ -235,6 +235,11 @@ namespace FoodieMatch.UI.Gameplay
             for (int i = 0; i < length; i++)
             {
                 UiTmpText.SetText(_boosterCountTexts[i], counts[i].ToString());
+
+                if (_boosterButtonViews != null && i < _boosterButtonViews.Length && _boosterButtonViews[i] != null)
+                {
+                    _boosterButtonViews[i].SetCount(counts[i]);
+                }
             }
         }
 
