@@ -35,6 +35,7 @@ namespace FoodieMatch.UI
         [Header("Booster Guide")]
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
+        private BoosterManager _boosterManager;
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
@@ -64,7 +65,8 @@ namespace FoodieMatch.UI
 
         public void Construct(
             GameplayEvents gameplayEvents,
-            IAudioService audioService)
+            IAudioService audioService,
+            BoosterManager boosterManager = null)
         {
             if (_hasConstructed)
             {
@@ -75,6 +77,7 @@ namespace FoodieMatch.UI
             EnsureGlobalButtonClickSfx(audioService);
 
             _gameplayEvents = gameplayEvents;
+            _boosterManager = boosterManager;
             SubscribeEvents();
 
             _hasConstructed = true;
@@ -520,6 +523,7 @@ namespace FoodieMatch.UI
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboFill);
+            RefreshBoosterHud();
         }
 
         private bool TryGetLoadingScreen(out LoadingScreenView loadingScreenView)
@@ -587,7 +591,27 @@ namespace FoodieMatch.UI
 
         private void OnGameplayBoosterUseRequested(int boosterIndex)
         {
-            Debug.Log($"Use booster at index: {boosterIndex}");
+            if (_boosterManager == null)
+            {
+                Debug.LogWarning("BoosterManager is not available.");
+                return;
+            }
+
+            if (!BoosterBuyCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
+            {
+                Debug.LogWarning($"Unknown booster button index: {boosterIndex}");
+                return;
+            }
+
+            if (_boosterManager.TryUse(boosterType))
+            {
+                Debug.Log($"Used {boosterType} booster. Remaining: {_boosterManager.GetCount(boosterType)}");
+                RefreshBoosterHud();
+            }
+            else
+            {
+                Debug.Log($"No {boosterType} booster left.");
+            }
         }
 
         private void OnGameplayBoosterAddRequested(int boosterIndex)
@@ -608,14 +632,27 @@ namespace FoodieMatch.UI
 
         private void OnBoosterBuyFreeAdsClicked()
         {
-            Debug.Log($"Booster guide free ads clicked: {_currentBoosterBuyType}");
+            GrantBooster(_currentBoosterBuyType, 1);
             HideBoosterBuyPopup();
         }
 
         private void OnBoosterBuyBuyClicked()
         {
-            Debug.Log($"Booster guide buy clicked: {_currentBoosterBuyType}");
+            GrantBooster(_currentBoosterBuyType, 1);
             HideBoosterBuyPopup();
+        }
+
+        private void GrantBooster(BoosterType type, int amount)
+        {
+            if (_boosterManager == null)
+            {
+                Debug.LogWarning("BoosterManager is not available.");
+                return;
+            }
+
+            _boosterManager.Add(type, amount);
+            Debug.Log($"Granted {amount}x {type} booster. Total: {_boosterManager.GetCount(type)}");
+            RefreshBoosterHud();
         }
 
         private void OnSettingCloseClicked()
@@ -751,6 +788,16 @@ namespace FoodieMatch.UI
         private void OnLevelEnded(LevelEndedEvent eventData)
         {
             Debug.Log($"Level Ended: {eventData.LevelNumber}, Win: {eventData.IsWin}, Reason: {eventData.Reason}");
+        }
+
+        private void RefreshBoosterHud()
+        {
+            if (_gameplayHudView == null || _boosterManager == null)
+            {
+                return;
+            }
+
+            _gameplayHudView.SetBoosterCounts(_boosterManager.GetCounts());
         }
     }
 }
