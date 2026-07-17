@@ -69,9 +69,6 @@ namespace FoodieMatch.UI.Gameplay.Booster
             _addBoosterClicked = addBoosterClicked;
         }
 
-        /// <summary>
-        /// Assigns locked sprites from catalog (shared button + per-booster icon).
-        /// </summary>
         public void SetLockedSprites(Sprite lockedButtonSprite, Sprite lockedIconSprite)
         {
             _lockedButtonSprite = lockedButtonSprite;
@@ -180,7 +177,6 @@ namespace FoodieMatch.UI.Gameplay.Booster
 
             if (_levelLockedText != null)
             {
-                // Only show "Lv.X" while the booster is locked.
                 if (!_isUnlocked)
                 {
                     _levelLockedText.gameObject.SetActive(true);

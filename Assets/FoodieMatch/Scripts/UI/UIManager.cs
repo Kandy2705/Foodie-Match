@@ -201,6 +201,7 @@ namespace FoodieMatch.UI
         public void HideLoading()
         {
             _loadingScreenView?.Hide();
+            TryShowNextBoosterGuide();
         }
 
         public void ShowSettingPopup()
@@ -895,8 +896,6 @@ namespace FoodieMatch.UI
 
                 _pendingBoosterGuides.Add(entry);
             }
-
-            TryShowNextBoosterGuide();
         }
 
         private void TryShowNextBoosterGuide()
@@ -1017,7 +1016,6 @@ namespace FoodieMatch.UI
                 if (_boosterBuyCatalog != null &&
                     _boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
                 {
-                    // Shared locked button art; icon + unlock level are per booster.
                     _gameplayHudView.SetBoosterLockedSprites(
                         i,
                         _boosterBuyCatalog.LockedButtonSprite,
