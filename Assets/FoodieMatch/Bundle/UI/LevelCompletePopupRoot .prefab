@@ -5845,6 +5845,7 @@ MonoBehaviour:
   _doubleCoinRewardButton: {fileID: 4734722600863434005}
   _rewardAmountText: {fileID: 5269161727345199203}
   _rewardMultiplierText: {fileID: 5868891231373574247}
+  _chefMascotSkeletonGraphic: {fileID: 8123456789012345678}
 --- !u!1 &7625564787570865888
 GameObject:
   m_ObjectHideFlags: 0
@@ -6702,3 +6703,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7444170770903607390, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
   m_PrefabInstance: {fileID: 7920246324660780976}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8123456789012345678 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+  m_PrefabInstance: {fileID: 7920246324660780976}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d85b887af7e6c3f45a2e2d2920d641bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

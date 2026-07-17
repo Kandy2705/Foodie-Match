@@ -5,6 +5,7 @@ using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
+using FoodieMatch.Data.Booster;
 using FoodieMatch.Data.Level;
 using FoodieMatch.Features.Gameplay;
 using UnityEngine;
@@ -46,7 +47,14 @@ namespace FoodieMatch.App
             BoardModelFactory boardModelFactory =
                 new BoardModelFactory();
 
-            appRoot.UIManager.Construct(GameplayEvents, audioService);
+            BoosterManager boosterManager = new BoosterManager(
+                saveService,
+                new int[] { 2, 0, 1, 0 });
+
+            appRoot.UIManager.Construct(
+                GameplayEvents,
+                audioService,
+                boosterManager);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver);
             appRoot.GameplayMotionPresenter.Construct(
