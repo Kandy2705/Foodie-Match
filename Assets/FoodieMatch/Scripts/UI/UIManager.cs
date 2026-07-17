@@ -69,6 +69,7 @@ namespace FoodieMatch.UI
         public event Action LeaveGameRequested;
 
         public event Action RestartGameRequested;
+        public Func<BoosterType, bool> BoosterApplyHandler { get; set; }
 
         private void OnDestroy()
         {
@@ -691,15 +692,26 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            if (_boosterManager.TryUse(boosterType))
-            {
-                Debug.Log($"Used {boosterType} booster. Remaining: {_boosterManager.GetCount(boosterType)}");
-                RefreshBoosterHud();
-            }
-            else
+            if (!_boosterManager.HasCount(boosterType))
             {
                 Debug.Log($"No {boosterType} booster left.");
+                return;
             }
+
+            if (BoosterApplyHandler == null || !BoosterApplyHandler.Invoke(boosterType))
+            {
+                Debug.Log($"Booster {boosterType} could not be applied.");
+                return;
+            }
+
+            if (!_boosterManager.TryUse(boosterType))
+            {
+                Debug.LogError($"Booster {boosterType} was applied but inventory could not be spent.");
+                return;
+            }
+
+            Debug.Log($"Used {boosterType} booster. Remaining: {_boosterManager.GetCount(boosterType)}");
+            RefreshBoosterHud();
         }
 
         private void OnGameplayBoosterAddRequested(int boosterIndex)

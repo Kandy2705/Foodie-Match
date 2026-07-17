@@ -20,9 +20,7 @@ namespace FoodieMatch.UI.Gameplay.Booster
         [SerializeField] private Sprite _addBadgeSprite;
 
         [Header("Locked Visual Targets")]
-        [Tooltip("Button background Image (shared unlocked art is cached from this).")]
         [SerializeField] private Image _lockedButtonImage;
-        [Tooltip("Icon Image (unlocked art is cached from this; locked icon comes from catalog).")]
         [SerializeField] private Image _lockedIconImage;
 
         private Action _useBoosterClicked;

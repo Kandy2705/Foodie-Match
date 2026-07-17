@@ -1,20 +1,55 @@
+using System;
 using System.Collections.Generic;
 
 namespace FoodieMatch.Core.Domain.WaitingRack
 {
     public sealed class WaitingRackModel
     {
-        private readonly int[] _foodTokenIds;
+        public const int MaxCapacity = 7;
+
+        private int[] _foodTokenIds;
 
         public WaitingRackModel(int capacity)
         {
             int validCapacity = capacity > 0 ? capacity : 0;
+
+            if (validCapacity > MaxCapacity)
+            {
+                validCapacity = MaxCapacity;
+            }
+
             _foodTokenIds = new int[validCapacity];
         }
 
         public int Capacity => _foodTokenIds.Length;
         public bool HasEmptySlot => GetFirstEmptySlotIndex() >= 0;
         public bool IsFull => Capacity > 0 && !HasEmptySlot;
+        public bool CanExpand => Capacity < MaxCapacity;
+
+        public bool TryExpandBy(int amount)
+        {
+            if (amount <= 0 || Capacity >= MaxCapacity)
+            {
+                return false;
+            }
+
+            int newCapacity = _foodTokenIds.Length + amount;
+
+            if (newCapacity > MaxCapacity)
+            {
+                newCapacity = MaxCapacity;
+            }
+
+            if (newCapacity <= _foodTokenIds.Length)
+            {
+                return false;
+            }
+
+            int[] expanded = new int[newCapacity];
+            Array.Copy(_foodTokenIds, expanded, _foodTokenIds.Length);
+            _foodTokenIds = expanded;
+            return true;
+        }
 
         public int OccupiedCount
         {
