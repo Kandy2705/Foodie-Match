@@ -382,6 +382,8 @@ namespace FoodieMatch.UI
                 return;
             }
 
+            _audioService?.PlaySfx(AudioKeys.SfxWinGame);
+
             winView.SetActions(
                 new WinViewActions(
                     claimCoinRewardClicked,
@@ -424,6 +426,8 @@ namespace FoodieMatch.UI
             {
                 return;
             }
+
+            _audioService?.PlaySfx(AudioKeys.SfxLoseGame);
 
             loseView.SetActions(
                 new LoseViewActions(
