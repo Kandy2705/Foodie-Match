@@ -7,6 +7,8 @@ namespace FoodieMatch.UI.Common
     [DisallowMultipleComponent]
     public sealed class PopupAnimController : MonoBehaviour
     {
+        private const float WaitTimeoutSeconds = 3f;
+
         [Header("References")]
         [SerializeField]
         private Animator _animator;
@@ -170,6 +172,13 @@ namespace FoodieMatch.UI.Common
         public void OnCloseAnimationFinished()
         {
             _isOpened = false;
+
+            if (_canvasGroup != null)
+            {
+                _canvasGroup.interactable = false;
+                _canvasGroup.blocksRaycasts = false;
+            }
+
             gameObject.SetActive(false);
         }
 
@@ -188,7 +197,8 @@ namespace FoodieMatch.UI.Common
             }
 
             _canvasGroup.interactable = interactable;
-            _canvasGroup.blocksRaycasts = interactable;
+
+            _canvasGroup.blocksRaycasts = gameObject.activeSelf;
         }
 
         private void StopWaiting()
@@ -207,25 +217,37 @@ namespace FoodieMatch.UI.Common
             if (_animator == null || string.IsNullOrEmpty(stateName))
             {
                 onComplete?.Invoke();
+                _waitCoroutine = null;
                 yield break;
             }
 
-            yield return null;
-
-            AnimatorStateInfo stateInfo;
             int stateHash = Animator.StringToHash(stateName);
+            float elapsed = 0f;
+            bool hasEnteredState = false;
 
-            while (true)
+            yield return null;
+            elapsed += Time.unscaledDeltaTime;
+
+            while (elapsed < WaitTimeoutSeconds)
             {
-                stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+                AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+                bool isInTargetState = stateInfo.shortNameHash == stateHash;
 
-                if (stateInfo.shortNameHash == stateHash &&
-                    stateInfo.normalizedTime >= 1f &&
-                    !_animator.IsInTransition(0))
+                if (isInTargetState)
+                {
+                    hasEnteredState = true;
+
+                    if (stateInfo.normalizedTime >= 1f && !_animator.IsInTransition(0))
+                    {
+                        break;
+                    }
+                }
+                else if (hasEnteredState)
                 {
                     break;
                 }
 
+                elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 

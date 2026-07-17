@@ -51,6 +51,9 @@ namespace FoodieMatch.Data.Booster
                 case 3:
                     boosterType = BoosterType.Fridge;
                     return true;
+                case 4:
+                    boosterType = BoosterType.Box;
+                    return true;
                 default:
                     boosterType = default;
                     return false;

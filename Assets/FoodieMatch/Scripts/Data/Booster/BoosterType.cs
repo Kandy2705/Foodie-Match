@@ -6,5 +6,6 @@ namespace FoodieMatch.Data.Booster
         Storage = 1,
         Swap = 2,
         Fridge = 3,
+        Box = 4
     }
 }
