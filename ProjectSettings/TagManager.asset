@@ -65,5 +65,8 @@ TagManager:
   - name: FlyingFood
     uniqueID: 740608909
     locked: 0
+  - name: Effect
+    uniqueID: 726354805
+    locked: 0
   m_RenderingLayers:
   - Default
