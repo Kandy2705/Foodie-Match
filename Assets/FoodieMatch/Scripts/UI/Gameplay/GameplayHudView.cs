@@ -21,6 +21,11 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField] private TMP_Text _comboMultiplierText;
         [SerializeField] private Image _comboBarFillImage;
         [SerializeField] private ComboBarAnimController _comboBarAnimController;
+
+        [Header("Combo Feedback")]
+        [SerializeField] private RectTransform _comboFeedbackRoot;
+        [SerializeField] private ComboFeedbackView _comboFeedbackPrefab;
+
         [SerializeField] private TMP_Text[] _boosterCountTexts;
 
         private Action _pauseClicked;
@@ -100,6 +105,44 @@ namespace FoodieMatch.UI.Gameplay
             StopBreakClearCoroutine();
             _lastComboCount = 0;
             ClearComboVisualImmediate();
+        }
+
+        public void ShowComboFeedback(Vector3 worldPosition)
+        {
+            if (_comboFeedbackRoot == null || _comboFeedbackPrefab == null)
+            {
+                Debug.LogError("Combo feedback root or prefab is missing.", this);
+                return;
+            }
+
+            Camera worldCamera = Camera.main;
+
+            if (worldCamera == null)
+            {
+                Debug.LogError("Main camera is missing for combo feedback.", this);
+                return;
+            }
+
+            Vector3 screenPosition = worldCamera.WorldToScreenPoint(worldPosition);
+
+            if (screenPosition.z <= 0f || !TryGetComboFeedbackPosition(screenPosition, out Vector2 localPosition))
+            {
+                return;
+            }
+
+            ComboFeedbackView feedback = Instantiate(_comboFeedbackPrefab, _comboFeedbackRoot);
+            RectTransform feedbackRect = feedback.transform as RectTransform;
+
+            if (feedbackRect == null)
+            {
+                Debug.LogError("Combo feedback prefab must use a RectTransform.", feedback);
+                Destroy(feedback.gameObject);
+                return;
+            }
+
+            feedbackRect.anchoredPosition = localPosition;
+            feedback.gameObject.SetActive(true);
+            feedback.PlayRandomAnimation();
         }
 
         private void PlayComboAnimIfNeeded(int comboCount)
@@ -595,6 +638,20 @@ namespace FoodieMatch.UI.Gameplay
         private static bool IsValidDuration(float duration)
         {
             return duration > 0f && !float.IsNaN(duration) && !float.IsInfinity(duration);
+        }
+
+        private bool TryGetComboFeedbackPosition(Vector3 screenPosition, out Vector2 localPosition)
+        {
+            Canvas canvas = _comboFeedbackRoot.GetComponentInParent<Canvas>();
+            Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.worldCamera
+                : null;
+
+            return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                _comboFeedbackRoot,
+                screenPosition,
+                uiCamera,
+                out localPosition);
         }
     }
 }

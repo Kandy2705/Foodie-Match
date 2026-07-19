@@ -231,7 +231,7 @@ namespace FoodieMatch.Features.RequiredPackage
         }
 
         public async Task<MotionResult> PlayMatchAndExitAsync(
-            Action onMatchStarted,
+            Action<Vector3> onMatchStarted,
             Action onLidClosed)
         {
             if (IsEmpty ||
@@ -305,7 +305,7 @@ namespace FoodieMatch.Features.RequiredPackage
                         _exitEase))
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
-                InvokeMotionCallback(onMatchStarted);
+                InvokeMotionCallback(onMatchStarted, transform.position);
                 await _motionSequence;
 
                 return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
@@ -399,6 +399,18 @@ namespace FoodieMatch.Features.RequiredPackage
             try
             {
                 callback?.Invoke();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private static void InvokeMotionCallback(Action<Vector3> callback, Vector3 worldPosition)
+        {
+            try
+            {
+                callback?.Invoke(worldPosition);
             }
             catch (Exception exception)
             {

@@ -839,7 +839,7 @@ MonoBehaviour:
   _lidDropDuration: 0.12
   _lidDropEase: 9
   _completeBurstPrefab: {fileID: 3547104941651864814, guid: c6a542b16bb8c914c8178156a41f1495, type: 3}
-  _completeBurstOffset: {x: 0, y: 1.25, z: 0}
+  _completeBurstOffset: {x: 0, y: 1, z: 0}
   _horizontalSquashScaleMultiplier: {x: 1.25, y: 0.75, z: 1}
   _horizontalSquashDuration: 0.09
   _horizontalSquashEase: 9

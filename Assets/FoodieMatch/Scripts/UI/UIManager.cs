@@ -189,6 +189,11 @@ namespace FoodieMatch.UI
             _gameplayHud.SetActive(false);
         }
 
+        public void ShowComboFeedback(Vector3 worldPosition)
+        {
+            _gameplayHudView?.ShowComboFeedback(worldPosition);
+        }
+
         public Task PlayLoadingAsync()
         {
             if (!TryGetLoadingScreen(out LoadingScreenView loadingScreenView))

@@ -488,11 +488,12 @@ namespace FoodieMatch.Features.Gameplay
             TryResolveWin(session);
         }
 
-        private void HandlePackageCompletionStarted(GameplaySession session)
+        private void HandlePackageCompletionStarted(GameplaySession session, Vector3 worldPosition)
         {
             if (IsCurrentSession(session))
             {
                 _comboCoordinator.RegisterPackageCompleted(session);
+                _uiManager.ShowComboFeedback(worldPosition);
             }
         }
 

@@ -25,7 +25,7 @@ namespace FoodieMatch.Features.Gameplay
         private GameplaySession _session;
         private PackageMotionState[] _motionStates;
 
-        public event Action<GameplaySession> PackageCompletionStarted;
+        public event Action<GameplaySession, Vector3> PackageCompletionStarted;
         public event Action<GameplaySession> PackageReplaced;
         public event Action<GameplaySession> PackageDeliveryFailed;
 
@@ -607,13 +607,13 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private void NotifyPackageCompletionStarted()
+        private void NotifyPackageCompletionStarted(Vector3 worldPosition)
         {
             GameplaySession session = _session;
 
             if (session != null)
             {
-                PackageCompletionStarted?.Invoke(session);
+                PackageCompletionStarted?.Invoke(session, worldPosition);
             }
         }
 

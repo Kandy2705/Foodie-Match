@@ -183,7 +183,7 @@ namespace FoodieMatch.Features.Gameplay
 
         public Task<MotionResult> PlayRequiredPackageMatchAsync(
             int packageIndex,
-            Action onMatchStarted,
+            Action<Vector3> onMatchStarted,
             Action onLidClosed)
         {
             RequiredPackageView packageView = GetAvailablePackageView(packageIndex);
@@ -346,7 +346,7 @@ namespace FoodieMatch.Features.Gameplay
 
         private async Task<MotionResult> PlayPackageMatchAsync(
             RequiredPackageView packageView,
-            Action onMatchStarted,
+            Action<Vector3> onMatchStarted,
             Action onLidClosed)
         {
             if (!_activePackageMotions.Add(packageView))
