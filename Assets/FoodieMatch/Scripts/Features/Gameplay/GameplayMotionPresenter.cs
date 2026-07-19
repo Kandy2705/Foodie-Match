@@ -176,6 +176,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             foodItemView.Clear();
+            Destroy(foodItemView.gameObject);
             targetSlot.SetFilled();
 
             return MotionResult.Completed;
