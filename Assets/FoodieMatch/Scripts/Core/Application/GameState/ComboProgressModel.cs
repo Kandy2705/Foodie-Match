@@ -1,65 +1,68 @@
 using System;
-using UnityEngine;
 
 namespace FoodieMatch.Core.Application.GameState
 {
     public sealed class ComboProgressModel
     {
-        private readonly float _windowDuration;
-        private float _remainingTime;
+        private readonly float _comboDurationSeconds;
+        private float _remainingSeconds;
 
-        public ComboProgressModel(float windowDuration)
+        public ComboProgressModel(float comboDurationSeconds)
         {
-            if (windowDuration <= 0f)
+            if (!IsValidDuration(comboDurationSeconds))
             {
-                throw new ArgumentOutOfRangeException(nameof(windowDuration));
+                throw new ArgumentOutOfRangeException(nameof(comboDurationSeconds));
             }
 
-            _windowDuration = windowDuration;
+            _comboDurationSeconds = comboDurationSeconds;
         }
 
         public int ComboCount { get; private set; }
 
-        public float FillNormalized { get; private set; }
+        public float RemainingSeconds => _remainingSeconds;
 
-        public bool IsActive => ComboCount > 0 && _remainingTime > 0f;
+        public bool IsActive => ComboCount > 0 && _remainingSeconds > 0f;
+
+        public void RegisterPackageCompleted()
+        {
+            ComboCount = IsActive ? ComboCount + 1 : 1;
+            _remainingSeconds = _comboDurationSeconds;
+        }
+
+        public void AdvanceTime(float elapsedSeconds)
+        {
+            if (!IsValidElapsedTime(elapsedSeconds))
+            {
+                throw new ArgumentOutOfRangeException(nameof(elapsedSeconds));
+            }
+
+            if (!IsActive || elapsedSeconds == 0f)
+            {
+                return;
+            }
+
+            _remainingSeconds = Math.Max(0f, _remainingSeconds - elapsedSeconds);
+
+            if (_remainingSeconds == 0f)
+            {
+                Reset();
+            }
+        }
 
         public void Reset()
         {
             ComboCount = 0;
-            _remainingTime = 0f;
-            FillNormalized = 0f;
+            _remainingSeconds = 0f;
         }
 
-        public void RegisterOrderCompleted()
+        private static bool IsValidDuration(float durationSeconds)
         {
-            ComboCount++;
-            _remainingTime = _windowDuration;
-            FillNormalized = 1f;
+            return durationSeconds > 0f && !float.IsNaN(durationSeconds) && !float.IsInfinity(durationSeconds);
         }
 
-        public bool Tick(float deltaTime)
+        private static bool IsValidElapsedTime(float elapsedSeconds)
         {
-            if (!IsActive)
-            {
-                return false;
-            }
-
-            if (deltaTime < 0f)
-            {
-                deltaTime = 0f;
-            }
-
-            _remainingTime -= deltaTime;
-
-            if (_remainingTime <= 0f)
-            {
-                Reset();
-                return true;
-            }
-
-            FillNormalized = Mathf.Clamp01(_remainingTime / _windowDuration);
-            return false;
+            return elapsedSeconds >= 0f && !float.IsNaN(elapsedSeconds) && !float.IsInfinity(elapsedSeconds);
         }
     }
 }
