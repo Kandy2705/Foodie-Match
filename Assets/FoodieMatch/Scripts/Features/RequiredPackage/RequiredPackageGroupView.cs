@@ -9,6 +9,8 @@ namespace FoodieMatch.Features.RequiredPackage
 {
     public sealed class RequiredPackageGroupView : MonoBehaviour
     {
+        private const int InitialPackageSortingOrder = 0;
+
         [SerializeField] private RequiredPackageView[] _packages;
 
         [Header("Layout Motion")]
@@ -22,6 +24,7 @@ namespace FoodieMatch.Features.RequiredPackage
         private int _layoutMotionId;
         private float _layoutCenterX;
         private float _layoutSpacing;
+        private int _nextEnteringPackageSortingOrder;
         private bool _isLayoutInitialized;
 
         public int PackageCount => _packages != null ? _packages.Length : 0;
@@ -66,6 +69,47 @@ namespace FoodieMatch.Features.RequiredPackage
             packageView.SetFilledAmount(package.FilledAmount);
 
             return true;
+        }
+
+        public bool ShowEnteringPackageAt(int packageIndex, RequiredPackageModel package, Sprite sprite)
+        {
+            RequiredPackageView packageView = GetPackageAt(packageIndex);
+
+            if (packageView == null || package == null || package.IsEmpty)
+            {
+                return false;
+            }
+
+            packageView.SetSortingOrder(_nextEnteringPackageSortingOrder);
+
+            if (!ShowPackageAt(packageIndex, package, sprite))
+            {
+                return false;
+            }
+
+            _nextEnteringPackageSortingOrder--;
+            return true;
+        }
+
+        public void ResetSortingOrders()
+        {
+            _nextEnteringPackageSortingOrder = InitialPackageSortingOrder - 1;
+
+            if (_packages != null)
+            {
+                for (int i = 0; i < _packages.Length; i++)
+                {
+                    _packages[i]?.SetSortingOrder(InitialPackageSortingOrder);
+                }
+            }
+
+            LockedRequiredPackageView[] lockedPackages =
+                GetComponentsInChildren<LockedRequiredPackageView>(includeInactive: true);
+
+            for (int i = 0; i < lockedPackages.Length; i++)
+            {
+                lockedPackages[i].SetSortingOrder(InitialPackageSortingOrder);
+            }
         }
 
         public RequiredPackageView GetPackageAt(int packageIndex)

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace FoodieMatch.Features.RequiredPackage
 {
@@ -17,6 +18,7 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private RequiredPackageAmountView _amount3View;
         [SerializeField] private GameObject _lid;
         [SerializeField] private SpriteRenderer _lidSpriteRenderer;
+        [SerializeField] private SortingGroup _sortingGroup;
 
         [Header("Enter Motion")]
         [SerializeField] private Vector3 _enterOffset = new(-10f, 0f, 0f);
@@ -80,6 +82,7 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             EnsureInitialMotionRootTransform();
             FindLidSpriteRenderer();
+            FindSortingGroup();
             EnsureInitialLidVisual();
             HideLid();
 
@@ -96,6 +99,11 @@ namespace FoodieMatch.Features.RequiredPackage
             if (_lidSpriteRenderer == null)
             {
                 Debug.LogWarning("Required package lid sprite renderer is missing.", this);
+            }
+
+            if (_sortingGroup == null)
+            {
+                Debug.LogWarning("Required package sorting group is missing.", this);
             }
         }
 
@@ -146,6 +154,21 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             FilledAmount = Mathf.Clamp(filledAmount, 0, RequiredAmount);
             RefreshActiveView();
+        }
+
+        public void SetSortingOrder(int sortingOrder)
+        {
+            FindSortingGroup();
+
+            if (_sortingGroup == null)
+            {
+                Debug.LogError(
+                    "Required package sorting order could not be set because its sorting group is missing.",
+                    this);
+                return;
+            }
+
+            _sortingGroup.sortingOrder = sortingOrder;
         }
 
         public void Clear()
@@ -494,6 +517,14 @@ namespace FoodieMatch.Features.RequiredPackage
             if (_lidSpriteRenderer == null && _lid != null)
             {
                 _lidSpriteRenderer = _lid.GetComponentInChildren<SpriteRenderer>(includeInactive: true);
+            }
+        }
+
+        private void FindSortingGroup()
+        {
+            if (_sortingGroup == null)
+            {
+                _sortingGroup = GetComponent<SortingGroup>();
             }
         }
 

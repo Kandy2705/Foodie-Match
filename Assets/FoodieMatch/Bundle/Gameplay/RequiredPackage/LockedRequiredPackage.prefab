@@ -74,7 +74,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 128870067
-  m_SortingLayer: 4
+  m_SortingLayer: 7
   m_SortingOrder: 0
   m_Sprite: {fileID: 8976314251254761881, guid: 1ea8cf8432f2db7409ac4a6b169003e4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: 436420470782164894}
   - component: {fileID: 4752795072234847294}
   - component: {fileID: 2838282472024756387}
+  - component: {fileID: 1113363367426401390}
   m_Layer: 0
   m_Name: LockedRequiredPackage
   m_TagString: Untagged
@@ -164,7 +165,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1571236591
-  m_SortingLayer: 2
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 6719627732990584302, guid: e2e7d11042a604dc19ab6f790b8cdf78, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -237,6 +238,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _pressTarget: {fileID: 471543075290037108}
   _clickCollider: {fileID: 4752795072234847294}
+  _sortingGroup: {fileID: 1113363367426401390}
   _normalScale: {x: 1, y: 1, z: 1}
   _pressedScale: {x: 1.1, y: 1.1, z: 1}
   _isInteractable: 1
+--- !u!210 &1113363367426401390
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5534379823437444473}
+  m_Enabled: 1
+  m_SortingLayerID: -324796701
+  m_SortingLayer: 4
+  m_SortingOrder: 0
+  m_SortAtRoot: 0

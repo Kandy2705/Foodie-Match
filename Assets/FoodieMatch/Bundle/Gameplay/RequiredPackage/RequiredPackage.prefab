@@ -770,6 +770,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7680385486524866487}
   - component: {fileID: 735887740766657558}
+  - component: {fileID: 1579995214448991062}
   m_Layer: 0
   m_Name: RequiredPackage
   m_TagString: Untagged
@@ -823,6 +824,7 @@ MonoBehaviour:
     - {fileID: 3691053841975879848}
   _lid: {fileID: 4833298540697649703}
   _lidSpriteRenderer: {fileID: 3831658636382885378}
+  _sortingGroup: {fileID: 1579995214448991062}
   _enterOffset: {x: -10, y: 0, z: 0}
   _enterDuration: 0.5
   _enterEase: 27
@@ -851,6 +853,18 @@ MonoBehaviour:
   _exitOffset: {x: 0, y: 10, z: 0}
   _exitDuration: 0.3
   _exitEase: 8
+--- !u!210 &1579995214448991062
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7550832807010274248}
+  m_Enabled: 1
+  m_SortingLayerID: -324796701
+  m_SortingLayer: 4
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &8638383665403139635
 GameObject:
   m_ObjectHideFlags: 0

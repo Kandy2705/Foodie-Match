@@ -51,6 +51,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _session = session;
             _packageGroupView.ResetLayout();
+            _packageGroupView.ResetSortingOrders();
             _motionStates = new PackageMotionState[session.RequiredPackages.Length];
 
             for (int i = 0; i < session.RequiredPackages.Length; i++)
@@ -394,7 +395,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (replacementPackage != null &&
                 (!motionState.TrySetPendingPackage(expectedPackage, replacementPackage) ||
-                 !ShowPackageViewAt(packageIndex, replacementPackage)))
+                 !ShowEnteringPackageViewAt(packageIndex, replacementPackage)))
             {
                 motionState.CancelReplacement(expectedPackage);
                 RefreshPackageViewAt(packageIndex);
@@ -597,6 +598,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
             return _packageGroupView.ShowPackageAt(packageIndex, package, sprite);
+        }
+
+        private bool ShowEnteringPackageViewAt(int packageIndex, RequiredPackageModel package)
+        {
+            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
+            return _packageGroupView.ShowEnteringPackageAt(packageIndex, package, sprite);
         }
 
         private void OnPackageDeliveryFailed(GameplaySession session)

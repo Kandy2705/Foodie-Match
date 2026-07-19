@@ -1,13 +1,20 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 
 namespace FoodieMatch.Features.RequiredPackage
 {
-    public sealed class LockedRequiredPackageView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler, IPointerClickHandler
+    public sealed class LockedRequiredPackageView :
+        MonoBehaviour,
+        IPointerDownHandler,
+        IPointerUpHandler,
+        IPointerExitHandler,
+        IPointerClickHandler
     {
         [SerializeField] private Transform _pressTarget;
         [SerializeField] private Collider2D _clickCollider;
+        [SerializeField] private SortingGroup _sortingGroup;
         [SerializeField] private Vector3 _normalScale = Vector3.one;
         [SerializeField] private Vector3 _pressedScale = new Vector3(1.08f, 1.08f, 1f);
         [SerializeField] private bool _isInteractable = true;
@@ -27,6 +34,13 @@ namespace FoodieMatch.Features.RequiredPackage
                 _clickCollider = GetComponent<Collider2D>();
             }
 
+            FindSortingGroup();
+
+            if (_sortingGroup == null)
+            {
+                Debug.LogWarning("Locked required package sorting group is missing.", this);
+            }
+
             IsInteractable = _isInteractable;
             ApplyScale(_normalScale);
             ApplyColliderState();
@@ -37,6 +51,21 @@ namespace FoodieMatch.Features.RequiredPackage
             IsInteractable = isInteractable;
             ApplyScale(_normalScale);
             ApplyColliderState();
+        }
+
+        public void SetSortingOrder(int sortingOrder)
+        {
+            FindSortingGroup();
+
+            if (_sortingGroup == null)
+            {
+                Debug.LogError(
+                    "Locked required package sorting order could not be set because its sorting group is missing.",
+                    this);
+                return;
+            }
+
+            _sortingGroup.sortingOrder = sortingOrder;
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -92,6 +121,14 @@ namespace FoodieMatch.Features.RequiredPackage
             if (_clickCollider != null)
             {
                 _clickCollider.enabled = IsInteractable;
+            }
+        }
+
+        private void FindSortingGroup()
+        {
+            if (_sortingGroup == null)
+            {
+                _sortingGroup = GetComponent<SortingGroup>();
             }
         }
     }
