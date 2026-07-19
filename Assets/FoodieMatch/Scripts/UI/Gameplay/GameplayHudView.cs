@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Gameplay.Booster;
+using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +28,7 @@ namespace FoodieMatch.UI.Gameplay
         private Action<int> _boosterAddClicked;
         private int _lastComboCount;
         private Coroutine _breakClearCoroutine;
+        private Tween _comboCountdownTween;
 
         private void Awake()
         {
@@ -34,12 +36,12 @@ namespace FoodieMatch.UI.Gameplay
             EnsureTextReferences();
             EnsureComboReferences();
             BindButtons();
-            _lastComboCount = 0;
-            SetCombo(0, 0f);
+            ResetCombo();
         }
 
         private void OnDestroy()
         {
+            StopComboCountdown();
             StopBreakClearCoroutine();
             UnbindButtons();
         }
@@ -64,7 +66,7 @@ namespace FoodieMatch.UI.Gameplay
             UiTmpText.SetText(_progressText, $"{servedCount}/{totalCount}");
         }
 
-        public void SetCombo(int comboCount, float fillNormalized)
+        public void SetCombo(int comboCount, float remainingSeconds)
         {
             EnsureComboReferences();
 
@@ -74,27 +76,30 @@ namespace FoodieMatch.UI.Gameplay
             {
                 StopBreakClearCoroutine();
                 UiTmpText.SetText(_comboMultiplierText, $"x{comboCount}");
-
-                if (_comboBarFillImage != null)
-                {
-                    _comboBarFillImage.fillAmount = Mathf.Clamp01(fillNormalized);
-                }
-
+                PlayComboCountdown(remainingSeconds);
                 ResetComboMultiplierVisual();
-            }
-            else if (isBreaking)
-            {
-                if (_comboBarFillImage != null)
-                {
-                    _comboBarFillImage.fillAmount = 0f;
-                }
             }
             else
             {
-                ClearComboVisualImmediate();
+                StopComboCountdown();
+                SetComboFill(0f);
+
+                if (!isBreaking)
+                {
+                    ClearComboVisualImmediate();
+                }
             }
 
             PlayComboAnimIfNeeded(comboCount);
+        }
+
+        public void ResetCombo()
+        {
+            EnsureComboReferences();
+            StopComboCountdown();
+            StopBreakClearCoroutine();
+            _lastComboCount = 0;
+            ClearComboVisualImmediate();
         }
 
         private void PlayComboAnimIfNeeded(int comboCount)
@@ -152,14 +157,48 @@ namespace FoodieMatch.UI.Gameplay
 
         private void ClearComboVisualImmediate()
         {
+            StopComboCountdown();
             UiTmpText.SetText(_comboMultiplierText, string.Empty);
+            SetComboFill(0f);
+            ResetComboMultiplierVisual();
+        }
 
-            if (_comboBarFillImage != null)
+        private void PlayComboCountdown(float remainingSeconds)
+        {
+            StopComboCountdown();
+
+            if (_comboBarFillImage == null || !IsValidDuration(remainingSeconds))
             {
-                _comboBarFillImage.fillAmount = 0f;
+                SetComboFill(0f);
+                return;
             }
 
-            ResetComboMultiplierVisual();
+            SetComboFill(1f);
+            _comboCountdownTween = Tween.Custom(
+                this,
+                1f,
+                0f,
+                remainingSeconds,
+                (view, fill) => view.SetComboFill(fill),
+                Ease.Linear);
+        }
+
+        private void StopComboCountdown()
+        {
+            if (_comboCountdownTween.isAlive)
+            {
+                _comboCountdownTween.Stop();
+            }
+
+            _comboCountdownTween = default;
+        }
+
+        private void SetComboFill(float fill)
+        {
+            if (_comboBarFillImage != null)
+            {
+                _comboBarFillImage.fillAmount = Mathf.Clamp01(fill);
+            }
         }
 
         private void ResetComboMultiplierVisual()
@@ -186,17 +225,6 @@ namespace FoodieMatch.UI.Gameplay
 
             StopCoroutine(_breakClearCoroutine);
             _breakClearCoroutine = null;
-        }
-
-        public void SetComboMultiplier(int multiplier)
-        {
-            SetCombo(multiplier, multiplier > 0 ? 1f : 0f);
-        }
-
-        public void SetComboMultiplier(string multiplierText)
-        {
-            EnsureComboReferences();
-            UiTmpText.SetText(_comboMultiplierText, multiplierText);
         }
 
         public void SetBoosterCount(int boosterIndex, int count)
@@ -562,6 +590,11 @@ namespace FoodieMatch.UI.Gameplay
             }
 
             return null;
+        }
+
+        private static bool IsValidDuration(float duration)
+        {
+            return duration > 0f && !float.IsNaN(duration) && !float.IsInfinity(duration);
         }
     }
 }

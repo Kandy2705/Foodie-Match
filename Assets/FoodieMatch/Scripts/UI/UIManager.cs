@@ -60,7 +60,7 @@ namespace FoodieMatch.UI
         private int _currentServedCount;
         private int _currentTotalCount;
         private int _currentComboCount;
-        private float _currentComboFill;
+        private float _currentComboRemainingSeconds;
         private BoosterType _currentBoosterBuyType;
         private BoosterType _currentBoosterGuideType;
 
@@ -605,7 +605,7 @@ namespace FoodieMatch.UI
                     OnGameplayBoosterAddRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
-            _gameplayHudView.SetCombo(_currentComboCount, _currentComboFill);
+            _gameplayHudView.SetCombo(_currentComboCount, _currentComboRemainingSeconds);
             RefreshBoosterHud();
         }
 
@@ -873,10 +873,13 @@ namespace FoodieMatch.UI
         private void OnLevelStarted(LevelStartedEvent eventData)
         {
             _currentLevelNumber = eventData.LevelNumber;
+            _currentComboCount = 0;
+            _currentComboRemainingSeconds = 0f;
 
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.SetLevelNumber(eventData.LevelNumber);
+                _gameplayHudView.ResetCombo();
             }
 
             RefreshBoosterHud();
@@ -980,13 +983,13 @@ namespace FoodieMatch.UI
         private void OnComboChanged(ComboChangedEvent eventData)
         {
             _currentComboCount = eventData.ComboCount;
-            _currentComboFill = eventData.FillNormalized;
+            _currentComboRemainingSeconds = eventData.RemainingSeconds;
 
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.SetCombo(
                     eventData.ComboCount,
-                    eventData.FillNormalized);
+                    eventData.RemainingSeconds);
             }
         }
 

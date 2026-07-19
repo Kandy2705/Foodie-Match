@@ -1,4 +1,4 @@
-using UnityEngine;
+using System;
 
 namespace FoodieMatch.Core.Infrastructure.Audio
 {
@@ -42,10 +42,8 @@ namespace FoodieMatch.Core.Infrastructure.Audio
                 return string.Empty;
             }
 
-            int index = Mathf.Clamp(
-                comboCount - 1,
-                0,
-                SfxMergeCombo.Length - 1);
+            int safeComboCount = Math.Max(1, comboCount);
+            int index = (safeComboCount - 1) % SfxMergeCombo.Length;
 
             return SfxMergeCombo[index];
         }

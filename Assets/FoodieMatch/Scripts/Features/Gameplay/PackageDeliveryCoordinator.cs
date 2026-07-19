@@ -25,6 +25,7 @@ namespace FoodieMatch.Features.Gameplay
         private GameplaySession _session;
         private PackageMotionState[] _motionStates;
 
+        public event Action<GameplaySession> PackageCompletionStarted;
         public event Action<GameplaySession> PackageReplaced;
         public event Action<GameplaySession> PackageDeliveryFailed;
 
@@ -468,7 +469,7 @@ namespace FoodieMatch.Features.Gameplay
             {
                 return await _motionPresenter.PlayRequiredPackageMatchAsync(
                     packageIndex,
-                    _audioPresenter.PlayPackageCompleted,
+                    NotifyPackageCompletionStarted,
                     _audioPresenter.PlayPackageLidClosed);
             }
             catch (Exception exception)
@@ -603,6 +604,16 @@ namespace FoodieMatch.Features.Gameplay
             if (_session == session)
             {
                 PackageDeliveryFailed?.Invoke(session);
+            }
+        }
+
+        private void NotifyPackageCompletionStarted()
+        {
+            GameplaySession session = _session;
+
+            if (session != null)
+            {
+                PackageCompletionStarted?.Invoke(session);
             }
         }
 
