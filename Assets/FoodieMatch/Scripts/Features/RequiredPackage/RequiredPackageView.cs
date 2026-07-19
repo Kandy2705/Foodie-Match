@@ -39,6 +39,10 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private float _lidDropDuration = 0.12f;
         [SerializeField] private Ease _lidDropEase = Ease.OutCubic;
 
+        [Header("Match Particle")]
+        [SerializeField] private ParticleSystem _completeBurstPrefab;
+        [SerializeField] private Vector3 _completeBurstOffset = new(0f, 0.5f, 0f);
+
         [Header("Match Scale Motion")]
         [SerializeField] private Vector3 _horizontalSquashScaleMultiplier = new(1.16f, 0.78f, 1f);
         [SerializeField] private float _horizontalSquashDuration = 0.09f;
@@ -368,7 +372,26 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void NotifyLidClosed()
         {
+            PlayCompleteBurst();
             InvokeMotionCallback(_lidClosed);
+        }
+
+        private void PlayCompleteBurst()
+        {
+            if (_completeBurstPrefab == null)
+            {
+                Debug.LogError("Package complete burst prefab is missing.", this);
+                return;
+            }
+
+            Vector3 spawnPosition = transform.position + _completeBurstOffset;
+            ParticleSystem burst = Instantiate(
+                _completeBurstPrefab,
+                spawnPosition,
+                _completeBurstPrefab.transform.rotation);
+
+            burst.Play();
+            Destroy(burst.gameObject, GetParticleLifetime(burst));
         }
 
         private static void InvokeMotionCallback(Action callback)
@@ -490,6 +513,12 @@ namespace FoodieMatch.Features.RequiredPackage
         private static bool IsValidTime(float value)
         {
             return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static float GetParticleLifetime(ParticleSystem particle)
+        {
+            ParticleSystem.MainModule main = particle.main;
+            return main.startDelay.constantMax + main.duration + main.startLifetime.constantMax;
         }
 
         private static bool IsValidVector(Vector3 value)
