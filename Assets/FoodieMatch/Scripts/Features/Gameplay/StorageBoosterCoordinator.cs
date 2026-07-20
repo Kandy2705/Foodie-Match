@@ -142,7 +142,7 @@ namespace FoodieMatch.Features.Gameplay
                 }
             }
 
-            return packageIndex >= 0;
+            return packageIndex >= 0 && foundCompletablePackage;
         }
 
         private static int CountAvailableFood(
