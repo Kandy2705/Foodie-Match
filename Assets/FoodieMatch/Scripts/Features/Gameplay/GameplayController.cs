@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
@@ -23,7 +22,6 @@ namespace FoodieMatch.Features.Gameplay
     {
         private const string WinReason = "Completed";
         private const string LoseReason = "WaitingRackFull";
-        private const float StorageBoosterDeliveryStartInterval = 0.08f;
 
         [Header("Combo")]
         [SerializeField] private float _comboDurationSeconds = 8f;
@@ -49,6 +47,8 @@ namespace FoodieMatch.Features.Gameplay
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
         private GrillCompletionCoordinator _grillCompletionCoordinator;
         private ComboCoordinator _comboCoordinator;
+        private PlateBoosterCoordinator _plateBoosterCoordinator;
+        private StorageBoosterCoordinator _storageBoosterCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
 
@@ -232,270 +232,14 @@ namespace FoodieMatch.Features.Gameplay
 
         private bool TryApplyPlateBooster()
         {
-            if (_waitingRackView == null ||
-                _session.WaitingRack == null ||
-                !_waitingRackView.CanAddSlot())
-            {
-                return false;
-            }
-
-            if (!_session.WaitingRack.TryExpandBy(1))
-            {
-                return false;
-            }
-
-            _ = PlayPlateBoosterMotionSafelyAsync();
-            return true;
-        }
-
-        private async Task PlayPlateBoosterMotionSafelyAsync()
-        {
-            try
-            {
-                await _waitingRackView.PlayAddSlotAsync();
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            return _plateBoosterCoordinator != null &&
+                   _plateBoosterCoordinator.TryApply(_session);
         }
 
         private bool TryApplyStorageBooster()
         {
-            if (_session == null ||
-                _session.RequiredPackages == null)
-            {
-                return false;
-            }
-
-            if (!TryFindBestPackageForStorage(
-                    out int packageIndex,
-                    out RequiredPackageModel targetPackage))
-            {
-                Debug.Log("No incomplete package to fill.");
-                return false;
-            }
-
-            _boardLayoutView.TryCollectActiveFoodByTokenId(
-                targetPackage.FoodTokenId,
-                out List<FoodItemView> foodViews,
-                out List<FoodBoardAddress> foodAddresses);
-
-            _boardLayoutView.TryCollectActiveFoodFromTopTrays(
-                targetPackage.FoodTokenId,
-                out List<FoodItemView> trayFoodViews,
-                out List<int> trayGrillPositions,
-                out List<int> traySlotIndices);
-
-            if (foodViews.Count == 0 && trayFoodViews.Count == 0)
-            {
-                Debug.Log($"No matching food found for package {packageIndex}.");
-                return false;
-            }
-
-            _ = PlayStorageBoosterMotionSafelyAsync(
-                packageIndex, targetPackage, foodViews, foodAddresses,
-                trayFoodViews, trayGrillPositions, traySlotIndices);
-            return true;
-        }
-
-        private bool TryFindBestPackageForStorage(
-            out int packageIndex,
-            out RequiredPackageModel targetPackage)
-        {
-            packageIndex = -1;
-            targetPackage = null;
-            int maxRemaining = 0;
-            bool foundCompletablePackage = false;
-
-            for (int i = 0; i < _session.RequiredPackages.Length; i++)
-            {
-                RequiredPackageModel p = _session.RequiredPackages[i];
-
-                if (p == null || p.IsComplete)
-                {
-                    continue;
-                }
-
-                int remaining = p.RemainingAmount;
-                int availableFoodCount = CountAvailableStorageFood(p.FoodTokenId);
-                bool canCompletePackage = availableFoodCount >= remaining;
-
-                if (availableFoodCount <= 0)
-                {
-                    continue;
-                }
-
-                if (canCompletePackage && !foundCompletablePackage)
-                {
-                    foundCompletablePackage = true;
-                    maxRemaining = 0;
-                    packageIndex = -1;
-                    targetPackage = null;
-                }
-
-                if (foundCompletablePackage && !canCompletePackage)
-                {
-                    continue;
-                }
-
-                if (remaining > maxRemaining)
-                {
-                    maxRemaining = remaining;
-                    packageIndex = i;
-                    targetPackage = p;
-                }
-            }
-
-            return packageIndex >= 0;
-        }
-
-        private int CountAvailableStorageFood(int foodTokenId)
-        {
-            if (_session == null ||
-                _session.Board == null)
-            {
-                return 0;
-            }
-
-            int count = 0;
-            IReadOnlyList<int> activeFoodTokenIds = _session.Board.GetActiveFoodTokenIds();
-            IReadOnlyList<int> topTrayFoodTokenIds = _session.Board.GetTopTrayFoodTokenIds();
-
-            count += CountMatchingFood(activeFoodTokenIds, foodTokenId);
-            count += CountMatchingFood(topTrayFoodTokenIds, foodTokenId);
-            return count;
-        }
-
-        private static int CountMatchingFood(
-            IReadOnlyList<int> foodTokenIds,
-            int foodTokenId)
-        {
-            if (foodTokenIds == null)
-            {
-                return 0;
-            }
-
-            int count = 0;
-
-            for (int i = 0; i < foodTokenIds.Count; i++)
-            {
-                if (foodTokenIds[i] == foodTokenId)
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
-        private async Task PlayStorageBoosterMotionSafelyAsync(
-            int packageIndex,
-            RequiredPackageModel targetPackage,
-            List<FoodItemView> foodViews,
-            List<FoodBoardAddress> foodAddresses,
-            List<FoodItemView> trayFoodViews,
-            List<int> trayGrillPositions,
-            List<int> traySlotIndices)
-        {
-            try
-            {
-                int slotsToFill = targetPackage.RemainingAmount;
-                List<Task> deliveryTasks = new List<Task>();
-                HashSet<int> topTrayMoveCandidates = new HashSet<int>();
-                int flightOrder = 0;
-
-                for (int i = 0; i < foodViews.Count && deliveryTasks.Count < slotsToFill; i++)
-                {
-                    FoodItemView foodView = foodViews[i];
-
-                    if (foodView == null ||
-                        !targetPackage.TryPlaceFood(foodView.FoodTokenId))
-                    {
-                        continue;
-                    }
-
-                    _boardLayoutView.ReleaseFoodItem(foodView);
-
-                    if (i < foodAddresses.Count)
-                    {
-                        FoodBoardAddress address = foodAddresses[i];
-
-                        if (_session.Board.TryRemoveFood(address, foodView.FoodTokenId))
-                        {
-                            topTrayMoveCandidates.Add(address.GrillPositionIndex);
-                        }
-                    }
-
-                    float startDelay = flightOrder * StorageBoosterDeliveryStartInterval;
-                    flightOrder++;
-
-                    deliveryTasks.Add(_packageDeliveryCoordinator.DeliverSelectedFoodAsync(
-                        foodView, packageIndex, _session, startDelay));
-                }
-
-                for (int i = 0; i < trayFoodViews.Count && deliveryTasks.Count < slotsToFill; i++)
-                {
-                    FoodItemView foodView = trayFoodViews[i];
-
-                    if (foodView == null ||
-                        !targetPackage.TryPlaceFood(foodView.FoodTokenId))
-                    {
-                        continue;
-                    }
-
-                    _boardLayoutView.ReleaseTopTrayFoodItem(
-                        trayGrillPositions[i], traySlotIndices[i]);
-
-                    if (_session.Board.TryGetGrill(
-                            trayGrillPositions[i], out var trayGrill) &&
-                        trayGrill.TopTray != null)
-                    {
-                        bool removedTrayFood = trayGrill.TopTray.TryRemoveFoodAt(
-                            traySlotIndices[i], foodView.FoodTokenId);
-
-                        if (removedTrayFood && trayGrill.TopTray.FoodCount == 0)
-                        {
-                            if (!trayGrill.TryRemoveEmptyTopTray() ||
-                                !_boardLayoutView.RemoveTopTrayVisual(trayGrill))
-                            {
-                                Debug.LogError(
-                                    $"Empty top tray on grill {trayGrillPositions[i]} could not be removed.");
-                            }
-
-                            topTrayMoveCandidates.Add(trayGrillPositions[i]);
-                        }
-                    }
-
-                    float startDelay = flightOrder * StorageBoosterDeliveryStartInterval;
-                    flightOrder++;
-
-                    deliveryTasks.Add(_packageDeliveryCoordinator.DeliverSelectedFoodAsync(
-                        foodView, packageIndex, _session, startDelay));
-                }
-
-                foreach (int grillPositionIndex in topTrayMoveCandidates)
-                {
-                    if (_session.Board.TryGetGrill(
-                            grillPositionIndex,
-                            out var grill) &&
-                        grill.IsEmpty)
-                    {
-                        _topTrayMoveCoordinator.MoveFoodToGrill(grillPositionIndex, _session);
-                    }
-                }
-
-                await Task.WhenAll(deliveryTasks);
-
-                if (_session.CanContinueGameplay)
-                {
-                    TryResolveWin(_session);
-                }
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            return _storageBoosterCoordinator != null &&
+                   _storageBoosterCoordinator.TryApply(_session);
         }
 
         private void CreateCoordinators()
@@ -511,6 +255,13 @@ namespace FoodieMatch.Features.Gameplay
             _grillCompletionCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
             _comboCoordinator = new(_sessionGuard, _gameplayEvents, _gameplayAudioPresenter);
+            _plateBoosterCoordinator = new(_sessionGuard, _waitingRackView);
+            _storageBoosterCoordinator = new(
+                _sessionGuard,
+                _boardLayoutView,
+                _packageDeliveryCoordinator,
+                _topTrayMoveCoordinator,
+                TryResolveWin);
         }
 
         private void SubscribeCoordinatorEvents()
