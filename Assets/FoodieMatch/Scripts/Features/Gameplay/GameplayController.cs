@@ -144,7 +144,7 @@ namespace FoodieMatch.Features.Gameplay
             BoardModel board = _boardModelFactory.Create(levelConfig);
             RequiredPackageGenerationSettings packageSettings = levelConfig.RequiredPackageGenerationSettings;
 
-            if (!_foodVisualResolver.TryCreateRandomMapping(board.GetAllFoodTokenIds()))
+            if (!_foodVisualResolver.TryCreateMapping(board.GetAllFoodTokenIds(), levelNumber))
             {
                 Debug.LogError($"Food visual mapping could not be created for level {levelNumber}.");
                 return;
