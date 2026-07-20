@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "levelOrder": [1],
+  "levels": [
+    {
+      "id": 1,
+      "difficulty": "normal",
+      "seed": 1001,
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 40,
+          "readyNow": 50,
+          "topTray": 10
+        },
+        "middle": {
+          "rackRescue": 20,
+          "readyNow": 30,
+          "topTray": 50
+        },
+        "late": {
+          "rackRescue": 60,
+          "readyNow": 30,
+          "topTray": 10
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -1.5,
+            "y": 0.0
+          },
+          "foodIds": [1, 1, 2],
+          "trays": [
+            {
+              "foodIds": [1, 2, 2]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": 0.0
+          },
+          "foodIds": [3, 3, 4],
+          "trays": [
+            {
+              "foodIds": [3, 4, 4]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
