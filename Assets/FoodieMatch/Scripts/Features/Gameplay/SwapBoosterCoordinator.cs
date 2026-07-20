@@ -196,9 +196,30 @@ namespace FoodieMatch.Features.Gameplay
             {
                 GrillModel grill = board.GetGrillAt(g);
 
-                if (grill != null)
+                if (grill == null)
                 {
-                    count += grill.RemainingFoodCount;
+                    continue;
+                }
+
+                for (int s = 0; s < grill.ActiveFoodSlotCount; s++)
+                {
+                    if (grill.GetFoodTokenIdAt(s) > BoardRules.EmptyFoodTokenId)
+                    {
+                        count++;
+                    }
+                }
+
+                TrayModel topTray = grill.TopTray;
+
+                if (topTray != null)
+                {
+                    for (int s = 0; s < topTray.SlotCount; s++)
+                    {
+                        if (topTray.GetFoodTokenIdAt(s) > BoardRules.EmptyFoodTokenId)
+                        {
+                            count++;
+                        }
+                    }
                 }
             }
 
@@ -231,7 +252,7 @@ namespace FoodieMatch.Features.Gameplay
 
                     if (tokenId > BoardRules.EmptyFoodTokenId)
                     {
-                        grillSlots.Add((g, GrillSlotMarker, s));
+                        grillSlots.Add((grill.PositionIndex, GrillSlotMarker, s));
                         grillTokens.Add(tokenId);
                     }
                 }
@@ -246,7 +267,7 @@ namespace FoodieMatch.Features.Gameplay
 
                         if (tokenId > BoardRules.EmptyFoodTokenId)
                         {
-                            traySlots.Add((g, 0, s));
+                            traySlots.Add((grill.PositionIndex, 0, s));
                             trayTokens.Add(tokenId);
                         }
                     }
@@ -574,59 +595,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             return need;
-        }
-
-        private static int ResolveSlotsPerGrill(BoardModel board)
-        {
-            if (board == null)
-            {
-                return 0;
-            }
-
-            for (int g = 0; g < board.GrillCount; g++)
-            {
-                GrillModel grill = board.GetGrillAt(g);
-
-                if (grill != null && grill.ActiveFoodSlotCount > 0)
-                {
-                    return grill.ActiveFoodSlotCount;
-                }
-            }
-
-            return 0;
-        }
-
-        private static void EnsureOrderChanged(
-            List<int> originalTokenIds,
-            List<int> reorderedTokenIds)
-        {
-            if (originalTokenIds == null ||
-                reorderedTokenIds == null ||
-                reorderedTokenIds.Count < 2 ||
-                originalTokenIds.Count != reorderedTokenIds.Count)
-            {
-                return;
-            }
-
-            bool isSame = true;
-
-            for (int i = 0; i < reorderedTokenIds.Count; i++)
-            {
-                if (originalTokenIds[i] != reorderedTokenIds[i])
-                {
-                    isSame = false;
-                    break;
-                }
-            }
-
-            if (!isSame)
-            {
-                return;
-            }
-
-            int first = reorderedTokenIds[0];
-            reorderedTokenIds.RemoveAt(0);
-            reorderedTokenIds.Add(first);
         }
     }
 }
