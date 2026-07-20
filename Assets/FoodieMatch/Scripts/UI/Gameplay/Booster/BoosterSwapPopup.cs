@@ -42,25 +42,18 @@ namespace FoodieMatch.UI.Booster
             _canvasGroup.alpha = 1f;
         }
 
-        public async Task PlaySwapAnimationAsync()
+        public Task StartSwapAnimationAsync()
         {
             EnsureSkeletonGraphic();
 
-            if (_skeletonGraphic == null)
+            if (_skeletonGraphic == null || _skeletonGraphic.AnimationState == null)
             {
-                Debug.LogError("BoosterSwapPopup SkeletonGraphic is missing.", this);
-                return;
+                return Task.CompletedTask;
             }
 
             if (!_skeletonGraphic.IsValid)
             {
                 _skeletonGraphic.Initialize(overwrite: false);
-            }
-
-            if (_skeletonGraphic.AnimationState == null)
-            {
-                Debug.LogError("BoosterSwapPopup AnimationState is missing.", this);
-                return;
             }
 
             StopListeningForCompletion();
@@ -69,23 +62,45 @@ namespace FoodieMatch.UI.Booster
             _canvasGroup.alpha = 1f;
 
             _animationTcs = new TaskCompletionSource<bool>();
-            TrackEntry trackEntry = null;
 
-            try
+            _skeletonGraphic.AnimationState.ClearTracks();
+            _trackEntry = _skeletonGraphic.AnimationState.SetAnimation(
+                0, "swap_booster", loop: false);
+            _trackEntry.Complete += HandleAnimationCompleted;
+
+            return _animationTcs.Task;
+        }
+
+        public async Task WaitForAnimationProgressAsync(
+            float normalizedProgress)
+        {
+            normalizedProgress = Mathf.Clamp01(
+                normalizedProgress);
+
+            TrackEntry entry = _trackEntry;
+
+            if (entry == null)
             {
-                _skeletonGraphic.AnimationState.ClearTracks();
-                _trackEntry = _skeletonGraphic.AnimationState.SetAnimation(
-                    0, "swap_booster", loop: false);
-                _trackEntry.Complete += HandleAnimationCompleted;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception, this);
-                StopListeningForCompletion();
                 return;
             }
 
-            await _animationTcs.Task;
+            float animationDuration =
+                entry.AnimationEnd - entry.AnimationStart;
+
+            if (animationDuration <= 0f)
+            {
+                return;
+            }
+
+            float targetTime =
+                entry.AnimationStart +
+                animationDuration * normalizedProgress;
+
+            while (_trackEntry == entry &&
+                   entry.AnimationTime < targetTime)
+            {
+                await Task.Yield();
+            }
         }
 
         public async Task HideAsync()

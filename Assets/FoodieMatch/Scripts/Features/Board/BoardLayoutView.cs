@@ -22,11 +22,11 @@ namespace FoodieMatch.Features.Board
         private readonly Dictionary<int, List<FoodItemView>>
             _topTrayFoodItems = new();
 
-        private const float HidePunchScaleMultiplier = 1.05f;
+        private const float HidePunchScaleMultiplier = 1.1f;
         private const float HidePunchDuration = 0.05f;
         private const float HideShrinkDuration = 0.15f;
 
-        private const float RevealOvershootScaleMultiplier = 1.15f;
+        private const float RevealOvershootScaleMultiplier = 1.2f;
         private const float RevealGrowDuration = 0.18f;
         private const float RevealSettleDuration = 0.08f;
 

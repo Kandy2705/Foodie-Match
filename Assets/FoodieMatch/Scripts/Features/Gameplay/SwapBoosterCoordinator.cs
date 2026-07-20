@@ -101,27 +101,31 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!IsCurrentSession(session) || !session.CanContinueGameplay)
             {
-                await FinishSwapAsync(session, oldFoodViews, swapPopup: null, rebuildVisuals: false);
                 return;
             }
 
             BoosterSwapPopup swapPopup = _uiManager.ShowSwapPopup();
 
+            Task popupAnimationTask = null;
+
             if (swapPopup != null)
             {
-                await swapPopup.PlaySwapAnimationAsync();
+                popupAnimationTask = swapPopup.StartSwapAnimationAsync();
+                await swapPopup.WaitForAnimationProgressAsync(0.9f);
             }
 
             if (!IsCurrentSession(session) || !session.CanContinueGameplay)
             {
-                await FinishSwapAsync(session, oldFoodViews, swapPopup, rebuildVisuals: false);
                 return;
             }
 
             if (!TryRearrangeAllBoardFood(session))
             {
-                Debug.LogWarning("Swap booster could not rearrange board food.");
-                await FinishSwapAsync(session, oldFoodViews, swapPopup, rebuildVisuals: false);
+                if (popupAnimationTask != null)
+                {
+                    await popupAnimationTask;
+                }
+
                 return;
             }
 
@@ -129,41 +133,23 @@ namespace FoodieMatch.Features.Gameplay
                 session.Board,
                 startHidden: true);
 
+            Task foodRevealTask =
+                _boardLayoutView.AnimateRevealFoodAsync(newFoodViews);
+
+            if (popupAnimationTask != null)
+            {
+                await Task.WhenAll(popupAnimationTask, foodRevealTask);
+            }
+            else
+            {
+                await foodRevealTask;
+            }
+
             if (swapPopup != null)
             {
                 await swapPopup.HideAsync();
                 _uiManager.HideSwapPopup();
             }
-
-            await FinishSwapAsync(session, newFoodViews, swapPopup: null, rebuildVisuals: false);
-        }
-
-        private async Task FinishSwapAsync(
-            GameplaySession session,
-            List<FoodItemView> foodViews,
-            BoosterSwapPopup swapPopup,
-            bool rebuildVisuals)
-        {
-            if (swapPopup != null)
-            {
-                await swapPopup.HideAsync();
-                _uiManager.HideSwapPopup();
-            }
-
-            if (!IsCurrentSession(session) || !session.CanContinueGameplay)
-            {
-                return;
-            }
-
-            if (rebuildVisuals)
-            {
-                foodViews = _boardLayoutView.RebuildFoodVisuals(
-                    session.Board,
-                    startHidden: true);
-            }
-
-            await _boardLayoutView.AnimateRevealFoodAsync(
-                foodViews);
 
             if (IsCurrentSession(session) && session.CanContinueGameplay)
             {
