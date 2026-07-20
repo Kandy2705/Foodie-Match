@@ -47,6 +47,19 @@ namespace FoodieMatch.Core.Domain.Grill
                 : BoardRules.EmptyFoodTokenId;
         }
 
+        public bool TryRemoveFoodAt(int slotIndex, int expectedFoodTokenId)
+        {
+            if (slotIndex < 0 ||
+                slotIndex >= _foodTokenIds.Length ||
+                _foodTokenIds[slotIndex] != expectedFoodTokenId)
+            {
+                return false;
+            }
+
+            _foodTokenIds[slotIndex] = BoardRules.EmptyFoodTokenId;
+            return true;
+        }
+
         private static void ValidateFoodSlots(
             IReadOnlyList<int> foodTokenIds)
         {
