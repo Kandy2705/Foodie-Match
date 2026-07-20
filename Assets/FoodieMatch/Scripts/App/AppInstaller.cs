@@ -28,6 +28,7 @@ namespace FoodieMatch.App
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
+            GameplayWorldClickSfx gameplayWorldClickSfx = CreateGameplayWorldClickSfx(appRoot, audioService);
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
             System.Random random = new System.Random();
@@ -69,6 +70,7 @@ namespace FoodieMatch.App
                 appRoot.WaitingRackView,
                 appRoot.GameplayMotionPresenter,
                 gameplayAudioPresenter,
+                gameplayWorldClickSfx,
                 appRoot.FoodVisualResolver,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
@@ -95,6 +97,22 @@ namespace FoodieMatch.App
 
             appRoot.AudioService.Construct(saveService);
             return appRoot.AudioService;
+        }
+
+        private static GameplayWorldClickSfx CreateGameplayWorldClickSfx(
+            AppRoot appRoot,
+            IAudioService audioService)
+        {
+            GameplayWorldClickSfx worldClickSfx =
+                appRoot.GameplayController.GetComponent<GameplayWorldClickSfx>();
+
+            if (worldClickSfx == null)
+            {
+                worldClickSfx = appRoot.GameplayController.gameObject.AddComponent<GameplayWorldClickSfx>();
+            }
+
+            worldClickSfx.Construct(audioService);
+            return worldClickSfx;
         }
 
         private bool HasValidReferences(AppRoot appRoot)

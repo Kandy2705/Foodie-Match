@@ -49,8 +49,8 @@ MonoBehaviour:
   _popupManager: {fileID: 1080891133631342676}
   _gameplayHudPrefab: {fileID: 572790035337981529, guid: 4145a9f26e87944388702bdb7387eb66, type: 3}
   _hudRoot: {fileID: 3452430392946768677}
-  _loadingScreenPrefab: {fileID: 0}
-  _loadingRoot: {fileID: 0}
+  _loadingScreenPrefab: {fileID: 7440178564741621615, guid: 4292533880ee24a5e83a102feeda0aa8, type: 3}
+  _loadingRoot: {fileID: 6758003521176904712}
   _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
 --- !u!1 &2238115760142046326
 GameObject:

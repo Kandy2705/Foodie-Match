@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace FoodieMatch.Features.RequiredPackage
 {
@@ -17,6 +18,7 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private RequiredPackageAmountView _amount3View;
         [SerializeField] private GameObject _lid;
         [SerializeField] private SpriteRenderer _lidSpriteRenderer;
+        [SerializeField] private SortingGroup _sortingGroup;
 
         [Header("Enter Motion")]
         [SerializeField] private Vector3 _enterOffset = new(-10f, 0f, 0f);
@@ -38,6 +40,10 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private Vector3 _lidDropOffset = new(0f, 0.35f, 0f);
         [SerializeField] private float _lidDropDuration = 0.12f;
         [SerializeField] private Ease _lidDropEase = Ease.OutCubic;
+
+        [Header("Match Particle")]
+        [SerializeField] private ParticleSystem _completeBurstPrefab;
+        [SerializeField] private Vector3 _completeBurstOffset = new(0f, 0.5f, 0f);
 
         [Header("Match Scale Motion")]
         [SerializeField] private Vector3 _horizontalSquashScaleMultiplier = new(1.16f, 0.78f, 1f);
@@ -76,6 +82,7 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             EnsureInitialMotionRootTransform();
             FindLidSpriteRenderer();
+            FindSortingGroup();
             EnsureInitialLidVisual();
             HideLid();
 
@@ -92,6 +99,11 @@ namespace FoodieMatch.Features.RequiredPackage
             if (_lidSpriteRenderer == null)
             {
                 Debug.LogWarning("Required package lid sprite renderer is missing.", this);
+            }
+
+            if (_sortingGroup == null)
+            {
+                Debug.LogWarning("Required package sorting group is missing.", this);
             }
         }
 
@@ -142,6 +154,21 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             FilledAmount = Mathf.Clamp(filledAmount, 0, RequiredAmount);
             RefreshActiveView();
+        }
+
+        public void SetSortingOrder(int sortingOrder)
+        {
+            FindSortingGroup();
+
+            if (_sortingGroup == null)
+            {
+                Debug.LogError(
+                    "Required package sorting order could not be set because its sorting group is missing.",
+                    this);
+                return;
+            }
+
+            _sortingGroup.sortingOrder = sortingOrder;
         }
 
         public void Clear()
@@ -227,7 +254,7 @@ namespace FoodieMatch.Features.RequiredPackage
         }
 
         public async Task<MotionResult> PlayMatchAndExitAsync(
-            Action onMatchStarted,
+            Action<Vector3> onMatchStarted,
             Action onLidClosed)
         {
             if (IsEmpty ||
@@ -301,7 +328,7 @@ namespace FoodieMatch.Features.RequiredPackage
                         _exitEase))
                     .ChainCallback(this, target => target.MarkMotionFinished());
 
-                InvokeMotionCallback(onMatchStarted);
+                InvokeMotionCallback(onMatchStarted, transform.position);
                 await _motionSequence;
 
                 return _didMotionFinish ? MotionResult.Completed : MotionResult.Cancelled;
@@ -368,7 +395,26 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void NotifyLidClosed()
         {
+            PlayCompleteBurst();
             InvokeMotionCallback(_lidClosed);
+        }
+
+        private void PlayCompleteBurst()
+        {
+            if (_completeBurstPrefab == null)
+            {
+                Debug.LogError("Package complete burst prefab is missing.", this);
+                return;
+            }
+
+            Vector3 spawnPosition = transform.position + _completeBurstOffset;
+            ParticleSystem burst = Instantiate(
+                _completeBurstPrefab,
+                spawnPosition,
+                _completeBurstPrefab.transform.rotation);
+
+            burst.Play();
+            Destroy(burst.gameObject, GetParticleLifetime(burst));
         }
 
         private static void InvokeMotionCallback(Action callback)
@@ -376,6 +422,18 @@ namespace FoodieMatch.Features.RequiredPackage
             try
             {
                 callback?.Invoke();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private static void InvokeMotionCallback(Action<Vector3> callback, Vector3 worldPosition)
+        {
+            try
+            {
+                callback?.Invoke(worldPosition);
             }
             catch (Exception exception)
             {
@@ -462,6 +520,14 @@ namespace FoodieMatch.Features.RequiredPackage
             }
         }
 
+        private void FindSortingGroup()
+        {
+            if (_sortingGroup == null)
+            {
+                _sortingGroup = GetComponent<SortingGroup>();
+            }
+        }
+
         private void EnsureInitialLidVisual()
         {
             if (_hasInitialLidVisual || _lid == null || _lidSpriteRenderer == null)
@@ -490,6 +556,12 @@ namespace FoodieMatch.Features.RequiredPackage
         private static bool IsValidTime(float value)
         {
             return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static float GetParticleLifetime(ParticleSystem particle)
+        {
+            ParticleSystem.MainModule main = particle.main;
+            return main.startDelay.constantMax + main.duration + main.startLifetime.constantMax;
         }
 
         private static bool IsValidVector(Vector3 value)

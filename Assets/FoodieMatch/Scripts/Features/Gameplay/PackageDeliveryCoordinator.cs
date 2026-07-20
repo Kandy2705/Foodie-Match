@@ -25,6 +25,7 @@ namespace FoodieMatch.Features.Gameplay
         private GameplaySession _session;
         private PackageMotionState[] _motionStates;
 
+        public event Action<GameplaySession, Vector3> PackageCompletionStarted;
         public event Action<GameplaySession> PackageReplaced;
         public event Action<GameplaySession> PackageDeliveryFailed;
 
@@ -50,6 +51,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _session = session;
             _packageGroupView.ResetLayout();
+            _packageGroupView.ResetSortingOrders();
             _motionStates = new PackageMotionState[session.RequiredPackages.Length];
 
             for (int i = 0; i < session.RequiredPackages.Length; i++)
@@ -393,7 +395,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (replacementPackage != null &&
                 (!motionState.TrySetPendingPackage(expectedPackage, replacementPackage) ||
-                 !ShowPackageViewAt(packageIndex, replacementPackage)))
+                 !ShowEnteringPackageViewAt(packageIndex, replacementPackage)))
             {
                 motionState.CancelReplacement(expectedPackage);
                 RefreshPackageViewAt(packageIndex);
@@ -468,7 +470,7 @@ namespace FoodieMatch.Features.Gameplay
             {
                 return await _motionPresenter.PlayRequiredPackageMatchAsync(
                     packageIndex,
-                    _audioPresenter.PlayPackageCompleted,
+                    NotifyPackageCompletionStarted,
                     _audioPresenter.PlayPackageLidClosed);
             }
             catch (Exception exception)
@@ -598,11 +600,27 @@ namespace FoodieMatch.Features.Gameplay
             return _packageGroupView.ShowPackageAt(packageIndex, package, sprite);
         }
 
+        private bool ShowEnteringPackageViewAt(int packageIndex, RequiredPackageModel package)
+        {
+            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
+            return _packageGroupView.ShowEnteringPackageAt(packageIndex, package, sprite);
+        }
+
         private void OnPackageDeliveryFailed(GameplaySession session)
         {
             if (_session == session)
             {
                 PackageDeliveryFailed?.Invoke(session);
+            }
+        }
+
+        private void NotifyPackageCompletionStarted(Vector3 worldPosition)
+        {
+            GameplaySession session = _session;
+
+            if (session != null)
+            {
+                PackageCompletionStarted?.Invoke(session, worldPosition);
             }
         }
 

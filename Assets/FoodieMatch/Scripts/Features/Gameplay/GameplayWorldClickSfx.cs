@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using FoodieMatch.Core.Infrastructure.Audio;
-using FoodieMatch.Features.Food;
-using FoodieMatch.Features.RequiredPackage;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -18,6 +16,17 @@ namespace FoodieMatch.Features.Gameplay
         public void Construct(IAudioService audioService)
         {
             _audioService = audioService;
+            enabled = false;
+        }
+
+        public void StartListening()
+        {
+            enabled = true;
+        }
+
+        public void StopListening()
+        {
+            enabled = false;
         }
 
         private void Update()
@@ -71,12 +80,6 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (IsSelectableGameplayTarget(hitObject))
-            {
-                _audioService.PlaySfx(AudioKeys.SfxSelectSkewer);
-                return;
-            }
-
             _audioService.PlaySfx(AudioKeys.SfxScreenTap);
         }
 
@@ -102,24 +105,6 @@ namespace FoodieMatch.Features.Gameplay
         {
             return hitObject.GetComponentInParent<Graphic>() != null &&
                    hitObject.GetComponentInParent<Canvas>() != null;
-        }
-
-        private static bool IsSelectableGameplayTarget(GameObject hitObject)
-        {
-            FoodItemView foodItemView =
-                hitObject.GetComponentInParent<FoodItemView>();
-
-            if (foodItemView != null &&
-                !foodItemView.IsEmpty &&
-                foodItemView.IsInteractable)
-            {
-                return true;
-            }
-
-            LockedRequiredPackageView lockedPackage =
-                hitObject.GetComponentInParent<LockedRequiredPackageView>();
-
-            return lockedPackage != null && lockedPackage.IsInteractable;
         }
 
         private static bool TryGetPrimaryPressScreenPosition(

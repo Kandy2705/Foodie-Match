@@ -113,12 +113,16 @@ namespace FoodieMatch.Features.WaitingRack
 
         public void Clear()
         {
-            if (_foodItemView != null)
+            FoodItemView foodItemView = _foodItemView;
+            ResetSlot();
+
+            if (foodItemView == null)
             {
-                _foodItemView.CancelMotion();
+                return;
             }
 
-            ResetSlot();
+            foodItemView.Clear();
+            Destroy(foodItemView.gameObject);
         }
 
         private void ResetSlot()

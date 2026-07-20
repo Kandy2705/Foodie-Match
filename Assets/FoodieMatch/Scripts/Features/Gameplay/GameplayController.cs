@@ -23,6 +23,9 @@ namespace FoodieMatch.Features.Gameplay
         private const string WinReason = "Completed";
         private const string LoseReason = "WaitingRackFull";
 
+        [Header("Combo")]
+        [SerializeField] private float _comboDurationSeconds = 8f;
+
         private readonly GameplaySessionGuard _sessionGuard = new();
 
         private UIManager _uiManager;
@@ -32,6 +35,7 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackView _waitingRackView;
         private GameplayMotionPresenter _gameplayMotionPresenter;
         private GameplayAudioPresenter _gameplayAudioPresenter;
+        private GameplayWorldClickSfx _gameplayWorldClickSfx;
         private FoodVisualResolver _foodVisualResolver;
         private RequiredPackageLifecycleUseCase _requiredPackageLifecycleUseCase;
         private SelectFoodUseCase _selectFoodUseCase;
@@ -41,15 +45,23 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackPlacementCoordinator _waitingRackPlacementCoordinator;
         private WaitingRackAutoFillCoordinator _waitingRackAutoFillCoordinator;
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
+        private ComboCoordinator _comboCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
 
+        private void Update()
+        {
+            _comboCoordinator?.AdvanceTime(Time.deltaTime);
+        }
+
         private void OnDestroy()
         {
+            _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
+            _comboCoordinator?.EndSession();
 
             if (_boardLayoutView != null)
             {
@@ -67,6 +79,7 @@ namespace FoodieMatch.Features.Gameplay
             WaitingRackView waitingRackView,
             GameplayMotionPresenter gameplayMotionPresenter,
             GameplayAudioPresenter gameplayAudioPresenter,
+            GameplayWorldClickSfx gameplayWorldClickSfx,
             FoodVisualResolver foodVisualResolver,
             RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase,
             SelectFoodUseCase selectFoodUseCase,
@@ -80,6 +93,7 @@ namespace FoodieMatch.Features.Gameplay
             _waitingRackView = waitingRackView;
             _gameplayMotionPresenter = gameplayMotionPresenter;
             _gameplayAudioPresenter = gameplayAudioPresenter;
+            _gameplayWorldClickSfx = gameplayWorldClickSfx;
             _foodVisualResolver = foodVisualResolver;
             _requiredPackageLifecycleUseCase = requiredPackageLifecycleUseCase;
             _selectFoodUseCase = selectFoodUseCase;
@@ -99,6 +113,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (!HasDependencies())
             {
+                return;
+            }
+
+            if (!IsValidComboDuration())
+            {
+                Debug.LogError("Combo duration must be greater than zero.");
                 return;
             }
 
@@ -143,6 +163,7 @@ namespace FoodieMatch.Features.Gameplay
 
             int sessionId = _sessionGuard.BeginSession();
             LevelProgressModel progress = new(board.RemainingFoodCount);
+            ComboProgressModel combo = new(_comboDurationSeconds);
             _session = new(
                 sessionId,
                 levelNumber,
@@ -150,6 +171,7 @@ namespace FoodieMatch.Features.Gameplay
                 requiredPackages,
                 waitingRack,
                 progress,
+                combo,
                 packageSettings);
 
             _gameplayMotionPresenter.CancelAllMotions();
@@ -158,19 +180,23 @@ namespace FoodieMatch.Features.Gameplay
             _packageDeliveryCoordinator.BeginSession(_session);
             _waitingRackAutoFillCoordinator.BeginSession(_session);
             _session.StartPlaying();
+            _gameplayWorldClickSfx.StartListening();
 
             Debug.Log($"Start Level {levelNumber}");
             _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelNumber));
+            _comboCoordinator.BeginSession(_session);
             _gameplayEvents.OnLevelProgressChanged(
                 new LevelProgressChangedEvent(_session.Progress.ServedCount, _session.Progress.TotalCount));
         }
 
         public void ClearLevel()
         {
+            _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
+            _comboCoordinator?.EndSession();
             _waitingRackView?.Clear();
             _session = null;
 
@@ -236,10 +262,12 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
             _topTrayMoveCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _boardLayoutView);
+            _comboCoordinator = new(_sessionGuard, _gameplayEvents, _gameplayAudioPresenter);
         }
 
         private void SubscribeCoordinatorEvents()
         {
+            _packageDeliveryCoordinator.PackageCompletionStarted += HandlePackageCompletionStarted;
             _packageDeliveryCoordinator.PackageReplaced += HandlePackageReplaced;
             _packageDeliveryCoordinator.PackageDeliveryFailed += HandleGameplayFlowFailed;
             _waitingRackAutoFillCoordinator.AutoFillFinished += HandleAutoFillFinished;
@@ -250,6 +278,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (_packageDeliveryCoordinator != null)
             {
+                _packageDeliveryCoordinator.PackageCompletionStarted -= HandlePackageCompletionStarted;
                 _packageDeliveryCoordinator.PackageReplaced -= HandlePackageReplaced;
                 _packageDeliveryCoordinator.PackageDeliveryFailed -= HandleGameplayFlowFailed;
             }
@@ -302,6 +331,12 @@ namespace FoodieMatch.Features.Gameplay
             if (_gameplayAudioPresenter == null)
             {
                 Debug.LogError("GameplayAudioPresenter has not been constructed.");
+                return false;
+            }
+
+            if (_gameplayWorldClickSfx == null)
+            {
+                Debug.LogError("GameplayWorldClickSfx has not been constructed.");
                 return false;
             }
 
@@ -434,7 +469,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (causedWaitingRackFull && session.State == LevelSessionState.AwaitingRevive)
             {
-                ShowLosePopup(session);
+                ShowReviveFlow(session);
             }
         }
 
@@ -451,6 +486,15 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             TryResolveWin(session);
+        }
+
+        private void HandlePackageCompletionStarted(GameplaySession session, Vector3 worldPosition)
+        {
+            if (IsCurrentSession(session))
+            {
+                _comboCoordinator.RegisterPackageCompleted(session);
+                _uiManager.ShowComboFeedback(worldPosition);
+            }
         }
 
         private void HandleAutoFillFinished(GameplaySession session)
@@ -488,18 +532,20 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
+            _gameplayWorldClickSfx.StopListening();
             _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
             _uiManager.ShowWinPopup(OnWinRewardClicked, OnWinRewardClicked);
         }
 
-        private void ShowLosePopup(GameplaySession session)
+        private void ShowReviveFlow(GameplaySession session)
         {
             if (!IsCurrentSession(session) || session.State != LevelSessionState.AwaitingRevive)
             {
                 return;
             }
 
-            _uiManager.ShowLosePopup(OnTryAgainClicked, OnHomeClicked);
+            _gameplayWorldClickSfx.StopListening();
+            _uiManager.ShowRevivePopup(OnTryAgainClicked, OnHomeClicked);
         }
 
         private void FinalizeLose()
@@ -517,6 +563,13 @@ namespace FoodieMatch.Features.Gameplay
         private bool IsCurrentSession(GameplaySession session)
         {
             return session != null && _session == session && _sessionGuard.IsCurrentSession(session.SessionId);
+        }
+
+        private bool IsValidComboDuration()
+        {
+            return _comboDurationSeconds > 0f &&
+                   !float.IsNaN(_comboDurationSeconds) &&
+                   !float.IsInfinity(_comboDurationSeconds);
         }
 
         private void OnWinRewardClicked()

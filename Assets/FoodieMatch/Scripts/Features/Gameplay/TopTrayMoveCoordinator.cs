@@ -145,6 +145,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (motionResult == MotionResult.Completed)
             {
+                foodItemView.PlayGrillSmoke();
                 _audioPresenter.PlayFoodMovedToGrill();
             }
         }

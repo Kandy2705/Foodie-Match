@@ -16,6 +16,7 @@ namespace FoodieMatch.Features.Gameplay
             RequiredPackageModel[] requiredPackages,
             WaitingRackModel waitingRack,
             LevelProgressModel progress,
+            ComboProgressModel combo,
             RequiredPackageGenerationSettings packageSettings)
         {
             if (sessionId <= 0)
@@ -34,6 +35,7 @@ namespace FoodieMatch.Features.Gameplay
             RequiredPackages = requiredPackages ?? throw new ArgumentNullException(nameof(requiredPackages));
             WaitingRack = waitingRack ?? throw new ArgumentNullException(nameof(waitingRack));
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
+            Combo = combo ?? throw new ArgumentNullException(nameof(combo));
             PackageSettings = packageSettings ?? throw new ArgumentNullException(nameof(packageSettings));
         }
 
@@ -43,6 +45,7 @@ namespace FoodieMatch.Features.Gameplay
         public RequiredPackageModel[] RequiredPackages { get; }
         public WaitingRackModel WaitingRack { get; }
         public LevelProgressModel Progress { get; }
+        public ComboProgressModel Combo { get; }
         public RequiredPackageGenerationSettings PackageSettings { get; }
         public int DisplayedServedCount { get; private set; }
         public LevelSessionState State { get; private set; }

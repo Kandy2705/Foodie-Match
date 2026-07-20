@@ -27,9 +27,9 @@ namespace FoodieMatch.Features.Gameplay
             _audioService.PlaySfx(AudioKeys.SfxBoxMove);
         }
 
-        public void PlayPackageCompleted()
+        public void PlayPackageCompleted(int comboCount)
         {
-            _audioService.PlaySfx(AudioKeys.GetMergeComboSfx(1));
+            _audioService.PlaySfx(AudioKeys.GetMergeComboSfx(comboCount));
         }
 
         public void PlayPackageLidClosed()

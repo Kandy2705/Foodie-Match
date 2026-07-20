@@ -18,6 +18,10 @@ namespace FoodieMatch.Features.Food
         [Header("Grill")]
         [SerializeField] private Vector3 _grillScale = Vector3.one;
 
+        [Header("Grill Smoke")]
+        [SerializeField] private ParticleSystem _grillSmokePrefab;
+        [SerializeField] private Vector3 _grillSmokeOffset = new(0f, -0.1f, 0f);
+
         [Header("Tray")]
         [SerializeField] private Vector3 _trayScale = new Vector3(0.75f, 0.75f, 1f);
         [SerializeField] private Vector3 _trayRotation;
@@ -297,6 +301,24 @@ namespace FoodieMatch.Features.Food
             RestoreSortingLayerBeforeFlight();
         }
 
+        public void PlayGrillSmoke()
+        {
+            if (_grillSmokePrefab == null)
+            {
+                Debug.LogError("Grill smoke prefab is missing.", this);
+                return;
+            }
+
+            Vector3 spawnPosition = transform.position + _grillSmokeOffset;
+            ParticleSystem smoke = Instantiate(
+                _grillSmokePrefab,
+                spawnPosition,
+                _grillSmokePrefab.transform.rotation);
+
+            smoke.Play();
+            Destroy(smoke.gameObject, GetParticleLifetime(smoke));
+        }
+
         public async Task<MotionResult> PlayLandingFeedbackAsync(Transform target = null)
         {
             if (IsEmpty ||
@@ -486,6 +508,12 @@ namespace FoodieMatch.Features.Food
             return value >= 0f &&
                    !float.IsNaN(value) &&
                    !float.IsInfinity(value);
+        }
+
+        private static float GetParticleLifetime(ParticleSystem particle)
+        {
+            ParticleSystem.MainModule main = particle.main;
+            return main.startDelay.constantMax + main.duration + main.startLifetime.constantMax;
         }
 
         private static bool IsValidPositiveNumber(float value)
