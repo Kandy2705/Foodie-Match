@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Features.Food;
+using PrimeTween;
 using UnityEngine;
 
 namespace FoodieMatch.Features.Board
@@ -183,6 +185,310 @@ namespace FoodieMatch.Features.Board
             foodView.transform.rotation = Quaternion.identity;
             foodView.SetInteractable(false);
             items[traySlotIndex] = null;
+        }
+
+        public List<FoodItemView> GetAllActiveFoodViews()
+        {
+            List<FoodItemView> views = new List<FoodItemView>();
+
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> kvp in _foodAddresses)
+            {
+                if (kvp.Key != null)
+                {
+                    views.Add(kvp.Key);
+                }
+            }
+
+            return views;
+        }
+
+        public bool TryGetFoodAddress(
+            FoodItemView foodItemView,
+            out FoodBoardAddress address)
+        {
+            if (foodItemView == null)
+            {
+                address = default;
+                return false;
+            }
+
+            return _foodAddresses.TryGetValue(foodItemView, out address);
+        }
+
+        public List<FoodBoardEntry> GetActiveFoodEntries()
+        {
+            List<FoodBoardEntry> entries = new List<FoodBoardEntry>(_foodAddresses.Count);
+
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> kvp in _foodAddresses)
+            {
+                if (kvp.Key == null || kvp.Key.IsEmpty)
+                {
+                    continue;
+                }
+
+                entries.Add(new FoodBoardEntry(kvp.Key, kvp.Value));
+            }
+
+            entries.Sort(CompareFoodBoardEntries);
+            return entries;
+        }
+
+        public List<FoodItemView> GetAllTopTrayFoodViews()
+        {
+            List<FoodItemView> views = new List<FoodItemView>();
+
+            foreach (KeyValuePair<int, List<FoodItemView>> kvp in _topTrayFoodItems)
+            {
+                foreach (FoodItemView view in kvp.Value)
+                {
+                    if (view != null)
+                    {
+                        views.Add(view);
+                    }
+                }
+            }
+
+            return views;
+        }
+
+        private static int CompareFoodBoardEntries(
+            FoodBoardEntry left,
+            FoodBoardEntry right)
+        {
+            int grillCompare = left.Address.GrillPositionIndex
+                .CompareTo(right.Address.GrillPositionIndex);
+
+            if (grillCompare != 0)
+            {
+                return grillCompare;
+            }
+
+            return left.Address.FoodSlotIndex
+                .CompareTo(right.Address.FoodSlotIndex);
+        }
+
+        public async Task AnimateHideFoodAsync(
+            List<FoodItemView> foodViews,
+            float fadeDuration = 0.35f,
+            float staggerInterval = 0.05f)
+        {
+            if (foodViews == null || foodViews.Count == 0)
+            {
+                return;
+            }
+
+            List<Task> tasks = new List<Task>(foodViews.Count);
+
+            for (int i = 0; i < foodViews.Count; i++)
+            {
+                FoodItemView view = foodViews[i];
+
+                if (view == null || view.IsEmpty)
+                {
+                    continue;
+                }
+
+                float delay = i * staggerInterval;
+                SpriteRenderer spriteRenderer =
+                    view.GetComponentInChildren<SpriteRenderer>();
+
+                tasks.Add(AnimateSingleFadeOutAsync(
+                    view, spriteRenderer, delay, fadeDuration));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task AnimateSingleFadeOutAsync(
+            FoodItemView view,
+            SpriteRenderer spriteRenderer,
+            float delay,
+            float duration)
+        {
+            if (delay > 0f)
+            {
+                await Task.Delay((int)(delay * 1000));
+            }
+
+            Vector3 originalScale = view.transform.localScale;
+            Tween scaleTween = Tween.Scale(
+                view.transform, Vector3.zero, duration);
+
+            if (spriteRenderer != null)
+            {
+                Tween.Alpha(spriteRenderer, 0f, duration);
+            }
+
+            await scaleTween;
+        }
+
+        public async Task AnimateRevealFoodAsync(
+            List<FoodItemView> foodViews,
+            float fadeDuration = 0.35f,
+            float staggerInterval = 0.05f)
+        {
+            if (foodViews == null || foodViews.Count == 0)
+            {
+                return;
+            }
+
+            List<Task> tasks = new List<Task>(foodViews.Count);
+
+            for (int i = 0; i < foodViews.Count; i++)
+            {
+                FoodItemView view = foodViews[i];
+
+                if (view == null || view.IsEmpty)
+                {
+                    continue;
+                }
+
+                float delay = i * staggerInterval;
+                SpriteRenderer spriteRenderer =
+                    view.GetComponentInChildren<SpriteRenderer>();
+
+                tasks.Add(AnimateSingleFadeInAsync(
+                    view, spriteRenderer, delay, fadeDuration));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task AnimateSingleFadeInAsync(
+            FoodItemView view,
+            SpriteRenderer spriteRenderer,
+            float delay,
+            float duration)
+        {
+            if (delay > 0f)
+            {
+                await Task.Delay((int)(delay * 1000));
+            }
+
+            Vector3 targetScale = view.GetVisualScale(view.VisualState);
+            view.transform.localScale = Vector3.zero;
+
+            Tween scaleTween = Tween.Scale(
+                view.transform, targetScale, duration);
+
+            if (spriteRenderer != null)
+            {
+                Color color = spriteRenderer.color;
+                color.a = 0f;
+                spriteRenderer.color = color;
+
+                Tween.Alpha(spriteRenderer, 1f, duration);
+            }
+
+            await scaleTween;
+        }
+
+        public void UpdateFoodSprite(FoodItemView view, int newTokenId, Sprite sprite)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            view.Setup(newTokenId, sprite);
+        }
+
+        public List<FoodItemView> RebuildFoodVisuals(
+            BoardModel board,
+            bool startHidden)
+        {
+            List<FoodItemView> allViews = new List<FoodItemView>();
+
+            if (board == null)
+            {
+                return allViews;
+            }
+
+            DestroyFoodVisualsKeepGrills();
+
+            for (int i = 0; i < board.GrillCount; i++)
+            {
+                GrillModel grillModel = board.GetGrillAt(i);
+
+                if (grillModel == null ||
+                    !_grillViews.TryGetValue(
+                        grillModel.PositionIndex,
+                        out GrillView grillView) ||
+                    grillView == null)
+                {
+                    continue;
+                }
+
+                grillView.SetupTrayStack(grillModel.TrayCount);
+
+                List<FoodItemView> trayViews = SpawnTopTrayFoodItems(
+                    grillModel,
+                    grillView,
+                    useNextTray: false);
+                List<FoodItemView> grillViews = SpawnFoodItems(
+                    grillModel.PositionIndex,
+                    grillModel.ActiveFoodSlotCount,
+                    grillModel.GetFoodTokenIdAt,
+                    grillView.GetFoodAnchor,
+                    FoodItemVisualState.OnGrill,
+                    true,
+                    $"grill position {grillModel.PositionIndex}");
+
+                AppendNonNullViews(allViews, grillViews);
+                AppendNonNullViews(allViews, trayViews);
+            }
+
+            if (startHidden)
+            {
+                for (int i = 0; i < allViews.Count; i++)
+                {
+                    allViews[i].ForceHiddenVisual();
+                }
+            }
+
+            return allViews;
+        }
+
+        private void DestroyFoodVisualsKeepGrills()
+        {
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
+            {
+                if (entry.Key != null)
+                {
+                    entry.Key.Selected -= HandleFoodSelected;
+                }
+            }
+
+            _foodAddresses.Clear();
+            _topTrayFoodItems.Clear();
+
+            if (_foodItemRoot == null)
+            {
+                return;
+            }
+
+            for (int childIndex = _foodItemRoot.childCount - 1; childIndex >= 0; childIndex--)
+            {
+                Destroy(_foodItemRoot.GetChild(childIndex).gameObject);
+            }
+        }
+
+        private static void AppendNonNullViews(
+            List<FoodItemView> target,
+            List<FoodItemView> source)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (source[i] != null)
+                {
+                    target.Add(source[i]);
+                }
+            }
         }
 
         public bool RemoveTopTrayVisual(GrillModel grillModel)

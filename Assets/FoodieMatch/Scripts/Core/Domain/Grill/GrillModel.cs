@@ -123,6 +123,18 @@ namespace FoodieMatch.Core.Domain.Grill
             return true;
         }
 
+        public bool TrySetFoodTokenIdAt(int slotIndex, int foodTokenId)
+        {
+            if (!IsValidSlotIndex(slotIndex) ||
+                foodTokenId < BoardRules.EmptyFoodTokenId)
+            {
+                return false;
+            }
+
+            _activeFoodTokenIds[slotIndex] = foodTokenId;
+            return true;
+        }
+
         public bool CanMoveTopTrayToGrill()
         {
             TrayModel topTray = TopTray;
