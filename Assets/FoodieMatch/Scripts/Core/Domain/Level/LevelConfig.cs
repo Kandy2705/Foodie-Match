@@ -9,7 +9,6 @@ namespace FoodieMatch.Core.Domain.Level
         private readonly ReadOnlyCollection<GrillConfig> _grills;
 
         public LevelConfig(
-            int waitingRackCapacity,
             int maxPackageSlotCount,
             RequiredPackageGenerationSettings requiredPackageGenerationSettings,
             IReadOnlyList<GrillConfig> grills)
@@ -25,7 +24,6 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentNullException(nameof(grills));
             }
 
-            WaitingRackCapacity = waitingRackCapacity;
             MaxPackageSlotCount = maxPackageSlotCount;
             RequiredPackageGenerationSettings =
                 requiredPackageGenerationSettings;
@@ -35,7 +33,6 @@ namespace FoodieMatch.Core.Domain.Level
             _grills = copiedGrills.AsReadOnly();
         }
 
-        public int WaitingRackCapacity { get; }
         public int MaxPackageSlotCount { get; }
         public RequiredPackageGenerationSettings
             RequiredPackageGenerationSettings { get; }

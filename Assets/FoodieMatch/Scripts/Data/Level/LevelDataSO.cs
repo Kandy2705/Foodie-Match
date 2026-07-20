@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FoodieMatch.Core.Domain.Level;
 using UnityEngine;
 
 namespace FoodieMatch.Data.Level
@@ -8,12 +9,10 @@ namespace FoodieMatch.Data.Level
         menuName = "FoodieMatch/Level/Level Data")]
     public sealed class LevelDataSO : ScriptableObject
     {
-        [SerializeField] private int _waitingRackCapacity = 5;
         [SerializeField] private int _maxPackageSlotCount = 4;
         [SerializeField] private RequiredPackageGenerationConfig _requiredPackageGenerationConfig = new();
         [SerializeField] private List<GrillData> _grills = new();
 
-        public int WaitingRackCapacity => _waitingRackCapacity;
         public int MaxPackageSlotCount => _maxPackageSlotCount;
         public RequiredPackageGenerationConfig RequiredPackageGenerationConfig => _requiredPackageGenerationConfig;
         public IReadOnlyList<GrillData> Grills => _grills;
@@ -21,11 +20,6 @@ namespace FoodieMatch.Data.Level
         public LevelValidationResult Validate()
         {
             var result = new LevelValidationResult();
-
-            if (_waitingRackCapacity <= 0)
-            {
-                result.AddError("WaitingRackCapacity must be greater than 0.");
-            }
 
             if (_maxPackageSlotCount <= 0)
             {
@@ -82,7 +76,7 @@ namespace FoodieMatch.Data.Level
             }
 
             int minimumRequiredItemCount =
-                _requiredPackageGenerationConfig.InitialActivePackageCount;
+                LevelRules.ActivePackageCount;
 
             if (CountFoodTokens() < minimumRequiredItemCount)
             {

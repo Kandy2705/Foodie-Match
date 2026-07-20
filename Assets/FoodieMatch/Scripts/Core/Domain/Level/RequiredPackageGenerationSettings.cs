@@ -5,7 +5,6 @@ namespace FoodieMatch.Core.Domain.Level
     public sealed class RequiredPackageGenerationSettings
     {
         public RequiredPackageGenerationSettings(
-            int initialActivePackageCount,
             int minRequiredAmount,
             int maxRequiredAmount,
             int waitingRackWeight,
@@ -13,12 +12,6 @@ namespace FoodieMatch.Core.Domain.Level
             int topTrayWeight,
             int deepTrayWeight)
         {
-            if (initialActivePackageCount <= 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(initialActivePackageCount));
-            }
-
             if (minRequiredAmount < 1 ||
                 maxRequiredAmount < minRequiredAmount ||
                 maxRequiredAmount > 3)
@@ -45,7 +38,6 @@ namespace FoodieMatch.Core.Domain.Level
                     nameof(waitingRackWeight));
             }
 
-            InitialActivePackageCount = initialActivePackageCount;
             MinRequiredAmount = minRequiredAmount;
             MaxRequiredAmount = maxRequiredAmount;
             WaitingRackWeight = waitingRackWeight;
@@ -54,7 +46,6 @@ namespace FoodieMatch.Core.Domain.Level
             DeepTrayWeight = deepTrayWeight;
         }
 
-        public int InitialActivePackageCount { get; }
         public int MinRequiredAmount { get; }
         public int MaxRequiredAmount { get; }
         public int WaitingRackWeight { get; }

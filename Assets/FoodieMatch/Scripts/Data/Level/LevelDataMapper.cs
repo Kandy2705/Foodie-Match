@@ -30,7 +30,6 @@ namespace FoodieMatch.Data.Level
                 levelData.RequiredPackageGenerationConfig;
             RequiredPackageGenerationSettings generationSettings =
                 new RequiredPackageGenerationSettings(
-                    generationConfig.InitialActivePackageCount,
                     generationConfig.MinRequiredAmount,
                     generationConfig.MaxRequiredAmount,
                     generationConfig.WaitingRackWeight,
@@ -39,7 +38,6 @@ namespace FoodieMatch.Data.Level
                     generationConfig.DeepTrayWeight);
 
             return new LevelConfig(
-                levelData.WaitingRackCapacity,
                 levelData.MaxPackageSlotCount,
                 generationSettings,
                 grills);

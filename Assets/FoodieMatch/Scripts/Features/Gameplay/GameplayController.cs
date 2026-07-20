@@ -132,11 +132,11 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            _waitingRackView.ResetToCapacity(levelConfig.WaitingRackCapacity);
+            _waitingRackView.ResetToCapacity(WaitingRackRules.InitialCapacity);
 
-            if (_waitingRackView.Capacity != levelConfig.WaitingRackCapacity)
+            if (_waitingRackView.Capacity != WaitingRackRules.InitialCapacity)
             {
-                Debug.LogError($"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
+                Debug.LogError($"Waiting rack capacity must be {WaitingRackRules.InitialCapacity}.");
                 return;
             }
 
@@ -150,9 +150,9 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            WaitingRackModel waitingRack = new(levelConfig.WaitingRackCapacity);
+            WaitingRackModel waitingRack = new(WaitingRackRules.InitialCapacity);
 
-            if (_requiredPackageGroupView.PackageCount != packageSettings.InitialActivePackageCount)
+            if (_requiredPackageGroupView.PackageCount != LevelRules.ActivePackageCount)
             {
                 Debug.LogError("Required package view count does not match the level config.");
                 return;

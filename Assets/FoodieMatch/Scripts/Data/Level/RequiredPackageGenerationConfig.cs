@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Domain.Level;
 using UnityEngine;
 
 namespace FoodieMatch.Data.Level
@@ -6,7 +7,6 @@ namespace FoodieMatch.Data.Level
     [Serializable]
     public sealed class RequiredPackageGenerationConfig
     {
-        [SerializeField] private int _initialActivePackageCount = 2;
         [SerializeField] private int _minRequiredAmount = 1;
         [SerializeField] private int _maxRequiredAmount = 3;
         [SerializeField] private int _waitingRackWeight = 3;
@@ -14,7 +14,6 @@ namespace FoodieMatch.Data.Level
         [SerializeField] private int _topTrayWeight = 1;
         [SerializeField] private int _deepTrayWeight = 1;
 
-        public int InitialActivePackageCount => _initialActivePackageCount;
         public int MinRequiredAmount => _minRequiredAmount;
         public int MaxRequiredAmount => _maxRequiredAmount;
         public int WaitingRackWeight => _waitingRackWeight;
@@ -24,14 +23,9 @@ namespace FoodieMatch.Data.Level
 
         public void Validate(LevelValidationResult result, int maxPackageSlotCount)
         {
-            if (_initialActivePackageCount <= 0)
+            if (LevelRules.ActivePackageCount > maxPackageSlotCount)
             {
-                result.AddError("InitialActivePackageCount must be greater than 0.");
-            }
-
-            if (_initialActivePackageCount > maxPackageSlotCount)
-            {
-                result.AddError("InitialActivePackageCount cannot be greater than MaxPackageSlotCount.");
+                result.AddError("ActivePackageCount cannot be greater than MaxPackageSlotCount.");
             }
 
             if (_minRequiredAmount < 1)

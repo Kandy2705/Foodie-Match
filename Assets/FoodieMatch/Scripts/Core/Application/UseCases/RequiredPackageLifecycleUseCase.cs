@@ -35,8 +35,7 @@ namespace FoodieMatch.Core.Application.UseCases
             }
 
             RequiredPackageModel[] initialPackages =
-                new RequiredPackageModel[
-                    settings.InitialActivePackageCount];
+                new RequiredPackageModel[LevelRules.ActivePackageCount];
 
             for (int i = 0; i < initialPackages.Length; i++)
             {

@@ -5,17 +5,15 @@ namespace FoodieMatch.Core.Domain.WaitingRack
 {
     public sealed class WaitingRackModel
     {
-        public const int MaxCapacity = 7;
-
         private int[] _foodTokenIds;
 
         public WaitingRackModel(int capacity)
         {
             int validCapacity = capacity > 0 ? capacity : 0;
 
-            if (validCapacity > MaxCapacity)
+            if (validCapacity > WaitingRackRules.MaxCapacity)
             {
-                validCapacity = MaxCapacity;
+                validCapacity = WaitingRackRules.MaxCapacity;
             }
 
             _foodTokenIds = new int[validCapacity];
@@ -24,20 +22,20 @@ namespace FoodieMatch.Core.Domain.WaitingRack
         public int Capacity => _foodTokenIds.Length;
         public bool HasEmptySlot => GetFirstEmptySlotIndex() >= 0;
         public bool IsFull => Capacity > 0 && !HasEmptySlot;
-        public bool CanExpand => Capacity < MaxCapacity;
+        public bool CanExpand => Capacity < WaitingRackRules.MaxCapacity;
 
         public bool TryExpandBy(int amount)
         {
-            if (amount <= 0 || Capacity >= MaxCapacity)
+            if (amount <= 0 || Capacity >= WaitingRackRules.MaxCapacity)
             {
                 return false;
             }
 
             int newCapacity = _foodTokenIds.Length + amount;
 
-            if (newCapacity > MaxCapacity)
+            if (newCapacity > WaitingRackRules.MaxCapacity)
             {
-                newCapacity = MaxCapacity;
+                newCapacity = WaitingRackRules.MaxCapacity;
             }
 
             if (newCapacity <= _foodTokenIds.Length)
