@@ -65,7 +65,7 @@ GameObject:
   - component: {fileID: 2347023796889539036}
   - component: {fileID: 386496338053554181}
   m_Layer: 0
-  m_Name: BoosterSpine
+  m_Name: SwapSpine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -176,7 +176,7 @@ GameObject:
   - component: {fileID: 327310359311651375}
   - component: {fileID: 8745216390123456781}
   m_Layer: 0
-  m_Name: BoosterPopup
+  m_Name: BoosterSwapPopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
