@@ -5,6 +5,7 @@ using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Core.Infrastructure.Save;
 using FoodieMatch.Data.Booster;
+using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.Common;
@@ -477,6 +478,27 @@ namespace FoodieMatch.UI
             }
 
             _popupManager.Hide<LoseView>();
+        }
+
+        public BoosterSwapPopup ShowSwapPopup()
+        {
+            if (_popupManager == null)
+            {
+                Debug.LogError("Cannot show swap popup because PopupManager is missing.");
+                return null;
+            }
+
+            return _popupManager.Show<BoosterSwapPopup>();
+        }
+
+        public void HideSwapPopup()
+        {
+            if (_popupManager == null)
+            {
+                return;
+            }
+
+            _popupManager.Hide<BoosterSwapPopup>();
         }
 
         public void HideAllPopups()
