@@ -47,6 +47,8 @@ namespace FoodieMatch.Features.Gameplay
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
         private GrillCompletionCoordinator _grillCompletionCoordinator;
         private ComboCoordinator _comboCoordinator;
+        private PlateBoosterCoordinator _plateBoosterCoordinator;
+        private StorageBoosterCoordinator _storageBoosterCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
 
@@ -220,6 +222,8 @@ namespace FoodieMatch.Features.Gameplay
             {
                 case BoosterType.Plate:
                     return TryApplyPlateBooster();
+                case BoosterType.Storage:
+                    return TryApplyStorageBooster();
                 default:
                     Debug.Log($"Booster {boosterType} is not implemented yet.");
                     return false;
@@ -228,32 +232,14 @@ namespace FoodieMatch.Features.Gameplay
 
         private bool TryApplyPlateBooster()
         {
-            if (_waitingRackView == null ||
-                _session.WaitingRack == null ||
-                !_waitingRackView.CanAddSlot())
-            {
-                return false;
-            }
-
-            if (!_session.WaitingRack.TryExpandBy(1))
-            {
-                return false;
-            }
-
-            _ = PlayPlateBoosterMotionSafelyAsync();
-            return true;
+            return _plateBoosterCoordinator != null &&
+                   _plateBoosterCoordinator.TryApply(_session);
         }
 
-        private async Task PlayPlateBoosterMotionSafelyAsync()
+        private bool TryApplyStorageBooster()
         {
-            try
-            {
-                await _waitingRackView.PlayAddSlotAsync();
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            return _storageBoosterCoordinator != null &&
+                   _storageBoosterCoordinator.TryApply(_session);
         }
 
         private void CreateCoordinators()
@@ -269,6 +255,13 @@ namespace FoodieMatch.Features.Gameplay
             _grillCompletionCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
             _comboCoordinator = new(_sessionGuard, _gameplayEvents, _gameplayAudioPresenter);
+            _plateBoosterCoordinator = new(_sessionGuard, _waitingRackView);
+            _storageBoosterCoordinator = new(
+                _sessionGuard,
+                _boardLayoutView,
+                _packageDeliveryCoordinator,
+                _topTrayMoveCoordinator,
+                TryResolveWin);
         }
 
         private void SubscribeCoordinatorEvents()

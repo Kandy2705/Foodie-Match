@@ -71,7 +71,8 @@ namespace FoodieMatch.Features.Gameplay
         public async Task DeliverSelectedFoodAsync(
             FoodItemView foodItemView,
             int packageIndex,
-            GameplaySession session)
+            GameplaySession session,
+            float startDelay = 0f)
         {
             if (!CanContinue(session))
             {
@@ -100,7 +101,7 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            await ProcessFlightAsync(flight, session);
+            await ProcessFlightAsync(flight, session, startDelay);
         }
 
         public bool TryCreateWaitingRackFlight(
@@ -159,7 +160,7 @@ namespace FoodieMatch.Features.Gameplay
 
             for (int i = 0; i < flights.Count; i++)
             {
-                motionTasks[i] = ProcessFlightAsync(flights[i], session);
+                motionTasks[i] = ProcessFlightAsync(flights[i], session, startDelay: 0f);
             }
 
             await Task.WhenAll(motionTasks);
@@ -197,7 +198,10 @@ namespace FoodieMatch.Features.Gameplay
             return false;
         }
 
-        private async Task ProcessFlightAsync(PackageFlight flight, GameplaySession session)
+        private async Task ProcessFlightAsync(
+            PackageFlight flight,
+            GameplaySession session,
+            float startDelay)
         {
             if (!TryGetMotionState(flight.PackageIndex, flight.ExpectedPackage, out PackageMotionState motionState))
             {
@@ -212,7 +216,8 @@ namespace FoodieMatch.Features.Gameplay
                     flight.FoodItemView,
                     flight.PackageIndex,
                     flight.RequiredAmount,
-                    flight.FilledSlotIndex);
+                    flight.FilledSlotIndex,
+                    startDelay);
             }
             catch (Exception exception)
             {

@@ -129,7 +129,21 @@ namespace FoodieMatch.Core.Domain.Grill
 
             return IsEmpty &&
                    topTray != null &&
+                   topTray.FoodCount > 0 &&
                    topTray.SlotCount <= ActiveFoodSlotCount;
+        }
+
+        public bool TryRemoveEmptyTopTray()
+        {
+            TrayModel topTray = TopTray;
+
+            if (topTray == null || topTray.FoodCount > 0)
+            {
+                return false;
+            }
+
+            _trays.RemoveAt(0);
+            return true;
         }
 
         public bool TryMoveTopTrayToGrill()
