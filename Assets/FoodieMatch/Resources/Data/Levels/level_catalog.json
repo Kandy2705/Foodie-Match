@@ -1,10 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "levelOrder": [1],
   "levels": [
     {
       "id": 1,
       "difficulty": "normal",
+      "useFixedSeed": true,
       "seed": 1001,
       "packageSelectionWeights": {
         "early": {

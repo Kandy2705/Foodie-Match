@@ -64,6 +64,11 @@ namespace FoodieMatch.Data.Level.Json
             {
                 result.AddError($"{levelPath}.seed is required.");
             }
+
+            if (!level.UseFixedSeed.HasValue)
+            {
+                result.AddError($"{levelPath}.useFixedSeed is required.");
+            }
         }
     }
 }

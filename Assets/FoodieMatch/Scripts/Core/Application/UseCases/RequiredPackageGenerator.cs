@@ -9,270 +9,347 @@ namespace FoodieMatch.Core.Application.UseCases
 {
     public sealed class RequiredPackageGenerator
     {
-        private readonly Random _random;
-
-        public RequiredPackageGenerator(Random random)
-        {
-            _random = random ?? throw new ArgumentNullException(nameof(random));
-        }
-
         public bool TryCreatePackage(
             BoardModel board,
             WaitingRackModel waitingRack,
-            IReadOnlyList<RequiredPackageModel> packages,
-            RequiredPackageGenerationSettings settings,
+            IReadOnlyList<RequiredPackageModel> packageReservations,
+            PackageSelectionWeights weights,
+            System.Random random,
             out RequiredPackageModel package)
         {
             package = null;
 
             if (board == null ||
                 waitingRack == null ||
-                packages == null ||
-                settings == null)
+                packageReservations == null ||
+                weights == null ||
+                random == null)
             {
                 return false;
             }
 
-            Dictionary<int, int> availableAmounts =
-                GetAvailableAmounts(
-                    board,
-                    waitingRack,
-                    packages);
+            HashSet<int> reservedFoodIds = GetReservedFoodIds(packageReservations);
+            Dictionary<int, FoodAvailability> availabilityByFoodId =
+                CreateFoodAvailability(board, waitingRack, reservedFoodIds);
 
-            List<FoodSourceCandidate> candidates =
-                GetFoodSourceCandidates(
-                    board,
-                    waitingRack,
-                    availableAmounts,
-                    settings);
-
-            if (!TrySelectFoodTokenId(
-                    candidates,
-                    out int foodTokenId) ||
-                !availableAmounts.TryGetValue(
-                    foodTokenId,
-                    out int availableAmount) ||
-                availableAmount <= 0)
+            if (!TrySelectFullyRevealedFood(
+                    availabilityByFoodId.Values,
+                    weights,
+                    random,
+                    out FoodAvailability selected) &&
+                !TrySelectFoodByDepth(board, availabilityByFoodId, random, out selected))
             {
                 return false;
             }
 
-            int maxRequiredAmount = Math.Min(
-                settings.MaxRequiredAmount,
-                availableAmount);
-            int minRequiredAmount = Math.Min(
-                settings.MinRequiredAmount,
-                maxRequiredAmount);
-            int requiredAmount = _random.Next(
-                minRequiredAmount,
-                maxRequiredAmount + 1);
-
-            package = new RequiredPackageModel(
-                foodTokenId,
-                requiredAmount,
-                0);
-
+            package = new RequiredPackageModel(selected.FoodId, selected.TotalCount, filledAmount: 0);
             return true;
         }
 
-        private static Dictionary<int, int> GetAvailableAmounts(
-            BoardModel board,
-            WaitingRackModel waitingRack,
-            IReadOnlyList<RequiredPackageModel> packages)
+        private static HashSet<int> GetReservedFoodIds(IReadOnlyList<RequiredPackageModel> packages)
         {
-            Dictionary<int, int> availableAmounts =
-                new Dictionary<int, int>();
-
-            AddFoodTokenIds(
-                board.GetAllRemainingFoodTokenIds(),
-                availableAmounts);
-            AddFoodTokenIds(
-                waitingRack.GetFoodTokenIds(),
-                availableAmounts);
+            HashSet<int> foodIds = new();
 
             for (int i = 0; i < packages.Count; i++)
             {
                 RequiredPackageModel package = packages[i];
 
-                if (package == null || package.IsComplete)
+                if (package != null)
                 {
-                    continue;
+                    foodIds.Add(package.FoodTokenId);
                 }
-
-                if (!availableAmounts.TryGetValue(
-                        package.FoodTokenId,
-                        out int availableAmount))
-                {
-                    availableAmounts[package.FoodTokenId] =
-                        -package.RemainingAmount;
-                    continue;
-                }
-
-                availableAmounts[package.FoodTokenId] =
-                    availableAmount - package.RemainingAmount;
             }
 
-            return availableAmounts;
+            return foodIds;
         }
 
-        private static void AddFoodTokenIds(
-            IReadOnlyList<int> foodTokenIds,
-            Dictionary<int, int> amounts)
-        {
-            for (int i = 0; i < foodTokenIds.Count; i++)
-            {
-                int foodTokenId = foodTokenIds[i];
-
-                if (!amounts.TryGetValue(
-                        foodTokenId,
-                        out int amount))
-                {
-                    amounts.Add(foodTokenId, 1);
-                    continue;
-                }
-
-                amounts[foodTokenId] = amount + 1;
-            }
-        }
-
-        private static List<FoodSourceCandidate> GetFoodSourceCandidates(
+        private static Dictionary<int, FoodAvailability> CreateFoodAvailability(
             BoardModel board,
             WaitingRackModel waitingRack,
-            IReadOnlyDictionary<int, int> availableAmounts,
-            RequiredPackageGenerationSettings settings)
+            ISet<int> reservedFoodIds)
         {
-            List<FoodSourceCandidate> candidates =
-                new List<FoodSourceCandidate>
+            Dictionary<int, FoodAvailability> availabilityByFoodId = new();
+            AddFoodIds(
+                waitingRack.GetFoodTokenIds(),
+                FoodLocation.WaitingRack,
+                reservedFoodIds,
+                availabilityByFoodId);
+
+            for (int depth = 0; depth < board.FoodDepthCount; depth++)
+            {
+                FoodLocation location = depth switch
                 {
-                    new FoodSourceCandidate(
-                        FilterAvailableFoodTokenIds(
-                            waitingRack.GetFoodTokenIds(),
-                            availableAmounts),
-                        settings.WaitingRackWeight),
-                    new FoodSourceCandidate(
-                        FilterAvailableFoodTokenIds(
-                            board.GetActiveFoodTokenIds(),
-                            availableAmounts),
-                        settings.ActiveGrillWeight),
-                    new FoodSourceCandidate(
-                        FilterAvailableFoodTokenIds(
-                            board.GetTopTrayFoodTokenIds(),
-                            availableAmounts),
-                        settings.TopTrayWeight),
-                    new FoodSourceCandidate(
-                        FilterAvailableFoodTokenIds(
-                            board.GetDeepTrayFoodTokenIds(),
-                            availableAmounts),
-                        settings.DeepTrayWeight)
+                    0 => FoodLocation.Grill,
+                    1 => FoodLocation.TopTray,
+                    _ => FoodLocation.DeepTray
                 };
 
-            return candidates;
+                AddFoodIds(
+                    board.GetFoodTokenIdsAtDepth(depth),
+                    location,
+                    reservedFoodIds,
+                    availabilityByFoodId);
+            }
+
+            return availabilityByFoodId;
         }
 
-        private static List<int> FilterAvailableFoodTokenIds(
-            IReadOnlyList<int> foodTokenIds,
-            IReadOnlyDictionary<int, int> availableAmounts)
+        private static void AddFoodIds(
+            IReadOnlyList<int> foodIds,
+            FoodLocation location,
+            ISet<int> reservedFoodIds,
+            IDictionary<int, FoodAvailability> availabilityByFoodId)
         {
-            List<int> result = new List<int>();
-
-            for (int i = 0; i < foodTokenIds.Count; i++)
+            for (int i = 0; i < foodIds.Count; i++)
             {
-                int foodTokenId = foodTokenIds[i];
+                int foodId = foodIds[i];
 
-                if (availableAmounts.TryGetValue(
-                        foodTokenId,
-                        out int availableAmount) &&
-                    availableAmount > 0)
+                if (foodId <= BoardRules.EmptyFoodTokenId || reservedFoodIds.Contains(foodId))
                 {
-                    result.Add(foodTokenId);
+                    continue;
+                }
+
+                if (!availabilityByFoodId.TryGetValue(foodId, out FoodAvailability availability))
+                {
+                    availability = new FoodAvailability(foodId);
+                    availabilityByFoodId.Add(foodId, availability);
+                }
+
+                availability.Add(location);
+            }
+        }
+
+        private static bool TrySelectFullyRevealedFood(
+            ICollection<FoodAvailability> availabilities,
+            PackageSelectionWeights weights,
+            System.Random random,
+            out FoodAvailability selected)
+        {
+            List<FoodAvailability> rackRescue = new();
+            List<FoodAvailability> readyNow = new();
+            List<FoodAvailability> topTray = new();
+
+            foreach (FoodAvailability availability in availabilities)
+            {
+                if (!availability.IsFullyRevealed)
+                {
+                    continue;
+                }
+
+                if (availability.WaitingRackCount > 0)
+                {
+                    rackRescue.Add(availability);
+                }
+                else if (availability.TopTrayCount > 0)
+                {
+                    topTray.Add(availability);
+                }
+                else if (availability.GrillCount > 0)
+                {
+                    readyNow.Add(availability);
                 }
             }
 
-            return result;
+            List<FoodCandidateGroup> groups = new()
+            {
+                new FoodCandidateGroup(rackRescue, weights.RackRescueWeight),
+                new FoodCandidateGroup(readyNow, weights.ReadyNowWeight),
+                new FoodCandidateGroup(topTray, weights.TopTrayWeight)
+            };
+
+            return TrySelectFromGroups(groups, random, out selected);
         }
 
-        private bool TrySelectFoodTokenId(
-            IReadOnlyList<FoodSourceCandidate> candidates,
-            out int foodTokenId)
+        private static bool TrySelectFromGroups(
+            IReadOnlyList<FoodCandidateGroup> groups,
+            System.Random random,
+            out FoodAvailability selected)
         {
-            foodTokenId = 0;
+            selected = null;
+            long totalWeight = 0;
 
-            int totalWeight = 0;
-
-            for (int i = 0; i < candidates.Count; i++)
+            for (int i = 0; i < groups.Count; i++)
             {
-                FoodSourceCandidate candidate = candidates[i];
+                FoodCandidateGroup group = groups[i];
 
-                if (candidate.Weight > 0 &&
-                    candidate.FoodTokenIds.Count > 0)
+                if (group.Candidates.Count > 0 && group.Weight > 0)
                 {
-                    totalWeight += candidate.Weight;
+                    totalWeight += group.Weight;
                 }
             }
 
             if (totalWeight > 0)
             {
-                int selectedWeight = _random.Next(totalWeight);
+                long selectedWeight = (long)(random.NextDouble() * totalWeight);
 
-                for (int i = 0; i < candidates.Count; i++)
+                for (int i = 0; i < groups.Count; i++)
                 {
-                    FoodSourceCandidate candidate = candidates[i];
+                    FoodCandidateGroup group = groups[i];
 
-                    if (candidate.Weight <= 0 ||
-                        candidate.FoodTokenIds.Count == 0)
+                    if (group.Candidates.Count == 0 || group.Weight <= 0)
                     {
                         continue;
                     }
 
-                    if (selectedWeight < candidate.Weight)
+                    if (selectedWeight < group.Weight)
                     {
-                        foodTokenId = candidate.FoodTokenIds[
-                            _random.Next(candidate.FoodTokenIds.Count)];
-
+                        selected = SelectRandomCandidate(group.Candidates, random);
                         return true;
                     }
 
-                    selectedWeight -= candidate.Weight;
+                    selectedWeight -= group.Weight;
                 }
             }
 
-            List<int> fallbackFoodTokenIds = new List<int>();
+            List<FoodAvailability> fallbackCandidates = new();
 
-            for (int i = 0; i < candidates.Count; i++)
+            for (int i = 0; i < groups.Count; i++)
             {
-                FoodSourceCandidate candidate = candidates[i];
-
-                for (int tokenIndex = 0;
-                     tokenIndex < candidate.FoodTokenIds.Count;
-                     tokenIndex++)
-                {
-                    fallbackFoodTokenIds.Add(
-                        candidate.FoodTokenIds[tokenIndex]);
-                }
+                fallbackCandidates.AddRange(groups[i].Candidates);
             }
 
-            if (fallbackFoodTokenIds.Count == 0)
+            if (fallbackCandidates.Count == 0)
             {
                 return false;
             }
 
-            foodTokenId = fallbackFoodTokenIds[
-                _random.Next(fallbackFoodTokenIds.Count)];
-
+            selected = SelectRandomCandidate(fallbackCandidates, random);
             return true;
         }
 
-        private readonly struct FoodSourceCandidate
+        private static bool TrySelectFoodByDepth(
+            BoardModel board,
+            IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId,
+            System.Random random,
+            out FoodAvailability selected)
         {
-            public FoodSourceCandidate(
-                IReadOnlyList<int> foodTokenIds,
-                int weight)
+            selected = null;
+
+            for (int depth = 0; depth < board.FoodDepthCount; depth++)
             {
-                FoodTokenIds = foodTokenIds;
+                Dictionary<int, int> foodCounts = CountAvailableFoodAtDepth(
+                    board.GetFoodTokenIdsAtDepth(depth),
+                    availabilityByFoodId);
+
+                if (foodCounts.Count == 0)
+                {
+                    continue;
+                }
+
+                int highestCount = 0;
+                List<int> mostCommonFoodIds = new();
+
+                foreach (KeyValuePair<int, int> foodCount in foodCounts)
+                {
+                    if (foodCount.Value < highestCount)
+                    {
+                        continue;
+                    }
+
+                    if (foodCount.Value > highestCount)
+                    {
+                        highestCount = foodCount.Value;
+                        mostCommonFoodIds.Clear();
+                    }
+
+                    mostCommonFoodIds.Add(foodCount.Key);
+                }
+
+                mostCommonFoodIds.Sort();
+                int selectedFoodId = mostCommonFoodIds[random.Next(mostCommonFoodIds.Count)];
+                selected = availabilityByFoodId[selectedFoodId];
+                return true;
+            }
+
+            return false;
+        }
+
+        private static Dictionary<int, int> CountAvailableFoodAtDepth(
+            IReadOnlyList<int> foodIds,
+            IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId)
+        {
+            Dictionary<int, int> foodCounts = new();
+
+            for (int i = 0; i < foodIds.Count; i++)
+            {
+                int foodId = foodIds[i];
+
+                if (!availabilityByFoodId.ContainsKey(foodId))
+                {
+                    continue;
+                }
+
+                foodCounts.TryGetValue(foodId, out int count);
+                foodCounts[foodId] = count + 1;
+            }
+
+            return foodCounts;
+        }
+
+        private static FoodAvailability SelectRandomCandidate(
+            List<FoodAvailability> candidates,
+            System.Random random)
+        {
+            candidates.Sort((left, right) => left.FoodId.CompareTo(right.FoodId));
+            return candidates[random.Next(candidates.Count)];
+        }
+
+        private enum FoodLocation
+        {
+            WaitingRack,
+            Grill,
+            TopTray,
+            DeepTray
+        }
+
+        private sealed class FoodAvailability
+        {
+            public FoodAvailability(int foodId)
+            {
+                FoodId = foodId;
+            }
+
+            public int FoodId { get; }
+            public int TotalCount { get; private set; }
+            public int WaitingRackCount { get; private set; }
+            public int GrillCount { get; private set; }
+            public int TopTrayCount { get; private set; }
+            public int DeepTrayCount { get; private set; }
+            public bool IsFullyRevealed => DeepTrayCount == 0;
+
+            public void Add(FoodLocation location)
+            {
+                TotalCount++;
+
+                switch (location)
+                {
+                    case FoodLocation.WaitingRack:
+                        WaitingRackCount++;
+                        break;
+                    case FoodLocation.Grill:
+                        GrillCount++;
+                        break;
+                    case FoodLocation.TopTray:
+                        TopTrayCount++;
+                        break;
+                    case FoodLocation.DeepTray:
+                        DeepTrayCount++;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(location));
+                }
+            }
+        }
+
+        private sealed class FoodCandidateGroup
+        {
+            public FoodCandidateGroup(List<FoodAvailability> candidates, int weight)
+            {
+                Candidates = candidates;
                 Weight = weight;
             }
 
-            public IReadOnlyList<int> FoodTokenIds { get; }
+            public List<FoodAvailability> Candidates { get; }
             public int Weight { get; }
         }
     }

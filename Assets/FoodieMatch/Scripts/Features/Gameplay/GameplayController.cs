@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
+using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -126,7 +127,7 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (!_levelRepository.TryGetLevel(levelNumber, out LevelConfig levelConfig))
+            if (!_levelRepository.TryGetLevel(levelNumber, out LevelDefinition level))
             {
                 Debug.LogError($"Level {levelNumber} could not be loaded.");
                 return;
@@ -141,10 +142,10 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _navigationActions = navigationActions ?? throw new ArgumentNullException(nameof(navigationActions));
-            BoardModel board = _boardModelFactory.Create(levelConfig);
-            RequiredPackageGenerationSettings packageSettings = levelConfig.RequiredPackageGenerationSettings;
+            LevelRandomContext randomContext = LevelRandomContext.Create(level);
+            BoardModel board = _boardModelFactory.Create(level);
 
-            if (!_foodVisualResolver.TryCreateMapping(board.GetAllFoodTokenIds(), levelNumber))
+            if (!_foodVisualResolver.TryCreateMapping(board.GetAllFoodTokenIds(), randomContext.FoodVisualSeed))
             {
                 Debug.LogError($"Food visual mapping could not be created for level {levelNumber}.");
                 return;
@@ -159,7 +160,11 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             if (!_requiredPackageLifecycleUseCase.TryCreateInitialPackages(
-                    board, waitingRack, packageSettings, out RequiredPackageModel[] requiredPackages))
+                    board,
+                    waitingRack,
+                    level.PackageSelectionSettings,
+                    randomContext.PackageSelectionRandom,
+                    out RequiredPackageModel[] requiredPackages))
             {
                 Debug.LogError($"Initial required packages could not be created for level {levelNumber}.");
                 return;
@@ -171,12 +176,13 @@ namespace FoodieMatch.Features.Gameplay
             _session = new(
                 sessionId,
                 levelNumber,
+                level,
+                randomContext,
                 board,
                 requiredPackages,
                 waitingRack,
                 progress,
-                combo,
-                packageSettings);
+                combo);
 
             _gameplayMotionPresenter.CancelAllMotions();
             _boardLayoutView.Setup(_session.Board);
@@ -187,7 +193,7 @@ namespace FoodieMatch.Features.Gameplay
             _session.StartPlaying();
             _gameplayWorldClickSfx.StartListening();
 
-            Debug.Log($"Start Level {levelNumber}");
+            Debug.Log($"Start Level {levelNumber} with run seed {randomContext.RunSeed}");
             _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelNumber));
             _comboCoordinator.BeginSession(_session);
             _gameplayEvents.OnLevelProgressChanged(

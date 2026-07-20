@@ -27,6 +27,21 @@ namespace FoodieMatch.Core.Domain.Board
 
         public int GrillCount => _grills.Count;
 
+        public int FoodDepthCount
+        {
+            get
+            {
+                int depthCount = 1;
+
+                for (int i = 0; i < _grills.Count; i++)
+                {
+                    depthCount = Math.Max(depthCount, _grills[i].TrayCount + 1);
+                }
+
+                return depthCount;
+            }
+        }
+
         public GrillModel GetGrillAt(int index)
         {
             return index >= 0 && index < _grills.Count
@@ -159,23 +174,35 @@ namespace FoodieMatch.Core.Domain.Board
 
         public IReadOnlyList<int> GetActiveFoodTokenIds()
         {
-            List<int> foodTokenIds = new List<int>();
+            return GetFoodTokenIdsAtDepth(0);
+        }
+
+        public IReadOnlyList<int> GetFoodTokenIdsAtDepth(int depth)
+        {
+            List<int> foodTokenIds = new();
+
+            if (depth < 0)
+            {
+                return foodTokenIds;
+            }
 
             for (int grillIndex = 0; grillIndex < _grills.Count; grillIndex++)
             {
                 GrillModel grill = _grills[grillIndex];
 
-                for (int slotIndex = 0;
-                     slotIndex < grill.ActiveFoodSlotCount;
-                     slotIndex++)
+                if (depth > 0)
                 {
-                    int foodTokenId = grill.GetFoodTokenIdAt(slotIndex);
+                    TrayModel tray = grill.GetTrayAt(depth - 1);
 
-                    if (foodTokenId > BoardRules.EmptyFoodTokenId)
+                    if (tray != null)
                     {
-                        foodTokenIds.Add(foodTokenId);
+                        AppendFoodTokenIds(tray.SlotCount, tray.GetFoodTokenIdAt, foodTokenIds);
                     }
+
+                    continue;
                 }
+
+                AppendFoodTokenIds(grill.ActiveFoodSlotCount, grill.GetFoodTokenIdAt, foodTokenIds);
             }
 
             return foodTokenIds;
@@ -183,88 +210,7 @@ namespace FoodieMatch.Core.Domain.Board
 
         public IReadOnlyList<int> GetTopTrayFoodTokenIds()
         {
-            List<int> foodTokenIds = new List<int>();
-
-            for (int grillIndex = 0; grillIndex < _grills.Count; grillIndex++)
-            {
-                TrayModel topTray = _grills[grillIndex].TopTray;
-
-                if (topTray == null)
-                {
-                    continue;
-                }
-
-                for (int slotIndex = 0;
-                     slotIndex < topTray.SlotCount;
-                     slotIndex++)
-                {
-                    int foodTokenId = topTray.GetFoodTokenIdAt(slotIndex);
-
-                    if (foodTokenId > BoardRules.EmptyFoodTokenId)
-                    {
-                        foodTokenIds.Add(foodTokenId);
-                    }
-                }
-            }
-
-            return foodTokenIds;
-        }
-
-        public IReadOnlyList<int> GetDeepTrayFoodTokenIds()
-        {
-            List<int> foodTokenIds = new List<int>();
-
-            for (int grillIndex = 0;
-                 grillIndex < _grills.Count;
-                 grillIndex++)
-            {
-                GrillModel grill = _grills[grillIndex];
-
-                for (int trayIndex = 1;
-                     trayIndex < grill.TrayCount;
-                     trayIndex++)
-                {
-                    TrayModel tray = grill.GetTrayAt(trayIndex);
-
-                    AppendFoodTokenIds(
-                        tray.SlotCount,
-                        tray.GetFoodTokenIdAt,
-                        foodTokenIds);
-                }
-            }
-
-            return foodTokenIds;
-        }
-
-        public IReadOnlyList<int> GetAllRemainingFoodTokenIds()
-        {
-            List<int> foodTokenIds = new List<int>();
-
-            for (int grillIndex = 0;
-                 grillIndex < _grills.Count;
-                 grillIndex++)
-            {
-                GrillModel grill = _grills[grillIndex];
-
-                AppendFoodTokenIds(
-                    grill.ActiveFoodSlotCount,
-                    grill.GetFoodTokenIdAt,
-                    foodTokenIds);
-
-                for (int trayIndex = 0;
-                     trayIndex < grill.TrayCount;
-                     trayIndex++)
-                {
-                    TrayModel tray = grill.GetTrayAt(trayIndex);
-
-                    AppendFoodTokenIds(
-                        tray.SlotCount,
-                        tray.GetFoodTokenIdAt,
-                        foodTokenIds);
-                }
-            }
-
-            return foodTokenIds;
+            return GetFoodTokenIdsAtDepth(1);
         }
 
         public IReadOnlyList<int> GetAllFoodTokenIds()

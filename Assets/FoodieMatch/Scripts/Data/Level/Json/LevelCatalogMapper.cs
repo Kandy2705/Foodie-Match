@@ -42,6 +42,7 @@ namespace FoodieMatch.Data.Level.Json
             return new LevelDefinition(
                 levelDto.Id.Value,
                 difficulty,
+                levelDto.UseFixedSeed.Value,
                 levelDto.Seed.Value,
                 MapPackageSelectionSettings(levelDto.PackageSelectionSettings),
                 MapGrills(levelDto.Grills));

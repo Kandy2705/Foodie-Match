@@ -11,6 +11,7 @@ namespace FoodieMatch.Core.Domain.Level
         public LevelDefinition(
             int id,
             LevelDifficulty difficulty,
+            bool useFixedSeed,
             int seed,
             PackageSelectionSettings packageSelectionSettings,
             IReadOnlyList<GrillDefinition> grills)
@@ -34,6 +35,7 @@ namespace FoodieMatch.Core.Domain.Level
 
             Id = id;
             Difficulty = difficulty;
+            UseFixedSeed = useFixedSeed;
             Seed = seed;
             PackageSelectionSettings = packageSelectionSettings ??
                                        throw new ArgumentNullException(nameof(packageSelectionSettings));
@@ -48,6 +50,7 @@ namespace FoodieMatch.Core.Domain.Level
 
         public int Id { get; }
         public LevelDifficulty Difficulty { get; }
+        public bool UseFixedSeed { get; }
         public int Seed { get; }
         public PackageSelectionSettings PackageSelectionSettings { get; }
         public IReadOnlyList<GrillDefinition> Grills => _grills;

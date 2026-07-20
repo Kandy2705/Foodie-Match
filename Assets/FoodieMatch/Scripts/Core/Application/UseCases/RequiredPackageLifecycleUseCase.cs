@@ -22,14 +22,16 @@ namespace FoodieMatch.Core.Application.UseCases
         public bool TryCreateInitialPackages(
             BoardModel board,
             WaitingRackModel waitingRack,
-            RequiredPackageGenerationSettings settings,
+            PackageSelectionSettings settings,
+            System.Random random,
             out RequiredPackageModel[] packages)
         {
             packages = null;
 
             if (board == null ||
                 waitingRack == null ||
-                settings == null)
+                settings == null ||
+                random == null)
             {
                 return false;
             }
@@ -43,7 +45,8 @@ namespace FoodieMatch.Core.Application.UseCases
                         board,
                         waitingRack,
                         initialPackages,
-                        settings,
+                        settings.EarlyWeights,
+                        random,
                         out RequiredPackageModel package))
                 {
                     return false;
@@ -62,7 +65,9 @@ namespace FoodieMatch.Core.Application.UseCases
             WaitingRackModel waitingRack,
             RequiredPackageModel[] packages,
             IReadOnlyList<RequiredPackageModel> packageReservations,
-            RequiredPackageGenerationSettings settings,
+            PackageSelectionSettings settings,
+            float progressRatio,
+            System.Random random,
             out RequiredPackageModel replacementPackage)
         {
             replacementPackage = null;
@@ -73,6 +78,11 @@ namespace FoodieMatch.Core.Application.UseCases
                 packageReservations == null ||
                 packageReservations.Count != packages.Length ||
                 settings == null ||
+                random == null ||
+                float.IsNaN(progressRatio) ||
+                float.IsInfinity(progressRatio) ||
+                progressRatio < 0f ||
+                progressRatio > 1f ||
                 packageIndex < 0 ||
                 packageIndex >= packages.Length ||
                 packages[packageIndex] == null ||
@@ -85,7 +95,8 @@ namespace FoodieMatch.Core.Application.UseCases
                     board,
                     waitingRack,
                     packageReservations,
-                    settings,
+                    settings.GetWeights(progressRatio),
+                    random,
                     out RequiredPackageModel generatedPackage))
             {
                 replacementPackage = generatedPackage;
