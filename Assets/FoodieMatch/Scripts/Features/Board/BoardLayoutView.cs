@@ -22,6 +22,14 @@ namespace FoodieMatch.Features.Board
         private readonly Dictionary<int, List<FoodItemView>>
             _topTrayFoodItems = new();
 
+        private const float HidePunchScaleMultiplier = 1.05f;
+        private const float HidePunchDuration = 0.05f;
+        private const float HideShrinkDuration = 0.15f;
+
+        private const float RevealOvershootScaleMultiplier = 1.15f;
+        private const float RevealGrowDuration = 0.18f;
+        private const float RevealSettleDuration = 0.08f;
+
         private FoodVisualResolver _foodVisualResolver;
 
         public event Action<FoodSelectionContext> FoodSelected;
@@ -268,9 +276,7 @@ namespace FoodieMatch.Features.Board
         }
 
         public async Task AnimateHideFoodAsync(
-            List<FoodItemView> foodViews,
-            float fadeDuration = 0.35f,
-            float staggerInterval = 0.05f)
+            List<FoodItemView> foodViews)
         {
             if (foodViews == null || foodViews.Count == 0)
             {
@@ -288,44 +294,60 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                float delay = i * staggerInterval;
                 SpriteRenderer spriteRenderer =
                     view.GetComponentInChildren<SpriteRenderer>();
 
-                tasks.Add(AnimateSingleFadeOutAsync(
-                    view, spriteRenderer, delay, fadeDuration));
+                tasks.Add(AnimateSinglePopupHideAsync(
+                    view,
+                    spriteRenderer));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task AnimateSingleFadeOutAsync(
+        private static async Task AnimateSinglePopupHideAsync(
             FoodItemView view,
-            SpriteRenderer spriteRenderer,
-            float delay,
-            float duration)
+            SpriteRenderer spriteRenderer)
         {
-            if (delay > 0f)
+            if (view == null)
             {
-                await Task.Delay((int)(delay * 1000));
+                return;
             }
 
-            Vector3 originalScale = view.transform.localScale;
-            Tween scaleTween = Tween.Scale(
-                view.transform, Vector3.zero, duration);
+            Vector3 targetScale =
+                view.GetVisualScale(view.VisualState);
+
+            Vector3 punchScale =
+                targetScale * HidePunchScaleMultiplier;
+
+            float totalDuration =
+                HidePunchDuration + HideShrinkDuration;
 
             if (spriteRenderer != null)
             {
-                Tween.Alpha(spriteRenderer, 0f, duration);
+                Tween.Alpha(
+                    spriteRenderer,
+                    0f,
+                    totalDuration);
             }
 
-            await scaleTween;
+            Sequence sequence = Sequence.Create()
+                .Chain(Tween.Scale(
+                    view.transform,
+                    punchScale,
+                    HidePunchDuration,
+                    Ease.OutQuad))
+                .Chain(Tween.Scale(
+                    view.transform,
+                    Vector3.zero,
+                    HideShrinkDuration,
+                    Ease.InBack));
+
+            await sequence;
         }
 
         public async Task AnimateRevealFoodAsync(
-            List<FoodItemView> foodViews,
-            float fadeDuration = 0.35f,
-            float staggerInterval = 0.05f)
+            List<FoodItemView> foodViews)
         {
             if (foodViews == null || foodViews.Count == 0)
             {
@@ -343,33 +365,33 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                float delay = i * staggerInterval;
                 SpriteRenderer spriteRenderer =
                     view.GetComponentInChildren<SpriteRenderer>();
 
-                tasks.Add(AnimateSingleFadeInAsync(
-                    view, spriteRenderer, delay, fadeDuration));
+                tasks.Add(AnimateSinglePopupRevealAsync(
+                    view,
+                    spriteRenderer));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task AnimateSingleFadeInAsync(
+        private static async Task AnimateSinglePopupRevealAsync(
             FoodItemView view,
-            SpriteRenderer spriteRenderer,
-            float delay,
-            float duration)
+            SpriteRenderer spriteRenderer)
         {
-            if (delay > 0f)
+            if (view == null)
             {
-                await Task.Delay((int)(delay * 1000));
+                return;
             }
 
-            Vector3 targetScale = view.GetVisualScale(view.VisualState);
-            view.transform.localScale = Vector3.zero;
+            Vector3 targetScale =
+                view.GetVisualScale(view.VisualState);
 
-            Tween scaleTween = Tween.Scale(
-                view.transform, targetScale, duration);
+            Vector3 overshootScale =
+                targetScale * RevealOvershootScaleMultiplier;
+
+            view.transform.localScale = Vector3.zero;
 
             if (spriteRenderer != null)
             {
@@ -377,10 +399,25 @@ namespace FoodieMatch.Features.Board
                 color.a = 0f;
                 spriteRenderer.color = color;
 
-                Tween.Alpha(spriteRenderer, 1f, duration);
+                Tween.Alpha(
+                    spriteRenderer,
+                    1f,
+                    RevealGrowDuration);
             }
 
-            await scaleTween;
+            Sequence sequence = Sequence.Create()
+                .Chain(Tween.Scale(
+                    view.transform,
+                    overshootScale,
+                    RevealGrowDuration,
+                    Ease.OutCubic))
+                .Chain(Tween.Scale(
+                    view.transform,
+                    targetScale,
+                    RevealSettleDuration,
+                    Ease.OutQuad));
+
+            await sequence;
         }
 
         public void UpdateFoodSprite(FoodItemView view, int newTokenId, Sprite sprite)

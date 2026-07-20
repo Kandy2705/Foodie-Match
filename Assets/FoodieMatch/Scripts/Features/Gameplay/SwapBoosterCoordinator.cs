@@ -14,10 +14,6 @@ namespace FoodieMatch.Features.Gameplay
 {
     internal sealed class SwapBoosterCoordinator
     {
-        private const float HideFadeDuration = 0.25f;
-        private const float HideStaggerInterval = 0.04f;
-        private const float RevealFadeDuration = 0.25f;
-        private const float RevealStaggerInterval = 0.04f;
         private const int MinFoodCountToSwap = 2;
         private const int GrillSlotMarker = -1;
 
@@ -101,7 +97,7 @@ namespace FoodieMatch.Features.Gameplay
             List<FoodItemView> oldFoodViews = CollectAllVisibleFoodViews();
 
             await _boardLayoutView.AnimateHideFoodAsync(
-                oldFoodViews, HideFadeDuration, HideStaggerInterval);
+                oldFoodViews);
 
             if (!IsCurrentSession(session) || !session.CanContinueGameplay)
             {
@@ -167,7 +163,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             await _boardLayoutView.AnimateRevealFoodAsync(
-                foodViews, RevealFadeDuration, RevealStaggerInterval);
+                foodViews);
 
             if (IsCurrentSession(session) && session.CanContinueGameplay)
             {
