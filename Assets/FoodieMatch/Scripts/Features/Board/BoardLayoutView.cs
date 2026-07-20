@@ -119,6 +119,11 @@ namespace FoodieMatch.Features.Board
             _foodAddresses.Remove(foodItemView);
         }
 
+        public bool TryGetGrillView(int grillPositionIndex, out GrillView grillView)
+        {
+            return _grillViews.TryGetValue(grillPositionIndex, out grillView) && grillView != null;
+        }
+
         public void RestoreFoodItem(
             FoodItemView foodItemView,
             FoodBoardAddress address)

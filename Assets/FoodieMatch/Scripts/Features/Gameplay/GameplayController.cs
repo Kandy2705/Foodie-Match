@@ -45,6 +45,7 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackPlacementCoordinator _waitingRackPlacementCoordinator;
         private WaitingRackAutoFillCoordinator _waitingRackAutoFillCoordinator;
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
+        private GrillCompletionCoordinator _grillCompletionCoordinator;
         private ComboCoordinator _comboCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
@@ -61,6 +62,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayMotionPresenter?.CancelAllMotions();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
+            _grillCompletionCoordinator?.EndSession();
             _comboCoordinator?.EndSession();
 
             if (_boardLayoutView != null)
@@ -179,6 +181,7 @@ namespace FoodieMatch.Features.Gameplay
             _waitingRackView.Clear();
             _packageDeliveryCoordinator.BeginSession(_session);
             _waitingRackAutoFillCoordinator.BeginSession(_session);
+            _grillCompletionCoordinator.BeginSession(_session);
             _session.StartPlaying();
             _gameplayWorldClickSfx.StartListening();
 
@@ -196,6 +199,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayMotionPresenter?.CancelAllMotions();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
+            _grillCompletionCoordinator?.EndSession();
             _comboCoordinator?.EndSession();
             _waitingRackView?.Clear();
             _session = null;
@@ -262,6 +266,8 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
             _topTrayMoveCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _boardLayoutView);
+            _grillCompletionCoordinator = new(
+                _sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
             _comboCoordinator = new(_sessionGuard, _gameplayEvents, _gameplayAudioPresenter);
         }
 
@@ -272,6 +278,7 @@ namespace FoodieMatch.Features.Gameplay
             _packageDeliveryCoordinator.PackageDeliveryFailed += HandleGameplayFlowFailed;
             _waitingRackAutoFillCoordinator.AutoFillFinished += HandleAutoFillFinished;
             _waitingRackAutoFillCoordinator.AutoFillFailed += HandleGameplayFlowFailed;
+            _grillCompletionCoordinator.GrillCloseFinished += HandleGrillCloseFinished;
         }
 
         private void UnsubscribeCoordinatorEvents()
@@ -287,6 +294,11 @@ namespace FoodieMatch.Features.Gameplay
             {
                 _waitingRackAutoFillCoordinator.AutoFillFinished -= HandleAutoFillFinished;
                 _waitingRackAutoFillCoordinator.AutoFillFailed -= HandleGameplayFlowFailed;
+            }
+
+            if (_grillCompletionCoordinator != null)
+            {
+                _grillCompletionCoordinator.GrillCloseFinished -= HandleGrillCloseFinished;
             }
         }
 
@@ -428,6 +440,7 @@ namespace FoodieMatch.Features.Gameplay
                 context.FoodItemView, result.TargetIndex, session);
 
             _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            _grillCompletionCoordinator.TryCloseCompletedGrill(context.Address.GrillPositionIndex, session);
             await deliveryTask;
             TryResolveWin(session);
         }
@@ -442,6 +455,7 @@ namespace FoodieMatch.Features.Gameplay
                 context.FoodItemView, result.TargetIndex, session);
 
             _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            _grillCompletionCoordinator.TryCloseCompletedGrill(context.Address.GrillPositionIndex, session);
             bool causedWaitingRackFull = session.WaitingRack.IsFull;
 
             if (causedWaitingRackFull)
@@ -502,6 +516,11 @@ namespace FoodieMatch.Features.Gameplay
             TryResolveWin(session);
         }
 
+        private void HandleGrillCloseFinished(GameplaySession session)
+        {
+            TryResolveWin(session);
+        }
+
         private void HandleGameplayFlowFailed(GameplaySession session)
         {
             if (IsCurrentSession(session))
@@ -517,6 +536,7 @@ namespace FoodieMatch.Features.Gameplay
                 !session.Progress.IsComplete ||
                 !session.IsDisplayedProgressUpToDate ||
                 _waitingRackAutoFillCoordinator.IsRunning(session) ||
+                _grillCompletionCoordinator.HasActiveMotion(session) ||
                 _packageDeliveryCoordinator.HasActiveMotion(session))
             {
                 return;

@@ -16,6 +16,7 @@ namespace FoodieMatch.Features.Gameplay
         [SerializeField] private float _topTrayFlightStartInterval = 0.08f;
 
         private readonly HashSet<FoodItemView> _activeFoodMotions = new();
+        private readonly HashSet<GrillView> _activeGrillMotions = new();
         private readonly HashSet<RequiredPackageView> _activePackageMotions = new();
         private readonly HashSet<TrayView> _activeTrayMotions = new();
 
@@ -53,6 +54,23 @@ namespace FoodieMatch.Features.Gameplay
             finally
             {
                 _activeFoodMotions.Remove(foodItemView);
+            }
+        }
+
+        public async Task<MotionResult> PlayGrillCloseLidAsync(GrillView grillView)
+        {
+            if (grillView == null || !_activeGrillMotions.Add(grillView))
+            {
+                return MotionResult.Failed;
+            }
+
+            try
+            {
+                return await grillView.PlayCloseLidAsync();
+            }
+            finally
+            {
+                _activeGrillMotions.Remove(grillView);
             }
         }
 
@@ -223,6 +241,9 @@ namespace FoodieMatch.Features.Gameplay
             FoodItemView[] foodItemViews = new FoodItemView[_activeFoodMotions.Count];
             _activeFoodMotions.CopyTo(foodItemViews);
 
+            GrillView[] grillViews = new GrillView[_activeGrillMotions.Count];
+            _activeGrillMotions.CopyTo(grillViews);
+
             RequiredPackageView[] packageViews = new RequiredPackageView[_activePackageMotions.Count];
             _activePackageMotions.CopyTo(packageViews);
 
@@ -232,6 +253,11 @@ namespace FoodieMatch.Features.Gameplay
             for (int i = 0; i < foodItemViews.Length; i++)
             {
                 foodItemViews[i]?.CancelMotion();
+            }
+
+            for (int i = 0; i < grillViews.Length; i++)
+            {
+                grillViews[i]?.CancelMotion();
             }
 
             for (int i = 0; i < packageViews.Length; i++)
