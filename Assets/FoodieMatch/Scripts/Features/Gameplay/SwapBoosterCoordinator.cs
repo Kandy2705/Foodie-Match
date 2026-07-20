@@ -236,18 +236,17 @@ namespace FoodieMatch.Features.Gameplay
                     }
                 }
 
-                for (int t = 0; t < grill.TrayCount; t++)
-                {
-                    TrayModel tray = grill.GetTrayAt(t);
-                    if (tray == null) continue;
+                TrayModel topTray = grill.TopTray;
 
-                    for (int s = 0; s < tray.SlotCount; s++)
+                if (topTray != null)
+                {
+                    for (int s = 0; s < topTray.SlotCount; s++)
                     {
-                        int tokenId = tray.GetFoodTokenIdAt(s);
+                        int tokenId = topTray.GetFoodTokenIdAt(s);
 
                         if (tokenId > BoardRules.EmptyFoodTokenId)
                         {
-                            traySlots.Add((g, t, s));
+                            traySlots.Add((g, 0, s));
                             trayTokens.Add(tokenId);
                         }
                     }
