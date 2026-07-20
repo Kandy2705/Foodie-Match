@@ -49,6 +49,7 @@ namespace FoodieMatch.Features.Gameplay
         private ComboCoordinator _comboCoordinator;
         private PlateBoosterCoordinator _plateBoosterCoordinator;
         private StorageBoosterCoordinator _storageBoosterCoordinator;
+        private SwapBoosterCoordinator _swapBoosterCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
 
@@ -224,6 +225,8 @@ namespace FoodieMatch.Features.Gameplay
                     return TryApplyPlateBooster();
                 case BoosterType.Storage:
                     return TryApplyStorageBooster();
+                case BoosterType.Swap:
+                    return TryApplySwapBooster();
                 default:
                     Debug.Log($"Booster {boosterType} is not implemented yet.");
                     return false;
@@ -240,6 +243,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             return _storageBoosterCoordinator != null &&
                    _storageBoosterCoordinator.TryApply(_session);
+        }
+
+        private bool TryApplySwapBooster()
+        {
+            return _swapBoosterCoordinator != null &&
+                   _swapBoosterCoordinator.TryApply(_session);
         }
 
         private void CreateCoordinators()
@@ -262,6 +271,10 @@ namespace FoodieMatch.Features.Gameplay
                 _packageDeliveryCoordinator,
                 _topTrayMoveCoordinator,
                 TryResolveWin);
+            _swapBoosterCoordinator = new(
+                _sessionGuard,
+                _boardLayoutView,
+                _uiManager);
         }
 
         private void SubscribeCoordinatorEvents()
