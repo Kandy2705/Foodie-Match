@@ -28,7 +28,7 @@ MonoBehaviour:
     _icon: {fileID: -1625834913553564709, guid: 3aae3ad16a8634f03aa9089ef736f32d, type: 3}
     _defaultCostText: 60
     _defaultBonusAmountText: +1
-    _unlockLevel: 4
+    _unlockLevel: 1
     _lockedIconSprite: {fileID: -8063468701033099242, guid: 3cc93f3a897c54e6db2639f5f6567cb7, type: 3}
   - _boosterType: 2
     _title: Swap
