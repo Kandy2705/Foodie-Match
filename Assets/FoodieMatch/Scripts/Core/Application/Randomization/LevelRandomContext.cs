@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Core.Application.Randomization
@@ -26,14 +27,31 @@ namespace FoodieMatch.Core.Application.Randomization
             }
 
             LevelRandomSettings settings = level.RandomSettings;
-            int packageSeed = settings.RandomizePackageSelectionEachRun
-                ? CreateRandomSeed()
-                : settings.PackageSeeds[0];
+            int packageSeed = SelectPackageSeed(settings);
             int foodVisualSeed = settings.RandomizeFoodVisualsEachRun
                 ? CreateRandomSeed()
                 : settings.FixedFoodVisualSeed;
 
             return new LevelRandomContext(packageSeed, foodVisualSeed);
+        }
+
+        private static int SelectPackageSeed(LevelRandomSettings settings)
+        {
+            if (settings.GeneratePackageSeedEachRun)
+            {
+                return CreateRandomSeed();
+            }
+
+            IReadOnlyList<int> packageSeeds = settings.PackageSeeds;
+
+            if (packageSeeds.Count == 1)
+            {
+                return packageSeeds[0];
+            }
+
+            System.Random seedSelector = new(CreateRandomSeed());
+            int seedIndex = seedSelector.Next(packageSeeds.Count);
+            return packageSeeds[seedIndex];
         }
 
         private static int CreateRandomSeed()

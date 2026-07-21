@@ -10,7 +10,7 @@ namespace FoodieMatch.Core.Domain.Level
 
         public LevelRandomSettings(
             IReadOnlyList<int> packageSeeds,
-            bool randomizePackageSelectionEachRun,
+            bool generatePackageSeedEachRun,
             bool randomizeFoodVisualsEachRun,
             int fixedFoodVisualSeed)
         {
@@ -37,13 +37,13 @@ namespace FoodieMatch.Core.Domain.Level
 
             List<int> copiedPackageSeeds = new(packageSeeds);
             _packageSeeds = copiedPackageSeeds.AsReadOnly();
-            RandomizePackageSelectionEachRun = randomizePackageSelectionEachRun;
+            GeneratePackageSeedEachRun = generatePackageSeedEachRun;
             RandomizeFoodVisualsEachRun = randomizeFoodVisualsEachRun;
             FixedFoodVisualSeed = fixedFoodVisualSeed;
         }
 
         public IReadOnlyList<int> PackageSeeds => _packageSeeds;
-        public bool RandomizePackageSelectionEachRun { get; }
+        public bool GeneratePackageSeedEachRun { get; }
         public bool RandomizeFoodVisualsEachRun { get; }
         public int FixedFoodVisualSeed { get; }
     }

@@ -8,8 +8,8 @@ namespace FoodieMatch.Data.Level.Json
         [JsonProperty("packageSeeds")]
         public List<int> PackageSeeds { get; set; }
 
-        [JsonProperty("randomizePackageSelectionEachRun")]
-        public bool? RandomizePackageSelectionEachRun { get; set; }
+        [JsonProperty("generatePackageSeedEachRun")]
+        public bool? GeneratePackageSeedEachRun { get; set; }
 
         [JsonProperty("randomizeFoodVisualsEachRun")]
         public bool? RandomizeFoodVisualsEachRun { get; set; }

@@ -19,10 +19,10 @@ namespace FoodieMatch.Data.Level.Json
 
             ValidatePackageSeeds(settings.PackageSeeds, settingsPath, result);
 
-            if (!settings.RandomizePackageSelectionEachRun.HasValue)
+            if (!settings.GeneratePackageSeedEachRun.HasValue)
             {
                 result.AddError(
-                    $"{settingsPath}.randomizePackageSelectionEachRun is required.");
+                    $"{settingsPath}.generatePackageSeedEachRun is required.");
             }
 
             if (!settings.RandomizeFoodVisualsEachRun.HasValue)

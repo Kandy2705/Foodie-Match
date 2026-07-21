@@ -52,7 +52,7 @@ namespace FoodieMatch.Data.Level.Json
         {
             return new LevelRandomSettings(
                 settingsDto.PackageSeeds,
-                settingsDto.RandomizePackageSelectionEachRun.Value,
+                settingsDto.GeneratePackageSeedEachRun.Value,
                 settingsDto.RandomizeFoodVisualsEachRun.Value,
                 settingsDto.FixedFoodVisualSeed.Value);
         }
