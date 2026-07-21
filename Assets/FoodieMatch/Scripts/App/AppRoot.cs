@@ -1,5 +1,4 @@
 using FoodieMatch.Core.Infrastructure.Audio;
-using FoodieMatch.Data.Level;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
@@ -29,9 +28,6 @@ namespace FoodieMatch.App
         [Header("Audio")]
         [SerializeField] private UnityAudioService _audioService;
 
-        [Header("Data")]
-        [SerializeField] private LevelCatalogSO _levelCatalog;
-
         [Header("Gameplay Roots")]
         [SerializeField] private BoardLayoutView _boardLayoutView;
 
@@ -48,7 +44,6 @@ namespace FoodieMatch.App
         public GameplayMotionPresenter GameplayMotionPresenter =>
             _gameplayMotionPresenter;
         public UnityAudioService AudioService => _audioService;
-        public LevelCatalogSO LevelCatalog => _levelCatalog;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;
@@ -61,7 +56,10 @@ namespace FoodieMatch.App
                 return;
             }
 
-            _appInstaller.Install(this);
+            if (!_appInstaller.Install(this))
+            {
+                return;
+            }
 
             _appController.EnterHome();
         }
@@ -104,11 +102,6 @@ namespace FoodieMatch.App
                 return false;
             }
 
-            if (!HasValidLevels())
-            {
-                return false;
-            }
-
             if (_boardLayoutView == null)
             {
                 Debug.LogError("BoardLayoutView is missing.");
@@ -134,29 +127,6 @@ namespace FoodieMatch.App
             }
 
             return true;
-        }
-
-        private bool HasValidLevels()
-        {
-            if (_levelCatalog == null)
-            {
-                Debug.LogError("LevelCatalog is missing.");
-                return false;
-            }
-
-            LevelValidationResult result = _levelCatalog.Validate();
-
-            if (result.IsValid)
-            {
-                return true;
-            }
-
-            for (int i = 0; i < result.Errors.Count; i++)
-            {
-                Debug.LogError(result.Errors[i], _levelCatalog);
-            }
-
-            return false;
         }
     }
 }

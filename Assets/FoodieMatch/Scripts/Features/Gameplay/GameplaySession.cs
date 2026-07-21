@@ -1,5 +1,6 @@
 using System;
 using FoodieMatch.Core.Application.GameState;
+using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
@@ -12,12 +13,13 @@ namespace FoodieMatch.Features.Gameplay
         public GameplaySession(
             int sessionId,
             int levelNumber,
+            LevelDefinition level,
+            LevelRandomContext randomContext,
             BoardModel board,
             RequiredPackageModel[] requiredPackages,
             WaitingRackModel waitingRack,
             LevelProgressModel progress,
-            ComboProgressModel combo,
-            RequiredPackageGenerationSettings packageSettings)
+            ComboProgressModel combo)
         {
             if (sessionId <= 0)
             {
@@ -31,22 +33,24 @@ namespace FoodieMatch.Features.Gameplay
 
             SessionId = sessionId;
             LevelNumber = levelNumber;
+            Level = level ?? throw new ArgumentNullException(nameof(level));
+            RandomContext = randomContext ?? throw new ArgumentNullException(nameof(randomContext));
             Board = board ?? throw new ArgumentNullException(nameof(board));
             RequiredPackages = requiredPackages ?? throw new ArgumentNullException(nameof(requiredPackages));
             WaitingRack = waitingRack ?? throw new ArgumentNullException(nameof(waitingRack));
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
             Combo = combo ?? throw new ArgumentNullException(nameof(combo));
-            PackageSettings = packageSettings ?? throw new ArgumentNullException(nameof(packageSettings));
         }
 
         public int SessionId { get; }
         public int LevelNumber { get; }
+        public LevelDefinition Level { get; }
+        public LevelRandomContext RandomContext { get; }
         public BoardModel Board { get; }
         public RequiredPackageModel[] RequiredPackages { get; }
         public WaitingRackModel WaitingRack { get; }
         public LevelProgressModel Progress { get; }
         public ComboProgressModel Combo { get; }
-        public RequiredPackageGenerationSettings PackageSettings { get; }
         public int DisplayedServedCount { get; private set; }
         public LevelSessionState State { get; private set; }
         public bool IsInputEnabled { get; private set; }

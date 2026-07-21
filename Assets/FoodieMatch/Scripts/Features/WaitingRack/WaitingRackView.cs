@@ -30,7 +30,7 @@ namespace FoodieMatch.Features.WaitingRack
 
         public int Capacity => _slots.Count;
         public bool IsAddSlotAnimating => _isAddSlotAnimating;
-        public bool IsAtMaxCapacity => Capacity >= WaitingRackModel.MaxCapacity;
+        public bool IsAtMaxCapacity => Capacity >= WaitingRackRules.MaxCapacity;
 
         private void Awake()
         {

@@ -17,6 +17,7 @@ namespace FoodieMatch.Core.Application.GameState
         public int ServedCount { get; private set; }
         public int TotalCount { get; }
         public int RemainingCount => TotalCount - ServedCount;
+        public float ProgressRatio => (float)ServedCount / TotalCount;
         public bool IsComplete => ServedCount >= TotalCount;
 
         public bool TryServeFood()

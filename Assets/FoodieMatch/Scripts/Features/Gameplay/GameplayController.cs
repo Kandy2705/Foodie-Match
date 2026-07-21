@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
+using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -127,40 +128,44 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (!_levelRepository.TryGetLevel(levelNumber, out LevelConfig levelConfig))
+            if (!_levelRepository.TryGetLevel(levelNumber, out LevelDefinition level))
             {
                 Debug.LogError($"Level {levelNumber} could not be loaded.");
                 return;
             }
 
-            _waitingRackView.ResetToCapacity(levelConfig.WaitingRackCapacity);
+            _waitingRackView.ResetToCapacity(WaitingRackRules.InitialCapacity);
 
-            if (_waitingRackView.Capacity != levelConfig.WaitingRackCapacity)
+            if (_waitingRackView.Capacity != WaitingRackRules.InitialCapacity)
             {
-                Debug.LogError($"Waiting rack capacity must be {levelConfig.WaitingRackCapacity}.");
+                Debug.LogError($"Waiting rack capacity must be {WaitingRackRules.InitialCapacity}.");
                 return;
             }
 
             _navigationActions = navigationActions ?? throw new ArgumentNullException(nameof(navigationActions));
-            BoardModel board = _boardModelFactory.Create(levelConfig);
-            RequiredPackageGenerationSettings packageSettings = levelConfig.RequiredPackageGenerationSettings;
+            LevelRandomContext randomContext = LevelRandomContext.Create(level);
+            BoardModel board = _boardModelFactory.Create(level);
 
-            if (!_foodVisualResolver.TryCreateRandomMapping(board.GetAllFoodTokenIds()))
+            if (!_foodVisualResolver.TryCreateMapping(board.GetAllFoodTokenIds(), randomContext.FoodVisualSeed))
             {
                 Debug.LogError($"Food visual mapping could not be created for level {levelNumber}.");
                 return;
             }
 
-            WaitingRackModel waitingRack = new(levelConfig.WaitingRackCapacity);
+            WaitingRackModel waitingRack = new(WaitingRackRules.InitialCapacity);
 
-            if (_requiredPackageGroupView.PackageCount != packageSettings.InitialActivePackageCount)
+            if (_requiredPackageGroupView.PackageCount != LevelRules.ActivePackageCount)
             {
                 Debug.LogError("Required package view count does not match the level config.");
                 return;
             }
 
             if (!_requiredPackageLifecycleUseCase.TryCreateInitialPackages(
-                    board, waitingRack, packageSettings, out RequiredPackageModel[] requiredPackages))
+                    board,
+                    waitingRack,
+                    level.PackageSelectionSettings,
+                    randomContext.PackageRandom,
+                    out RequiredPackageModel[] requiredPackages))
             {
                 Debug.LogError($"Initial required packages could not be created for level {levelNumber}.");
                 return;
@@ -172,12 +177,13 @@ namespace FoodieMatch.Features.Gameplay
             _session = new(
                 sessionId,
                 levelNumber,
+                level,
+                randomContext,
                 board,
                 requiredPackages,
                 waitingRack,
                 progress,
-                combo,
-                packageSettings);
+                combo);
 
             _gameplayMotionPresenter.CancelAllMotions();
             _boardLayoutView.Setup(_session.Board);
@@ -188,7 +194,10 @@ namespace FoodieMatch.Features.Gameplay
             _session.StartPlaying();
             _gameplayWorldClickSfx.StartListening();
 
-            Debug.Log($"Start Level {levelNumber}");
+            Debug.Log(
+                $"Start Level {levelNumber} with package seed " +
+                $"{randomContext.PackageSeed} and food visual seed " +
+                $"{randomContext.FoodVisualSeed}");
             _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelNumber));
             _comboCoordinator.BeginSession(_session);
             _gameplayEvents.OnLevelProgressChanged(

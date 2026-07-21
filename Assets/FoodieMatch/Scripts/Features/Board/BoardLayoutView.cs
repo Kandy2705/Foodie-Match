@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Grill;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Features.Food;
 using PrimeTween;
 using UnityEngine;
@@ -11,7 +12,6 @@ namespace FoodieMatch.Features.Board
 {
     public sealed class BoardLayoutView : MonoBehaviour
     {
-        [SerializeField] private Transform[] _positions;
         [SerializeField] private GrillView _grillPrefab;
         [SerializeField] private FoodItemView _foodItemPrefab;
         [SerializeField] private Transform _foodItemRoot;
@@ -42,11 +42,6 @@ namespace FoodieMatch.Features.Board
 
         private void Awake()
         {
-            if (_positions == null || _positions.Length == 0)
-            {
-                Debug.LogWarning("Board positions are missing.", this);
-            }
-
             if (_foodItemRoot == null)
             {
                 Debug.LogWarning("Food item root is missing.", this);
@@ -78,15 +73,8 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                Transform position = GetPosition(grillModel.PositionIndex);
-
-                if (position == null)
-                {
-                    Debug.LogWarning($"Board position {grillModel.PositionIndex} is missing.", this);
-                    continue;
-                }
-
-                GrillView grillView = Instantiate(_grillPrefab, position);
+                GrillView grillView = Instantiate(_grillPrefab, transform);
+                SetGrillPosition(grillView.transform, grillModel.Position);
                 _grillViews.Add(grillModel.PositionIndex, grillView);
                 grillView.SetupTrayStack(grillModel.TrayCount);
                 SpawnTopTrayFoodItems(grillModel, grillView, useNextTray: false);
@@ -97,24 +85,7 @@ namespace FoodieMatch.Features.Board
         public void Clear()
         {
             ClearFoodItems();
-
-            if (_positions == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < _positions.Length; i++)
-            {
-                if (_positions[i] == null)
-                {
-                    continue;
-                }
-
-                for (int childIndex = _positions[i].childCount - 1; childIndex >= 0; childIndex--)
-                {
-                    Destroy(_positions[i].GetChild(childIndex).gameObject);
-                }
-            }
+            ClearGrills();
         }
 
         public bool TryCollectActiveFoodByTokenId(
@@ -847,7 +818,6 @@ namespace FoodieMatch.Features.Board
 
             _foodAddresses.Clear();
             _topTrayFoodItems.Clear();
-            _grillViews.Clear();
 
             if (_foodItemRoot == null)
             {
@@ -875,14 +845,23 @@ namespace FoodieMatch.Features.Board
                     address));
         }
 
-        private Transform GetPosition(int positionIndex)
+        private void ClearGrills()
         {
-            if (_positions == null || positionIndex < 0 || positionIndex >= _positions.Length)
+            foreach (KeyValuePair<int, GrillView> entry in _grillViews)
             {
-                return null;
+                if (entry.Value != null)
+                {
+                    Destroy(entry.Value.gameObject);
+                }
             }
 
-            return _positions[positionIndex];
+            _grillViews.Clear();
+        }
+
+        private static void SetGrillPosition(Transform grillTransform, GrillPosition position)
+        {
+            grillTransform.localPosition = new Vector3(position.X, position.Y, 0f);
+            grillTransform.localRotation = Quaternion.identity;
         }
     }
 }
