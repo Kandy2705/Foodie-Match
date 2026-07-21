@@ -304,7 +304,11 @@ namespace FoodieMatch.Features.Gameplay
                 _fridgeBoosterAnchors != null
                     ? _fridgeBoosterAnchors.FridgeBoosterView
                     : null,
-                _waitingRackView);
+                _waitingRackView,
+                _boardLayoutView,
+                _requiredPackageLifecycleUseCase,
+                _packageDeliveryCoordinator,
+                _foodVisualResolver);
         }
 
         private void SubscribeCoordinatorEvents()
@@ -565,6 +569,19 @@ namespace FoodieMatch.Features.Gameplay
 
         private void HandleAutoFillFinished(GameplaySession session)
         {
+            if (!IsCurrentSession(session))
+            {
+                return;
+            }
+
+            /*
+             * Waiting Rack được ưu tiên giao trước.
+             * Sau khi rack không còn món phù hợp,
+             * Fridge mới kiểm tra và nhả food.
+             */
+            _fridgeBoosterCoordinator?
+                .StartOrRequestRelease(session);
+
             TryResolveWin(session);
         }
 

@@ -278,7 +278,6 @@ namespace FoodieMatch.Core.Application.UseCases
                 return false;
             }
 
-            // Lấy token khỏi tủ.
             if (!fridge.TryTake(
                     transfer.FoodTokenId,
                     out int takenFoodTokenId))
@@ -286,7 +285,6 @@ namespace FoodieMatch.Core.Application.UseCases
                 return false;
             }
 
-            // Đưa token vào order.
             if (takenFoodTokenId ==
                     transfer.FoodTokenId &&
                 package.TryPlaceFood(takenFoodTokenId))
@@ -294,7 +292,6 @@ namespace FoodieMatch.Core.Application.UseCases
                 return true;
             }
 
-            // Order nhận thất bại thì trả token lại tủ.
             fridge.Restore(takenFoodTokenId);
             return false;
         }

@@ -51,6 +51,15 @@ namespace FoodieMatch.Features.Gameplay
         [SerializeField, Min(0f)]
         private float _foodShrinkDuration = 0.15f;
 
+        [SerializeField, Min(0f)]
+        private float _releaseGrowDuration = 0.12f;
+
+        [SerializeField, Min(0f)]
+        private float _releaseSettleDuration = 0.1f;
+
+        [SerializeField, Min(1f)]
+        private float _releaseScaleMultiplier = 1.2f;
+
         private Vector3 _fridgeBaseScale;
         private Vector3 _spoonBaseScale;
 
@@ -238,6 +247,52 @@ namespace FoodieMatch.Features.Gameplay
 
             await _activeTween;
             _activeTween = default;
+        }
+
+        public async Task PlayReleasePopAsync(
+            FoodItemView foodItemView)
+        {
+            if (foodItemView == null ||
+                _fridgeFoodEntryPoint == null)
+            {
+                return;
+            }
+
+            CancelAnimations();
+            SetOpenState();
+
+            foodItemView.SetInteractable(false);
+            foodItemView.transform.position =
+                _fridgeFoodEntryPoint.position;
+
+            Vector3 targetScale =
+                foodItemView.transform.localScale;
+
+            if (targetScale == Vector3.zero)
+            {
+                targetScale = Vector3.one;
+            }
+
+            Vector3 growScale =
+                targetScale * _releaseScaleMultiplier;
+
+            foodItemView.transform.localScale =
+                Vector3.zero;
+
+            _activeSequence = Sequence.Create()
+                .Chain(Tween.Scale(
+                    foodItemView.transform,
+                    growScale,
+                    _releaseGrowDuration,
+                    Ease.OutBack))
+                .Chain(Tween.Scale(
+                    foodItemView.transform,
+                    targetScale,
+                    _releaseSettleDuration,
+                    Ease.OutQuad));
+
+            await _activeSequence;
+            _activeSequence = default;
         }
 
         public async Task PlaySpoonExitLeftAsync()

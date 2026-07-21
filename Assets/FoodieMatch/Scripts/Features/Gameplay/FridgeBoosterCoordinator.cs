@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
 using FoodieMatch.Features.WaitingRack;
 using UnityEngine;
@@ -11,32 +13,65 @@ namespace FoodieMatch.Features.Gameplay
         private readonly GameplaySessionGuard _sessionGuard;
         private readonly FridgeBoosterView _view;
         private readonly WaitingRackView _waitingRackView;
+        private readonly BoardLayoutView _boardLayoutView;
+        private readonly RequiredPackageLifecycleUseCase
+            _packageLifecycleUseCase;
+        private readonly PackageDeliveryCoordinator
+            _packageDeliveryCoordinator;
+        private readonly FoodVisualResolver
+            _foodVisualResolver;
 
         private GameplaySession _activeSession;
-        private bool _isRunning;
+
+        private bool _isApplying;
+        private bool _isReleasing;
+        private bool _releaseRetryRequested;
+        private bool _hasFailed;
 
         public FridgeBoosterCoordinator(
             GameplaySessionGuard sessionGuard,
             FridgeBoosterView view,
-            WaitingRackView waitingRackView)
+            WaitingRackView waitingRackView,
+            BoardLayoutView boardLayoutView,
+            RequiredPackageLifecycleUseCase
+                packageLifecycleUseCase,
+            PackageDeliveryCoordinator
+                packageDeliveryCoordinator,
+            FoodVisualResolver foodVisualResolver)
         {
             _sessionGuard = sessionGuard;
             _view = view;
             _waitingRackView = waitingRackView;
+            _boardLayoutView = boardLayoutView;
+            _packageLifecycleUseCase =
+                packageLifecycleUseCase;
+            _packageDeliveryCoordinator =
+                packageDeliveryCoordinator;
+            _foodVisualResolver =
+                foodVisualResolver;
         }
 
         public void BeginSession()
         {
-            _isRunning = false;
             _activeSession = null;
+            _isApplying = false;
+            _isReleasing = false;
+            _releaseRetryRequested = false;
+            _hasFailed = false;
+
             _view?.HideImmediately();
         }
 
         public bool TryApply(GameplaySession session)
         {
-            if (_isRunning ||
+            if (_isApplying ||
+                _isReleasing ||
                 _view == null ||
                 _waitingRackView == null ||
+                _boardLayoutView == null ||
+                _packageLifecycleUseCase == null ||
+                _packageDeliveryCoordinator == null ||
+                _foodVisualResolver == null ||
                 !CanContinue(session) ||
                 !session.IsInputEnabled)
             {
@@ -61,7 +96,8 @@ namespace FoodieMatch.Features.Gameplay
                 return false;
             }
 
-            if (!session.TryActivateFridgeInventory(out _))
+            if (!session.TryActivateFridgeInventory(
+                    out _))
             {
                 Debug.Log(
                     "Fridge inventory could not be activated.");
@@ -70,20 +106,51 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _activeSession = session;
-            _isRunning = true;
+            _isApplying = true;
+            _hasFailed = false;
 
             session.DisableInput();
 
-            _ = PlaySafelyAsync(session);
+            _ = ApplySafelyAsync(session);
             return true;
+        }
+
+        public void StartOrRequestRelease(
+            GameplaySession session)
+        {
+            if (!ReferenceEquals(
+                    _activeSession,
+                    session) ||
+                !CanContinue(session) ||
+                !session.HasActivatedFridgeBooster ||
+                session.FridgeInventory == null ||
+                session.FridgeInventory.IsEmpty)
+            {
+                return;
+            }
+
+            if (_isApplying || _isReleasing)
+            {
+                _releaseRetryRequested = true;
+                return;
+            }
+
+            _isReleasing = true;
+            session.DisableInput();
+
+            _ = ReleaseSafelyAsync(session);
         }
 
         public void EndSession()
         {
-            GameplaySession session = _activeSession;
+            GameplaySession session =
+                _activeSession;
 
-            _isRunning = false;
             _activeSession = null;
+            _isApplying = false;
+            _isReleasing = false;
+            _releaseRetryRequested = false;
+            _hasFailed = false;
 
             _view?.CancelAnimations();
             _view?.HideImmediately();
@@ -91,15 +158,16 @@ namespace FoodieMatch.Features.Gameplay
             session?.ClearFridgeInventory();
         }
 
-        private async Task PlaySafelyAsync(
+        private async Task ApplySafelyAsync(
             GameplaySession session)
         {
             try
             {
-                await PlayAsync(session);
+                await ApplyAsync(session);
             }
             catch (Exception exception)
             {
+                _hasFailed = true;
                 Debug.LogException(exception);
             }
             finally
@@ -108,9 +176,11 @@ namespace FoodieMatch.Features.Gameplay
                         _activeSession,
                         session))
                 {
-                    _isRunning = false;
+                    _isApplying = false;
 
-                    if (CanContinue(session))
+                    if (!_isReleasing &&
+                        !_hasFailed &&
+                        CanContinue(session))
                     {
                         session.StartPlaying();
                     }
@@ -118,7 +188,7 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task PlayAsync(
+        private async Task ApplyAsync(
             GameplaySession session)
         {
             await _view.PlayEnterAndOpenAsync();
@@ -156,8 +226,8 @@ namespace FoodieMatch.Features.Gameplay
                 if (!scoopSucceeded)
                 {
                     Debug.LogError(
-                        $"Fridge stopped because slot " +
-                        $"{slotIndex} could not be scooped.");
+                        $"Fridge stopped at Waiting Rack " +
+                        $"slot {slotIndex}.");
 
                     break;
                 }
@@ -168,21 +238,231 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (session.FridgeInventory != null &&
-                session.FridgeInventory.Count > 0)
-            {
-                _view.SetFullState();
-            }
-            else
-            {
-                _view.SetClosedState();
-            }
+            UpdateFridgeVisualState(session);
 
             await _view.PlaySpoonExitLeftAsync();
 
             Debug.Log(
                 $"Fridge scoop completed. Stored food: " +
                 $"{session.FridgeInventory?.Count ?? 0}");
+
+            if (!CanContinue(session) ||
+                session.FridgeInventory == null ||
+                session.FridgeInventory.IsEmpty)
+            {
+                return;
+            }
+
+            _isReleasing = true;
+
+            try
+            {
+                await ReleaseAvailableMatchesCoreAsync(
+                    session);
+            }
+            finally
+            {
+                _isReleasing = false;
+            }
+        }
+
+        private async Task ReleaseSafelyAsync(
+            GameplaySession session)
+        {
+            try
+            {
+                await ReleaseAvailableMatchesCoreAsync(
+                    session);
+            }
+            catch (Exception exception)
+            {
+                _hasFailed = true;
+                Debug.LogException(exception);
+            }
+            finally
+            {
+                if (ReferenceEquals(
+                        _activeSession,
+                        session))
+                {
+                    _isReleasing = false;
+
+                    bool shouldRetry =
+                        _releaseRetryRequested &&
+                        !_hasFailed &&
+                        CanContinue(session) &&
+                        session.FridgeInventory != null &&
+                        !session.FridgeInventory.IsEmpty;
+
+                    _releaseRetryRequested = false;
+
+                    if (shouldRetry)
+                    {
+                        StartOrRequestRelease(session);
+                    }
+                    else if (!_hasFailed &&
+                             !_isApplying &&
+                             CanContinue(session))
+                    {
+                        session.StartPlaying();
+                    }
+                }
+            }
+        }
+
+        private async Task
+            ReleaseAvailableMatchesCoreAsync(
+                GameplaySession session)
+        {
+            do
+            {
+                _releaseRetryRequested = false;
+
+                while (CanContinue(session) &&
+                       session.FridgeInventory != null &&
+                       !session.FridgeInventory.IsEmpty)
+                {
+                    if (!_packageLifecycleUseCase
+                        .TryFindFridgeMatch(
+                            session.FridgeInventory,
+                            session.RequiredPackages,
+                            out FridgeTransfer transfer))
+                    {
+                        break;
+                    }
+
+                    bool releaseSucceeded =
+                        await TryReleaseOneFoodAsync(
+                            session,
+                            transfer);
+
+                    if (!releaseSucceeded)
+                    {
+                        break;
+                    }
+                }
+            }
+            while (_releaseRetryRequested &&
+                   !_hasFailed &&
+                   CanContinue(session));
+
+            UpdateFridgeVisualState(session);
+        }
+
+        private async Task<bool>
+            TryReleaseOneFoodAsync(
+                GameplaySession session,
+                FridgeTransfer transfer)
+        {
+            Sprite foodSprite =
+                _foodVisualResolver.ResolveIcon(
+                    transfer.FoodTokenId);
+
+            if (foodSprite == null)
+            {
+                Debug.LogError(
+                    $"Fridge sprite could not be resolved " +
+                    $"for token {transfer.FoodTokenId}.");
+
+                return false;
+            }
+
+            FoodItemView foodItemView =
+                _boardLayoutView
+                    .CreateTransientFoodItemView(
+                        foodSprite,
+                        _view.GetFridgeEntryWorldPosition(),
+                        transfer.FoodTokenId);
+
+            if (foodItemView == null)
+            {
+                Debug.LogError(
+                    "Fridge transient food view " +
+                    "could not be created.");
+
+                return false;
+            }
+
+            if (!_packageDeliveryCoordinator
+                .TryCreateFridgeFlight(
+                    transfer,
+                    foodItemView,
+                    session,
+                    out _))
+            {
+                DestroyTransientFood(foodItemView);
+
+                Debug.LogError(
+                    "Fridge package flight could not " +
+                    "be prepared.");
+
+                return false;
+            }
+
+            await _view.PlayReleasePopAsync(
+                foodItemView);
+
+            if (!CanContinue(session))
+            {
+                DestroyTransientFood(foodItemView);
+                return false;
+            }
+
+            if (!_packageDeliveryCoordinator
+                .TryCreateFridgeFlight(
+                    transfer,
+                    foodItemView,
+                    session,
+                    out PackageFlight flight))
+            {
+                DestroyTransientFood(foodItemView);
+                return false;
+            }
+
+            if (!_packageLifecycleUseCase
+                .TryMoveFoodFromFridge(
+                    transfer,
+                    session.FridgeInventory,
+                    session.RequiredPackages))
+            {
+                DestroyTransientFood(foodItemView);
+                UpdateFridgeVisualState(session);
+
+                Debug.LogError(
+                    "Fridge food could not be moved " +
+                    "to its required package.");
+
+                return false;
+            }
+
+            _packageDeliveryCoordinator
+                .IncreaseServedFoodCount(session);
+
+            UpdateFridgeVisualState(session);
+
+            bool delivered =
+                await _packageDeliveryCoordinator
+                    .DeliverBatchAsync(
+                        new[] { flight },
+                        session);
+
+            if (!delivered)
+            {
+                _hasFailed = true;
+                DestroyTransientFood(foodItemView);
+
+                Debug.LogError(
+                    "Fridge food delivery failed.");
+
+                return false;
+            }
+
+            Debug.Log(
+                $"Fridge released token " +
+                $"{transfer.FoodTokenId} to package " +
+                $"{transfer.PackageIndex}.");
+
+            return true;
         }
 
         private async Task<bool> TryScoopSlotAsync(
@@ -196,8 +476,8 @@ namespace FoodieMatch.Features.Gameplay
                 foodItemView == null)
             {
                 Debug.LogError(
-                    $"Fridge could not find visual food " +
-                    $"at Waiting Rack slot {slotIndex}.");
+                    $"Fridge could not find food visual " +
+                    $"at slot {slotIndex}.");
 
                 return false;
             }
@@ -222,15 +502,13 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                if (!session.WaitingRack.TryRemoveFoodAt(
+                if (!session.WaitingRack
+                    .TryRemoveFoodAt(
                         slotIndex,
                         out int removedTokenId) ||
-                    removedTokenId != expectedFoodTokenId)
+                    removedTokenId !=
+                        expectedFoodTokenId)
                 {
-                    Debug.LogError(
-                        $"Fridge could not remove model token " +
-                        $"at slot {slotIndex}.");
-
                     return false;
                 }
 
@@ -243,10 +521,6 @@ namespace FoodieMatch.Features.Gameplay
                 if (removedView == null ||
                     removedView != foodItemView)
                 {
-                    Debug.LogError(
-                        $"Fridge could not remove visual food " +
-                        $"at slot {slotIndex}.");
-
                     if (removedView != null)
                     {
                         _waitingRackView.RestoreFoodAt(
@@ -263,7 +537,6 @@ namespace FoodieMatch.Features.Gameplay
                 }
 
                 viewRemoved = true;
-
                 foodItemView.SetInteractable(false);
 
                 await _view.PlayScoopFoodAsync(
@@ -333,16 +606,13 @@ namespace FoodieMatch.Features.Gameplay
             if (viewWasRemoved &&
                 foodItemView != null)
             {
-                bool restored =
-                    _waitingRackView.RestoreFoodAt(
+                if (!_waitingRackView.RestoreFoodAt(
                         slotIndex,
-                        foodItemView);
-
-                if (!restored)
+                        foodItemView))
                 {
                     Debug.LogError(
-                        $"Fridge failed to restore visual food " +
-                        $"at slot {slotIndex}.");
+                        $"Fridge failed to restore food " +
+                        $"visual at slot {slotIndex}.");
                 }
             }
         }
@@ -358,13 +628,44 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (!session.WaitingRack.TryRestoreFoodAt(
+            if (!session.WaitingRack
+                .TryRestoreFoodAt(
                     slotIndex,
                     foodTokenId))
             {
                 Debug.LogError(
                     $"Fridge failed to restore model food " +
                     $"at slot {slotIndex}.");
+            }
+        }
+
+        private void UpdateFridgeVisualState(
+            GameplaySession session)
+        {
+            if (_view == null)
+            {
+                return;
+            }
+
+            if (session?.FridgeInventory != null &&
+                !session.FridgeInventory.IsEmpty)
+            {
+                _view.SetFullState();
+            }
+            else
+            {
+                _view.SetClosedState();
+            }
+        }
+
+        private void DestroyTransientFood(
+            FoodItemView foodItemView)
+        {
+            if (foodItemView != null)
+            {
+                _boardLayoutView
+                    .DestroyTransientFoodItemView(
+                        foodItemView);
             }
         }
 

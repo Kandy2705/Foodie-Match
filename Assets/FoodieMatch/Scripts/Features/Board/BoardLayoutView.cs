@@ -543,6 +543,42 @@ namespace FoodieMatch.Features.Board
             _foodAddresses.Remove(foodItemView);
         }
 
+        public FoodItemView CreateTransientFoodItemView(
+            Sprite sprite,
+            Vector3 worldPosition,
+            int foodTokenId)
+        {
+            if (_foodItemPrefab == null ||
+                _foodItemRoot == null)
+            {
+                return null;
+            }
+
+            FoodItemView foodItemView =
+                Instantiate(
+                    _foodItemPrefab,
+                    _foodItemRoot);
+
+            foodItemView.transform
+                .SetPositionAndRotation(
+                    worldPosition,
+                    Quaternion.identity);
+
+            foodItemView.Setup(foodTokenId, sprite);
+            foodItemView.SetInteractable(false);
+
+            return foodItemView;
+        }
+
+        public void DestroyTransientFoodItemView(
+            FoodItemView foodItemView)
+        {
+            if (foodItemView != null)
+            {
+                Destroy(foodItemView.gameObject);
+            }
+        }
+
         public bool TryGetGrillView(int grillPositionIndex, out GrillView grillView)
         {
             return _grillViews.TryGetValue(grillPositionIndex, out grillView) && grillView != null;
