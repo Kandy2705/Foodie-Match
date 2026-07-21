@@ -31,6 +31,9 @@ namespace FoodieMatch.Features.Gameplay
         private float _enterDuration = 0.35f;
 
         [SerializeField, Min(0f)]
+        private float _exitDuration = 0.35f;
+
+        [SerializeField, Min(0f)]
         private float _openGrowDuration = 0.14f;
 
         [SerializeField, Min(0f)]
@@ -65,6 +68,8 @@ namespace FoodieMatch.Features.Gameplay
 
         private Sequence _activeSequence;
         private Tween _activeTween;
+
+        public bool IsVisible { get; private set; }
 
         public Transform FridgeFoodEntryPoint =>
             _fridgeFoodEntryPoint;
@@ -110,6 +115,8 @@ namespace FoodieMatch.Features.Gameplay
 
             HideSpoon();
             ResetSpoonPosition();
+
+            IsVisible = false;
         }
 
         public async Task PlayEnterAndOpenAsync()
@@ -120,6 +127,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             SetOffscreen();
+            IsVisible = true;
 
             Vector3 openScale =
                 _fridgeBaseScale *
@@ -320,6 +328,7 @@ namespace FoodieMatch.Features.Gameplay
 
         public void SetClosedState()
         {
+            IsVisible = true;
             SetFridgeSprite(_fridgeCloseSprite);
 
             if (_visibleAnchor != null)
@@ -334,12 +343,14 @@ namespace FoodieMatch.Features.Gameplay
 
         public void SetFullState()
         {
+            IsVisible = true;
             SetFridgeSprite(_fridgeFullSprite);
             transform.localScale = _fridgeBaseScale;
         }
 
         public void SetOpenState()
         {
+            IsVisible = true;
             SetFridgeSprite(_fridgeOpenSprite);
             transform.localScale = _fridgeBaseScale;
         }
@@ -351,6 +362,37 @@ namespace FoodieMatch.Features.Gameplay
                 : transform.position;
         }
 
+        public async Task PlayDisappearAsync()
+        {
+            if (!IsVisible)
+            {
+                HideImmediately();
+                return;
+            }
+
+            if (_offscreenRightAnchor == null)
+            {
+                HideImmediately();
+                return;
+            }
+
+            CancelAnimations();
+            HideSpoon();
+
+            SetClosedState();
+
+            _activeTween = Tween.Position(
+                transform,
+                _offscreenRightAnchor.position,
+                _exitDuration,
+                Ease.InCubic);
+
+            await _activeTween;
+            _activeTween = default;
+
+            HideImmediately();
+        }
+
         public void HideImmediately()
         {
             CancelAnimations();
@@ -360,6 +402,8 @@ namespace FoodieMatch.Features.Gameplay
             {
                 _fridgeRenderer.enabled = false;
             }
+
+            IsVisible = false;
         }
 
         public void CancelAnimations()

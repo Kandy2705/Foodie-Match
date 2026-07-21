@@ -574,11 +574,6 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            /*
-             * Waiting Rack được ưu tiên giao trước.
-             * Sau khi rack không còn món phù hợp,
-             * Fridge mới kiểm tra và nhả food.
-             */
             _fridgeBoosterCoordinator?
                 .StartOrRequestRelease(session);
 

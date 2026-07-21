@@ -346,7 +346,7 @@ namespace FoodieMatch.Features.Gameplay
                    !_hasFailed &&
                    CanContinue(session));
 
-            UpdateFridgeVisualState(session);
+            await UpdateFridgeVisualStateAsync(session);
         }
 
         private async Task<bool>
@@ -426,7 +426,12 @@ namespace FoodieMatch.Features.Gameplay
                     session.RequiredPackages))
             {
                 DestroyTransientFood(foodItemView);
-                UpdateFridgeVisualState(session);
+
+                if (session.FridgeInventory != null &&
+                    !session.FridgeInventory.IsEmpty)
+                {
+                    _view.SetFullState();
+                }
 
                 Debug.LogError(
                     "Fridge food could not be moved " +
@@ -437,8 +442,6 @@ namespace FoodieMatch.Features.Gameplay
 
             _packageDeliveryCoordinator
                 .IncreaseServedFoodCount(session);
-
-            UpdateFridgeVisualState(session);
 
             bool delivered =
                 await _packageDeliveryCoordinator
@@ -656,6 +659,24 @@ namespace FoodieMatch.Features.Gameplay
             {
                 _view.SetClosedState();
             }
+        }
+
+        private async Task UpdateFridgeVisualStateAsync(
+            GameplaySession session)
+        {
+            if (_view == null)
+            {
+                return;
+            }
+
+            if (session?.FridgeInventory != null &&
+                !session.FridgeInventory.IsEmpty)
+            {
+                _view.SetFullState();
+                return;
+            }
+
+            await _view.PlayDisappearAsync();
         }
 
         private void DestroyTransientFood(
