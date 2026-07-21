@@ -391,7 +391,7 @@ namespace FoodieMatch.Features.Gameplay
             if (!_packageLifecycleUseCase.TryPrepareReplacementPackage(
                     packageIndex, session.Board, session.WaitingRack, session.RequiredPackages,
                     packageReservations, session.Level.PackageSelectionSettings, session.Progress.ProgressRatio,
-                    session.RandomContext.PackageSelectionRandom, out RequiredPackageModel replacementPackage))
+                    session.RandomContext.PackageRandom, out RequiredPackageModel replacementPackage))
             {
                 motionState.IsReplacementRunning = false;
                 RefreshPackageViewAt(packageIndex);

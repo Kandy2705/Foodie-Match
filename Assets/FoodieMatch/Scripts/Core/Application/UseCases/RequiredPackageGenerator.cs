@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
@@ -14,7 +15,7 @@ namespace FoodieMatch.Core.Application.UseCases
             WaitingRackModel waitingRack,
             IReadOnlyList<RequiredPackageModel> packageReservations,
             PackageSelectionWeights weights,
-            System.Random random,
+            PackageRandom random,
             out RequiredPackageModel package)
         {
             package = null;
@@ -122,7 +123,7 @@ namespace FoodieMatch.Core.Application.UseCases
         private static bool TrySelectFullyRevealedFood(
             ICollection<FoodAvailability> availabilities,
             PackageSelectionWeights weights,
-            System.Random random,
+            PackageRandom random,
             out FoodAvailability selected)
         {
             List<FoodAvailability> rackRescue = new();
@@ -162,7 +163,7 @@ namespace FoodieMatch.Core.Application.UseCases
 
         private static bool TrySelectFromGroups(
             IReadOnlyList<FoodCandidateGroup> groups,
-            System.Random random,
+            PackageRandom random,
             out FoodAvailability selected)
         {
             selected = null;
@@ -180,7 +181,7 @@ namespace FoodieMatch.Core.Application.UseCases
 
             if (totalWeight > 0)
             {
-                long selectedWeight = (long)(random.NextDouble() * totalWeight);
+                long selectedWeight = random.NextWeight(totalWeight);
 
                 for (int i = 0; i < groups.Count; i++)
                 {
@@ -220,7 +221,7 @@ namespace FoodieMatch.Core.Application.UseCases
         private static bool TrySelectFoodByDepth(
             BoardModel board,
             IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId,
-            System.Random random,
+            PackageRandom random,
             out FoodAvailability selected)
         {
             selected = null;
@@ -256,7 +257,7 @@ namespace FoodieMatch.Core.Application.UseCases
                 }
 
                 mostCommonFoodIds.Sort();
-                int selectedFoodId = mostCommonFoodIds[random.Next(mostCommonFoodIds.Count)];
+                int selectedFoodId = mostCommonFoodIds[random.NextIndex(mostCommonFoodIds.Count)];
                 selected = availabilityByFoodId[selectedFoodId];
                 return true;
             }
@@ -288,10 +289,10 @@ namespace FoodieMatch.Core.Application.UseCases
 
         private static FoodAvailability SelectRandomCandidate(
             List<FoodAvailability> candidates,
-            System.Random random)
+            PackageRandom random)
         {
             candidates.Sort((left, right) => left.FoodId.CompareTo(right.FoodId));
-            return candidates[random.Next(candidates.Count)];
+            return candidates[random.NextIndex(candidates.Count)];
         }
 
         private enum FoodLocation

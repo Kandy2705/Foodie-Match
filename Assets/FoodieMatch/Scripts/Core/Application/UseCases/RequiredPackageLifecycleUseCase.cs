@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
@@ -23,7 +24,7 @@ namespace FoodieMatch.Core.Application.UseCases
             BoardModel board,
             WaitingRackModel waitingRack,
             PackageSelectionSettings settings,
-            System.Random random,
+            PackageRandom random,
             out RequiredPackageModel[] packages)
         {
             packages = null;
@@ -67,7 +68,7 @@ namespace FoodieMatch.Core.Application.UseCases
             IReadOnlyList<RequiredPackageModel> packageReservations,
             PackageSelectionSettings settings,
             float progressRatio,
-            System.Random random,
+            PackageRandom random,
             out RequiredPackageModel replacementPackage)
         {
             replacementPackage = null;

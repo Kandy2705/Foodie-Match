@@ -164,7 +164,7 @@ namespace FoodieMatch.Features.Gameplay
                     board,
                     waitingRack,
                     level.PackageSelectionSettings,
-                    randomContext.PackageSelectionRandom,
+                    randomContext.PackageRandom,
                     out RequiredPackageModel[] requiredPackages))
             {
                 Debug.LogError($"Initial required packages could not be created for level {levelNumber}.");
