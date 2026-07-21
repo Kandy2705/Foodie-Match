@@ -303,7 +303,8 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard,
                 _fridgeBoosterAnchors != null
                     ? _fridgeBoosterAnchors.FridgeBoosterView
-                    : null);
+                    : null,
+                _waitingRackView);
         }
 
         private void SubscribeCoordinatorEvents()

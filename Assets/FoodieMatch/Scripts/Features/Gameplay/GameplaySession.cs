@@ -2,6 +2,7 @@ using System;
 using FoodieMatch.Core.Application.GameState;
 using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Fridge;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
@@ -51,12 +52,14 @@ namespace FoodieMatch.Features.Gameplay
         public WaitingRackModel WaitingRack { get; }
         public LevelProgressModel Progress { get; }
         public ComboProgressModel Combo { get; }
+        public FridgeInventoryModel FridgeInventory { get; private set; }
         public int DisplayedServedCount { get; private set; }
         public LevelSessionState State { get; private set; }
         public bool IsInputEnabled { get; private set; }
         public bool IsDisplayedProgressUpToDate => DisplayedServedCount >= Progress.ServedCount;
         public bool CanSelectFood => State == LevelSessionState.Playing && IsInputEnabled;
         public bool CanContinueGameplay => State == LevelSessionState.Playing;
+        public bool HasActivatedFridgeBooster => FridgeInventory != null;
 
         public void StartPlaying()
         {
@@ -67,6 +70,26 @@ namespace FoodieMatch.Features.Gameplay
         public void DisableInput()
         {
             IsInputEnabled = false;
+        }
+        public bool TryActivateFridgeInventory(out FridgeInventoryModel inventory)
+        {
+            if (FridgeInventory != null)
+            {
+                inventory = FridgeInventory;
+                return false;
+            }
+
+            FridgeInventory =
+                new FridgeInventoryModel();
+
+            inventory = FridgeInventory;
+            return true;
+        }
+
+        public void ClearFridgeInventory()
+        {
+            FridgeInventory?.Clear();
+            FridgeInventory = null;
         }
 
         public bool TryEnterAwaitingRevive()
