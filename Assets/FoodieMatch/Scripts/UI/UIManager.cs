@@ -501,29 +501,6 @@ namespace FoodieMatch.UI
             _popupManager.Hide<BoosterSwapPopup>();
         }
 
-        public FridgeBoosterPopup ShowFridgeBoosterPopup()
-        {
-            if (_popupManager == null)
-            {
-                Debug.LogError(
-                    "Cannot show fridge booster popup because PopupManager is missing.");
-
-                return null;
-            }
-
-            return _popupManager.Show<FridgeBoosterPopup>();
-        }
-
-        public void HideFridgeBoosterPopup()
-        {
-            if (_popupManager == null)
-            {
-                return;
-            }
-
-            _popupManager.Hide<FridgeBoosterPopup>();
-        }
-
         public void HideAllPopups()
         {
             _pendingBoosterGuides.Clear();
