@@ -105,7 +105,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _tryAgainButton: {fileID: 4649250737973368667}
   _homeButton: {fileID: 27874959010452858}
-  _chefMascotSkeletonGraphic: {fileID: 8123456789012345679}
+  _chefMascotSkeletonGraphic: {fileID: 8437967579956983259}
 --- !u!1 &3752540923024754084
 GameObject:
   m_ObjectHideFlags: 0
@@ -1129,6 +1129,14 @@ PrefabInstance:
       propertyPath: startingAnimation
       value: idle
       objectReference: {fileID: 0}
+    - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+      propertyPath: meshGenerator.settings.pmaVertexColors
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+      propertyPath: meshGenerator.settings.canvasGroupCompatible
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7444170770903607390, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1251,7 +1259,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7444170770903607390, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
   m_PrefabInstance: {fileID: 5986859780210372603}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8123456789012345679 stripped
+--- !u!114 &8437967579956983259 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
   m_PrefabInstance: {fileID: 5986859780210372603}

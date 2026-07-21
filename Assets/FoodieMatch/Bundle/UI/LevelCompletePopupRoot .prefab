@@ -5845,7 +5845,7 @@ MonoBehaviour:
   _doubleCoinRewardButton: {fileID: 4734722600863434005}
   _rewardAmountText: {fileID: 5269161727345199203}
   _rewardMultiplierText: {fileID: 5868891231373574247}
-  _chefMascotSkeletonGraphic: {fileID: 8123456789012345678}
+  _chefMascotSkeletonGraphic: {fileID: 5469174931137078672}
 --- !u!1 &7625564787570865888
 GameObject:
   m_ObjectHideFlags: 0
@@ -6581,6 +6581,14 @@ PrefabInstance:
       propertyPath: referenceSize.y
       value: 1737.4
       objectReference: {fileID: 0}
+    - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+      propertyPath: meshGenerator.settings.pmaVertexColors
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+      propertyPath: meshGenerator.settings.canvasGroupCompatible
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7444170770903607390, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -6703,7 +6711,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7444170770903607390, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
   m_PrefabInstance: {fileID: 7920246324660780976}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8123456789012345678 stripped
+--- !u!114 &5469174931137078672 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
   m_PrefabInstance: {fileID: 7920246324660780976}

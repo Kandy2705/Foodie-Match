@@ -285,6 +285,35 @@ namespace FoodieMatch.Features.Food
             }
         }
 
+        public async Task<MotionResult> PlayFadeOutAsync(float duration)
+        {
+            if (IsEmpty ||
+                _spriteRenderer == null ||
+                _fadeTween.isAlive ||
+                !IsValidTime(duration))
+            {
+                return MotionResult.Failed;
+            }
+
+            _didFadeComplete = false;
+
+            try
+            {
+                _fadeTween = Tween.Alpha(_spriteRenderer, 0f, duration)
+                    .OnComplete(this, target => target.MarkFadeCompleted());
+
+                await _fadeTween;
+
+                return _didFadeComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _fadeTween = default;
+            }
+        }
+
         public void StopFlight()
         {
             if (_flightTween.isAlive)
@@ -386,6 +415,16 @@ namespace FoodieMatch.Features.Food
             VisualState = visualState;
             RestoreSortingLayerBeforeFlight();
             ApplyVisualState();
+        }
+
+        public void ForceHiddenVisual()
+        {
+            if (_spriteRenderer != null)
+            {
+                SetSpriteAlpha(0f);
+            }
+
+            transform.localScale = Vector3.zero;
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -650,7 +689,7 @@ namespace FoodieMatch.Features.Food
             transform.localRotation = GetVisualRotation(VisualState);
         }
 
-        private Vector3 GetVisualScale(FoodItemVisualState visualState)
+        public Vector3 GetVisualScale(FoodItemVisualState visualState)
         {
             return visualState switch
             {
