@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "levelOrder": [
     1,
     2,
@@ -16,8 +16,12 @@
     {
       "id": 1,
       "difficulty": "normal",
-      "useFixedSeed": true,
-      "seed": 1001,
+      "randomization": {
+        "packageSeeds": [1001],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9001
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 10,
@@ -81,8 +85,12 @@
     {
       "id": 2,
       "difficulty": "normal",
-      "useFixedSeed": true,
-      "seed": 1002,
+      "randomization": {
+        "packageSeeds": [1002],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9002
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 15,
@@ -146,8 +154,12 @@
     {
       "id": 3,
       "difficulty": "hard",
-      "useFixedSeed": true,
-      "seed": 1004,
+      "randomization": {
+        "packageSeeds": [1004],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9003
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 0,
@@ -419,8 +431,12 @@
     {
       "id": 4,
       "difficulty": "superHard",
-      "useFixedSeed": true,
-      "seed": 1776,
+      "randomization": {
+        "packageSeeds": [1776],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9004
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 10,
@@ -754,8 +770,12 @@
     {
       "id": 5,
       "difficulty": "normal",
-      "useFixedSeed": true,
-      "seed": 1005,
+      "randomization": {
+        "packageSeeds": [1005],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9005
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 25,
@@ -1027,8 +1047,12 @@
     {
       "id": 6,
       "difficulty": "normal",
-      "useFixedSeed": true,
-      "seed": 1006,
+      "randomization": {
+        "packageSeeds": [1006],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9006
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 20,
@@ -1327,8 +1351,12 @@
     {
       "id": 7,
       "difficulty": "hard",
-      "useFixedSeed": true,
-      "seed": 1577,
+      "randomization": {
+        "packageSeeds": [1577],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9007
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 15,
@@ -1662,8 +1690,12 @@
     {
       "id": 8,
       "difficulty": "superHard",
-      "useFixedSeed": true,
-      "seed": 2899,
+      "randomization": {
+        "packageSeeds": [2899],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9008
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 10,
@@ -2032,8 +2064,12 @@
     {
       "id": 9,
       "difficulty": "normal",
-      "useFixedSeed": true,
-      "seed": 1009,
+      "randomization": {
+        "packageSeeds": [1009],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9009
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 30,
@@ -2305,8 +2341,12 @@
     {
       "id": 10,
       "difficulty": "normal",
-      "useFixedSeed": true,
-      "seed": 1011,
+      "randomization": {
+        "packageSeeds": [1011],
+        "randomizePackageSelectionEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9010
+      },
       "packageSelectionWeights": {
         "early": {
           "rackRescue": 20,

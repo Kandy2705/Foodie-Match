@@ -89,8 +89,12 @@ namespace FoodieMatch.App
         {
             LevelCatalogJsonParser parser = new();
             PackageSelectionSettingsValidator packageSelectionValidator = new();
+            LevelRandomSettingsValidator randomSettingsValidator = new();
             GrillLayoutValidator grillLayoutValidator = new();
-            LevelValidator levelValidator = new(packageSelectionValidator, grillLayoutValidator);
+            LevelValidator levelValidator = new(
+                packageSelectionValidator,
+                randomSettingsValidator,
+                grillLayoutValidator);
             LevelCatalogValidator catalogValidator = new(levelValidator);
             LevelCatalogMapper mapper = new();
             ResourcesLevelCatalogLoader loader = new(parser, catalogValidator, mapper);

@@ -5,20 +5,20 @@ namespace FoodieMatch.Core.Application.Randomization
 {
     public sealed class LevelRandomContext
     {
-        private const int FoodVisualSalt = 486187739;
         private const int PackageSelectionSalt = 16777619;
 
-        private LevelRandomContext(int runSeed)
+        private LevelRandomContext(
+            int packageSeed,
+            int foodVisualSeed)
         {
-            RunSeed = runSeed;
-            FoodVisualSeed = DeriveSeed(runSeed, FoodVisualSalt);
-            PackageSelectionSeed = DeriveSeed(runSeed, PackageSelectionSalt);
-            PackageSelectionRandom = new System.Random(PackageSelectionSeed);
+            PackageSeed = packageSeed;
+            FoodVisualSeed = foodVisualSeed;
+            PackageSelectionRandom = new System.Random(
+                CreatePackageSelectionRandomSeed(packageSeed));
         }
 
-        public int RunSeed { get; }
+        public int PackageSeed { get; }
         public int FoodVisualSeed { get; }
-        public int PackageSelectionSeed { get; }
         public System.Random PackageSelectionRandom { get; }
 
         public static LevelRandomContext Create(LevelDefinition level)
@@ -28,23 +28,32 @@ namespace FoodieMatch.Core.Application.Randomization
                 throw new ArgumentNullException(nameof(level));
             }
 
-            int runSeed = level.UseFixedSeed
-                ? level.Seed
-                : Guid.NewGuid().GetHashCode();
+            LevelRandomSettings settings = level.RandomSettings;
+            int packageSeed = settings.RandomizePackageSelectionEachRun
+                ? CreateRandomSeed()
+                : settings.PackageSeeds[0];
+            int foodVisualSeed = settings.RandomizeFoodVisualsEachRun
+                ? CreateRandomSeed()
+                : settings.FixedFoodVisualSeed;
 
-            return new LevelRandomContext(runSeed);
+            return new LevelRandomContext(packageSeed, foodVisualSeed);
         }
 
-        private static int DeriveSeed(int runSeed, int salt)
+        private static int CreatePackageSelectionRandomSeed(int packageSeed)
         {
             unchecked
             {
-                int mixedSeed = runSeed;
-                mixedSeed ^= salt + (mixedSeed << 6) + (mixedSeed >> 2);
-                mixedSeed *= 397;
-                mixedSeed ^= mixedSeed >> 16;
-                return mixedSeed;
+                int randomSeed = packageSeed;
+                randomSeed ^= PackageSelectionSalt + (randomSeed << 6) + (randomSeed >> 2);
+                randomSeed *= 397;
+                randomSeed ^= randomSeed >> 16;
+                return randomSeed;
             }
+        }
+
+        private static int CreateRandomSeed()
+        {
+            return Guid.NewGuid().GetHashCode();
         }
     }
 }

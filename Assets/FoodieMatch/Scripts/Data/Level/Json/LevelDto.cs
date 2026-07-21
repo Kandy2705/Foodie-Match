@@ -11,11 +11,8 @@ namespace FoodieMatch.Data.Level.Json
         [JsonProperty("difficulty")]
         public string Difficulty { get; set; }
 
-        [JsonProperty("useFixedSeed")]
-        public bool? UseFixedSeed { get; set; }
-
-        [JsonProperty("seed")]
-        public int? Seed { get; set; }
+        [JsonProperty("randomization")]
+        public LevelRandomSettingsDto RandomSettings { get; set; }
 
         [JsonProperty("packageSelectionWeights")]
         public PackageSelectionSettingsDto PackageSelectionSettings { get; set; }

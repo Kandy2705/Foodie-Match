@@ -42,10 +42,19 @@ namespace FoodieMatch.Data.Level.Json
             return new LevelDefinition(
                 levelDto.Id.Value,
                 difficulty,
-                levelDto.UseFixedSeed.Value,
-                levelDto.Seed.Value,
+                MapRandomSettings(levelDto.RandomSettings),
                 MapPackageSelectionSettings(levelDto.PackageSelectionSettings),
                 MapGrills(levelDto.Grills));
+        }
+
+        private static LevelRandomSettings MapRandomSettings(
+            LevelRandomSettingsDto settingsDto)
+        {
+            return new LevelRandomSettings(
+                settingsDto.PackageSeeds,
+                settingsDto.RandomizePackageSelectionEachRun.Value,
+                settingsDto.RandomizeFoodVisualsEachRun.Value,
+                settingsDto.FixedFoodVisualSeed.Value);
         }
 
         private static PackageSelectionSettings MapPackageSelectionSettings(

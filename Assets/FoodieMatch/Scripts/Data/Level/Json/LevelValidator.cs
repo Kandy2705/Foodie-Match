@@ -6,14 +6,18 @@ namespace FoodieMatch.Data.Level.Json
     public sealed class LevelValidator
     {
         private readonly PackageSelectionSettingsValidator _packageSelectionValidator;
+        private readonly LevelRandomSettingsValidator _randomSettingsValidator;
         private readonly GrillLayoutValidator _grillLayoutValidator;
 
         public LevelValidator(
             PackageSelectionSettingsValidator packageSelectionValidator,
+            LevelRandomSettingsValidator randomSettingsValidator,
             GrillLayoutValidator grillLayoutValidator)
         {
             _packageSelectionValidator = packageSelectionValidator ??
                                          throw new ArgumentNullException(nameof(packageSelectionValidator));
+            _randomSettingsValidator = randomSettingsValidator ??
+                                       throw new ArgumentNullException(nameof(randomSettingsValidator));
             _grillLayoutValidator = grillLayoutValidator ??
                                     throw new ArgumentNullException(nameof(grillLayoutValidator));
         }
@@ -32,6 +36,7 @@ namespace FoodieMatch.Data.Level.Json
             }
 
             ValidateIdentity(level, levelPath, result);
+            _randomSettingsValidator.Validate(level.RandomSettings, levelPath, result);
             _packageSelectionValidator.Validate(
                 level.PackageSelectionSettings,
                 levelPath,
@@ -58,16 +63,6 @@ namespace FoodieMatch.Data.Level.Json
                 !Enum.IsDefined(typeof(LevelDifficulty), difficulty))
             {
                 result.AddError($"{levelPath}.difficulty is invalid.");
-            }
-
-            if (!level.Seed.HasValue)
-            {
-                result.AddError($"{levelPath}.seed is required.");
-            }
-
-            if (!level.UseFixedSeed.HasValue)
-            {
-                result.AddError($"{levelPath}.useFixedSeed is required.");
             }
         }
     }

@@ -194,7 +194,10 @@ namespace FoodieMatch.Features.Gameplay
             _session.StartPlaying();
             _gameplayWorldClickSfx.StartListening();
 
-            Debug.Log($"Start Level {levelNumber} with run seed {randomContext.RunSeed}");
+            Debug.Log(
+                $"Start Level {levelNumber} with package seed " +
+                $"{randomContext.PackageSeed} and food visual seed " +
+                $"{randomContext.FoodVisualSeed}");
             _gameplayEvents.OnLevelStarted(new LevelStartedEvent(levelNumber));
             _comboCoordinator.BeginSession(_session);
             _gameplayEvents.OnLevelProgressChanged(
