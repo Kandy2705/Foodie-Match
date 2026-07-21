@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
+using FoodieMatch.Core.Domain.Fridge;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 
@@ -209,6 +210,92 @@ namespace FoodieMatch.Core.Application.UseCases
                 transfer.RackSlotIndex,
                 removedFoodTokenId);
 
+            return false;
+        }
+
+        public bool TryFindFridgeMatch(
+            FridgeInventoryModel fridge,
+            IReadOnlyList<RequiredPackageModel> packages,
+            out FridgeTransfer transfer)
+        {
+            transfer = default;
+
+            if (fridge == null ||
+                fridge.IsEmpty ||
+                packages == null)
+            {
+                return false;
+            }
+
+            IReadOnlyList<int> foodTokenIds =
+                fridge.GetAllTokenIds();
+
+            for (int i = 0;
+                 i < foodTokenIds.Count;
+                 i++)
+            {
+                int foodTokenId =
+                    foodTokenIds[i];
+
+                if (!_matcher.TryFindBestMatchIndex(
+                        packages,
+                        foodTokenId,
+                        out int packageIndex))
+                {
+                    continue;
+                }
+
+                transfer = new FridgeTransfer(
+                    packageIndex,
+                    foodTokenId);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryMoveFoodFromFridge(
+            FridgeTransfer transfer,
+            FridgeInventoryModel fridge,
+            IReadOnlyList<RequiredPackageModel> packages)
+        {
+            if (fridge == null ||
+                packages == null ||
+                transfer.PackageIndex < 0 ||
+                transfer.PackageIndex >= packages.Count ||
+                transfer.FoodTokenId <= 0)
+            {
+                return false;
+            }
+
+            RequiredPackageModel package =
+                packages[transfer.PackageIndex];
+
+            if (package == null ||
+                !package.CanAccept(transfer.FoodTokenId))
+            {
+                return false;
+            }
+
+            // Lấy token khỏi tủ.
+            if (!fridge.TryTake(
+                    transfer.FoodTokenId,
+                    out int takenFoodTokenId))
+            {
+                return false;
+            }
+
+            // Đưa token vào order.
+            if (takenFoodTokenId ==
+                    transfer.FoodTokenId &&
+                package.TryPlaceFood(takenFoodTokenId))
+            {
+                return true;
+            }
+
+            // Order nhận thất bại thì trả token lại tủ.
+            fridge.Restore(takenFoodTokenId);
             return false;
         }
     }
