@@ -1,5 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
+using FoodieMatch.Core.Application.Randomization;
+using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
+using FoodieMatch.Core.Domain.RequiredPackage;
+using FoodieMatch.Core.Domain.WaitingRack;
 using UnityEngine;
 
 namespace FoodieMatch.Editor.LevelDesign
@@ -8,13 +15,16 @@ namespace FoodieMatch.Editor.LevelDesign
     {
         private readonly LevelSeedSolver _solver;
         private readonly LevelSeedValidationReportWriter _reportWriter;
+        private readonly InitialPackageSignatureFactory _initialPackageSignatureFactory;
 
         public LevelSeedCatalogValidator(
             LevelSeedSolver solver,
-            LevelSeedValidationReportWriter reportWriter)
+            LevelSeedValidationReportWriter reportWriter,
+            InitialPackageSignatureFactory initialPackageSignatureFactory)
         {
             _solver = solver;
             _reportWriter = reportWriter;
+            _initialPackageSignatureFactory = initialPackageSignatureFactory;
         }
 
         public void Validate(LevelCatalog catalog)
@@ -52,6 +62,8 @@ namespace FoodieMatch.Editor.LevelDesign
             LevelSeedValidationReport report,
             LevelSeedValidationProgress progress)
         {
+            Dictionary<string, int> seedByInitialPackageSignature = new();
+
             for (int seedIndex = 0;
                  seedIndex < level.RandomSettings.PackageSeeds.Count;
                  seedIndex++)
@@ -64,9 +76,26 @@ namespace FoodieMatch.Editor.LevelDesign
                 }
 
                 LevelSeedSolverResult result = _solver.Solve(level, packageSeed);
+                string initialPackageSignature = CreateInitialPackageSignature(
+                    level,
+                    packageSeed);
+                int? duplicateInitialPackageSeed = FindDuplicateInitialPackageSeed(
+                    packageSeed,
+                    initialPackageSignature,
+                    seedByInitialPackageSignature);
                 report.Results.Add(
-                    LevelSeedValidationEntry.Create(level.Id, packageSeed, result));
-                progress.LogResult(level.Id, packageSeed, result);
+                    LevelSeedValidationEntry.Create(
+                        level.Id,
+                        packageSeed,
+                        result,
+                        initialPackageSignature,
+                        duplicateInitialPackageSeed));
+                progress.LogResult(
+                    level.Id,
+                    packageSeed,
+                    result,
+                    initialPackageSignature,
+                    duplicateInitialPackageSeed);
             }
 
             return false;
@@ -84,12 +113,47 @@ namespace FoodieMatch.Editor.LevelDesign
                 return;
             }
 
-            bool allSolved = report.Results.TrueForAll(
-                result => result.Status == LevelSeedSolverStatus.Solved.ToString());
-            string summary = allSolved
-                ? "All configured package seeds are solvable."
-                : "One or more package seeds could not be validated.";
+            bool allValid = report.Results.TrueForAll(
+                result =>
+                    result.Status == LevelSeedSolverStatus.Solved.ToString() &&
+                    !result.DuplicateInitialPackageSeed.HasValue);
+            string summary = allValid
+                ? "All configured package seeds are solvable and have unique initial packages."
+                : "One or more package seeds failed solvability or initial package diversity validation.";
             Debug.Log($"{summary} Report: {_reportWriter.FullReportPath}");
+        }
+
+        private string CreateInitialPackageSignature(
+            LevelDefinition level,
+            int packageSeed)
+        {
+            return _initialPackageSignatureFactory.TryCreate(
+                level,
+                packageSeed,
+                out string signature)
+                ? signature
+                : null;
+        }
+
+        private static int? FindDuplicateInitialPackageSeed(
+            int packageSeed,
+            string initialPackageSignature,
+            IDictionary<string, int> seedByInitialPackageSignature)
+        {
+            if (string.IsNullOrEmpty(initialPackageSignature))
+            {
+                return null;
+            }
+
+            if (seedByInitialPackageSignature.TryGetValue(
+                    initialPackageSignature,
+                    out int existingSeed))
+            {
+                return existingSeed;
+            }
+
+            seedByInitialPackageSignature.Add(initialPackageSignature, packageSeed);
+            return null;
         }
 
         private static int CountSeeds(LevelCatalog catalog)
@@ -102,6 +166,53 @@ namespace FoodieMatch.Editor.LevelDesign
             }
 
             return count;
+        }
+    }
+
+    internal sealed class InitialPackageSignatureFactory
+    {
+        private readonly BoardModelFactory _boardModelFactory = new();
+        private readonly RequiredPackageLifecycleUseCase _packageLifecycleUseCase = new(
+            new RequiredPackageGenerator(),
+            new RequiredPackageMatcher());
+
+        public bool TryCreate(
+            LevelDefinition level,
+            int packageSeed,
+            out string signature)
+        {
+            BoardModel board = _boardModelFactory.Create(level);
+            WaitingRackModel waitingRack = new(WaitingRackRules.InitialCapacity);
+            PackageRandom packageRandom = new(packageSeed);
+
+            if (!_packageLifecycleUseCase.TryCreateInitialPackages(
+                    board,
+                    waitingRack,
+                    level.PackageSelectionSettings,
+                    packageRandom,
+                    out RequiredPackageModel[] packages))
+            {
+                signature = null;
+                return false;
+            }
+
+            StringBuilder signatureBuilder = new();
+
+            for (int packageIndex = 0; packageIndex < packages.Length; packageIndex++)
+            {
+                if (packageIndex > 0)
+                {
+                    signatureBuilder.Append(" > ");
+                }
+
+                RequiredPackageModel package = packages[packageIndex];
+                signatureBuilder.Append(package.FoodTokenId);
+                signatureBuilder.Append('x');
+                signatureBuilder.Append(package.RequiredAmount);
+            }
+
+            signature = signatureBuilder.ToString();
+            return true;
         }
     }
 }

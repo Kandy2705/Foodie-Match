@@ -29,16 +29,25 @@ namespace FoodieMatch.Editor.LevelDesign
         public void LogResult(
             int levelId,
             int packageSeed,
-            LevelSeedSolverResult result)
+            LevelSeedSolverResult result,
+            string initialPackageSignature,
+            int? duplicateInitialPackageSeed)
         {
             _processedSeedCount++;
             string message =
                 $"Level {levelId}, seed {packageSeed}: {result.Status}. " +
                 $"States: {result.VisitedStateCount}, " +
                 $"max rack: {result.MaximumRackOccupancy}/{WaitingRackRules.InitialCapacity}, " +
-                $"elapsed: {result.Elapsed.TotalMilliseconds:F0} ms.";
+                $"elapsed: {result.Elapsed.TotalMilliseconds:F0} ms, " +
+                $"initial packages: {initialPackageSignature}.";
 
-            if (result.Status == LevelSeedSolverStatus.Solved)
+            if (duplicateInitialPackageSeed.HasValue)
+            {
+                Debug.LogError(
+                    $"{message} Initial packages duplicate seed " +
+                    $"{duplicateInitialPackageSeed.Value}.");
+            }
+            else if (result.Status == LevelSeedSolverStatus.Solved)
             {
                 Debug.Log(message);
             }

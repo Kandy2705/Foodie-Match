@@ -24,7 +24,8 @@ namespace FoodieMatch.Editor.LevelDesign
                 TimeSpan.FromSeconds(MaximumSecondsPerSeed));
             LevelSeedCatalogValidator validator = new(
                 new LevelSeedSolver(settings),
-                new LevelSeedValidationReportWriter());
+                new LevelSeedValidationReportWriter(),
+                new InitialPackageSignatureFactory());
 
             validator.Validate(catalog);
         }

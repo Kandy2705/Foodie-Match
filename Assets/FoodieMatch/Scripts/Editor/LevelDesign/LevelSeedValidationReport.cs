@@ -17,12 +17,16 @@ namespace FoodieMatch.Editor.LevelDesign
         public int VisitedStateCount { get; set; }
         public int MaximumRackOccupancy { get; set; }
         public double ElapsedMilliseconds { get; set; }
+        public string InitialPackageSignature { get; set; }
+        public int? DuplicateInitialPackageSeed { get; set; }
         public List<LevelSeedSolutionStep> Solution { get; set; } = new();
 
         public static LevelSeedValidationEntry Create(
             int levelId,
             int packageSeed,
-            LevelSeedSolverResult result)
+            LevelSeedSolverResult result,
+            string initialPackageSignature,
+            int? duplicateInitialPackageSeed)
         {
             LevelSeedValidationEntry entry = new()
             {
@@ -31,7 +35,9 @@ namespace FoodieMatch.Editor.LevelDesign
                 Status = result.Status.ToString(),
                 VisitedStateCount = result.VisitedStateCount,
                 MaximumRackOccupancy = result.MaximumRackOccupancy,
-                ElapsedMilliseconds = result.Elapsed.TotalMilliseconds
+                ElapsedMilliseconds = result.Elapsed.TotalMilliseconds,
+                InitialPackageSignature = initialPackageSignature,
+                DuplicateInitialPackageSeed = duplicateInitialPackageSeed
             };
 
             for (int i = 0; i < result.Solution.Count; i++)
