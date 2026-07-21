@@ -75,6 +75,7 @@ namespace FoodieMatch.Data.Level.Json
                 result);
             ValidateTrays(
                 grill.Trays,
+                grill.FoodIds?.Count ?? 0,
                 grillPath,
                 foodCounts,
                 minimumFoodDepths,
@@ -134,6 +135,7 @@ namespace FoodieMatch.Data.Level.Json
 
         private static void ValidateTrays(
             IReadOnlyList<TrayDto> trays,
+            int grillSlotCount,
             string grillPath,
             IDictionary<int, int> foodCounts,
             IDictionary<int, int> minimumFoodDepths,
@@ -155,6 +157,14 @@ namespace FoodieMatch.Data.Level.Json
                 {
                     result.AddError($"{trayPath} cannot be null.");
                     continue;
+                }
+
+                if (grillSlotCount > 0 &&
+                    tray.FoodIds != null &&
+                    tray.FoodIds.Count > grillSlotCount)
+                {
+                    result.AddError(
+                        $"{trayPath}.foodIds cannot contain more slots than {grillPath}.foodIds.");
                 }
 
                 ValidateFoodIds(
