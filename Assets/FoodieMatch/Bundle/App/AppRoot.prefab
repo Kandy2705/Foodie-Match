@@ -57,7 +57,6 @@ MonoBehaviour:
   _uiManager: {fileID: 8792213608502458163}
   _gameplayMotionPresenter: {fileID: 86517351395246559}
   _audioService: {fileID: 7935935628349520364}
-  _levelCatalog: {fileID: 11400000, guid: c688b8a74a406174fb8685ded2bc4c1b, type: 2}
   _boardLayoutView: {fileID: 5535215390786423237}
   _requiredPackageGroupView: {fileID: 8855672181408796993}
   _waitingRackView: {fileID: 9095491401499760532}

@@ -7,37 +7,38 @@ namespace FoodieMatch.Core.Domain.Board
 {
     public sealed class BoardModelFactory
     {
-        public BoardModel Create(LevelConfig levelConfig)
+        public BoardModel Create(LevelDefinition level)
         {
-            if (levelConfig == null)
+            if (level == null)
             {
-                throw new ArgumentNullException(nameof(levelConfig));
+                throw new ArgumentNullException(nameof(level));
             }
 
-            List<GrillModel> grills = new List<GrillModel>();
+            List<GrillModel> grills = new();
 
-            for (int i = 0; i < levelConfig.Grills.Count; i++)
+            for (int i = 0; i < level.Grills.Count; i++)
             {
-                GrillConfig grillConfig = levelConfig.Grills[i];
+                GrillDefinition grill = level.Grills[i];
 
                 grills.Add(
                     new GrillModel(
-                        grillConfig.PositionIndex,
-                        grillConfig.InitialFoodTokenIds,
-                        CreateTrays(grillConfig.Trays)));
+                        i,
+                        grill.Position,
+                        grill.FoodTokenIds,
+                        CreateTrays(grill.Trays)));
             }
 
             return new BoardModel(grills);
         }
 
         private static IReadOnlyList<TrayModel> CreateTrays(
-            IReadOnlyList<TrayConfig> trayConfigs)
+            IReadOnlyList<TrayDefinition> trayDefinitions)
         {
-            List<TrayModel> trays = new List<TrayModel>();
+            List<TrayModel> trays = new();
 
-            for (int i = 0; i < trayConfigs.Count; i++)
+            for (int i = 0; i < trayDefinitions.Count; i++)
             {
-                trays.Add(new TrayModel(trayConfigs[i].FoodTokenIds));
+                trays.Add(new TrayModel(trayDefinitions[i].FoodTokenIds));
             }
 
             return trays;

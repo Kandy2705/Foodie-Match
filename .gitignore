@@ -111,3 +111,4 @@ node_modules/
 /md/
 *.md
 !README.md
+!Docs/LEVEL_DESIGN_GUIDE.md

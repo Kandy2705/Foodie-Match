@@ -1,0 +1,3425 @@
+{
+  "schemaVersion": 4,
+  "levelOrder": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "levels": [
+    {
+      "id": 1,
+      "difficulty": "normal",
+      "randomization": {
+        "packageSeeds": [
+          1001
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9001
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 10,
+          "readyNow": 80,
+          "topTray": 10
+        },
+        "middle": {
+          "rackRescue": 30,
+          "readyNow": 50,
+          "topTray": 20
+        },
+        "late": {
+          "rackRescue": 60,
+          "readyNow": 35,
+          "topTray": 5
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -1.5,
+            "y": 0
+          },
+          "foodIds": [
+            1,
+            1,
+            1
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                3,
+                3,
+                3
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": 0
+          },
+          "foodIds": [
+            2,
+            2,
+            2
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                4,
+                4,
+                4
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "difficulty": "normal",
+      "randomization": {
+        "packageSeeds": [
+          1002
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9002
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 15,
+          "readyNow": 70,
+          "topTray": 15
+        },
+        "middle": {
+          "rackRescue": 30,
+          "readyNow": 40,
+          "topTray": 30
+        },
+        "late": {
+          "rackRescue": 60,
+          "readyNow": 30,
+          "topTray": 10
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -1.5,
+            "y": 0
+          },
+          "foodIds": [
+            1,
+            1,
+            1
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                3,
+                3,
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": 0
+          },
+          "foodIds": [
+            2,
+            2,
+            2
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                3,
+                4,
+                5
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "difficulty": "hard",
+      "randomization": {
+        "packageSeeds": [
+          1004,
+          30001,
+          30002,
+          30003,
+          30004
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9003
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 0,
+          "readyNow": 100,
+          "topTray": 0
+        },
+        "middle": {
+          "rackRescue": 60,
+          "readyNow": 30,
+          "topTray": 10
+        },
+        "late": {
+          "rackRescue": 80,
+          "readyNow": 15,
+          "topTray": 5
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -2.4,
+            "y": 0
+          },
+          "foodIds": [
+            32,
+            7,
+            34
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                33,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                4,
+                15
+              ]
+            },
+            {
+              "foodIds": [
+                35,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                29,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                25,
+                10
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                3,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0.8,
+            "y": 0
+          },
+          "foodIds": [
+            32,
+            34,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                31,
+                22,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                0,
+                18
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                20,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                1
+              ]
+            },
+            {
+              "foodIds": [
+                9,
+                19,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                25,
+                11
+              ]
+            },
+            {
+              "foodIds": [
+                3,
+                30,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -0.8,
+            "y": -3.15
+          },
+          "foodIds": [
+            0,
+            0,
+            12
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                31,
+                22,
+                28
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                33,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                20,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                29,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                9,
+                19,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                3,
+                30,
+                11
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 2.4,
+            "y": -3.15
+          },
+          "foodIds": [
+            32,
+            7,
+            17
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                31,
+                33,
+                34
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                14,
+                22
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                35,
+                4
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                29,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                24
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                25,
+                26
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                13,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "difficulty": "superHard",
+      "randomization": {
+        "packageSeeds": [
+          1776,
+          40001,
+          40002,
+          40021,
+          40022
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9004
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 10,
+          "readyNow": 35,
+          "topTray": 55
+        },
+        "middle": {
+          "rackRescue": 15,
+          "readyNow": 10,
+          "topTray": 75
+        },
+        "late": {
+          "rackRescue": 60,
+          "readyNow": 20,
+          "topTray": 20
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -3,
+            "y": 0
+          },
+          "foodIds": [
+            12,
+            19,
+            42
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                0,
+                37
+              ]
+            },
+            {
+              "foodIds": [
+                3,
+                26,
+                1
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                23,
+                6
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                17
+              ]
+            },
+            {
+              "foodIds": [
+                38,
+                7,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                29,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                14,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "foodIds": [
+            0,
+            12,
+            19
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                35,
+                31,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                23,
+                3
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                38,
+                7,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                10,
+                29
+              ]
+            },
+            {
+              "foodIds": [
+                16,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 0
+          },
+          "foodIds": [
+            42,
+            0,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                35,
+                31,
+                33
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                18
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                0,
+                17
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                41,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                24,
+                9
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                10,
+                4
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                21,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            0,
+            42,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                35,
+                37,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                3,
+                30,
+                33
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                20,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                41,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                34,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                28,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                14,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            12,
+            19,
+            5
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                40,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                26,
+                30,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                22
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                0,
+                34
+              ]
+            },
+            {
+              "foodIds": [
+                38,
+                24,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                15,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "difficulty": "normal",
+      "randomization": {
+        "packageSeeds": [
+          1005,
+          50001,
+          50002,
+          50003,
+          50004
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9005
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 25,
+          "readyNow": 65,
+          "topTray": 10
+        },
+        "middle": {
+          "rackRescue": 40,
+          "readyNow": 40,
+          "topTray": 20
+        },
+        "late": {
+          "rackRescue": 75,
+          "readyNow": 20,
+          "topTray": 5
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -1.5,
+            "y": 0
+          },
+          "foodIds": [
+            0,
+            28,
+            20
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                27,
+                30,
+                21
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                24,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                36,
+                7
+              ]
+            },
+            {
+              "foodIds": [
+                31,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                25,
+                18,
+                14
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                33,
+                19
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": 0
+          },
+          "foodIds": [
+            35,
+            28,
+            26
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                27,
+                30,
+                20
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                17,
+                1
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                0,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                31,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                25
+              ]
+            },
+            {
+              "foodIds": [
+                2,
+                12,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                5,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            35,
+            6,
+            34
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                0,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                17,
+                10
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                31,
+                14
+              ]
+            },
+            {
+              "foodIds": [
+                29,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                2,
+                12,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            35,
+            9,
+            37
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                27,
+                3,
+                26
+              ]
+            },
+            {
+              "foodIds": [
+                24,
+                15,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                36,
+                38
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                0,
+                22
+              ]
+            },
+            {
+              "foodIds": [
+                25,
+                18,
+                32
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                32
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                33,
+                19
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "difficulty": "normal",
+      "randomization": {
+        "packageSeeds": [
+          1006,
+          60001,
+          60002,
+          60003,
+          60004
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9006
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 20,
+          "readyNow": 60,
+          "topTray": 20
+        },
+        "middle": {
+          "rackRescue": 35,
+          "readyNow": 35,
+          "topTray": 30
+        },
+        "late": {
+          "rackRescue": 70,
+          "readyNow": 20,
+          "topTray": 10
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -1.5,
+            "y": 0
+          },
+          "foodIds": [
+            7,
+            0,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                34,
+                38,
+                28
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                4,
+                29
+              ]
+            },
+            {
+              "foodIds": [
+                36,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                2,
+                37
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                23,
+                30
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": 0
+          },
+          "foodIds": [
+            13,
+            17,
+            32
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                38,
+                14
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                4,
+                15
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                36,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                2,
+                6
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                24,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                30,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -3,
+            "y": -3.15
+          },
+          "foodIds": [
+            13,
+            17,
+            32
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                19,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                29,
+                20
+              ]
+            },
+            {
+              "foodIds": [
+                16,
+                18,
+                1
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                41,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": -3.15
+          },
+          "foodIds": [
+            13,
+            17,
+            14
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                34,
+                38,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                19
+              ]
+            },
+            {
+              "foodIds": [
+                16,
+                25,
+                20
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                25,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                24,
+                41,
+                9
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                26,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": -3.15
+          },
+          "foodIds": [
+            7,
+            31,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                34,
+                28,
+                31
+              ]
+            },
+            {
+              "foodIds": [
+                35,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                18,
+                25,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                37,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                37,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                26,
+                3
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "difficulty": "hard",
+      "randomization": {
+        "packageSeeds": [
+          1577,
+          70015,
+          70017,
+          70021,
+          70039
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9007
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 15,
+          "readyNow": 45,
+          "topTray": 40
+        },
+        "middle": {
+          "rackRescue": 20,
+          "readyNow": 20,
+          "topTray": 60
+        },
+        "late": {
+          "rackRescue": 65,
+          "readyNow": 20,
+          "topTray": 15
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -3,
+            "y": 0
+          },
+          "foodIds": [
+            0,
+            32,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                41,
+                24,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                45,
+                25,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                29,
+                7
+              ]
+            },
+            {
+              "foodIds": [
+                46,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                14,
+                16,
+                31
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "foodIds": [
+            0,
+            0,
+            36
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                41,
+                24,
+                13
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                23,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                45,
+                34,
+                44
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                2,
+                10
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                46,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                14,
+                28,
+                31
+              ]
+            },
+            {
+              "foodIds": [
+                37,
+                15,
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 0
+          },
+          "foodIds": [
+            18,
+            9,
+            36
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                30,
+                19,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                23,
+                13
+              ]
+            },
+            {
+              "foodIds": [
+                44,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                29,
+                6,
+                21
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                27,
+                46
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                37,
+                15,
+                14
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            18,
+            9,
+            3
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                0,
+                35
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                23,
+                19
+              ]
+            },
+            {
+              "foodIds": [
+                45,
+                34,
+                1
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                25
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                27,
+                7
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                17,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                37,
+                26,
+                31
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            18,
+            32,
+            20
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                41,
+                30,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                30,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                25,
+                40,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                39,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                27,
+                11
+              ]
+            },
+            {
+              "foodIds": [
+                16,
+                28,
+                42
+              ]
+            },
+            {
+              "foodIds": [
+                26,
+                0,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "difficulty": "superHard",
+      "randomization": {
+        "packageSeeds": [
+          2899,
+          80010,
+          80011,
+          80018,
+          80022
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9008
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 15,
+          "readyNow": 40,
+          "topTray": 45
+        },
+        "middle": {
+          "rackRescue": 20,
+          "readyNow": 20,
+          "topTray": 60
+        },
+        "late": {
+          "rackRescue": 70,
+          "readyNow": 20,
+          "topTray": 10
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -1.5,
+            "y": 0
+          },
+          "foodIds": [
+            14,
+            16,
+            33
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                9,
+                7,
+                21
+              ]
+            },
+            {
+              "foodIds": [
+                3,
+                25,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                1,
+                24
+              ]
+            },
+            {
+              "foodIds": [
+                49,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                11,
+                6
+              ]
+            },
+            {
+              "foodIds": [
+                15,
+                26,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                34,
+                22,
+                44
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                38,
+                55
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": 0
+          },
+          "foodIds": [
+            31,
+            0,
+            47
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                9,
+                7,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                2,
+                25
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                6,
+                1
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                11,
+                18
+              ]
+            },
+            {
+              "foodIds": [
+                15,
+                26,
+                12
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                53,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                38,
+                41
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -3,
+            "y": -3.15
+          },
+          "foodIds": [
+            0,
+            47,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                9,
+                14,
+                31
+              ]
+            },
+            {
+              "foodIds": [
+                35,
+                7,
+                42
+              ]
+            },
+            {
+              "foodIds": [
+                8,
+                30,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                46,
+                18
+              ]
+            },
+            {
+              "foodIds": [
+                20,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                15,
+                27,
+                17
+              ]
+            },
+            {
+              "foodIds": [
+                34,
+                41,
+                53
+              ]
+            },
+            {
+              "foodIds": [
+                38,
+                0,
+                43
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": -3.15
+          },
+          "foodIds": [
+            14,
+            31,
+            4
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                19,
+                0,
+                37
+              ]
+            },
+            {
+              "foodIds": [
+                35,
+                13,
+                52
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                46,
+                29
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                51,
+                49
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                20
+              ]
+            },
+            {
+              "foodIds": [
+                34,
+                41,
+                12
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                48,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": -3.15
+          },
+          "foodIds": [
+            16,
+            33,
+            36
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                47,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                2,
+                19,
+                54
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                13,
+                54
+              ]
+            },
+            {
+              "foodIds": [
+                49,
+                45,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                51,
+                50
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                44,
+                26
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                55,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "difficulty": "normal",
+      "randomization": {
+        "packageSeeds": [
+          1009,
+          90001,
+          90005,
+          90003,
+          90004
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9009
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 30,
+          "readyNow": 65,
+          "topTray": 5
+        },
+        "middle": {
+          "rackRescue": 45,
+          "readyNow": 40,
+          "topTray": 15
+        },
+        "late": {
+          "rackRescue": 80,
+          "readyNow": 15,
+          "topTray": 5
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -0.8,
+            "y": 0
+          },
+          "foodIds": [
+            17,
+            0,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                9,
+                8,
+                10
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                16,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                14,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                3,
+                35
+              ]
+            },
+            {
+              "foodIds": [
+                40,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                15,
+                11
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 2.4,
+            "y": 0
+          },
+          "foodIds": [
+            21,
+            36,
+            18
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                9,
+                10
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                2,
+                20
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                27,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                7,
+                14,
+                19
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                0,
+                35
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                23,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                1,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -2.4,
+            "y": -3.15
+          },
+          "foodIds": [
+            21,
+            36,
+            22
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                6,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                2,
+                29
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                7,
+                14,
+                26
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                13,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                34,
+                24
+              ]
+            },
+            {
+              "foodIds": [
+                11,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0.8,
+            "y": -3.15
+          },
+          "foodIds": [
+            21,
+            0,
+            33
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                9,
+                8,
+                17
+              ]
+            },
+            {
+              "foodIds": [
+                32,
+                39,
+                38
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                16,
+                31
+              ]
+            },
+            {
+              "foodIds": [
+                7,
+                37,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                3,
+                25
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                34,
+                30
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                15,
+                23
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "difficulty": "normal",
+      "randomization": {
+        "packageSeeds": [
+          1011,
+          100001,
+          100004,
+          100006,
+          100011
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9010
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 20,
+          "readyNow": 55,
+          "topTray": 25
+        },
+        "middle": {
+          "rackRescue": 35,
+          "readyNow": 30,
+          "topTray": 35
+        },
+        "late": {
+          "rackRescue": 70,
+          "readyNow": 20,
+          "topTray": 10
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -3,
+            "y": 0
+          },
+          "foodIds": [
+            37,
+            7,
+            38
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                4,
+                15,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                30,
+                24,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                25,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                47,
+                35
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                13,
+                44
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                33,
+                19
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "foodIds": [
+            37,
+            7,
+            38
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                39,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                30,
+                24,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                26,
+                14,
+                45
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                47,
+                35
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                13,
+                41
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                33,
+                19
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 0
+          },
+          "foodIds": [
+            37,
+            18,
+            29
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                4,
+                15,
+                9
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                36,
+                28
+              ]
+            },
+            {
+              "foodIds": [
+                26,
+                14,
+                45
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                11,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                44,
+                41
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                12,
+                10
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                17,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            18,
+            31,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                4,
+                3,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                42,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                26,
+                25,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                20,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                44,
+                11
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                12,
+                32
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": -3.15
+          },
+          "foodIds": [
+            0,
+            0,
+            43
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                15,
+                3,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                30,
+                36,
+                48
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                0,
+                49
+              ]
+            },
+            {
+              "foodIds": [
+                47,
+                20,
+                46
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                40,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                12,
+                34
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                33,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "difficulty": "hard",
+      "randomization": {
+        "packageSeeds": [
+          110012,
+          110014,
+          110017,
+          110021,
+          110034
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9011
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 15,
+          "readyNow": 40,
+          "topTray": 45
+        },
+        "middle": {
+          "rackRescue": 20,
+          "readyNow": 15,
+          "topTray": 65
+        },
+        "late": {
+          "rackRescue": 65,
+          "readyNow": 20,
+          "topTray": 15
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -3.0,
+            "y": 0.2
+          },
+          "foodIds": [
+            32,
+            18,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                41,
+                19,
+                35
+              ]
+            },
+            {
+              "foodIds": [
+                23,
+                0,
+                19
+              ]
+            },
+            {
+              "foodIds": [
+                44,
+                45,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                29,
+                0,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                46,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                28,
+                0,
+                16
+              ]
+            },
+            {
+              "foodIds": [
+                33,
+                37,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0.0,
+            "y": -0.1
+          },
+          "foodIds": [
+            9,
+            0,
+            32
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                24,
+                13,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                30,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                45,
+                40,
+                25
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                10,
+                22
+              ]
+            },
+            {
+              "foodIds": [
+                7,
+                0,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                14,
+                0,
+                28
+              ]
+            },
+            {
+              "foodIds": [
+                37,
+                26,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3.0,
+            "y": 0.2
+          },
+          "foodIds": [
+            36,
+            3,
+            18
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                41,
+                36,
+                24
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                1,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                40,
+                0,
+                34
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                29,
+                6
+              ]
+            },
+            {
+              "foodIds": [
+                46,
+                5,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                12,
+                14
+              ]
+            },
+            {
+              "foodIds": [
+                14,
+                43,
+                37
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -1.5,
+            "y": -3.05
+          },
+          "foodIds": [
+            18,
+            9,
+            36
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                41,
+                0,
+                30
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                4,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                25,
+                34,
+                45
+              ]
+            },
+            {
+              "foodIds": [
+                21,
+                0,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                46,
+                0,
+                5
+              ]
+            },
+            {
+              "foodIds": [
+                31,
+                16,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                15,
+                26
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": -3.3
+          },
+          "foodIds": [
+            0,
+            20,
+            0
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                8,
+                0,
+                30
+              ]
+            },
+            {
+              "foodIds": [
+                4,
+                0,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                44,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                2,
+                25,
+                7
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                11,
+                27
+              ]
+            },
+            {
+              "foodIds": [
+                31,
+                42,
+                17
+              ]
+            },
+            {
+              "foodIds": [
+                38,
+                0,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "difficulty": "superHard",
+      "randomization": {
+        "packageSeeds": [
+          120009,
+          120013,
+          120015,
+          120016,
+          120025
+        ],
+        "generatePackageSeedEachRun": false,
+        "randomizeFoodVisualsEachRun": true,
+        "fixedFoodVisualSeed": 9012
+      },
+      "packageSelectionWeights": {
+        "early": {
+          "rackRescue": 15,
+          "readyNow": 40,
+          "topTray": 45
+        },
+        "middle": {
+          "rackRescue": 20,
+          "readyNow": 20,
+          "topTray": 60
+        },
+        "late": {
+          "rackRescue": 70,
+          "readyNow": 20,
+          "topTray": 10
+        }
+      },
+      "grills": [
+        {
+          "position": {
+            "x": -3.0,
+            "y": -0.1
+          },
+          "foodIds": [
+            7,
+            0,
+            37
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                0,
+                15,
+                4
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                30,
+                36
+              ]
+            },
+            {
+              "foodIds": [
+                26,
+                14,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                47,
+                35,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                1,
+                13
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                10,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                22,
+                21,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 0.0,
+            "y": 0.25
+          },
+          "foodIds": [
+            37,
+            43,
+            18
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                9,
+                3,
+                39
+              ]
+            },
+            {
+              "foodIds": [
+                36,
+                0,
+                42
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                25,
+                26
+              ]
+            },
+            {
+              "foodIds": [
+                47,
+                35,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                44,
+                1,
+                41
+              ]
+            },
+            {
+              "foodIds": [
+                0,
+                34,
+                12
+              ]
+            },
+            {
+              "foodIds": [
+                10,
+                33,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 3.0,
+            "y": -0.1
+          },
+          "foodIds": [
+            0,
+            37,
+            29
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                15,
+                3,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                30,
+                48,
+                28
+              ]
+            },
+            {
+              "foodIds": [
+                45,
+                26,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                20,
+                0,
+                23
+              ]
+            },
+            {
+              "foodIds": [
+                1,
+                13,
+                44
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                0,
+                8
+              ]
+            },
+            {
+              "foodIds": [
+                33,
+                21,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": -1.5,
+            "y": -3.3
+          },
+          "foodIds": [
+            0,
+            18,
+            38
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                16,
+                39,
+                4
+              ]
+            },
+            {
+              "foodIds": [
+                24,
+                16,
+                30
+              ]
+            },
+            {
+              "foodIds": [
+                49,
+                45,
+                2
+              ]
+            },
+            {
+              "foodIds": [
+                47,
+                23,
+                20
+              ]
+            },
+            {
+              "foodIds": [
+                44,
+                11,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                12,
+                0,
+                6
+              ]
+            },
+            {
+              "foodIds": [
+                19,
+                17,
+                21
+              ]
+            }
+          ]
+        },
+        {
+          "position": {
+            "x": 1.5,
+            "y": -3.05
+          },
+          "foodIds": [
+            7,
+            38,
+            31
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                15,
+                27,
+                4
+              ]
+            },
+            {
+              "foodIds": [
+                5,
+                0,
+                24
+              ]
+            },
+            {
+              "foodIds": [
+                14,
+                25,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                46,
+                11,
+                40
+              ]
+            },
+            {
+              "foodIds": [
+                13,
+                40,
+                41
+              ]
+            },
+            {
+              "foodIds": [
+                6,
+                32,
+                0
+              ]
+            },
+            {
+              "foodIds": [
+                19,
+                33,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

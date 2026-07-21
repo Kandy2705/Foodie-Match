@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Core.Domain.Grill
 {
@@ -11,6 +12,7 @@ namespace FoodieMatch.Core.Domain.Grill
 
         public GrillModel(
             int positionIndex,
+            GrillPosition position,
             IReadOnlyList<int> activeFoodTokenIds,
             IReadOnlyList<TrayModel> trays)
         {
@@ -20,11 +22,13 @@ namespace FoodieMatch.Core.Domain.Grill
             }
 
             PositionIndex = positionIndex;
+            Position = position;
             _activeFoodTokenIds = CopyFoodSlots(activeFoodTokenIds);
             _trays = CopyTrays(trays);
         }
 
         public int PositionIndex { get; }
+        public GrillPosition Position { get; }
         public int ActiveFoodSlotCount => _activeFoodTokenIds.Length;
         public int TrayCount => _trays.Count;
         public bool IsEmpty => ActiveFoodCount == 0;
