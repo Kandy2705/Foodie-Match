@@ -79,11 +79,16 @@ MonoBehaviour:
   _spoonStartAnchor: {fileID: 200004}
   _spoonExitLeftAnchor: {fileID: 200005}
   _foodCloneLayer: {fileID: 200006}
+  _foodCloneTemplate: {fileID: 0}
   _fridgeEnterDuration: 0.35
   _openGrowDuration: 0.14
   _openSettleDuration: 0.09
   _openScaleMultiplier: 1.2
   _spoonExitDuration: 0.3
+  _scoopGatherDuration: 0.25
+  _scoopReturnDuration: 0.3
+  _scoopShrinkDuration: 0.15
+  _scoopFoodCloneSize: 60
 --- !u!1 &100001
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,7 +129,21 @@ RectTransform:
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100002
-GameObject: {m_ObjectHideFlags: 0, m_CorrespondingSourceObject: {fileID: 0}, m_PrefabInstance: {fileID: 0}, m_PrefabAsset: {fileID: 0}, serializedVersion: 6, m_Component: [{component: {fileID: 200002}}], m_Layer: 5, m_Name: FridgeOffscreenRightAnchor, m_TagString: Untagged, m_Icon: {fileID: 0}, m_NavMeshLayer: 0, m_StaticEditorFlags: 0, m_IsActive: 1}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200002}
+  m_Layer: 5
+  m_Name: FridgeOffscreenRightAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &200002
 RectTransform:
   m_ObjectHideFlags: 0
@@ -141,11 +160,25 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.48}
   m_AnchorMax: {x: 1, y: 0.48}
-  m_AnchoredPosition: {x: 260, y: 0}
+  m_AnchoredPosition: {x: 260, y: 979}
   m_SizeDelta: {x: 10, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100003
-GameObject: {m_ObjectHideFlags: 0, m_CorrespondingSourceObject: {fileID: 0}, m_PrefabInstance: {fileID: 0}, m_PrefabAsset: {fileID: 0}, serializedVersion: 6, m_Component: [{component: {fileID: 200003}}], m_Layer: 5, m_Name: FridgeVisibleAnchor, m_TagString: Untagged, m_Icon: {fileID: 0}, m_NavMeshLayer: 0, m_StaticEditorFlags: 0, m_IsActive: 1}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200003}
+  m_Layer: 5
+  m_Name: FridgeVisibleAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &200003
 RectTransform:
   m_ObjectHideFlags: 0
@@ -162,11 +195,25 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.48}
   m_AnchorMax: {x: 1, y: 0.48}
-  m_AnchoredPosition: {x: -145, y: 0}
+  m_AnchoredPosition: {x: -145, y: 978.9999}
   m_SizeDelta: {x: 10, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100004
-GameObject: {m_ObjectHideFlags: 0, m_CorrespondingSourceObject: {fileID: 0}, m_PrefabInstance: {fileID: 0}, m_PrefabAsset: {fileID: 0}, serializedVersion: 6, m_Component: [{component: {fileID: 200004}}], m_Layer: 5, m_Name: SpoonStartAnchor, m_TagString: Untagged, m_Icon: {fileID: 0}, m_NavMeshLayer: 0, m_StaticEditorFlags: 0, m_IsActive: 1}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200004}
+  m_Layer: 5
+  m_Name: SpoonStartAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &200004
 RectTransform:
   m_ObjectHideFlags: 0
@@ -183,11 +230,25 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.48}
   m_AnchorMax: {x: 1, y: 0.48}
-  m_AnchoredPosition: {x: -190, y: -20}
+  m_AnchoredPosition: {x: -190, y: 958.9999}
   m_SizeDelta: {x: 10, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100005
-GameObject: {m_ObjectHideFlags: 0, m_CorrespondingSourceObject: {fileID: 0}, m_PrefabInstance: {fileID: 0}, m_PrefabAsset: {fileID: 0}, serializedVersion: 6, m_Component: [{component: {fileID: 200005}}], m_Layer: 5, m_Name: SpoonExitLeftAnchor, m_TagString: Untagged, m_Icon: {fileID: 0}, m_NavMeshLayer: 0, m_StaticEditorFlags: 0, m_IsActive: 1}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200005}
+  m_Layer: 5
+  m_Name: SpoonExitLeftAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &200005
 RectTransform:
   m_ObjectHideFlags: 0
@@ -204,7 +265,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.48}
   m_AnchorMax: {x: 0, y: 0.48}
-  m_AnchoredPosition: {x: -260, y: -20}
+  m_AnchoredPosition: {x: -260, y: 958.9999}
   m_SizeDelta: {x: 10, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100006
@@ -276,7 +337,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.48}
   m_AnchorMax: {x: 1, y: 0.48}
-  m_AnchoredPosition: {x: 260, y: 0}
+  m_AnchoredPosition: {x: 260, y: 1033}
   m_SizeDelta: {x: 220, y: 260}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100008
@@ -355,7 +416,21 @@ MonoBehaviour:
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
 --- !u!1 &100009
-GameObject: {m_ObjectHideFlags: 0, m_CorrespondingSourceObject: {fileID: 0}, m_PrefabInstance: {fileID: 0}, m_PrefabAsset: {fileID: 0}, serializedVersion: 6, m_Component: [{component: {fileID: 200009}}], m_Layer: 5, m_Name: FridgeFoodEntryPoint, m_TagString: Untagged, m_Icon: {fileID: 0}, m_NavMeshLayer: 0, m_StaticEditorFlags: 0, m_IsActive: 1}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200009}
+  m_Layer: 5
+  m_Name: FridgeFoodEntryPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &200009
 RectTransform:
   m_ObjectHideFlags: 0
@@ -409,7 +484,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.48}
   m_AnchorMax: {x: 1, y: 0.48}
-  m_AnchoredPosition: {x: -190, y: -20}
+  m_AnchoredPosition: {x: -190, y: 1033}
   m_SizeDelta: {x: 180, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &100011
@@ -488,7 +563,21 @@ MonoBehaviour:
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
 --- !u!1 &100012
-GameObject: {m_ObjectHideFlags: 0, m_CorrespondingSourceObject: {fileID: 0}, m_PrefabInstance: {fileID: 0}, m_PrefabAsset: {fileID: 0}, serializedVersion: 6, m_Component: [{component: {fileID: 200012}}], m_Layer: 5, m_Name: SpoonFoodHoldPoint, m_TagString: Untagged, m_Icon: {fileID: 0}, m_NavMeshLayer: 0, m_StaticEditorFlags: 0, m_IsActive: 1}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200012}
+  m_Layer: 5
+  m_Name: SpoonFoodHoldPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!224 &200012
 RectTransform:
   m_ObjectHideFlags: 0
