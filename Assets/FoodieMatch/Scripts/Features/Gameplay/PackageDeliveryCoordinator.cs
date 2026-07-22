@@ -278,19 +278,11 @@ namespace FoodieMatch.Features.Gameplay
             LockedRequiredPackageView locked =
                 _packageGroupView.GetLockedAt(slotIndex);
 
-            if (!ShowEnteringPackageViewAt(slotIndex, unlockedPackage))
+            locked?.SetInteractable(false);
+
+            if (!ShowUnlockedPackageAtRest(slotIndex, unlockedPackage))
             {
                 Debug.LogError($"Required package view {slotIndex} could not be shown after unlock.");
-                return false;
-            }
-
-            if (locked != null)
-            {
-                await locked.PlayUnlockDisappearAsync();
-            }
-
-            if (!CanContinue(session))
-            {
                 return false;
             }
 
@@ -302,6 +294,12 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _motionStates[slotIndex] = new(unlockedPackage);
+
+            if (locked != null)
+            {
+                _ = PlayLockedUnlockVisualSafelyAsync(locked);
+            }
+
             PackageReplaced?.Invoke(session);
             return true;
         }
@@ -334,21 +332,13 @@ namespace FoodieMatch.Features.Gameplay
             LockedRequiredPackageView locked =
                 _packageGroupView.GetLockedAt(slotIndex);
 
-            if (!ShowEnteringPackageViewAt(slotIndex, rescuePackage))
+            locked?.SetInteractable(false);
+
+            if (!ShowUnlockedPackageAtRest(slotIndex, rescuePackage))
             {
                 Debug.LogError(
                     $"Required package view {slotIndex} could not be shown after rescue unlock.");
 
-                return false;
-            }
-
-            if (locked != null)
-            {
-                await locked.PlayUnlockDisappearAsync();
-            }
-
-            if (!CanContinue(session))
-            {
                 return false;
             }
 
@@ -362,6 +352,12 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _motionStates[slotIndex] = new(rescuePackage);
+
+            if (locked != null)
+            {
+                _ = PlayLockedUnlockVisualSafelyAsync(locked);
+            }
+
             PackageReplaced?.Invoke(session);
             return true;
         }
@@ -802,6 +798,26 @@ namespace FoodieMatch.Features.Gameplay
         {
             Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
             return _packageGroupView.ShowEnteringPackageAt(packageIndex, package, sprite);
+        }
+
+        private bool ShowUnlockedPackageAtRest(int packageIndex, RequiredPackageModel package)
+        {
+            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
+            return _packageGroupView.ShowPackageAt(packageIndex, package, sprite);
+        }
+
+        private static async Task PlayLockedUnlockVisualSafelyAsync(LockedRequiredPackageView locked)
+        {
+            if (locked == null) return;
+            try
+            {
+                await locked.PlayUnlockDisappearAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, locked);
+                locked.gameObject.SetActive(false);
+            }
         }
 
         private void OnPackageDeliveryFailed(GameplaySession session)
