@@ -159,6 +159,14 @@ namespace FoodieMatch.Features.Gameplay
             session?.ClearFridgeInventory();
         }
 
+        public bool IsBusy(GameplaySession session)
+        {
+            return ReferenceEquals(
+                       _activeSession,
+                       session) &&
+                   (_isApplying || _isReleasing);
+        }
+
         private async Task ApplySafelyAsync(
             GameplaySession session,
             bool shouldPlayEnter)

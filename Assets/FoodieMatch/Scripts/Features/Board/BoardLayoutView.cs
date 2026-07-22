@@ -200,6 +200,23 @@ namespace FoodieMatch.Features.Board
             return views;
         }
 
+        public void SetRegisteredFoodInteractable(bool isInteractable)
+        {
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
+            {
+                FoodItemView foodItemView = entry.Key;
+
+                if (foodItemView == null ||
+                    foodItemView.IsEmpty ||
+                    foodItemView.IsFlying)
+                {
+                    continue;
+                }
+
+                foodItemView.SetInteractable(isInteractable);
+            }
+        }
+
         public bool TryGetFoodAddress(
             FoodItemView foodItemView,
             out FoodBoardAddress address)
@@ -713,19 +730,17 @@ namespace FoodieMatch.Features.Board
 
             foodItemView.transform.SetPositionAndRotation(foodAnchor.position, foodAnchor.rotation);
             foodItemView.SetVisualState(FoodItemVisualState.OnGrill);
-            foodItemView.SetInteractable(makeInteractable);
-
-            if (!makeInteractable)
-            {
-                return true;
-            }
 
             FoodBoardAddress address = new FoodBoardAddress(
                 grillModel.PositionIndex,
                 foodItemIndex);
 
             _foodAddresses.Add(foodItemView, address);
+
+            foodItemView.Selected -= HandleFoodSelected;
             foodItemView.Selected += HandleFoodSelected;
+
+            foodItemView.SetInteractable(makeInteractable);
 
             return true;
         }
