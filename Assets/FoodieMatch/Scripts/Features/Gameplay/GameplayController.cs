@@ -66,6 +66,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
+            UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
             _grillCompletionCoordinator?.EndSession();
@@ -159,7 +160,7 @@ namespace FoodieMatch.Features.Gameplay
 
             WaitingRackModel waitingRack = new(WaitingRackRules.InitialCapacity);
 
-            if (_requiredPackageGroupView.PackageCount != LevelRules.ActivePackageCount)
+            if (_requiredPackageGroupView.PackageCount != LevelRules.MaxActivePackageSlotCount)
             {
                 Debug.LogError("Required package view count does not match the level config.");
                 return;
@@ -194,6 +195,7 @@ namespace FoodieMatch.Features.Gameplay
             _boardLayoutView.Setup(_session.Board);
             _waitingRackView.Clear();
             _packageDeliveryCoordinator.BeginSession(_session);
+            SubscribeLockedPackages();
             _waitingRackAutoFillCoordinator.BeginSession(_session);
             _grillCompletionCoordinator.BeginSession(_session);
             _fridgeBoosterCoordinator?.BeginSession();
@@ -215,6 +217,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
+            UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
             _grillCompletionCoordinator?.EndSession();
@@ -273,6 +276,112 @@ namespace FoodieMatch.Features.Gameplay
             return _fridgeBoosterCoordinator != null &&
                    _fridgeBoosterCoordinator.TryApply(
                        _session);
+        }
+
+        private void SubscribeLockedPackages()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return;
+            }
+
+            int count = _requiredPackageGroupView.LockedPackageCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                LockedRequiredPackageView locked = _requiredPackageGroupView.GetLockedAt(i);
+
+                if (locked == null)
+                {
+                    continue;
+                }
+
+                locked.UnlockRequested -= HandleLockedRequested;
+                locked.UnlockRequested += HandleLockedRequested;
+            }
+        }
+
+        private void UnsubscribeLockedPackages()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return;
+            }
+
+            int count = _requiredPackageGroupView.LockedPackageCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                LockedRequiredPackageView locked = _requiredPackageGroupView.GetLockedAt(i);
+
+                if (locked == null)
+                {
+                    continue;
+                }
+
+                locked.UnlockRequested -= HandleLockedRequested;
+            }
+        }
+
+        private void HandleLockedRequested(LockedRequiredPackageView view)
+        {
+            if (view == null || _session == null || !_session.CanContinueGameplay)
+            {
+                return;
+            }
+
+            int slotIndex = FindLockedSlotIndex(view);
+
+            if (slotIndex < 0)
+            {
+                return;
+            }
+
+            _uiManager.ShowUnlockLockedPackagePopup(slotIndex, OnUnlockConfirmed);
+        }
+
+        private int FindLockedSlotIndex(LockedRequiredPackageView view)
+        {
+            if (_requiredPackageGroupView == null || view == null)
+            {
+                return -1;
+            }
+
+            int count = _requiredPackageGroupView.LockedPackageCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                if (_requiredPackageGroupView.GetLockedAt(i) == view)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void OnUnlockConfirmed(int slotIndex)
+        {
+            GameplaySession session = _session;
+
+            if (session == null || !session.CanContinueGameplay)
+            {
+                return;
+            }
+
+            _ = UnlockSlotSafelyAsync(slotIndex, session);
+        }
+
+        private async Task UnlockSlotSafelyAsync(int slotIndex, GameplaySession session)
+        {
+            try
+            {
+                await _packageDeliveryCoordinator.TryUnlockSlotAsync(slotIndex, session);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
 
         private void CreateCoordinators()

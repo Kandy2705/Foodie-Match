@@ -12,6 +12,7 @@ namespace FoodieMatch.Features.RequiredPackage
         private const int InitialPackageSortingOrder = 0;
 
         [SerializeField] private RequiredPackageView[] _packages;
+        [SerializeField] private LockedRequiredPackageView[] _lockedPackages;
 
         [Header("Layout Motion")]
         [SerializeField] private float _layoutMotionDuration = 0.25f;
@@ -28,6 +29,8 @@ namespace FoodieMatch.Features.RequiredPackage
         private bool _isLayoutInitialized;
 
         public int PackageCount => _packages != null ? _packages.Length : 0;
+
+        public int LockedPackageCount => _lockedPackages != null ? _lockedPackages.Length : 0;
 
         private void Awake()
         {
@@ -103,13 +106,46 @@ namespace FoodieMatch.Features.RequiredPackage
                 }
             }
 
-            LockedRequiredPackageView[] lockedPackages =
-                GetComponentsInChildren<LockedRequiredPackageView>(includeInactive: true);
-
-            for (int i = 0; i < lockedPackages.Length; i++)
+            if (_lockedPackages != null)
             {
-                lockedPackages[i].SetSortingOrder(InitialPackageSortingOrder);
+                for (int i = 0; i < _lockedPackages.Length; i++)
+                {
+                    _lockedPackages[i]?.SetSortingOrder(InitialPackageSortingOrder);
+                }
             }
+        }
+
+        public LockedRequiredPackageView GetLockedAt(int index)
+        {
+            if (_lockedPackages == null || index < 0 || index >= _lockedPackages.Length)
+            {
+                return null;
+            }
+
+            return _lockedPackages[index];
+        }
+
+        public bool HasLockedAt(int index)
+        {
+            LockedRequiredPackageView locked = GetLockedAt(index);
+            return locked != null && locked.gameObject.activeSelf;
+        }
+
+        public void SetLockedActive(int index, bool active)
+        {
+            LockedRequiredPackageView locked = GetLockedAt(index);
+
+            if (locked == null)
+            {
+                return;
+            }
+
+            if (active)
+            {
+                locked.ResetForReuse();
+            }
+
+            locked.gameObject.SetActive(active);
         }
 
         public RequiredPackageView GetPackageAt(int packageIndex)
@@ -228,12 +264,12 @@ namespace FoodieMatch.Features.RequiredPackage
                 }
             }
 
-            LockedRequiredPackageView[] lockedPackages =
-                GetComponentsInChildren<LockedRequiredPackageView>(includeInactive: true);
-
-            for (int i = 0; i < lockedPackages.Length; i++)
+            if (_lockedPackages != null)
             {
-                TryAddLayoutItem(lockedPackages[i]);
+                for (int i = 0; i < _lockedPackages.Length; i++)
+                {
+                    TryAddLayoutItem(_lockedPackages[i]);
+                }
             }
 
             _layoutItems.Sort((left, right) =>

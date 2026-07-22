@@ -39,9 +39,9 @@ namespace FoodieMatch.Core.Application.UseCases
             }
 
             RequiredPackageModel[] initialPackages =
-                new RequiredPackageModel[LevelRules.ActivePackageCount];
+                new RequiredPackageModel[LevelRules.MaxActivePackageSlotCount];
 
-            for (int i = 0; i < initialPackages.Length; i++)
+            for (int i = 0; i < LevelRules.ActivePackageCount; i++)
             {
                 if (!_generator.TryCreatePackage(
                         board,
@@ -107,6 +107,72 @@ namespace FoodieMatch.Core.Application.UseCases
                 replacementPackage = generatedPackage;
             }
 
+            return true;
+        }
+
+        public bool TryPrepareUnlockedPackage(
+            int slotIndex,
+            BoardModel board,
+            WaitingRackModel waitingRack,
+            FridgeInventoryModel fridgeInventory,
+            RequiredPackageModel[] packages,
+            IReadOnlyList<RequiredPackageModel> packageReservations,
+            PackageSelectionSettings settings,
+            float progressRatio,
+            PackageRandom random,
+            out RequiredPackageModel unlockedPackage)
+        {
+            unlockedPackage = null;
+
+            if (board == null ||
+                waitingRack == null ||
+                packages == null ||
+                packageReservations == null ||
+                packageReservations.Count != packages.Length ||
+                settings == null ||
+                random == null ||
+                float.IsNaN(progressRatio) ||
+                float.IsInfinity(progressRatio) ||
+                progressRatio < 0f ||
+                progressRatio > 1f ||
+                slotIndex < 0 ||
+                slotIndex >= packages.Length ||
+                packages[slotIndex] != null)
+            {
+                return false;
+            }
+
+            if (!_generator.TryCreatePackage(
+                    board,
+                    waitingRack,
+                    fridgeInventory,
+                    packageReservations,
+                    settings.GetWeights(progressRatio),
+                    random,
+                    out RequiredPackageModel generatedPackage))
+            {
+                return false;
+            }
+
+            unlockedPackage = generatedPackage;
+            return true;
+        }
+
+        public bool TryPublishUnlockedPackage(
+            int slotIndex,
+            RequiredPackageModel unlockedPackage,
+            RequiredPackageModel[] packages)
+        {
+            if (packages == null ||
+                slotIndex < 0 ||
+                slotIndex >= packages.Length ||
+                unlockedPackage == null ||
+                packages[slotIndex] != null)
+            {
+                return false;
+            }
+
+            packages[slotIndex] = unlockedPackage;
             return true;
         }
 
