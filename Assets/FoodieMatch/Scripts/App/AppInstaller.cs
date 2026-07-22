@@ -67,6 +67,7 @@ namespace FoodieMatch.App
                 appRoot.BoardLayoutView,
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView,
+                appRoot.FridgeBoosterAnchors,
                 appRoot.GameplayMotionPresenter,
                 gameplayAudioPresenter,
                 gameplayWorldClickSfx,
