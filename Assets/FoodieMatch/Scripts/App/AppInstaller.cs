@@ -1,4 +1,5 @@
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -10,6 +11,7 @@ using FoodieMatch.Data.Booster;
 using FoodieMatch.Data.Level;
 using FoodieMatch.Data.Level.Json;
 using FoodieMatch.Features.Gameplay;
+using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -17,6 +19,8 @@ namespace FoodieMatch.App
     public sealed class AppInstaller : MonoBehaviour
     {
         public GameplayEvents GameplayEvents { get; private set; }
+
+        public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
 
         public bool Install(AppRoot appRoot)
         {
@@ -33,6 +37,19 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            PlayerProfileSession profileSession = new();
+            IPlayerProfileRepository profileRepository =
+                new PlayerPrefsPlayerProfileRepository(saveService);
+            IInvalidPlayerProfileRecovery invalidProfileRecovery =
+                new PlayerPrefsInvalidPlayerProfileRecovery(saveService);
+            PlayerProfileInitializer = new PlayerProfileInitializer(
+                profileRepository,
+                invalidProfileRecovery,
+                profileSession);
+            PlayerProfileService playerProfileService = new(
+                profileRepository,
+                profileSession);
+            playerProfileService.SaveFailed += LogPlayerProfileSaveFailure;
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
             GameplayWorldClickSfx gameplayWorldClickSfx = CreateGameplayWorldClickSfx(appRoot, audioService);
@@ -47,15 +64,12 @@ namespace FoodieMatch.App
                 new SelectFoodUseCase(requiredPackageMatcher);
             BoardModelFactory boardModelFactory = new();
 
-            BoosterManager boosterManager = new BoosterManager(
-                saveService,
-                new int[] { 2, 0, 1, 0 });
+            BoosterManager boosterManager = new(playerProfileService);
 
             appRoot.UIManager.Construct(
                 GameplayEvents,
                 audioService,
-                boosterManager,
-                saveService);
+                boosterManager);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver);
             appRoot.GameplayMotionPresenter.Construct(
@@ -79,11 +93,17 @@ namespace FoodieMatch.App
             appRoot.AppController.Construct(
                 appRoot.UIManager,
                 appRoot.GameplayController,
-                saveService,
+                playerProfileService,
+                boosterManager,
                 levelRepository,
                 audioService);
 
             return true;
+        }
+
+        private static void LogPlayerProfileSaveFailure(string errorMessage)
+        {
+            Debug.LogError($"Player profile save failed: {errorMessage}");
         }
 
         private static bool TryCreateLevelRepository(out ILevelRepository levelRepository)

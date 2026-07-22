@@ -1,27 +1,24 @@
-using FoodieMatch.Core.Infrastructure.Save;
-using UnityEngine;
+using System;
+using FoodieMatch.Core.Application.Player;
 
 namespace FoodieMatch.Data.Booster
 {
     public sealed class BoosterManager
     {
-        private const string SaveKeyPrefix = "Booster_";
-        private static readonly BoosterType[] AllTypes = (BoosterType[])System.Enum.GetValues(typeof(BoosterType));
+        private static readonly BoosterType[] AllTypes =
+            (BoosterType[])Enum.GetValues(typeof(BoosterType));
 
-        private readonly ISaveService _saveService;
-        private readonly int[] _defaultCounts;
+        private readonly PlayerProfileService _playerProfileService;
 
-        public BoosterManager(ISaveService saveService, int[] defaultCounts = null)
+        public BoosterManager(PlayerProfileService playerProfileService)
         {
-            _saveService = saveService;
-            _defaultCounts = defaultCounts ?? new int[] { 0, 0, 0, 0 };
+            _playerProfileService = playerProfileService ??
+                throw new ArgumentNullException(nameof(playerProfileService));
         }
 
         public int GetCount(BoosterType type)
         {
-            string key = GetSaveKey(type);
-            int defaultCount = GetDefaultIndex((int)type);
-            return _saveService.GetInt(key, defaultCount);
+            return _playerProfileService.GetBoosterCount(type);
         }
 
         public int[] GetCounts()
@@ -34,28 +31,14 @@ namespace FoodieMatch.Data.Booster
             return counts;
         }
 
-        public void SetCount(BoosterType type, int count)
-        {
-            count = Mathf.Max(0, count);
-            _saveService.SetInt(GetSaveKey(type), count);
-            _saveService.Save();
-        }
-
         public void Add(BoosterType type, int amount)
         {
-            int current = GetCount(type);
-            SetCount(type, current + amount);
+            _playerProfileService.AddBooster(type, amount);
         }
 
         public bool TryUse(BoosterType type)
         {
-            int current = GetCount(type);
-            if (current <= 0)
-            {
-                return false;
-            }
-            SetCount(type, current - 1);
-            return true;
+            return _playerProfileService.TryUseBooster(type);
         }
 
         public bool HasCount(BoosterType type)
@@ -63,27 +46,14 @@ namespace FoodieMatch.Data.Booster
             return GetCount(type) > 0;
         }
 
-        public void ResetToDefaults()
+        public bool HasSeenGuide(BoosterType type)
         {
-            for (int i = 0; i < AllTypes.Length; i++)
-            {
-                _saveService.SetInt(GetSaveKey(AllTypes[i]), _defaultCounts[i]);
-            }
-            _saveService.Save();
+            return _playerProfileService.HasSeenBoosterGuide(type);
         }
 
-        private string GetSaveKey(BoosterType type)
+        public void MarkGuideSeen(BoosterType type)
         {
-            return SaveKeyPrefix + type.ToString();
-        }
-
-        private int GetDefaultIndex(int index)
-        {
-            if (_defaultCounts != null && index >= 0 && index < _defaultCounts.Length)
-            {
-                return _defaultCounts[index];
-            }
-            return 0;
+            _playerProfileService.MarkBoosterGuideSeen(type);
         }
     }
 }

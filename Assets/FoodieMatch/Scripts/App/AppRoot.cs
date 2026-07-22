@@ -1,3 +1,7 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Features.Board;
@@ -39,6 +43,11 @@ namespace FoodieMatch.App
         [SerializeField] private FoodVisualResolver _foodVisualResolver;
         [SerializeField] private FridgeBoosterAnchors _fridgeBoosterAnchors;
 
+        private CancellationTokenSource _initializationCancellation;
+        private bool _isInitializing;
+        private bool _isInitialized;
+        private bool _isDestroyed;
+
         public AppInstaller AppInstaller => _appInstaller;
         public AppController AppController => _appController;
         public GameplayController GameplayController => _gameplayController;
@@ -50,11 +59,21 @@ namespace FoodieMatch.App
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;
         public FoodVisualResolver FoodVisualResolver => _foodVisualResolver;
-
         public FridgeBoosterAnchors FridgeBoosterAnchors => _fridgeBoosterAnchors;
+
+        private void OnDestroy()
+        {
+            _isDestroyed = true;
+            _initializationCancellation?.Cancel();
+        }
 
         public void Initialize()
         {
+            if (_isInitializing || _isInitialized)
+            {
+                return;
+            }
+
             if (!HasValidReferences())
             {
                 return;
@@ -65,7 +84,63 @@ namespace FoodieMatch.App
                 return;
             }
 
-            _appController.EnterHome();
+            _isInitializing = true;
+            _initializationCancellation = new CancellationTokenSource();
+            _ = InitializeSafelyAsync(_initializationCancellation.Token);
+        }
+
+        private async Task InitializeSafelyAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Task loadingTask = _uiManager.PlayLoadingAsync();
+                Task<PlayerProfileInitializationResult> profileTask =
+                    _appInstaller.PlayerProfileInitializer.InitializeAsync(cancellationToken);
+
+                await Task.WhenAll(loadingTask, profileTask);
+                PlayerProfileInitializationResult result = await profileTask;
+
+                if (!result.IsSuccess)
+                {
+                    Debug.LogError(
+                        $"Player profile initialization failed: {result.ErrorMessage}");
+                    return;
+                }
+
+                if (result.RecoveredInvalidData)
+                {
+                    Debug.LogWarning(
+                        "Invalid player profile was backed up and replaced.");
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (_isDestroyed)
+                {
+                    return;
+                }
+
+                _appController.EnterHome();
+                _isInitialized = true;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+            finally
+            {
+                if (!_isDestroyed)
+                {
+                    _uiManager.HideLoading();
+                }
+
+                _initializationCancellation?.Dispose();
+                _initializationCancellation = null;
+                _isInitializing = false;
+            }
         }
 
         private bool HasValidReferences()
