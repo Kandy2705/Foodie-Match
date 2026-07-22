@@ -134,14 +134,14 @@ namespace FoodieMatch.Features.WaitingRack
                         continue;
                     }
 
-                    sequence.Group(Tween.LocalPosition(
+                    _ = sequence.Group(Tween.LocalPosition(
                         slot.transform,
                         targetPositions[i],
                         _addSlotDuration,
                         _addSlotEase));
                 }
 
-                sequence.Group(Tween.LocalPosition(
+                _ = sequence.Group(Tween.LocalPosition(
                     newSlot.transform,
                     targetPositions[count - 1],
                     _addSlotDuration,

@@ -68,5 +68,11 @@ TagManager:
   - name: Effect
     uniqueID: 726354805
     locked: 0
+  - name: Fridge
+    uniqueID: 1629202147
+    locked: 0
+  - name: Spoon
+    uniqueID: 2411708631
+    locked: 0
   m_RenderingLayers:
   - Default

@@ -296,7 +296,7 @@ namespace FoodieMatch.Features.Board
 
             if (spriteRenderer != null)
             {
-                Tween.Alpha(
+                _ = Tween.Alpha(
                     spriteRenderer,
                     0f,
                     totalDuration);
@@ -370,7 +370,7 @@ namespace FoodieMatch.Features.Board
                 color.a = 0f;
                 spriteRenderer.color = color;
 
-                Tween.Alpha(
+                _ = Tween.Alpha(
                     spriteRenderer,
                     1f,
                     RevealGrowDuration);
