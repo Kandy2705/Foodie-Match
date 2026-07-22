@@ -198,7 +198,6 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (shouldPlayEnter)
             {
-                // Tủ đang ẩn: chạy vào giống lần đầu.
                 await _view.PlayEnterAndOpenAsync();
 
                 if (!CanContinue(session))
@@ -217,10 +216,9 @@ namespace FoodieMatch.Features.Gameplay
                 }
             }
 
-            for (int slotIndex =
-                     session.WaitingRack.Capacity - 1;
-                 slotIndex >= 0;
-                 slotIndex--)
+            for (int slotIndex = 0;
+                 slotIndex < session.WaitingRack.Capacity;
+                 slotIndex++)
             {
                 if (!CanContinue(session))
                 {
@@ -418,8 +416,11 @@ namespace FoodieMatch.Features.Gameplay
                 return false;
             }
 
-            await _view.PlayReleasePopAsync(
-                foodItemView);
+            _view.SetFullState();
+
+            Vector3 targetScale =
+                await _view.PlayReleasePopAsync(
+                    foodItemView);
 
             if (!CanContinue(session))
             {
@@ -462,11 +463,23 @@ namespace FoodieMatch.Features.Gameplay
             _packageDeliveryCoordinator
                 .IncreaseServedFoodCount(session);
 
-            bool delivered =
-                await _packageDeliveryCoordinator
+            Task growTask =
+                _view.PlayReleaseGrowAsync(
+                    foodItemView,
+                    targetScale);
+
+            Task<bool> deliveryTask =
+                _packageDeliveryCoordinator
                     .DeliverBatchAsync(
                         new[] { flight },
                         session);
+
+            await Task.WhenAll(
+                growTask,
+                deliveryTask);
+
+            bool delivered =
+                await deliveryTask;
 
             if (!delivered)
             {
@@ -580,6 +593,8 @@ namespace FoodieMatch.Features.Gameplay
 
                 session.FridgeInventory.Store(
                     expectedFoodTokenId);
+
+                _view.SetFullState();
 
                 foodItemView.Clear();
 
