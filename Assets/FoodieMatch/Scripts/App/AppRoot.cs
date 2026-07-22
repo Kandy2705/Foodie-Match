@@ -26,7 +26,8 @@ namespace FoodieMatch.App
         [SerializeField] private UIManager _uiManager;
 
         [Header("Presentation")]
-        [SerializeField] private GameplayMotionPresenter
+        [SerializeField]
+        private GameplayMotionPresenter
             _gameplayMotionPresenter;
 
         [Header("Audio")]
@@ -40,6 +41,7 @@ namespace FoodieMatch.App
         [SerializeField] private WaitingRackView _waitingRackView;
 
         [SerializeField] private FoodVisualResolver _foodVisualResolver;
+        [SerializeField] private FridgeBoosterAnchors _fridgeBoosterAnchors;
 
         private CancellationTokenSource _initializationCancellation;
         private bool _isInitializing;
@@ -57,6 +59,7 @@ namespace FoodieMatch.App
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;
         public FoodVisualResolver FoodVisualResolver => _foodVisualResolver;
+        public FridgeBoosterAnchors FridgeBoosterAnchors => _fridgeBoosterAnchors;
 
         private void OnDestroy()
         {
@@ -199,6 +202,23 @@ namespace FoodieMatch.App
             if (_foodVisualResolver == null)
             {
                 Debug.LogError("FoodVisualResolver is missing.");
+                return false;
+            }
+
+            if (_fridgeBoosterAnchors == null)
+            {
+                Debug.LogError(
+                    "FridgeBoosterAnchors is missing.");
+
+                return false;
+            }
+
+            if (_fridgeBoosterAnchors.FridgeBoosterView == null)
+            {
+                Debug.LogError(
+                    "FridgeBoosterView is missing from " +
+                    "FridgeBoosterAnchors.");
+
                 return false;
             }
 

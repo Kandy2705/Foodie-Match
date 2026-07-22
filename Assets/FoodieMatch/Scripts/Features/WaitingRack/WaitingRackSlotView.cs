@@ -91,7 +91,19 @@ namespace FoodieMatch.Features.WaitingRack
             PlaceFoodAtAnchor();
             return true;
         }
+        public bool TryGetFood(out FoodItemView foodItemView)
+        {
+            foodItemView = null;
 
+            if (!IsPlacementComplete ||
+                _foodItemView == null)
+            {
+                return false;
+            }
+
+            foodItemView = _foodItemView;
+            return true;
+        }
         public FoodItemView RemoveFood()
         {
             if (!IsPlacementComplete)

@@ -141,6 +141,57 @@ namespace FoodieMatch.Features.Gameplay
             return true;
         }
 
+        public bool TryCreateFridgeFlight(
+            FridgeTransfer transfer,
+            FoodItemView foodItemView,
+            GameplaySession session,
+            out PackageFlight flight)
+        {
+            flight = default;
+
+            if (!CanContinue(session) ||
+                _motionStates == null ||
+                foodItemView == null ||
+                foodItemView.FoodTokenId !=
+                    transfer.FoodTokenId ||
+                transfer.PackageIndex < 0 ||
+                transfer.PackageIndex >=
+                    session.RequiredPackages.Length ||
+                transfer.PackageIndex >=
+                    _motionStates.Length)
+            {
+                return false;
+            }
+
+            RequiredPackageModel expectedPackage =
+                session.RequiredPackages[
+                    transfer.PackageIndex];
+
+            PackageMotionState motionState =
+                _motionStates[
+                    transfer.PackageIndex];
+
+            if (expectedPackage == null ||
+                !expectedPackage.CanAccept(
+                    transfer.FoodTokenId) ||
+                motionState == null ||
+                motionState.Package !=
+                    expectedPackage ||
+                motionState.IsReplacementRunning)
+            {
+                return false;
+            }
+
+            flight = new PackageFlight(
+                foodItemView,
+                expectedPackage,
+                transfer.PackageIndex,
+                expectedPackage.RequiredAmount,
+                expectedPackage.FilledAmount);
+
+            return true;
+        }
+
         public async Task<bool> DeliverBatchAsync(IReadOnlyList<PackageFlight> flights, GameplaySession session)
         {
             if (!CanContinue(session) || flights == null)

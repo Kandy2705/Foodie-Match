@@ -220,6 +220,27 @@ namespace FoodieMatch.Features.WaitingRack
 
             return slot.PrepareLanding(expectedFoodItem);
         }
+        public bool TryGetFoodAt(
+            int index,
+            out FoodItemView foodItemView)
+        {
+            foodItemView = null;
+
+            WaitingRackSlotView slot =
+                GetSlot(index);
+
+            if (slot == null)
+            {
+                Debug.LogWarning(
+                    $"Waiting rack slot {index} is missing.",
+                    this);
+
+                return false;
+            }
+
+            return slot.TryGetFood(
+                out foodItemView);
+        }
 
         public FoodItemView RemoveFoodAt(int index)
         {

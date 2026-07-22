@@ -34,6 +34,7 @@ namespace FoodieMatch.Features.Gameplay
         private BoardLayoutView _boardLayoutView;
         private RequiredPackageGroupView _requiredPackageGroupView;
         private WaitingRackView _waitingRackView;
+        private FridgeBoosterAnchors _fridgeBoosterAnchors;
         private GameplayMotionPresenter _gameplayMotionPresenter;
         private GameplayAudioPresenter _gameplayAudioPresenter;
         private GameplayWorldClickSfx _gameplayWorldClickSfx;
@@ -51,6 +52,7 @@ namespace FoodieMatch.Features.Gameplay
         private PlateBoosterCoordinator _plateBoosterCoordinator;
         private StorageBoosterCoordinator _storageBoosterCoordinator;
         private SwapBoosterCoordinator _swapBoosterCoordinator;
+        private FridgeBoosterCoordinator _fridgeBoosterCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
 
@@ -68,6 +70,7 @@ namespace FoodieMatch.Features.Gameplay
             _waitingRackAutoFillCoordinator?.EndSession();
             _grillCompletionCoordinator?.EndSession();
             _comboCoordinator?.EndSession();
+            _fridgeBoosterCoordinator?.EndSession();
 
             if (_boardLayoutView != null)
             {
@@ -83,6 +86,7 @@ namespace FoodieMatch.Features.Gameplay
             BoardLayoutView boardLayoutView,
             RequiredPackageGroupView requiredPackageGroupView,
             WaitingRackView waitingRackView,
+            FridgeBoosterAnchors fridgeBoosterAnchors,
             GameplayMotionPresenter gameplayMotionPresenter,
             GameplayAudioPresenter gameplayAudioPresenter,
             GameplayWorldClickSfx gameplayWorldClickSfx,
@@ -97,6 +101,7 @@ namespace FoodieMatch.Features.Gameplay
             _boardLayoutView = boardLayoutView;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
+            _fridgeBoosterAnchors = fridgeBoosterAnchors;
             _gameplayMotionPresenter = gameplayMotionPresenter;
             _gameplayAudioPresenter = gameplayAudioPresenter;
             _gameplayWorldClickSfx = gameplayWorldClickSfx;
@@ -191,6 +196,7 @@ namespace FoodieMatch.Features.Gameplay
             _packageDeliveryCoordinator.BeginSession(_session);
             _waitingRackAutoFillCoordinator.BeginSession(_session);
             _grillCompletionCoordinator.BeginSession(_session);
+            _fridgeBoosterCoordinator?.BeginSession();
             _session.StartPlaying();
             _gameplayWorldClickSfx.StartListening();
 
@@ -213,6 +219,7 @@ namespace FoodieMatch.Features.Gameplay
             _waitingRackAutoFillCoordinator?.EndSession();
             _grillCompletionCoordinator?.EndSession();
             _comboCoordinator?.EndSession();
+            _fridgeBoosterCoordinator?.EndSession();
             _waitingRackView?.Clear();
             _session = null;
 
@@ -236,6 +243,8 @@ namespace FoodieMatch.Features.Gameplay
                     return TryApplyStorageBooster();
                 case BoosterType.Swap:
                     return TryApplySwapBooster();
+                case BoosterType.Fridge:
+                    return TryApplyFridgeBooster();
                 default:
                     Debug.Log($"Booster {boosterType} is not implemented yet.");
                     return false;
@@ -258,6 +267,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             return _swapBoosterCoordinator != null &&
                    _swapBoosterCoordinator.TryApply(_session);
+        }
+        private bool TryApplyFridgeBooster()
+        {
+            return _fridgeBoosterCoordinator != null &&
+                   _fridgeBoosterCoordinator.TryApply(
+                       _session);
         }
 
         private void CreateCoordinators()
@@ -284,6 +299,16 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard,
                 _boardLayoutView,
                 _uiManager);
+            _fridgeBoosterCoordinator = new(
+                _sessionGuard,
+                _fridgeBoosterAnchors != null
+                    ? _fridgeBoosterAnchors.FridgeBoosterView
+                    : null,
+                _waitingRackView,
+                _boardLayoutView,
+                _requiredPackageLifecycleUseCase,
+                _packageDeliveryCoordinator,
+                _foodVisualResolver);
         }
 
         private void SubscribeCoordinatorEvents()
@@ -394,6 +419,22 @@ namespace FoodieMatch.Features.Gameplay
             if (_boardModelFactory == null)
             {
                 Debug.LogError("BoardModelFactory has not been constructed.");
+                return false;
+            }
+
+            if (_fridgeBoosterAnchors == null)
+            {
+                Debug.LogError(
+                    "FridgeBoosterAnchors has not been constructed.");
+
+                return false;
+            }
+
+            if (_fridgeBoosterAnchors.FridgeBoosterView == null)
+            {
+                Debug.LogError(
+                    "FridgeBoosterView has not been assigned.");
+
                 return false;
             }
 
@@ -528,6 +569,14 @@ namespace FoodieMatch.Features.Gameplay
 
         private void HandleAutoFillFinished(GameplaySession session)
         {
+            if (!IsCurrentSession(session))
+            {
+                return;
+            }
+
+            _fridgeBoosterCoordinator?
+                .StartOrRequestRelease(session);
+
             TryResolveWin(session);
         }
 
