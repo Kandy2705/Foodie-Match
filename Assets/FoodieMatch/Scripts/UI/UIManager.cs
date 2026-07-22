@@ -1004,7 +1004,6 @@ namespace FoodieMatch.UI
                     eventData.TotalCount);
             }
 
-            Debug.Log($"Progress: {eventData.ServedCount}/{eventData.TotalCount}");
         }
 
         private void OnComboChanged(ComboChangedEvent eventData)
