@@ -11,8 +11,6 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
 {
     public sealed class PlayerPrefsPlayerProfileRepository : IPlayerProfileRepository
     {
-        private const string PlayerProfileKey = "PlayerProfile";
-
         private readonly ISaveService _saveService;
         private readonly PlayerProfileJsonParser _jsonParser = new();
         private readonly PlayerProfileMapper _mapper = new();
@@ -63,12 +61,14 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
         {
             try
             {
-                if (!_saveService.HasKey(PlayerProfileKey))
+                if (!_saveService.HasKey(PlayerProfileSaveKeys.Profile))
                 {
                     return PlayerProfileLoadResult.NotFound();
                 }
 
-                string json = _saveService.GetString(PlayerProfileKey, defaultValue: null);
+                string json = _saveService.GetString(
+                    PlayerProfileSaveKeys.Profile,
+                    defaultValue: null);
 
                 if (!_jsonParser.TryReadSchemaVersion(
                         json,
@@ -159,7 +159,7 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
 
             try
             {
-                _saveService.SetString(PlayerProfileKey, json);
+                _saveService.SetString(PlayerProfileSaveKeys.Profile, json);
                 _saveService.Save();
 
                 return PlayerProfileSaveResult.Succeeded(

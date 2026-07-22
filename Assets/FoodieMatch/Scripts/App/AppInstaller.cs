@@ -1,4 +1,5 @@
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -10,6 +11,7 @@ using FoodieMatch.Data.Booster;
 using FoodieMatch.Data.Level;
 using FoodieMatch.Data.Level.Json;
 using FoodieMatch.Features.Gameplay;
+using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -17,6 +19,8 @@ namespace FoodieMatch.App
     public sealed class AppInstaller : MonoBehaviour
     {
         public GameplayEvents GameplayEvents { get; private set; }
+
+        public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
 
         public bool Install(AppRoot appRoot)
         {
@@ -33,6 +37,7 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            PlayerProfileInitializer = CreatePlayerProfileInitializer(saveService);
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
             GameplayWorldClickSfx gameplayWorldClickSfx = CreateGameplayWorldClickSfx(appRoot, audioService);
@@ -49,7 +54,7 @@ namespace FoodieMatch.App
 
             BoosterManager boosterManager = new BoosterManager(
                 saveService,
-                new int[] { 2, 0, 1, 0 });
+                new int[] { 0, 0, 0, 0, 0 });
 
             appRoot.UIManager.Construct(
                 GameplayEvents,
@@ -83,6 +88,21 @@ namespace FoodieMatch.App
                 audioService);
 
             return true;
+        }
+
+        private static PlayerProfileInitializer CreatePlayerProfileInitializer(
+            ISaveService saveService)
+        {
+            IPlayerProfileRepository profileRepository =
+                new PlayerPrefsPlayerProfileRepository(saveService);
+            IInvalidPlayerProfileRecovery invalidProfileRecovery =
+                new PlayerPrefsInvalidPlayerProfileRecovery(saveService);
+            PlayerProfileSession profileSession = new();
+
+            return new PlayerProfileInitializer(
+                profileRepository,
+                invalidProfileRecovery,
+                profileSession);
         }
 
         private static bool TryCreateLevelRepository(out ILevelRepository levelRepository)
