@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
-using FoodieMatch.Core.Infrastructure.Save;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
@@ -36,8 +35,6 @@ namespace FoodieMatch.UI
         [SerializeField] private LoadingScreenView _loadingScreenPrefab;
         [SerializeField] private Transform _loadingRoot;
 
-        private const string BoosterGuideSeenKeyPrefix = "BoosterGuideSeen_";
-
         [Header("Booster Guide")]
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
@@ -45,7 +42,6 @@ namespace FoodieMatch.UI
         private readonly List<BoosterBuyContentEntry> _boosterUnlockScratch = new();
 
         private BoosterManager _boosterManager;
-        private ISaveService _saveService;
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
@@ -70,7 +66,7 @@ namespace FoodieMatch.UI
         public event Action LeaveGameRequested;
 
         public event Action RestartGameRequested;
-        public Func<BoosterType, bool> BoosterApplyHandler { get; set; }
+        public Func<BoosterType, bool> BoosterUseHandler { get; set; }
 
         private void OnDestroy()
         {
@@ -81,8 +77,7 @@ namespace FoodieMatch.UI
         public void Construct(
             GameplayEvents gameplayEvents,
             IAudioService audioService,
-            BoosterManager boosterManager = null,
-            ISaveService saveService = null)
+            BoosterManager boosterManager)
         {
             if (_hasConstructed)
             {
@@ -94,7 +89,6 @@ namespace FoodieMatch.UI
 
             _gameplayEvents = gameplayEvents;
             _boosterManager = boosterManager;
-            _saveService = saveService;
             SubscribeEvents();
 
             _hasConstructed = true;
@@ -725,15 +719,9 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            if (BoosterApplyHandler == null || !BoosterApplyHandler.Invoke(boosterType))
+            if (BoosterUseHandler == null || !BoosterUseHandler.Invoke(boosterType))
             {
                 Debug.Log($"Booster {boosterType} could not be applied.");
-                return;
-            }
-
-            if (!_boosterManager.TryUse(boosterType))
-            {
-                Debug.LogError($"Booster {boosterType} was applied but inventory could not be spent.");
                 return;
             }
 
@@ -968,28 +956,13 @@ namespace FoodieMatch.UI
 
         private bool HasSeenBoosterGuide(BoosterType boosterType)
         {
-            if (_saveService == null)
-            {
-                return false;
-            }
-
-            return _saveService.GetInt(GetBoosterGuideSeenKey(boosterType), 0) > 0;
+            return _boosterManager != null &&
+                   _boosterManager.HasSeenGuide(boosterType);
         }
 
         private void MarkBoosterGuideSeen(BoosterType boosterType)
         {
-            if (_saveService == null)
-            {
-                return;
-            }
-
-            _saveService.SetInt(GetBoosterGuideSeenKey(boosterType), 1);
-            _saveService.Save();
-        }
-
-        private static string GetBoosterGuideSeenKey(BoosterType boosterType)
-        {
-            return BoosterGuideSeenKeyPrefix + boosterType;
+            _boosterManager?.MarkGuideSeen(boosterType);
         }
 
         private void OnLevelProgressChanged(LevelProgressChangedEvent eventData)

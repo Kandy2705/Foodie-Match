@@ -51,6 +51,69 @@ namespace FoodieMatch.Core.Domain.Player
             return _seenBoosterGuideSet.Contains(boosterType);
         }
 
+        public PlayerProfile WithCurrentLevelNumber(int currentLevelNumber)
+        {
+            if (currentLevelNumber == CurrentLevelNumber)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                currentLevelNumber,
+                _boosterCounts,
+                _seenBoosterGuides);
+        }
+
+        public PlayerProfile WithBoosterCount(
+            BoosterType boosterType,
+            int count)
+        {
+            ValidateBoosterType(boosterType, nameof(boosterType));
+
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(count),
+                    count,
+                    "Booster count cannot be negative.");
+            }
+
+            if (GetBoosterCount(boosterType) == count)
+            {
+                return this;
+            }
+
+            Dictionary<BoosterType, int> boosterCounts = new(_boosterCounts)
+            {
+                [boosterType] = count
+            };
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                boosterCounts,
+                _seenBoosterGuides);
+        }
+
+        public PlayerProfile WithSeenBoosterGuide(BoosterType boosterType)
+        {
+            ValidateBoosterType(boosterType, nameof(boosterType));
+
+            if (HasSeenBoosterGuide(boosterType))
+            {
+                return this;
+            }
+
+            List<BoosterType> seenBoosterGuides = new(_seenBoosterGuides)
+            {
+                boosterType
+            };
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                _boosterCounts,
+                seenBoosterGuides);
+        }
+
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(
             IReadOnlyDictionary<BoosterType, int> boosterCounts)
         {

@@ -37,7 +37,19 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
-            PlayerProfileInitializer = CreatePlayerProfileInitializer(saveService);
+            PlayerProfileSession profileSession = new();
+            IPlayerProfileRepository profileRepository =
+                new PlayerPrefsPlayerProfileRepository(saveService);
+            IInvalidPlayerProfileRecovery invalidProfileRecovery =
+                new PlayerPrefsInvalidPlayerProfileRecovery(saveService);
+            PlayerProfileInitializer = new PlayerProfileInitializer(
+                profileRepository,
+                invalidProfileRecovery,
+                profileSession);
+            PlayerProfileService playerProfileService = new(
+                profileRepository,
+                profileSession);
+            playerProfileService.SaveFailed += LogPlayerProfileSaveFailure;
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
             GameplayWorldClickSfx gameplayWorldClickSfx = CreateGameplayWorldClickSfx(appRoot, audioService);
@@ -52,15 +64,12 @@ namespace FoodieMatch.App
                 new SelectFoodUseCase(requiredPackageMatcher);
             BoardModelFactory boardModelFactory = new();
 
-            BoosterManager boosterManager = new BoosterManager(
-                saveService,
-                new int[] { 0, 0, 0, 0, 0 });
+            BoosterManager boosterManager = new(playerProfileService);
 
             appRoot.UIManager.Construct(
                 GameplayEvents,
                 audioService,
-                boosterManager,
-                saveService);
+                boosterManager);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver);
             appRoot.GameplayMotionPresenter.Construct(
@@ -84,26 +93,17 @@ namespace FoodieMatch.App
             appRoot.AppController.Construct(
                 appRoot.UIManager,
                 appRoot.GameplayController,
-                saveService,
+                playerProfileService,
+                boosterManager,
                 levelRepository,
                 audioService);
 
             return true;
         }
 
-        private static PlayerProfileInitializer CreatePlayerProfileInitializer(
-            ISaveService saveService)
+        private static void LogPlayerProfileSaveFailure(string errorMessage)
         {
-            IPlayerProfileRepository profileRepository =
-                new PlayerPrefsPlayerProfileRepository(saveService);
-            IInvalidPlayerProfileRecovery invalidProfileRecovery =
-                new PlayerPrefsInvalidPlayerProfileRecovery(saveService);
-            PlayerProfileSession profileSession = new();
-
-            return new PlayerProfileInitializer(
-                profileRepository,
-                invalidProfileRecovery,
-                profileSession);
+            Debug.LogError($"Player profile save failed: {errorMessage}");
         }
 
         private static bool TryCreateLevelRepository(out ILevelRepository levelRepository)

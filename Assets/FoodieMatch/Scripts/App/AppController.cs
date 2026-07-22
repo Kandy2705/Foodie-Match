@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Infrastructure.Audio;
-using FoodieMatch.Core.Infrastructure.Save;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.UI;
@@ -12,11 +12,10 @@ namespace FoodieMatch.App
 {
     public sealed class AppController : MonoBehaviour
     {
-        private const string CurrentLevelNumberKey = "CurrentLevelNumber";
-
         private UIManager _uiManager;
         private GameplayController _gameplayController;
-        private ISaveService _saveService;
+        private PlayerProfileService _playerProfileService;
+        private BoosterManager _boosterManager;
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
@@ -36,20 +35,22 @@ namespace FoodieMatch.App
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
-            _uiManager.BoosterApplyHandler = null;
+            _uiManager.BoosterUseHandler = null;
             _uiManager.HideLoading();
         }
 
         public void Construct(
             UIManager uiManager,
             GameplayController gameplayController,
-            ISaveService saveService,
+            PlayerProfileService playerProfileService,
+            BoosterManager boosterManager,
             ILevelRepository levelRepository,
             IAudioService audioService)
         {
             _uiManager = uiManager;
             _gameplayController = gameplayController;
-            _saveService = saveService;
+            _playerProfileService = playerProfileService;
+            _boosterManager = boosterManager;
             _levelRepository = levelRepository;
             _audioService = audioService;
             _gameplayNavigationActions = new(
@@ -63,7 +64,7 @@ namespace FoodieMatch.App
             _uiManager.LeaveGameRequested += OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
             _uiManager.RestartGameRequested += OnRestartGameRequested;
-            _uiManager.BoosterApplyHandler = OnBoosterApplyRequested;
+            _uiManager.BoosterUseHandler = OnBoosterUseRequested;
         }
 
         public void EnterHome()
@@ -164,7 +165,7 @@ namespace FoodieMatch.App
             _uiManager.ShowGameplayHud();
             _audioService?.PlayMusic(AudioKeys.MusicIngame);
 
-            SaveCurrentLevelNumber(levelNumber);
+            _playerProfileService.SetCurrentLevelNumber(levelNumber);
             _activeLevelNumber = levelNumber;
             _gameplayController.StartLevel(levelNumber, _gameplayNavigationActions);
         }
@@ -231,9 +232,15 @@ namespace FoodieMatch.App
                 return false;
             }
 
-            if (_saveService == null)
+            if (_playerProfileService == null)
             {
-                Debug.LogError("SaveService has not been constructed.");
+                Debug.LogError("PlayerProfileService has not been constructed.");
+                return false;
+            }
+
+            if (_boosterManager == null)
+            {
+                Debug.LogError("BoosterManager has not been constructed.");
                 return false;
             }
 
@@ -248,14 +255,11 @@ namespace FoodieMatch.App
 
         private int GetSavedPlayableLevelNumber()
         {
-            if (_saveService.HasKey(CurrentLevelNumberKey))
-            {
-                int savedLevelNumber = _saveService.GetInt(CurrentLevelNumberKey, 0);
+            int savedLevelNumber = _playerProfileService.CurrentLevelNumber;
 
-                if (_levelRepository.TryGetLevel(savedLevelNumber, out _))
-                {
-                    return savedLevelNumber;
-                }
+            if (_levelRepository.TryGetLevel(savedLevelNumber, out _))
+            {
+                return savedLevelNumber;
             }
 
             if (_levelRepository.TryGetFirstLevel(out _))
@@ -265,12 +269,6 @@ namespace FoodieMatch.App
 
             Debug.LogError("Level catalog does not contain a playable level.");
             return 0;
-        }
-
-        private void SaveCurrentLevelNumber(int levelNumber)
-        {
-            _saveService.SetInt(CurrentLevelNumberKey, levelNumber);
-            _saveService.Save();
         }
 
         private void OnPlayGameRequested()
@@ -283,14 +281,32 @@ namespace FoodieMatch.App
             }
         }
 
-        private bool OnBoosterApplyRequested(BoosterType boosterType)
+        private bool OnBoosterUseRequested(BoosterType boosterType)
         {
-            if (_gameplayController == null)
+            if (_gameplayController == null || _boosterManager == null)
             {
                 return false;
             }
 
-            return _gameplayController.TryApplyBooster(boosterType);
+            if (!_boosterManager.TryUse(boosterType))
+            {
+                return false;
+            }
+
+            try
+            {
+                if (_gameplayController.TryApplyBooster(boosterType))
+                {
+                    return true;
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+
+            _boosterManager.Add(boosterType, amount: 1);
+            return false;
         }
 
         private void OnLeaveGameRequested()
@@ -325,7 +341,7 @@ namespace FoodieMatch.App
                 homeLevelNumber++;
             }
 
-            SaveCurrentLevelNumber(homeLevelNumber);
+            _playerProfileService.SetCurrentLevelNumber(homeLevelNumber);
             _ = EnterHomeWithLoadingSafelyAsync(homeLevelNumber);
         }
     }

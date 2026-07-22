@@ -20,5 +20,15 @@ namespace FoodieMatch.Core.Application.Player
 
             _currentRecord = record ?? throw new ArgumentNullException(nameof(record));
         }
+
+        public void ReplaceCurrentRecord(PlayerProfileRecord record)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("Player profile has not been initialized.");
+            }
+
+            _currentRecord = record ?? throw new ArgumentNullException(nameof(record));
+        }
     }
 }
