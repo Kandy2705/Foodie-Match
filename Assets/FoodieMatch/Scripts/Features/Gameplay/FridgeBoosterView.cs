@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Features.Food;
 using PrimeTween;
@@ -49,12 +50,15 @@ namespace FoodieMatch.Features.Gameplay
         private float _spoonExitDuration = 0.3f;
 
         [SerializeField, Min(0f)]
-        private float _scoopGatherDuration = 0.25f;
+        private float _spoonEnterDuration = 0.24f;
+
+        [SerializeField, Min(0f)]
+        private float _scoopGatherDuration = 0.16f;
 
         [Header("Scoop Motion")]
         [SerializeField]
         private Vector3 _scoopHoverOffset =
-            new Vector3(0f, 0.25f, 0f);
+            new Vector3(0f, 0.45f, 0f);
 
         [SerializeField]
         private Vector3 _scoopContactOffset =
@@ -62,26 +66,30 @@ namespace FoodieMatch.Features.Gameplay
 
         [SerializeField]
         private Vector3 _scoopFlickOffset =
-            new Vector3(0.40f, 0.30f, 0f);
+            new Vector3(0.40f, 0.50f, 0f);
 
         [SerializeField, Min(0f)]
-        private float _scoopLowerDuration = 0.1f;
+        private float _scoopLowerDuration = 0.11f;
 
         [SerializeField, Min(0f)]
-        private float _scoopFlickDuration = 0.07f;
+        private float _scoopFlickDuration = 0.11f;
 
         [SerializeField, Min(0f)]
-        private float _foodEnterDuration = 0.1f;
+        private float _foodEnterDuration = 0.03f;
 
-        [Header("Fridge Bump")]
+        [Header("Scoop Timing")]
         [SerializeField, Min(0f)]
-        private float _fridgeBumpHeight = 0.12f;
+        private float _delayBeforeNextScoop = 0.05f;
+
+        [Header("Fridge Pulse")]
+        [SerializeField, Min(1f)]
+        private float _fridgePulseScaleMultiplier = 1.2f;
 
         [SerializeField, Min(0f)]
-        private float _fridgeBumpUpDuration = 0.09f;
+        private float _fridgePulseGrowDuration = 0.09f;
 
         [SerializeField, Min(0f)]
-        private float _fridgeBumpDownDuration = 0.13f;
+        private float _fridgePulseSettleDuration = 0.12f;
 
         [Header("Release Pop")]
         [SerializeField, Min(0f)]
@@ -97,11 +105,15 @@ namespace FoodieMatch.Features.Gameplay
         private float _releaseOvershootMultiplier = 1.18f;
 
         private Vector3 _fridgeBaseScale;
+        private Vector3 _fridgeRendererBaseScale;
         private Vector3 _spoonBaseScale;
 
         private Sequence _activeSequence;
         private Tween _activeTween;
         private Sequence _fridgeBumpSequence;
+
+        private readonly List<Sequence>
+            _foodEnterSequences = new();
 
         public bool IsVisible { get; private set; }
 
@@ -219,6 +231,24 @@ namespace FoodieMatch.Features.Gameplay
             _spoonRenderer.enabled = true;
         }
 
+        private void ShowSpoonAtOutsideLeft()
+        {
+            if (_spoonRoot == null ||
+                _spoonRenderer == null ||
+                _spoonExitLeftAnchor == null)
+            {
+                return;
+            }
+
+            _spoonRoot.gameObject.SetActive(true);
+            _spoonRoot.localScale = _spoonBaseScale;
+            _spoonRoot.position =
+                _spoonExitLeftAnchor.position;
+
+            _spoonRenderer.sprite = _spoonSprite;
+            _spoonRenderer.enabled = true;
+        }
+
         public void HideSpoon()
         {
             if (_spoonRenderer != null)
@@ -232,55 +262,69 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        public async Task PlayScoopFoodAsync(
+        public async Task PlayScoopFlickAsync(
             FoodItemView foodItemView,
-            Vector3 waitingRackWorldPosition)
+            Vector3 currentFoodWorldPosition,
+            bool hasNextFood,
+            Vector3 nextFoodWorldPosition)
         {
             if (foodItemView == null ||
-                _spoonRoot == null ||
-                _fridgeFoodEntryPoint == null)
+                _spoonRoot == null)
             {
                 return;
             }
 
             foodItemView.SetInteractable(false);
 
-            Vector3 hoverPosition =
-                waitingRackWorldPosition +
+            Vector3 currentHoverPosition =
+                currentFoodWorldPosition +
                 _scoopHoverOffset;
 
-            Vector3 contactPosition =
-                waitingRackWorldPosition +
+            Vector3 currentContactPosition =
+                currentFoodWorldPosition +
                 _scoopContactOffset;
 
-            Vector3 spoonFlickPosition =
-                contactPosition +
-                _scoopFlickOffset;
+            Vector3 spoonFlickTarget =
+                hasNextFood
+                    ? nextFoodWorldPosition +
+                      _scoopHoverOffset
+                    : currentHoverPosition;
 
-            Vector3 foodFlickPosition =
-                waitingRackWorldPosition +
+            Vector3 foodFlickTarget =
+                currentFoodWorldPosition +
                 _scoopFlickOffset;
-
-            Vector3 fridgeEntryPosition =
-                _fridgeFoodEntryPoint.position;
 
             if (!_spoonRoot.gameObject.activeSelf)
             {
-                ShowSpoon();
+                ShowSpoonAtOutsideLeft();
 
-                _spoonRoot.position =
-                    hoverPosition;
-            }
-            else
-            {
                 _activeTween = Tween.Position(
                     _spoonRoot,
-                    hoverPosition,
-                    _scoopGatherDuration,
+                    currentHoverPosition,
+                    _spoonEnterDuration,
                     Ease.OutCubic);
 
                 await _activeTween;
                 _activeTween = default;
+            }
+            else
+            {
+                float distance =
+                    Vector3.Distance(
+                        _spoonRoot.position,
+                        currentHoverPosition);
+
+                if (distance > 0.02f)
+                {
+                    _activeTween = Tween.Position(
+                        _spoonRoot,
+                        currentHoverPosition,
+                        0.05f,
+                        Ease.OutQuad);
+
+                    await _activeTween;
+                    _activeTween = default;
+                }
             }
 
             if (foodItemView == null)
@@ -290,7 +334,7 @@ namespace FoodieMatch.Features.Gameplay
 
             _activeTween = Tween.Position(
                 _spoonRoot,
-                contactPosition,
+                currentContactPosition,
                 _scoopLowerDuration,
                 Ease.InCubic);
 
@@ -302,28 +346,46 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            _activeSequence = Sequence.Create(
-                    Tween.Position(
-                        _spoonRoot,
-                        spoonFlickPosition,
-                        _scoopFlickDuration,
-                        Ease.OutCubic))
-                .Group(
-                    Tween.Position(
-                        foodItemView.transform,
-                        foodFlickPosition,
-                        _scoopFlickDuration,
-                        Ease.OutCubic));
+            Sequence flickSequence = Sequence.Create(
+                Tween.Position(
+                    _spoonRoot,
+                    spoonFlickTarget,
+                    _scoopFlickDuration,
+                    Ease.OutCubic));
 
-            await _activeSequence;
-            _activeSequence = default;
+            _ = flickSequence.Group(
+                Tween.Position(
+                    foodItemView.transform,
+                    foodFlickTarget,
+                    _scoopFlickDuration,
+                    Ease.OutCubic));
 
-            if (foodItemView == null)
+            await flickSequence;
+        }
+
+        public async Task WaitBeforeNextScoopAsync()
+        {
+            if (_delayBeforeNextScoop <= 0f)
             {
                 return;
             }
 
-            _activeSequence = Sequence.Create(
+            await Tween.Delay(_delayBeforeNextScoop);
+        }
+
+        public async Task PlayFoodEnterAsync(
+            FoodItemView foodItemView)
+        {
+            if (foodItemView == null ||
+                _fridgeFoodEntryPoint == null)
+            {
+                return;
+            }
+
+            Vector3 fridgeEntryPosition =
+                _fridgeFoodEntryPoint.position;
+
+            Sequence foodSequence = Sequence.Create(
                     Tween.Position(
                         foodItemView.transform,
                         fridgeEntryPosition,
@@ -336,8 +398,10 @@ namespace FoodieMatch.Features.Gameplay
                         _foodEnterDuration,
                         Ease.InCubic));
 
-            await _activeSequence;
-            _activeSequence = default;
+            RemoveFinishedFoodSequences();
+            _foodEnterSequences.Add(foodSequence);
+
+            await foodSequence;
 
             if (foodItemView == null)
             {
@@ -353,9 +417,23 @@ namespace FoodieMatch.Features.Gameplay
             await PlayFridgeBumpAsync();
         }
 
-        private async Task PlayFridgeBumpAsync()
+        private void RemoveFinishedFoodSequences()
         {
-            if (!IsVisible)
+            for (int i = _foodEnterSequences.Count - 1;
+                 i >= 0;
+                 i--)
+            {
+                if (!_foodEnterSequences[i].isAlive)
+                {
+                    _foodEnterSequences.RemoveAt(i);
+                }
+            }
+        }
+
+        public async Task PlayFridgeBumpAsync()
+        {
+            if (!IsVisible ||
+                _fridgeRenderer == null)
             {
                 return;
             }
@@ -365,28 +443,36 @@ namespace FoodieMatch.Features.Gameplay
                 _fridgeBumpSequence.Stop();
             }
 
-            Vector3 basePosition = transform.position;
+            Transform pulseTarget =
+                _fridgeRenderer.transform;
 
-            Vector3 bumpedPosition =
-                basePosition +
-                Vector3.up * _fridgeBumpHeight;
+            pulseTarget.localScale =
+                _fridgeRendererBaseScale;
+
+            Vector3 pulseScale =
+                _fridgeRendererBaseScale *
+                _fridgePulseScaleMultiplier;
 
             _fridgeBumpSequence = Sequence.Create()
-                .Chain(Tween.Position(
-                    transform,
-                    bumpedPosition,
-                    _fridgeBumpUpDuration,
-                    Ease.OutQuad))
-                .Chain(Tween.Position(
-                    transform,
-                    basePosition,
-                    _fridgeBumpDownDuration,
-                    Ease.InQuad));
+                .Chain(Tween.Scale(
+                    pulseTarget,
+                    pulseScale,
+                    _fridgePulseGrowDuration,
+                    Ease.OutBack))
+                .Chain(Tween.Scale(
+                    pulseTarget,
+                    _fridgeRendererBaseScale,
+                    _fridgePulseSettleDuration,
+                    Ease.OutQuad));
 
             await _fridgeBumpSequence;
             _fridgeBumpSequence = default;
 
-            transform.position = basePosition;
+            if (pulseTarget != null)
+            {
+                pulseTarget.localScale =
+                    _fridgeRendererBaseScale;
+            }
         }
 
         public async Task<Vector3> PlayReleasePopAsync(
@@ -422,8 +508,6 @@ namespace FoodieMatch.Features.Gameplay
                 targetScale *
                 _releaseStartScaleMultiplier;
 
-            await PlayFridgeBumpAsync();
-
             return targetScale;
         }
 
@@ -458,14 +542,10 @@ namespace FoodieMatch.Features.Gameplay
         public async Task PlaySpoonExitLeftAsync()
         {
             if (_spoonRoot == null ||
-                _spoonExitLeftAnchor == null)
+                _spoonExitLeftAnchor == null ||
+                !_spoonRoot.gameObject.activeSelf)
             {
                 return;
-            }
-
-            if (!_spoonRoot.gameObject.activeSelf)
-            {
-                ShowSpoon();
             }
 
             _activeTween = Tween.Position(
@@ -478,7 +558,9 @@ namespace FoodieMatch.Features.Gameplay
             _activeTween = default;
 
             HideSpoon();
-            ResetSpoonPosition();
+
+            _spoonRoot.position =
+                _spoonExitLeftAnchor.position;
         }
 
         public void SetClosedState()
@@ -581,6 +663,21 @@ namespace FoodieMatch.Features.Gameplay
                 _fridgeBumpSequence.Stop();
             }
 
+            for (int i = 0;
+                 i < _foodEnterSequences.Count;
+                 i++)
+            {
+                Sequence sequence =
+                    _foodEnterSequences[i];
+
+                if (sequence.isAlive)
+                {
+                    sequence.Stop();
+                }
+            }
+
+            _foodEnterSequences.Clear();
+
             _activeSequence = default;
             _activeTween = default;
             _fridgeBumpSequence = default;
@@ -589,6 +686,12 @@ namespace FoodieMatch.Features.Gameplay
         private void CaptureBaseScales()
         {
             _fridgeBaseScale = transform.localScale;
+
+            if (_fridgeRenderer != null)
+            {
+                _fridgeRendererBaseScale =
+                    _fridgeRenderer.transform.localScale;
+            }
 
             if (_spoonRoot != null)
             {
