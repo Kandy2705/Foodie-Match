@@ -39,6 +39,17 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public long CoinBalance
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.CoinBalance;
+                }
+            }
+        }
+
         public void SetCurrentLevelNumber(int levelNumber)
         {
             lock (_stateLock)
@@ -47,6 +58,70 @@ namespace FoodieMatch.Core.Application.Player
                     _profileSession.CurrentRecord.Profile;
                 QueueProfileChange(
                     currentProfile.WithCurrentLevelNumber(levelNumber));
+            }
+        }
+
+        public void AddCoins(long amount)
+        {
+            ValidatePositiveCoinAmount(amount, nameof(amount));
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                long updatedCoinBalance = checked(
+                    currentProfile.CoinBalance + amount);
+                QueueProfileChange(
+                    currentProfile.WithCoinBalance(updatedCoinBalance));
+            }
+        }
+
+        public bool TrySpendCoins(long amount)
+        {
+            ValidatePositiveCoinAmount(amount, nameof(amount));
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+
+                if (currentProfile.CoinBalance < amount)
+                {
+                    return false;
+                }
+
+                QueueProfileChange(
+                    currentProfile.WithCoinBalance(
+                        currentProfile.CoinBalance - amount));
+                return true;
+            }
+        }
+
+        public bool TryPurchaseBooster(
+            BoosterType boosterType,
+            long coinCost)
+        {
+            ValidatePositiveCoinAmount(coinCost, nameof(coinCost));
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                int currentBoosterCount =
+                    currentProfile.GetBoosterCount(boosterType);
+
+                if (currentProfile.CoinBalance < coinCost)
+                {
+                    return false;
+                }
+
+                int updatedBoosterCount = checked(currentBoosterCount + 1);
+                PlayerProfile updatedProfile = currentProfile
+                    .WithCoinBalance(currentProfile.CoinBalance - coinCost)
+                    .WithBoosterCount(boosterType, updatedBoosterCount);
+
+                QueueProfileChange(updatedProfile);
+                return true;
             }
         }
 
@@ -210,6 +285,19 @@ namespace FoodieMatch.Core.Application.Player
         private void RaiseSaveFailed(string errorMessage)
         {
             SaveFailed?.Invoke(errorMessage);
+        }
+
+        private static void ValidatePositiveCoinAmount(
+            long amount,
+            string parameterName)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    parameterName,
+                    amount,
+                    "Coin amount must be greater than zero.");
+            }
         }
 
         private static string CreateSaveErrorMessage(

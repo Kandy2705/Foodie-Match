@@ -15,6 +15,9 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
         [JsonProperty("currentLevelNumber", Required = Required.Always)]
         public int CurrentLevelNumber { get; set; }
 
+        [JsonProperty("coinBalance", Required = Required.Always)]
+        public long CoinBalance { get; set; }
+
         [JsonProperty("boosterCounts", Required = Required.Always)]
         public List<BoosterCountDto> BoosterCounts { get; set; }
 
