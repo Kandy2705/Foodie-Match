@@ -138,7 +138,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _isReleasing = true;
-            session.DisableInput();
 
             _ = ReleaseSafelyAsync(session);
         }
@@ -279,6 +278,13 @@ namespace FoodieMatch.Features.Gameplay
 
             await _view.PlaySpoonExitLeftAsync();
 
+            if (!CanContinue(session))
+            {
+                return;
+            }
+
+            session.StartPlaying();
+
             Debug.Log(
                 $"Fridge scoop completed. Stored food: " +
                 $"{session.FridgeInventory?.Count ?? 0}");
@@ -336,12 +342,6 @@ namespace FoodieMatch.Features.Gameplay
                     if (shouldRetry)
                     {
                         StartOrRequestRelease(session);
-                    }
-                    else if (!_hasFailed &&
-                             !_isApplying &&
-                             CanContinue(session))
-                    {
-                        session.StartPlaying();
                     }
                 }
             }
