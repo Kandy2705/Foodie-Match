@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Booster;
@@ -43,6 +44,7 @@ namespace FoodieMatch.UI
         private readonly List<BoosterBuyContentEntry> _boosterUnlockScratch = new();
 
         private BoosterManager _boosterManager;
+        private IGameEconomyConfig _economyConfig;
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
@@ -67,6 +69,11 @@ namespace FoodieMatch.UI
         public event Action LeaveGameRequested;
 
         public event Action RestartGameRequested;
+
+        public event Action<BoosterType> BoosterCoinPurchaseRequested;
+
+        public event Action<BoosterType> BoosterRewardedAdRequested;
+
         public Func<BoosterType, bool> BoosterUseHandler { get; set; }
 
         private void OnDestroy()
@@ -78,7 +85,8 @@ namespace FoodieMatch.UI
         public void Construct(
             GameplayEvents gameplayEvents,
             IAudioService audioService,
-            BoosterManager boosterManager)
+            BoosterManager boosterManager,
+            IGameEconomyConfig economyConfig)
         {
             if (_hasConstructed)
             {
@@ -90,6 +98,7 @@ namespace FoodieMatch.UI
 
             _gameplayEvents = gameplayEvents;
             _boosterManager = boosterManager;
+            _economyConfig = economyConfig;
             SubscribeEvents();
 
             _hasConstructed = true;
@@ -560,7 +569,17 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            BoosterBuyPopupData popupData = BoosterBuyPopupData.FromCatalogEntry(entry);
+            if (_economyConfig == null)
+            {
+                Debug.LogError("Cannot show booster buy popup because GameEconomyConfig is missing.");
+                return;
+            }
+
+            int coinPrice = _economyConfig.GetBoosterPrice(boosterType);
+            BoosterBuyPopupData popupData =
+                BoosterBuyPopupData.FromCatalogEntry(
+                    entry,
+                    coinPrice.ToString());
 
             BoosterBuyPopupView popup = _popupManager.Show<BoosterBuyPopupView>(popupData);
 
@@ -585,6 +604,11 @@ namespace FoodieMatch.UI
             }
 
             _popupManager.Hide<BoosterBuyPopupView>();
+        }
+
+        public void RefreshBoosterInventory()
+        {
+            RefreshBoosterHud();
         }
 
         public void ShowBoosterGuidePopup(BoosterType boosterType)
@@ -785,27 +809,12 @@ namespace FoodieMatch.UI
 
         private void OnBoosterBuyFreeAdsClicked()
         {
-            GrantBooster(_currentBoosterBuyType, 1);
-            HideBoosterBuyPopup();
+            BoosterRewardedAdRequested?.Invoke(_currentBoosterBuyType);
         }
 
         private void OnBoosterBuyBuyClicked()
         {
-            GrantBooster(_currentBoosterBuyType, 1);
-            HideBoosterBuyPopup();
-        }
-
-        private void GrantBooster(BoosterType type, int amount)
-        {
-            if (_boosterManager == null)
-            {
-                Debug.LogWarning("BoosterManager is not available.");
-                return;
-            }
-
-            _boosterManager.Add(type, amount);
-            Debug.Log($"Granted {amount}x {type} booster. Total: {_boosterManager.GetCount(type)}");
-            RefreshBoosterHud();
+            BoosterCoinPurchaseRequested?.Invoke(_currentBoosterBuyType);
         }
 
         private void OnSettingCloseClicked()

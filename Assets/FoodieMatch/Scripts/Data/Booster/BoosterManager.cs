@@ -36,6 +36,11 @@ namespace FoodieMatch.Data.Booster
             _playerProfileService.AddBooster(type, amount);
         }
 
+        public bool TryPurchase(BoosterType type, long coinPrice)
+        {
+            return _playerProfileService.TryPurchaseBooster(type, coinPrice);
+        }
+
         public bool TryUse(BoosterType type)
         {
             return _playerProfileService.TryUseBooster(type);

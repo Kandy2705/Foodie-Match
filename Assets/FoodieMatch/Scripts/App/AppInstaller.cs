@@ -74,7 +74,8 @@ namespace FoodieMatch.App
             appRoot.UIManager.Construct(
                 GameplayEvents,
                 audioService,
-                boosterManager);
+                boosterManager,
+                economyConfig);
             IRewardedAdService rewardedAdService =
                 new FakeRewardedAdService(appRoot.UIManager);
             appRoot.BoardLayoutView.Construct(

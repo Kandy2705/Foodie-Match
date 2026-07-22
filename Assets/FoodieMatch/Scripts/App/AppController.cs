@@ -23,6 +23,7 @@ namespace FoodieMatch.App
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
+        private BoosterRewardedAdRequest _activeBoosterRewardedAdRequest;
         private bool _isTransitionRunning;
         private bool _isWinRewardProcessing;
         private bool _isDestroyed;
@@ -41,6 +42,8 @@ namespace FoodieMatch.App
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
+            _uiManager.BoosterCoinPurchaseRequested -= OnBoosterCoinPurchaseRequested;
+            _uiManager.BoosterRewardedAdRequested -= OnBoosterRewardedAdRequested;
             _uiManager.BoosterUseHandler = null;
             _uiManager.HideLoading();
         }
@@ -74,6 +77,10 @@ namespace FoodieMatch.App
             _uiManager.LeaveGameRequested += OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
             _uiManager.RestartGameRequested += OnRestartGameRequested;
+            _uiManager.BoosterCoinPurchaseRequested -= OnBoosterCoinPurchaseRequested;
+            _uiManager.BoosterCoinPurchaseRequested += OnBoosterCoinPurchaseRequested;
+            _uiManager.BoosterRewardedAdRequested -= OnBoosterRewardedAdRequested;
+            _uiManager.BoosterRewardedAdRequested += OnBoosterRewardedAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
         }
 
@@ -335,6 +342,114 @@ namespace FoodieMatch.App
             return false;
         }
 
+        private void OnBoosterCoinPurchaseRequested(BoosterType boosterType)
+        {
+            if (_isDestroyed)
+            {
+                return;
+            }
+
+            try
+            {
+                int coinPrice = _economyConfig.GetBoosterPrice(boosterType);
+
+                if (!_boosterManager.TryPurchase(boosterType, coinPrice))
+                {
+                    return;
+                }
+
+                UpdateUiAfterBoosterGranted(boosterType);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void OnBoosterRewardedAdRequested(BoosterType boosterType)
+        {
+            if (_isDestroyed || _activeBoosterRewardedAdRequest != null)
+            {
+                return;
+            }
+
+            BoosterRewardedAdRequest request = new(boosterType);
+            _activeBoosterRewardedAdRequest = request;
+
+            try
+            {
+                bool started = _rewardedAdService.TryShow(
+                    RewardedAdPlacement.BoosterReward,
+                    new RewardedAdCallbacks(
+                        () => OnBoosterAdRewarded(request),
+                        () => OnBoosterAdClosed(request),
+                        () => OnBoosterAdDisplayFailed(request)));
+
+                if (!started)
+                {
+                    FinishBoosterRewardedAd(request);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                FinishBoosterRewardedAd(request);
+            }
+        }
+
+        private void OnBoosterAdRewarded(BoosterRewardedAdRequest request)
+        {
+            if (_isDestroyed || request.HasGrantedReward)
+            {
+                return;
+            }
+
+            try
+            {
+                _boosterManager.Add(request.BoosterType, amount: 1);
+                request.HasGrantedReward = true;
+
+                if (ReferenceEquals(_activeBoosterRewardedAdRequest, request))
+                {
+                    UpdateUiAfterBoosterGranted(request.BoosterType);
+                    return;
+                }
+
+                _uiManager.RefreshBoosterInventory();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void OnBoosterAdClosed(BoosterRewardedAdRequest request)
+        {
+            FinishBoosterRewardedAd(request);
+        }
+
+        private void OnBoosterAdDisplayFailed(BoosterRewardedAdRequest request)
+        {
+            FinishBoosterRewardedAd(request);
+        }
+
+        private void FinishBoosterRewardedAd(BoosterRewardedAdRequest request)
+        {
+            if (ReferenceEquals(_activeBoosterRewardedAdRequest, request))
+            {
+                _activeBoosterRewardedAdRequest = null;
+            }
+        }
+
+        private void UpdateUiAfterBoosterGranted(BoosterType boosterType)
+        {
+            _uiManager.HideBoosterBuyPopup();
+            _uiManager.RefreshBoosterInventory();
+            Debug.Log(
+                $"Granted 1x {boosterType} booster. " +
+                $"Total: {_boosterManager.GetCount(boosterType)}");
+        }
+
         private void OnLeaveGameRequested()
         {
             BackToHome();
@@ -502,6 +617,18 @@ namespace FoodieMatch.App
         {
             Debug.LogException(exception);
             CancelWinRewardSelection();
+        }
+
+        private sealed class BoosterRewardedAdRequest
+        {
+            public BoosterRewardedAdRequest(BoosterType boosterType)
+            {
+                BoosterType = boosterType;
+            }
+
+            public BoosterType BoosterType { get; }
+
+            public bool HasGrantedReward { get; set; }
         }
     }
 }
