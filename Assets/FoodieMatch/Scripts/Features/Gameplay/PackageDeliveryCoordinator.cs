@@ -275,20 +275,19 @@ namespace FoodieMatch.Features.Gameplay
                 return false;
             }
 
-            LockedRequiredPackageView locked = _packageGroupView.GetLockedAt(slotIndex);
-            Task lockedTask = locked != null
-                ? locked.PlayUnlockDisappearAsync()
-                : Task.CompletedTask;
+            LockedRequiredPackageView locked =
+                _packageGroupView.GetLockedAt(slotIndex);
 
             if (!ShowEnteringPackageViewAt(slotIndex, unlockedPackage))
             {
                 Debug.LogError($"Required package view {slotIndex} could not be shown after unlock.");
-                await lockedTask;
                 return false;
             }
 
-            Task<MotionResult> enterTask = PlayPackageEnterSafelyAsync(slotIndex);
-            await Task.WhenAll(lockedTask, enterTask);
+            if (locked != null)
+            {
+                await locked.PlayUnlockDisappearAsync();
+            }
 
             if (!CanContinue(session))
             {

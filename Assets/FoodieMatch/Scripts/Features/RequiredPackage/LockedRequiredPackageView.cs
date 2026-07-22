@@ -23,9 +23,36 @@ namespace FoodieMatch.Features.RequiredPackage
 
         [Header("Unlock Motion")]
         [SerializeField] private SpriteRenderer[] _fadeRenderers;
-        [SerializeField] private Vector3 _unlockRiseOffset = new Vector3(0f, 0.6f, 0f);
+        [SerializeField] private Vector3 _unlockRiseOffset = new Vector3(0f, 1.5f, 0f);
         [SerializeField] private float _unlockDuration = 0.35f;
         [SerializeField] private Ease _unlockEase = Ease.OutCubic;
+
+        [Header("Unlock Squash Motion")]
+        [SerializeField]
+        private Vector3 _unlockWideScaleMultiplier =
+            new Vector3(1.2f, 0.6f, 1f);
+
+        [SerializeField, Min(0f)]
+        private float _unlockWideDuration = 0.10f;
+
+        [SerializeField]
+        private Ease _unlockWideEase = Ease.OutCubic;
+
+        [SerializeField]
+        private Vector3 _unlockTallScaleMultiplier =
+            new Vector3(0.7f, 1.2f, 1f);
+
+        [SerializeField, Min(0f)]
+        private float _unlockTallDuration = 0.10f;
+
+        [SerializeField]
+        private Ease _unlockTallEase = Ease.InOutSine;
+
+        [SerializeField, Min(0f)]
+        private float _unlockRestoreDuration = 0.15f;
+
+        [SerializeField]
+        private Ease _unlockRestoreEase = Ease.OutCubic;
 
         public bool IsInteractable { get; private set; }
 
@@ -145,20 +172,72 @@ namespace FoodieMatch.Features.RequiredPackage
                 _unlockSequence.Stop();
             }
 
-            Vector3 targetPosition = _initialLocalPosition + _unlockRiseOffset;
+            Vector3 targetPosition =
+                _initialLocalPosition +
+                _unlockRiseOffset;
 
-            Sequence sequence = Sequence.Create(Tween.LocalPosition(
-                    transform,
-                    targetPosition,
-                    _unlockDuration,
-                    _unlockEase))
-                .Group(Tween.Custom(
-                    this,
-                    startValue: 1f,
-                    endValue: 0f,
-                    duration: _unlockDuration,
-                    ease: _unlockEase,
-                    onValueChange: (target, value) => target.ApplyFadeAlpha(value)));
+            Transform scaleTarget =
+                _pressTarget != null
+                    ? _pressTarget
+                    : transform;
+
+            Vector3 wideScale =
+                Vector3.Scale(
+                    _normalScale,
+                    _unlockWideScaleMultiplier);
+
+            Vector3 tallScale =
+                Vector3.Scale(
+                    _normalScale,
+                    _unlockTallScaleMultiplier);
+
+            scaleTarget.localScale =
+                _normalScale;
+
+            ApplyFadeAlpha(1f);
+
+            Sequence scaleSequence =
+                Sequence.Create()
+                    .Chain(
+                        Tween.Scale(
+                            scaleTarget,
+                            wideScale,
+                            _unlockWideDuration,
+                            _unlockWideEase))
+                    .Chain(
+                        Sequence.Create(
+                                Tween.LocalPosition(
+                                    transform,
+                                    targetPosition,
+                                    _unlockDuration,
+                                    _unlockEase))
+                            .Group(
+                                Tween.Custom(
+                                    this,
+                                    startValue: 1f,
+                                    endValue: 0f,
+                                    duration: _unlockDuration,
+                                    ease: _unlockEase,
+                                    onValueChange:
+                                        (target, value) =>
+                                            target
+                                                .ApplyFadeAlpha(value)))
+                            .Group(
+                                Sequence.Create()
+                                    .Chain(
+                                        Tween.Scale(
+                                            scaleTarget,
+                                            tallScale,
+                                            _unlockTallDuration,
+                                            _unlockTallEase))
+                                    .Chain(
+                                        Tween.Scale(
+                                            scaleTarget,
+                                            _normalScale,
+                                            _unlockRestoreDuration,
+                                            _unlockRestoreEase))));
+
+            Sequence sequence = scaleSequence;
 
             _unlockSequence = sequence;
 

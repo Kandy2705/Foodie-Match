@@ -452,6 +452,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockDuration
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockRiseOffset.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockTallDuration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockWideDuration
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockRestoreDuration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockTallScaleMultiplier.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockTallScaleMultiplier.y
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockWideScaleMultiplier.y
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 5534379823437444473, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
       propertyPath: m_Name
       value: LockedRequiredPackage (1)
@@ -721,6 +753,38 @@ PrefabInstance:
     - target: {fileID: 471543075290037108, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockDuration
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockRiseOffset.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockTallDuration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockWideDuration
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockRestoreDuration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockTallScaleMultiplier.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockTallScaleMultiplier.y
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2838282472024756387, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
+      propertyPath: _unlockWideScaleMultiplier.y
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 5534379823437444473, guid: 3de04573ec8a8d74f8d21aebfefaa6fe, type: 3}
       propertyPath: m_Name
