@@ -76,6 +76,26 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public void ApplyLevelCompletionReward(
+            int currentLevelNumber,
+            long coinReward)
+        {
+            ValidatePositiveCoinAmount(coinReward, nameof(coinReward));
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                long updatedCoinBalance = checked(
+                    currentProfile.CoinBalance + coinReward);
+                PlayerProfile updatedProfile = currentProfile
+                    .WithCurrentLevelNumber(currentLevelNumber)
+                    .WithCoinBalance(updatedCoinBalance);
+
+                QueueProfileChange(updatedProfile);
+            }
+        }
+
         public bool TrySpendCoins(long amount)
         {
             ValidatePositiveCoinAmount(amount, nameof(amount));

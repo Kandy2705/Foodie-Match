@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Booster;
+using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
@@ -437,6 +438,37 @@ namespace FoodieMatch.UI
             }
 
             _popupManager.Hide<WinView>();
+        }
+
+        public bool ShowFakeRewardedAdPopup(
+            Action completed,
+            Action cancelled)
+        {
+            if (_popupManager == null)
+            {
+                Debug.LogError(
+                    "Cannot show fake rewarded ad because PopupManager is missing.");
+                return false;
+            }
+
+            FakeRewardedAdPopupView popup =
+                _popupManager.Show<FakeRewardedAdPopupView>();
+
+            if (popup == null)
+            {
+                return false;
+            }
+
+            popup.SetActions(
+                new FakeRewardedAdPopupViewActions(
+                    completed,
+                    cancelled));
+            return true;
+        }
+
+        public void HideFakeRewardedAdPopup()
+        {
+            _popupManager?.Hide<FakeRewardedAdPopupView>();
         }
 
         public void ShowLosePopup(
