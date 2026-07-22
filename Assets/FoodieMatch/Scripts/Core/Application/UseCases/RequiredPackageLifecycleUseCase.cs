@@ -46,6 +46,7 @@ namespace FoodieMatch.Core.Application.UseCases
                 if (!_generator.TryCreatePackage(
                         board,
                         waitingRack,
+                        null,
                         initialPackages,
                         settings.EarlyWeights,
                         random,
@@ -65,6 +66,7 @@ namespace FoodieMatch.Core.Application.UseCases
             int packageIndex,
             BoardModel board,
             WaitingRackModel waitingRack,
+            FridgeInventoryModel fridgeInventory,
             RequiredPackageModel[] packages,
             IReadOnlyList<RequiredPackageModel> packageReservations,
             PackageSelectionSettings settings,
@@ -96,6 +98,7 @@ namespace FoodieMatch.Core.Application.UseCases
             if (_generator.TryCreatePackage(
                     board,
                     waitingRack,
+                    fridgeInventory,
                     packageReservations,
                     settings.GetWeights(progressRatio),
                     random,
