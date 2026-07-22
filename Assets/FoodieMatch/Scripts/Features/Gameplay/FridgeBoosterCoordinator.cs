@@ -88,30 +88,31 @@ namespace FoodieMatch.Features.Gameplay
                 return false;
             }
 
-            if (session.HasActivatedFridgeBooster)
+            if (session.FridgeInventory == null)
             {
-                Debug.Log(
-                    "Fridge booster was already activated.");
+                if (!session.TryActivateFridgeInventory(out _))
+                {
+                    Debug.Log(
+                        "Fridge inventory could not be created.");
 
-                return false;
+                    return false;
+                }
             }
 
-            if (!session.TryActivateFridgeInventory(
-                    out _))
-            {
-                Debug.Log(
-                    "Fridge inventory could not be activated.");
-
-                return false;
-            }
+            bool shouldPlayEnter =
+                !_view.IsVisible;
 
             _activeSession = session;
             _isApplying = true;
             _hasFailed = false;
+            _releaseRetryRequested = false;
 
             session.DisableInput();
 
-            _ = ApplySafelyAsync(session);
+            _ = ApplySafelyAsync(
+                session,
+                shouldPlayEnter);
+
             return true;
         }
 
@@ -159,11 +160,14 @@ namespace FoodieMatch.Features.Gameplay
         }
 
         private async Task ApplySafelyAsync(
-            GameplaySession session)
+            GameplaySession session,
+            bool shouldPlayEnter)
         {
             try
             {
-                await ApplyAsync(session);
+                await ApplyAsync(
+                    session,
+                    shouldPlayEnter);
             }
             catch (Exception exception)
             {
@@ -189,13 +193,28 @@ namespace FoodieMatch.Features.Gameplay
         }
 
         private async Task ApplyAsync(
-            GameplaySession session)
+            GameplaySession session,
+            bool shouldPlayEnter)
         {
-            await _view.PlayEnterAndOpenAsync();
-
-            if (!CanContinue(session))
+            if (shouldPlayEnter)
             {
-                return;
+                // Tủ đang ẩn: chạy vào giống lần đầu.
+                await _view.PlayEnterAndOpenAsync();
+
+                if (!CanContinue(session))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (!_view.IsVisible)
+                {
+                    Debug.LogWarning(
+                        "Fridge became hidden before scoop started.");
+
+                    return;
+                }
             }
 
             for (int slotIndex =
