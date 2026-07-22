@@ -158,6 +158,41 @@ namespace FoodieMatch.Core.Application.UseCases
             return true;
         }
 
+        public bool TryPrepareWaitingRackRescuePackage(
+            int slotIndex,
+            WaitingRackModel waitingRack,
+            RequiredPackageModel[] packages,
+            IReadOnlyList<RequiredPackageModel> packageReservations,
+            PackageRandom random,
+            out RequiredPackageModel rescuePackage)
+        {
+            rescuePackage = null;
+
+            if (waitingRack == null ||
+                packages == null ||
+                packageReservations == null ||
+                packageReservations.Count != packages.Length ||
+                random == null ||
+                slotIndex < 0 ||
+                slotIndex >= packages.Length ||
+                packages[slotIndex] != null)
+            {
+                return false;
+            }
+
+            if (!_generator.TryCreateWaitingRackRescuePackage(
+                    waitingRack,
+                    packageReservations,
+                    random,
+                    out RequiredPackageModel generatedPackage))
+            {
+                return false;
+            }
+
+            rescuePackage = generatedPackage;
+            return true;
+        }
+
         public bool TryPublishUnlockedPackage(
             int slotIndex,
             RequiredPackageModel unlockedPackage,

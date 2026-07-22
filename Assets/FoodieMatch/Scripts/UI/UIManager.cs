@@ -53,6 +53,7 @@ namespace FoodieMatch.UI
         private bool _isBoosterGuideShowing;
         private Action _loseTryAgainClicked;
         private Action _loseHomeClicked;
+        private Action _pendingBoxRescueCallback;
         private int _currentLevelNumber = 1;
         private int _currentServedCount;
         private int _currentTotalCount;
@@ -352,7 +353,8 @@ namespace FoodieMatch.UI
 
         public void ShowRevivePopup(
             Action loseTryAgainClicked = null,
-            Action loseHomeClicked = null)
+            Action loseHomeClicked = null,
+            Action onBoxRescueConfirmed = null)
         {
             if (_popupManager == null)
             {
@@ -369,6 +371,8 @@ namespace FoodieMatch.UI
             {
                 _loseHomeClicked = loseHomeClicked;
             }
+
+            _pendingBoxRescueCallback = onBoxRescueConfirmed;
 
             RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
 
@@ -927,6 +931,7 @@ namespace FoodieMatch.UI
 
         private void OnReviveCloseClicked()
         {
+            _pendingBoxRescueCallback = null;
             HideRevivePopup();
             _returnToReviveOnLeaveClose = true;
             ShowLeaveGamePopup();
@@ -934,16 +939,20 @@ namespace FoodieMatch.UI
 
         private void OnReviveFreeAdsClicked()
         {
-            Debug.Log("Revive Free Ads Clicked");
-            _returnToReviveOnLeaveClose = false;
+            Action callback = _pendingBoxRescueCallback;
+            _pendingBoxRescueCallback = null;
             HideRevivePopup();
+
+            callback?.Invoke();
         }
 
         private void OnRevivePlayOnClicked()
         {
-            Debug.Log("Revive Play On Clicked");
-            _returnToReviveOnLeaveClose = false;
+            Action callback = _pendingBoxRescueCallback;
+            _pendingBoxRescueCallback = null;
             HideRevivePopup();
+
+            callback?.Invoke();
         }
 
         private void OnLevelStarted(LevelStartedEvent eventData)

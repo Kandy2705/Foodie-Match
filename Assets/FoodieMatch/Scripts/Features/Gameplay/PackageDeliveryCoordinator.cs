@@ -306,6 +306,66 @@ namespace FoodieMatch.Features.Gameplay
             return true;
         }
 
+        public async Task<bool> TryUnlockSlotRescueAsync(int slotIndex, GameplaySession session)
+        {
+            if (!CanContinue(session) ||
+                !HasLockedSlotAt(session, slotIndex))
+            {
+                return false;
+            }
+
+            IReadOnlyList<RequiredPackageModel> packageReservations =
+                CreatePackageReservations();
+
+            if (!_packageLifecycleUseCase.TryPrepareWaitingRackRescuePackage(
+                    slotIndex,
+                    session.WaitingRack,
+                    session.RequiredPackages,
+                    packageReservations,
+                    session.RandomContext.PackageRandom,
+                    out RequiredPackageModel rescuePackage))
+            {
+                Debug.LogError(
+                    $"Rescue package could not be created for slot {slotIndex}.");
+
+                return false;
+            }
+
+            LockedRequiredPackageView locked =
+                _packageGroupView.GetLockedAt(slotIndex);
+
+            if (!ShowEnteringPackageViewAt(slotIndex, rescuePackage))
+            {
+                Debug.LogError(
+                    $"Required package view {slotIndex} could not be shown after rescue unlock.");
+
+                return false;
+            }
+
+            if (locked != null)
+            {
+                await locked.PlayUnlockDisappearAsync();
+            }
+
+            if (!CanContinue(session))
+            {
+                return false;
+            }
+
+            if (!_packageLifecycleUseCase.TryPublishUnlockedPackage(
+                    slotIndex, rescuePackage, session.RequiredPackages))
+            {
+                Debug.LogError(
+                    $"Required package slot {slotIndex} rescue unlock could not be published.");
+
+                return false;
+            }
+
+            _motionStates[slotIndex] = new(rescuePackage);
+            PackageReplaced?.Invoke(session);
+            return true;
+        }
+
         public bool HasActiveMotion(GameplaySession session)
         {
             if (_session != session || _motionStates == null)

@@ -384,6 +384,93 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
+        private bool HasAnyLockedPackage()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < _requiredPackageGroupView.LockedPackageCount; i++)
+            {
+                if (_requiredPackageGroupView.HasLockedAt(i))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void OnBoxRescueConfirmed()
+        {
+            GameplaySession session = _session;
+
+            if (session == null ||
+                session.State != LevelSessionState.AwaitingRevive)
+            {
+                return;
+            }
+
+            int slotIndex = FindFirstLockedSlotIndex();
+
+            if (slotIndex < 0)
+            {
+                return;
+            }
+
+            if (!session.TryResumeFromAwaitingRevive())
+            {
+                return;
+            }
+
+            _ = BoxRescueUnlockSafelyAsync(slotIndex, session);
+        }
+
+        private int FindFirstLockedSlotIndex()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return -1;
+            }
+
+            for (int i = 0; i < _requiredPackageGroupView.LockedPackageCount; i++)
+            {
+                if (_requiredPackageGroupView.HasLockedAt(i))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private async Task BoxRescueUnlockSafelyAsync(
+            int slotIndex,
+            GameplaySession session)
+        {
+            try
+            {
+                bool unlocked = await _packageDeliveryCoordinator
+                    .TryUnlockSlotRescueAsync(slotIndex, session);
+
+                if (!unlocked || !IsCurrentSession(session))
+                {
+                    return;
+                }
+
+                _waitingRackAutoFillCoordinator
+                    .StartOrRequestRetry(session);
+
+                _gameplayWorldClickSfx.StartListening();
+                session.StartPlaying();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
         private void CreateCoordinators()
         {
             _packageDeliveryCoordinator = new(
@@ -738,7 +825,22 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayWorldClickSfx.StopListening();
-            _uiManager.ShowRevivePopup(OnTryAgainClicked, OnHomeClicked);
+
+            bool hasLocked = HasAnyLockedPackage();
+
+            if (hasLocked)
+            {
+                _uiManager.ShowRevivePopup(
+                    OnTryAgainClicked,
+                    OnHomeClicked,
+                    OnBoxRescueConfirmed);
+            }
+            else
+            {
+                _uiManager.ShowLosePopup(
+                    OnTryAgainClicked,
+                    OnHomeClicked);
+            }
         }
 
         private void FinalizeLose()
