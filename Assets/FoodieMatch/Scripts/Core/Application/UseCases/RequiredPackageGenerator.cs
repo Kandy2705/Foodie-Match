@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Fridge;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
@@ -13,6 +14,7 @@ namespace FoodieMatch.Core.Application.UseCases
         public bool TryCreatePackage(
             BoardModel board,
             WaitingRackModel waitingRack,
+            FridgeInventoryModel fridge,
             IReadOnlyList<RequiredPackageModel> packageReservations,
             PackageSelectionWeights weights,
             PackageRandom random,
@@ -31,7 +33,7 @@ namespace FoodieMatch.Core.Application.UseCases
 
             HashSet<int> reservedFoodIds = GetReservedFoodIds(packageReservations);
             Dictionary<int, FoodAvailability> availabilityByFoodId =
-                CreateFoodAvailability(board, waitingRack, reservedFoodIds);
+                CreateFoodAvailability(board, waitingRack, fridge, reservedFoodIds);
 
             if (!TrySelectFullyRevealedFood(
                     availabilityByFoodId.Values,
@@ -67,6 +69,7 @@ namespace FoodieMatch.Core.Application.UseCases
         private static Dictionary<int, FoodAvailability> CreateFoodAvailability(
             BoardModel board,
             WaitingRackModel waitingRack,
+            FridgeInventoryModel fridge,
             ISet<int> reservedFoodIds)
         {
             Dictionary<int, FoodAvailability> availabilityByFoodId = new();
@@ -75,6 +78,15 @@ namespace FoodieMatch.Core.Application.UseCases
                 FoodLocation.WaitingRack,
                 reservedFoodIds,
                 availabilityByFoodId);
+
+            if (fridge != null && !fridge.IsEmpty)
+            {
+                AddFoodIds(
+                    fridge.GetAllTokenIds(),
+                    FoodLocation.Fridge,
+                    reservedFoodIds,
+                    availabilityByFoodId);
+            }
 
             for (int depth = 0; depth < board.FoodDepthCount; depth++)
             {
@@ -145,7 +157,9 @@ namespace FoodieMatch.Core.Application.UseCases
                 {
                     topTray.Add(availability);
                 }
-                else if (availability.GrillCount > 0)
+                else if (
+                    availability.GrillCount > 0 ||
+                    availability.FridgeCount > 0)
                 {
                     readyNow.Add(availability);
                 }
@@ -299,6 +313,7 @@ namespace FoodieMatch.Core.Application.UseCases
         {
             WaitingRack,
             Grill,
+            Fridge,
             TopTray,
             DeepTray
         }
@@ -314,6 +329,7 @@ namespace FoodieMatch.Core.Application.UseCases
             public int TotalCount { get; private set; }
             public int WaitingRackCount { get; private set; }
             public int GrillCount { get; private set; }
+            public int FridgeCount { get; private set; }
             public int TopTrayCount { get; private set; }
             public int DeepTrayCount { get; private set; }
             public bool IsFullyRevealed => DeepTrayCount == 0;
@@ -329,6 +345,9 @@ namespace FoodieMatch.Core.Application.UseCases
                         break;
                     case FoodLocation.Grill:
                         GrillCount++;
+                        break;
+                    case FoodLocation.Fridge:
+                        FridgeCount++;
                         break;
                     case FoodLocation.TopTray:
                         TopTrayCount++;

@@ -55,6 +55,7 @@ namespace FoodieMatch.Editor.LevelDesign
                         packageIndex,
                         simulation.Board,
                         simulation.WaitingRack,
+                        null,
                         packages,
                         reservations,
                         simulation.Level.PackageSelectionSettings,
