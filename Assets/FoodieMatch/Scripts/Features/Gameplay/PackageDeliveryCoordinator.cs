@@ -440,7 +440,8 @@ namespace FoodieMatch.Features.Gameplay
             IReadOnlyList<RequiredPackageModel> packageReservations = CreatePackageReservations();
 
             if (!_packageLifecycleUseCase.TryPrepareReplacementPackage(
-                    packageIndex, session.Board, session.WaitingRack, session.RequiredPackages,
+                    packageIndex, session.Board, session.WaitingRack,
+                    session.FridgeInventory, session.RequiredPackages,
                     packageReservations, session.Level.PackageSelectionSettings, session.Progress.ProgressRatio,
                     session.RandomContext.PackageRandom, out RequiredPackageModel replacementPackage))
             {

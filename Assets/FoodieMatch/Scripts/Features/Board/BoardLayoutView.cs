@@ -30,6 +30,10 @@ namespace FoodieMatch.Features.Board
         private const float RevealGrowDuration = 0.18f;
         private const float RevealSettleDuration = 0.08f;
 
+        [Header("Top Tray Release Animation")]
+        [SerializeField, Min(0f)]
+        private float _topTrayReleaseScaleDuration = 0.18f;
+
         private FoodVisualResolver _foodVisualResolver;
 
         public event Action<FoodSelectionContext> FoodSelected;
@@ -159,11 +163,26 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            foodView.transform.SetParent(null, worldPositionStays: true);
-            foodView.transform.localScale = Vector3.one;
-            foodView.transform.rotation = Quaternion.identity;
+            Vector3 targetScale =
+                foodView.GetVisualScale(
+                    FoodItemVisualState.OnGrill);
+
+            foodView.transform.SetParent(
+                null,
+                worldPositionStays: true);
+
+            foodView.transform.rotation =
+                Quaternion.identity;
+
             foodView.SetInteractable(false);
+
             items[traySlotIndex] = null;
+
+            _ = Tween.Scale(
+                foodView.transform,
+                targetScale,
+                _topTrayReleaseScaleDuration,
+                Ease.OutCubic);
         }
 
         public List<FoodItemView> GetAllActiveFoodViews()
@@ -296,7 +315,7 @@ namespace FoodieMatch.Features.Board
 
             if (spriteRenderer != null)
             {
-                Tween.Alpha(
+                _ = Tween.Alpha(
                     spriteRenderer,
                     0f,
                     totalDuration);
@@ -370,7 +389,7 @@ namespace FoodieMatch.Features.Board
                 color.a = 0f;
                 spriteRenderer.color = color;
 
-                Tween.Alpha(
+                _ = Tween.Alpha(
                     spriteRenderer,
                     1f,
                     RevealGrowDuration);
