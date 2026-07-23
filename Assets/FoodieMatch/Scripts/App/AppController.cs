@@ -502,14 +502,14 @@ namespace FoodieMatch.App
             _isWinRewardProcessing = false;
 
             long regularCoinReward = _economyConfig.LevelCompleteCoinReward;
-            string rewardMultiplierText =
-                $"x{_economyConfig.RewardedAdCoinMultiplier}";
+            long doubleCoinReward = checked(
+                regularCoinReward * _economyConfig.RewardedAdCoinMultiplier);
 
             _uiManager.ShowWinPopup(
                 OnRegularWinRewardSelected,
                 OnRewardedAdWinRewardSelected,
-                regularCoinReward.ToString(),
-                rewardMultiplierText);
+                regularCoinReward,
+                doubleCoinReward);
         }
 
         private void OnRegularWinRewardSelected()

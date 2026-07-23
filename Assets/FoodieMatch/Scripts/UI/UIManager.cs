@@ -482,8 +482,8 @@ namespace FoodieMatch.UI
         public void ShowWinPopup(
             Action claimCoinRewardClicked,
             Action doubleCoinRewardClicked,
-            string rewardAmountText = null,
-            string rewardMultiplierText = null)
+            long regularRewardAmount,
+            long doubleRewardAmount)
         {
             if (_popupManager == null)
             {
@@ -504,16 +504,7 @@ namespace FoodieMatch.UI
                 new WinViewActions(
                     claimCoinRewardClicked,
                     doubleCoinRewardClicked));
-
-            if (!string.IsNullOrEmpty(rewardAmountText))
-            {
-                winView.SetRewardAmount(rewardAmountText);
-            }
-
-            if (!string.IsNullOrEmpty(rewardMultiplierText))
-            {
-                winView.SetRewardMultiplier(rewardMultiplierText);
-            }
+            winView.SetRewardAmounts(regularRewardAmount, doubleRewardAmount);
         }
 
         public void HideWinPopup()

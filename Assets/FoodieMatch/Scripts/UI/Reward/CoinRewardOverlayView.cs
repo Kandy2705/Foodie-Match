@@ -269,13 +269,13 @@ namespace FoodieMatch.UI.Reward
                 _rectTransform.SetAsLastSibling();
                 IsPlaying = true;
 
-                _motionSequence = Sequence.Create(Tween.Scale(
+                _motionSequence = Sequence.Create(useUnscaledTime: true)
+                    .Chain(Tween.Scale(
                         _rectTransform,
                         _visibleScale,
                         _owner._coinAppearDuration,
                         _owner._coinAppearEase,
-                        startDelay: appearanceStartDelay,
-                        useUnscaledTime: true))
+                        startDelay: appearanceStartDelay))
                     .Chain(Tween.Custom(
                         this,
                         0f,
@@ -283,8 +283,7 @@ namespace FoodieMatch.UI.Reward
                         movementDuration,
                         (coinImage, progress) => coinImage.UpdatePosition(progress),
                         _owner._coinMovementEase,
-                        startDelay: movementStartDelay,
-                        useUnscaledTime: true))
+                        startDelay: movementStartDelay))
                     .ChainCallback(this, coinImage => coinImage.NotifyArrival());
             }
 
