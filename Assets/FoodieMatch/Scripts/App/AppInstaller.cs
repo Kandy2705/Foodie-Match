@@ -1,6 +1,7 @@
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Events;
@@ -78,6 +79,8 @@ namespace FoodieMatch.App
             BoardModelFactory boardModelFactory = new();
 
             BoosterManager boosterManager = new(playerProfileService);
+            IGameBoosterConfig boosterConfig =
+                GameBoosterDefaults.CreateSnapshot();
             IGameEconomyConfig economyConfig =
                 GameEconomyDefaults.CreateSnapshot();
 
@@ -85,6 +88,7 @@ namespace FoodieMatch.App
                 GameplayEvents,
                 audioService,
                 boosterManager,
+                boosterConfig,
                 economyConfig,
                 playerProfileService);
             IRewardedAdService rewardedAdService =

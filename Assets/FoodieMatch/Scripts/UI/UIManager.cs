@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
@@ -49,9 +50,9 @@ namespace FoodieMatch.UI
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
         private readonly List<BoosterBuyContentEntry> _pendingBoosterGuides = new();
-        private readonly List<BoosterBuyContentEntry> _boosterUnlockScratch = new();
 
         private BoosterManager _boosterManager;
+        private IGameBoosterConfig _boosterConfig;
         private IGameEconomyConfig _economyConfig;
         private PlayerProfileService _playerProfileService;
         private IAudioService _audioService;
@@ -101,6 +102,7 @@ namespace FoodieMatch.UI
             GameplayEvents gameplayEvents,
             IAudioService audioService,
             BoosterManager boosterManager,
+            IGameBoosterConfig boosterConfig,
             IGameEconomyConfig economyConfig,
             PlayerProfileService playerProfileService)
         {
@@ -114,6 +116,8 @@ namespace FoodieMatch.UI
 
             _gameplayEvents = gameplayEvents;
             _boosterManager = boosterManager;
+            _boosterConfig = boosterConfig ??
+                throw new ArgumentNullException(nameof(boosterConfig));
             _economyConfig = economyConfig;
             _playerProfileService = playerProfileService;
             SubscribeEvents();
@@ -1220,15 +1224,21 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            _boosterBuyCatalog.CollectBoostersUnlockedAtLevel(
-                levelNumber,
-                _boosterUnlockScratch);
+            IReadOnlyList<BoosterBuyContentEntry> entries =
+                _boosterBuyCatalog.Entries;
 
-            for (int i = 0; i < _boosterUnlockScratch.Count; i++)
+            if (entries == null)
             {
-                BoosterBuyContentEntry entry = _boosterUnlockScratch[i];
+                return;
+            }
 
-                if (entry == null || HasSeenBoosterGuide(entry.BoosterType))
+            for (int i = 0; i < entries.Count; i++)
+            {
+                BoosterBuyContentEntry entry = entries[i];
+
+                if (entry == null ||
+                    GetBoosterUnlockLevel(entry.BoosterType) != levelNumber ||
+                    HasSeenBoosterGuide(entry.BoosterType))
                 {
                     continue;
                 }
@@ -1334,7 +1344,9 @@ namespace FoodieMatch.UI
                     continue;
                 }
 
-                unlockedStates[i] = IsBoosterUnlocked(boosterType);
+                int unlockLevel = GetBoosterUnlockLevel(boosterType);
+                unlockedStates[i] = _currentLevelNumber >= unlockLevel;
+                _gameplayHudView.SetBoosterUnlockLevel(i, unlockLevel);
 
                 if (_boosterBuyCatalog != null &&
                     _boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
@@ -1343,7 +1355,6 @@ namespace FoodieMatch.UI
                         i,
                         _boosterBuyCatalog.LockedButtonSprite,
                         entry.LockedIconSprite);
-                    _gameplayHudView.SetBoosterUnlockLevel(i, entry.UnlockLevel);
                 }
             }
 
@@ -1352,12 +1363,12 @@ namespace FoodieMatch.UI
 
         private bool IsBoosterUnlocked(BoosterType boosterType)
         {
-            if (_boosterBuyCatalog == null)
-            {
-                return true;
-            }
+            return _currentLevelNumber >= GetBoosterUnlockLevel(boosterType);
+        }
 
-            return _boosterBuyCatalog.IsUnlocked(boosterType, _currentLevelNumber);
+        private int GetBoosterUnlockLevel(BoosterType boosterType)
+        {
+            return _boosterConfig.GetUnlockLevel(boosterType);
         }
     }
 }
