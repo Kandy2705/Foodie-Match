@@ -18,6 +18,12 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
         [JsonProperty("coinBalance", Required = Required.Always)]
         public long CoinBalance { get; set; }
 
+        [JsonProperty("heartCount", Required = Required.Always)]
+        public int HeartCount { get; set; }
+
+        [JsonProperty("heartRecoveryStartedAtUtc", Required = Required.AllowNull)]
+        public long? HeartRecoveryStartedAtUtcUnixSeconds { get; set; }
+
         [JsonProperty("boosterCounts", Required = Required.Always)]
         public List<BoosterCountDto> BoosterCounts { get; set; }
 

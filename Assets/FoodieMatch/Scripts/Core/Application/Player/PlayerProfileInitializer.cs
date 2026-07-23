@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 using FoodieMatch.Data.Booster;
 
@@ -16,11 +18,13 @@ namespace FoodieMatch.Core.Application.Player
         private readonly IPlayerProfileRepository _profileRepository;
         private readonly IInvalidPlayerProfileRecovery _invalidProfileRecovery;
         private readonly PlayerProfileSession _profileSession;
+        private readonly IGameHeartConfig _heartConfig;
 
         public PlayerProfileInitializer(
             IPlayerProfileRepository profileRepository,
             IInvalidPlayerProfileRecovery invalidProfileRecovery,
-            PlayerProfileSession profileSession)
+            PlayerProfileSession profileSession,
+            IGameHeartConfig heartConfig)
         {
             _profileRepository = profileRepository ??
                 throw new ArgumentNullException(nameof(profileRepository));
@@ -28,6 +32,8 @@ namespace FoodieMatch.Core.Application.Player
                 throw new ArgumentNullException(nameof(invalidProfileRecovery));
             _profileSession = profileSession ??
                 throw new ArgumentNullException(nameof(profileSession));
+            _heartConfig = heartConfig ??
+                throw new ArgumentNullException(nameof(heartConfig));
         }
 
         public async Task<PlayerProfileInitializationResult> InitializeAsync(
@@ -108,7 +114,7 @@ namespace FoodieMatch.Core.Application.Player
                 recoveredInvalidData);
         }
 
-        private static PlayerProfile CreateDefaultProfile()
+        private PlayerProfile CreateDefaultProfile()
         {
             Dictionary<BoosterType, int> boosterCounts = new();
 
@@ -121,7 +127,10 @@ namespace FoodieMatch.Core.Application.Player
                 currentLevelNumber: 1,
                 coinBalance: 0,
                 boosterCounts,
-                seenBoosterGuides: Array.Empty<BoosterType>());
+                seenBoosterGuides: Array.Empty<BoosterType>(),
+                new HeartState(
+                    _heartConfig.MaxHeartCount,
+                    recoveryStartedAtUtc: null));
         }
 
         private static string CreateSaveErrorMessage(PlayerProfileSaveResult saveResult)
