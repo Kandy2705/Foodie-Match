@@ -205,7 +205,9 @@ namespace FoodieMatch.App
             _gameplayController.StartLevel(levelNumber, _gameplayNavigationActions);
         }
 
-        private void OpenHome(int levelNumber, long coinBalance)
+        private void OpenHome(
+            int levelNumber,
+            long displayedCoinBalance)
         {
             _levelAwaitingWinReward = 0;
             _isWinRewardProcessing = false;
@@ -213,7 +215,7 @@ namespace FoodieMatch.App
             _uiManager.HideAllPopups();
             _uiManager.HideGameplayHud();
             _uiManager.SetCurrentLevelNumber(levelNumber);
-            _uiManager.ShowHome(coinBalance);
+            _uiManager.ShowHome(displayedCoinBalance);
             _audioService?.PlayMusic(AudioKeys.MusicMenu);
             _activeLevelNumber = 0;
         }
@@ -471,6 +473,7 @@ namespace FoodieMatch.App
         {
             _uiManager.HideBoosterBuyPopup();
             _uiManager.RefreshBoosterInventory();
+            _uiManager.RefreshOpenedResourceBars();
             Debug.Log(
                 $"Granted 1x {boosterType} booster. " +
                 $"Total: {_boosterManager.GetCount(boosterType)}");

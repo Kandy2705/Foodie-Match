@@ -179,7 +179,7 @@ MonoBehaviour:
   _playButton: {fileID: 4632995642553308059}
   _settingButton: {fileID: 1105202278278857296}
   _playLevelText: {fileID: 3725143549059234066}
-  _coinCounterView: {fileID: 5932797932379222736}
+  _resourceBarView: {fileID: 4250100812085702141}
 --- !u!1 &5145028446534278820
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,15 +694,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &5932797932379222736 stripped
+--- !u!114 &4250100812085702141 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5204244367158342769, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
+  m_CorrespondingSourceObject: {fileID: 2348588513732717404, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
   m_PrefabInstance: {fileID: 1904100036148348577}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b80796e682f866458ea7d0b3ae761c0, type: 3}
+  m_Script: {fileID: 11500000, guid: fe830a67bcc5cf64ab39e838a8474d19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &6575042179265385466 stripped

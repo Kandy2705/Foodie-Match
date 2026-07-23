@@ -106,6 +106,7 @@ MonoBehaviour:
   _tryAgainButton: {fileID: 4649250737973368667}
   _homeButton: {fileID: 27874959010452858}
   _chefMascotSkeletonGraphic: {fileID: 8437967579956983259}
+  _resourceBarView: {fileID: 6593777893991255962}
 --- !u!1 &3752540923024754084
 GameObject:
   m_ObjectHideFlags: 0
@@ -1613,3 +1614,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5920858044903863748, guid: 36eb68073703c432a9fe5d7ad48dee75, type: 3}
   m_PrefabInstance: {fileID: 8772678208498476220}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6593777893991255962 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2467724479589034790, guid: 36eb68073703c432a9fe5d7ad48dee75, type: 3}
+  m_PrefabInstance: {fileID: 8772678208498476220}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe830a67bcc5cf64ab39e838a8474d19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

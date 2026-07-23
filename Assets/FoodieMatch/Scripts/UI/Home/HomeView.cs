@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Reward;
@@ -8,12 +9,12 @@ using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Home
 {
-    public sealed class HomeView : PopupBase
+    public sealed class HomeView : PopupBase, IPlayerResourceView
     {
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
         [SerializeField] private TMP_Text _playLevelText;
-        [SerializeField] private CoinCounterView _coinCounterView;
+        [SerializeField] private ResourceBarView _resourceBarView;
 
         private Action _playClicked;
         private Action _settingClicked;
@@ -22,7 +23,6 @@ namespace FoodieMatch.UI.Home
         {
             EnsureButtonReferences();
             EnsureTextReferences();
-            EnsureCoinCounterReference();
 
             if (_playButton != null)
             {
@@ -66,20 +66,33 @@ namespace FoodieMatch.UI.Home
 
         public void SetCoinBalance(long coinBalance)
         {
-            EnsureCoinCounterReference();
-            _coinCounterView?.SetCoinBalance(coinBalance);
+            _resourceBarView?.SetCoinBalance(coinBalance);
+        }
+
+        public void SetHeartStatus(HeartStatus heartStatus)
+        {
+            _resourceBarView?.SetHeartStatus(heartStatus);
+        }
+
+        public void SetPlayerResources(
+            long coinBalance,
+            HeartStatus heartStatus)
+        {
+            _resourceBarView?.SetPlayerResources(
+                coinBalance,
+                heartStatus);
         }
 
         public CoinCounterView GetCoinCounter()
         {
-            EnsureCoinCounterReference();
-            return _coinCounterView;
+            return _resourceBarView?.CoinCounterView;
         }
 
         public override void Dispose()
         {
             _playClicked = null;
             _settingClicked = null;
+            _resourceBarView?.Clear();
 
             base.Dispose();
         }
@@ -127,14 +140,6 @@ namespace FoodieMatch.UI.Home
             if (_playLevelText == null)
             {
                 _playLevelText = UiTmpText.FindChild(transform, "Text (TMP)");
-            }
-        }
-
-        private void EnsureCoinCounterReference()
-        {
-            if (_coinCounterView == null)
-            {
-                _coinCounterView = GetComponentInChildren<CoinCounterView>(true);
             }
         }
 

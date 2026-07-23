@@ -85,6 +85,34 @@ namespace FoodieMatch.Core.Domain.Heart
                 updatedRecoveryStart);
         }
 
+        public TimeSpan GetTimeUntilNextHeart(
+            TimeSpan recoveryDuration,
+            DateTimeOffset utcNow)
+        {
+            ValidateRecoveryDuration(recoveryDuration);
+
+            if (!RecoveryStartedAtUtc.HasValue)
+            {
+                return TimeSpan.Zero;
+            }
+
+            TimeSpan elapsedTime =
+                utcNow.ToUniversalTime() -
+                RecoveryStartedAtUtc.Value;
+
+            if (elapsedTime <= TimeSpan.Zero)
+            {
+                return recoveryDuration;
+            }
+
+            if (elapsedTime >= recoveryDuration)
+            {
+                return TimeSpan.Zero;
+            }
+
+            return recoveryDuration - elapsedTime;
+        }
+
         public bool TrySpendHeart(
             int maxHeartCount,
             DateTimeOffset utcNow,
@@ -124,14 +152,7 @@ namespace FoodieMatch.Core.Domain.Heart
             TimeSpan recoveryDuration)
         {
             ValidateMaxHeartCount(maxHeartCount);
-
-            if (recoveryDuration <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(recoveryDuration),
-                    recoveryDuration,
-                    "Heart recovery duration must be greater than zero.");
-            }
+            ValidateRecoveryDuration(recoveryDuration);
         }
 
         private static void ValidateMaxHeartCount(int maxHeartCount)
@@ -142,6 +163,18 @@ namespace FoodieMatch.Core.Domain.Heart
                     nameof(maxHeartCount),
                     maxHeartCount,
                     "Maximum heart count must be greater than zero.");
+            }
+        }
+
+        private static void ValidateRecoveryDuration(
+            TimeSpan recoveryDuration)
+        {
+            if (recoveryDuration <= TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(recoveryDuration),
+                    recoveryDuration,
+                    "Heart recovery duration must be greater than zero.");
             }
         }
     }

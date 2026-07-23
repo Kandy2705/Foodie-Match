@@ -76,6 +76,33 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public HeartStatus GetHeartStatus()
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                DateTimeOffset currentUtc = _clock.UtcNow;
+                HeartState updatedHeartState = GetRefreshedHeartState(
+                    currentProfile,
+                    currentUtc);
+
+                QueueProfileChange(
+                    currentProfile.WithHeartState(updatedHeartState));
+
+                TimeSpan timeUntilNextHeart =
+                    updatedHeartState.GetTimeUntilNextHeart(
+                        _heartConfig.HeartRecoveryDuration,
+                        currentUtc);
+
+                return new HeartStatus(
+                    updatedHeartState.HeartCount,
+                    _heartConfig.MaxHeartCount,
+                    timeUntilNextHeart,
+                    _heartConfig.HeartRecoveryDuration);
+            }
+        }
+
         public bool HasAvailableHeart()
         {
             lock (_stateLock)

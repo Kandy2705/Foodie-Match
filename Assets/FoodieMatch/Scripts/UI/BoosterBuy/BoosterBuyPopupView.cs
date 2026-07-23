@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using TMPro;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 namespace FoodieMatch.UI.BoosterBuy
 {
-    public sealed class BoosterBuyPopupView : PopupBase
+    public sealed class BoosterBuyPopupView : PopupBase, IPlayerResourceView
     {
         private const float IconNativeSizeScale = 1.4f;
 
@@ -20,6 +21,7 @@ namespace FoodieMatch.UI.BoosterBuy
         [SerializeField] private Image _iconImage;
         [SerializeField] private TMP_Text _costText;
         [SerializeField] private TMP_Text _bonusAmountText;
+        [SerializeField] private ResourceBarView _resourceBarView;
 
         private Action _closeClicked;
         private Action _freeAdsClicked;
@@ -75,6 +77,15 @@ namespace FoodieMatch.UI.BoosterBuy
             _closeClicked = actions.CloseClicked;
             _freeAdsClicked = actions.FreeAdsClicked;
             _buyClicked = actions.BuyClicked;
+        }
+
+        public void SetPlayerResources(
+            long coinBalance,
+            HeartStatus heartStatus)
+        {
+            _resourceBarView?.SetPlayerResources(
+                coinBalance,
+                heartStatus);
         }
 
         public override void Setup(IPopupData data)
