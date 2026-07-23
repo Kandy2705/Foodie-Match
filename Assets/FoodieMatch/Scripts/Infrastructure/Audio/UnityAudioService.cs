@@ -1,7 +1,8 @@
-using FoodieMatch.Core.Infrastructure.Save;
+using FoodieMatch.Core.Application.Audio;
+using FoodieMatch.Infrastructure.Persistence.Save;
 using UnityEngine;
 
-namespace FoodieMatch.Core.Infrastructure.Audio
+namespace FoodieMatch.Infrastructure.Audio
 {
     public sealed class UnityAudioService : MonoBehaviour, IAudioService
     {

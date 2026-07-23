@@ -1,6 +1,6 @@
 using System;
 using FoodieMatch.Core.Application.Repositories;
-using FoodieMatch.Core.Infrastructure.Save;
+using FoodieMatch.Infrastructure.Persistence.Save;
 
 namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace FoodieMatch.Core.Infrastructure.Audio
+namespace FoodieMatch.Core.Application.Audio
 {
     public static class AudioKeys
     {

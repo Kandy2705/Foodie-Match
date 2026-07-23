@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace FoodieMatch.Core.Infrastructure.Audio
+namespace FoodieMatch.Infrastructure.Audio
 {
     [Serializable]
     public sealed class AudioClipEntry

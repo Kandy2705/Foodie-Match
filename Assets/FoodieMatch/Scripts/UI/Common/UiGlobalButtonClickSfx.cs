@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using FoodieMatch.Core.Infrastructure.Audio;
+using FoodieMatch.Core.Application.Audio;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;

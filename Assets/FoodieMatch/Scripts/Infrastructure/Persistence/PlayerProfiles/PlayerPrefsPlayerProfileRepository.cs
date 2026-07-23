@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Domain.Player;
-using FoodieMatch.Core.Infrastructure.Save;
+using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json;
 
 namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles

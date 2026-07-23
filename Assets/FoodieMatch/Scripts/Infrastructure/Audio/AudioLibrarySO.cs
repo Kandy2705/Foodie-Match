@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FoodieMatch.Core.Infrastructure.Audio
+namespace FoodieMatch.Infrastructure.Audio
 {
     [CreateAssetMenu(
         fileName = "AudioLibrary",

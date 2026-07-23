@@ -1,4 +1,4 @@
-namespace FoodieMatch.Core.Infrastructure.Save
+namespace FoodieMatch.Infrastructure.Persistence.Save
 {
     public interface ISaveService
     {

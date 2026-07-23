@@ -1,4 +1,6 @@
-namespace FoodieMatch.Core.Infrastructure.Audio
+using FoodieMatch.Core.Application.Audio;
+
+namespace FoodieMatch.Infrastructure.Audio
 {
     public sealed class NullAudioService : IAudioService
     {

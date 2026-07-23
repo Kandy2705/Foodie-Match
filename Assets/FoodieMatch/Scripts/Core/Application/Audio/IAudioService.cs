@@ -1,4 +1,4 @@
-namespace FoodieMatch.Core.Infrastructure.Audio
+namespace FoodieMatch.Core.Application.Audio
 {
     public interface IAudioService
     {
