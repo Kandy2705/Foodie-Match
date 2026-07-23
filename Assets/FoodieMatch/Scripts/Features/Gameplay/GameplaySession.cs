@@ -104,6 +104,18 @@ namespace FoodieMatch.Features.Gameplay
             return true;
         }
 
+        public bool TryResumeFromAwaitingRevive()
+        {
+            if (State != LevelSessionState.AwaitingRevive)
+            {
+                return false;
+            }
+
+            State = LevelSessionState.Playing;
+            IsInputEnabled = false;
+            return true;
+        }
+
         public bool TryMarkAsWon()
         {
             if (State != LevelSessionState.Playing)

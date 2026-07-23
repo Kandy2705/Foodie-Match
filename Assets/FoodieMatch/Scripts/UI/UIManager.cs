@@ -53,6 +53,7 @@ namespace FoodieMatch.UI
         private bool _isBoosterGuideShowing;
         private Action _loseTryAgainClicked;
         private Action _loseHomeClicked;
+        private Action _pendingBoxRescueCallback;
         private int _currentLevelNumber = 1;
         private int _currentServedCount;
         private int _currentTotalCount;
@@ -60,6 +61,8 @@ namespace FoodieMatch.UI
         private float _currentComboRemainingSeconds;
         private BoosterType _currentBoosterBuyType;
         private BoosterType _currentBoosterGuideType;
+        private int _pendingUnlockSlotIndex = -1;
+        private Action<int> _pendingUnlockCallback;
 
         public event Action PlayGameRequested;
 
@@ -350,7 +353,8 @@ namespace FoodieMatch.UI
 
         public void ShowRevivePopup(
             Action loseTryAgainClicked = null,
-            Action loseHomeClicked = null)
+            Action loseHomeClicked = null,
+            Action onBoxRescueConfirmed = null)
         {
             if (_popupManager == null)
             {
@@ -366,6 +370,11 @@ namespace FoodieMatch.UI
             if (loseHomeClicked != null)
             {
                 _loseHomeClicked = loseHomeClicked;
+            }
+
+            if (onBoxRescueConfirmed != null)
+            {
+                _pendingBoxRescueCallback = onBoxRescueConfirmed;
             }
 
             RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
@@ -553,6 +562,65 @@ namespace FoodieMatch.UI
             }
 
             _popupManager.Hide<BoosterBuyPopupView>();
+        }
+
+        public void ShowUnlockLockedPackagePopup(int slotIndex, Action<int> onUnlockConfirmed)
+        {
+            if (_popupManager == null)
+            {
+                Debug.LogError("Cannot show unlock popup because PopupManager is missing.");
+                return;
+            }
+
+            if (_boosterBuyCatalog == null)
+            {
+                Debug.LogError("Cannot show unlock popup because BoosterBuyCatalog is missing.");
+                return;
+            }
+
+            if (!_boosterBuyCatalog.TryGet(BoosterType.Box, out BoosterBuyContentEntry entry))
+            {
+                Debug.LogError("Booster buy content not found for Box.");
+                return;
+            }
+
+            BoosterBuyPopupData popupData = BoosterBuyPopupData.FromCatalogEntry(entry);
+            BoosterBuyPopupView popup = _popupManager.Show<BoosterBuyPopupView>(popupData);
+
+            if (popup == null)
+            {
+                return;
+            }
+
+            _pendingUnlockSlotIndex = slotIndex;
+            _pendingUnlockCallback = onUnlockConfirmed;
+
+            popup.SetActions(
+                new BoosterBuyPopupViewActions(
+                    OnUnlockPopupCloseClicked,
+                    OnUnlockPopupBuyClicked,
+                    OnUnlockPopupBuyClicked));
+        }
+
+        private void OnUnlockPopupCloseClicked()
+        {
+            _pendingUnlockSlotIndex = -1;
+            _pendingUnlockCallback = null;
+            HideBoosterBuyPopup();
+        }
+
+        private void OnUnlockPopupBuyClicked()
+        {
+            int slotIndex = _pendingUnlockSlotIndex;
+            Action<int> callback = _pendingUnlockCallback;
+            _pendingUnlockSlotIndex = -1;
+            _pendingUnlockCallback = null;
+            HideBoosterBuyPopup();
+
+            if (slotIndex >= 0 && callback != null)
+            {
+                callback.Invoke(slotIndex);
+            }
         }
 
         public void ShowBoosterGuidePopup(BoosterType boosterType)
@@ -820,7 +888,10 @@ namespace FoodieMatch.UI
 
             if (_returnToReviveOnLeaveClose)
             {
-                ShowRevivePopup();
+                ShowRevivePopup(
+                    onBoxRescueConfirmed:
+                        _pendingBoxRescueCallback);
+
                 return;
             }
 
@@ -873,16 +944,31 @@ namespace FoodieMatch.UI
 
         private void OnReviveFreeAdsClicked()
         {
-            Debug.Log("Revive Free Ads Clicked");
-            _returnToReviveOnLeaveClose = false;
-            HideRevivePopup();
+            ConfirmBoxRescue();
         }
 
         private void OnRevivePlayOnClicked()
         {
             Debug.Log("Revive Play On Clicked");
+            ConfirmBoxRescue();
+        }
+
+        private void ConfirmBoxRescue()
+        {
+            Action callback = _pendingBoxRescueCallback;
+
+            if (callback == null)
+            {
+                Debug.LogError("Box rescue callback is missing.");
+                return;
+            }
+
+            _pendingBoxRescueCallback = null;
             _returnToReviveOnLeaveClose = false;
+
             HideRevivePopup();
+
+            callback.Invoke();
         }
 
         private void OnLevelStarted(LevelStartedEvent eventData)
