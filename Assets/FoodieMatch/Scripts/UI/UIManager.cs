@@ -372,7 +372,10 @@ namespace FoodieMatch.UI
                 _loseHomeClicked = loseHomeClicked;
             }
 
-            _pendingBoxRescueCallback = onBoxRescueConfirmed;
+            if (onBoxRescueConfirmed != null)
+            {
+                _pendingBoxRescueCallback = onBoxRescueConfirmed;
+            }
 
             RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
 
