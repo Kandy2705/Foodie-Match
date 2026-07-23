@@ -8,7 +8,7 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
 
         int RewardedAdCoinMultiplier { get; }
 
-        int CoinValuePerParticle { get; }
+        int CoinValuePerRewardImage { get; }
 
         int GetBoosterPrice(BoosterType boosterType);
     }

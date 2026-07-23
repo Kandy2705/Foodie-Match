@@ -75,6 +75,19 @@ namespace FoodieMatch.UI.Popup
             return _openedPopups.ContainsKey(typeof(TPopup));
         }
 
+        public bool TryGetOpened<TPopup>(out TPopup popup)
+            where TPopup : PopupBase
+        {
+            if (_openedPopups.TryGetValue(typeof(TPopup), out PopupBase openedPopup))
+            {
+                popup = openedPopup as TPopup;
+                return popup != null;
+            }
+
+            popup = null;
+            return false;
+        }
+
         private void Hide(Type popupType)
         {
             if (!_openedPopups.TryGetValue(popupType, out PopupBase popup))

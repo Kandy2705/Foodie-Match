@@ -7,7 +7,7 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
     {
         private const int DefaultLevelCompleteCoinReward = 40;
         private const int DefaultRewardedAdCoinMultiplier = 2;
-        private const int DefaultCoinValuePerParticle = 5;
+        private const int DefaultCoinValuePerRewardImage = 5;
         private const int DefaultPlateBoosterPrice = 80;
         private const int DefaultStorageBoosterPrice = 60;
         private const int DefaultSwapBoosterPrice = 120;
@@ -28,7 +28,7 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
             return new GameEconomyConfigSnapshot(
                 DefaultLevelCompleteCoinReward,
                 DefaultRewardedAdCoinMultiplier,
-                DefaultCoinValuePerParticle,
+                DefaultCoinValuePerRewardImage,
                 boosterPrices);
         }
     }

@@ -16,6 +16,7 @@ using FoodieMatch.UI.LeaveGame;
 using FoodieMatch.UI.Loading;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
+using FoodieMatch.UI.Reward;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
@@ -37,6 +38,10 @@ namespace FoodieMatch.UI
         [SerializeField] private LoadingScreenView _loadingScreenPrefab;
         [SerializeField] private Transform _loadingRoot;
 
+        [Header("Reward Effect")]
+        [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
+        [SerializeField] private Transform _rewardEffectRoot;
+
         [Header("Booster Guide")]
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
@@ -51,6 +56,7 @@ namespace FoodieMatch.UI
         private GameObject _gameplayHud;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
+        private CoinRewardOverlayView _coinRewardOverlayView;
         private bool _hasConstructed;
         private bool _returnToReviveOnLeaveClose;
         private bool _isBoosterGuideShowing;
@@ -78,6 +84,7 @@ namespace FoodieMatch.UI
 
         private void OnDestroy()
         {
+            CompleteCoinRewardImmediately();
             HideLoading();
             UnsubscribeEvents();
         }
@@ -125,8 +132,10 @@ namespace FoodieMatch.UI
             _uiGlobalButtonClickSfx.Construct(audioService);
         }
 
-        public void ShowHome()
+        public void ShowHome(long coinBalance)
         {
+            CompleteCoinRewardImmediately();
+
             if (_popupManager == null)
             {
                 Debug.LogError("Cannot show home because PopupManager is missing.");
@@ -140,8 +149,74 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            homeView.SetActions(new HomeViewActions(OnHomePlayRequested, OnHomeSettingRequested));
+            homeView.SetActions(
+                new HomeViewActions(
+                    OnHomePlayRequested,
+                    OnHomeSettingRequested));
             homeView.SetPlayLevelNumber(_currentLevelNumber);
+            homeView.SetCoinBalance(coinBalance);
+        }
+
+        public void PlayHomeCoinReward(
+            long startingCoinBalance,
+            long targetCoinBalance,
+            int coinValuePerImage)
+        {
+            if (_popupManager == null)
+            {
+                return;
+            }
+
+            if (!_popupManager.TryGetOpened(out HomeView homeView))
+            {
+                return;
+            }
+
+            CoinCounterView coinCounter = homeView.GetCoinCounter();
+
+            if (coinCounter == null)
+            {
+                Debug.LogError("Cannot play home coin reward because CoinCounterView is missing.");
+                return;
+            }
+
+            PlayCoinReward(
+                coinCounter,
+                spawnPoint: null,
+                startingCoinBalance,
+                targetCoinBalance,
+                coinValuePerImage,
+                OnHomeCoinArrived);
+        }
+
+        public void PlayCoinReward(
+            CoinCounterView coinCounter,
+            RectTransform spawnPoint,
+            long startingCoinBalance,
+            long targetCoinBalance,
+            int coinValuePerImage,
+            Action coinArrived)
+        {
+            CoinRewardOverlayView coinRewardOverlay = GetOrCreateCoinRewardOverlay();
+
+            if (coinRewardOverlay == null)
+            {
+                coinCounter?.SetCoinBalance(targetCoinBalance);
+                return;
+            }
+
+            coinRewardOverlay.PlayCoinReward(
+                coinCounter,
+                spawnPoint,
+                startingCoinBalance,
+                targetCoinBalance,
+                coinValuePerImage,
+                coinArrived);
+        }
+
+        public void CompleteCoinRewardImmediately()
+        {
+            _coinRewardOverlayView?.CompleteRewardImmediately();
         }
 
         public void SetCurrentLevelNumber(int levelNumber)
@@ -156,6 +231,8 @@ namespace FoodieMatch.UI
 
         public void HideHome()
         {
+            CompleteCoinRewardImmediately();
+
             if (_popupManager == null)
             {
                 return;
@@ -538,6 +615,7 @@ namespace FoodieMatch.UI
 
         public void HideAllPopups()
         {
+            CompleteCoinRewardImmediately();
             _pendingBoosterGuides.Clear();
             _isBoosterGuideShowing = false;
 
@@ -686,6 +764,24 @@ namespace FoodieMatch.UI
             RefreshBoosterHud();
         }
 
+        private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
+        {
+            if (_coinRewardOverlayView != null)
+            {
+                return _coinRewardOverlayView;
+            }
+
+            if (_coinRewardOverlayPrefab == null || _rewardEffectRoot == null)
+            {
+                Debug.LogError("Coin reward overlay prefab or reward effect root is missing.");
+                return null;
+            }
+
+            _coinRewardOverlayView = Instantiate(_coinRewardOverlayPrefab, _rewardEffectRoot);
+            _coinRewardOverlayView.gameObject.name = _coinRewardOverlayPrefab.gameObject.name;
+            return _coinRewardOverlayView;
+        }
+
         private bool TryGetLoadingScreen(out LoadingScreenView loadingScreenView)
         {
             if (_loadingScreenView != null)
@@ -736,12 +832,18 @@ namespace FoodieMatch.UI
 
         private void OnHomePlayRequested()
         {
+            CompleteCoinRewardImmediately();
             PlayGameRequested?.Invoke();
         }
 
         private void OnHomeSettingRequested()
         {
             ShowSettingPopup();
+        }
+
+        private void OnHomeCoinArrived()
+        {
+            _audioService?.PlaySfx(AudioKeys.SfxCoinReceive);
         }
 
         private void OnGameplayPauseRequested()

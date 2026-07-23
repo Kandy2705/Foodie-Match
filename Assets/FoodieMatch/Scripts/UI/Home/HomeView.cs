@@ -1,6 +1,7 @@
 using System;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
+using FoodieMatch.UI.Reward;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,7 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
         [SerializeField] private TMP_Text _playLevelText;
+        [SerializeField] private CoinCounterView _coinCounterView;
 
         private Action _playClicked;
         private Action _settingClicked;
@@ -20,6 +22,7 @@ namespace FoodieMatch.UI.Home
         {
             EnsureButtonReferences();
             EnsureTextReferences();
+            EnsureCoinCounterReference();
 
             if (_playButton != null)
             {
@@ -59,6 +62,18 @@ namespace FoodieMatch.UI.Home
         {
             EnsureTextReferences();
             UiTmpText.SetText(_playLevelText, $"Level {levelNumber}");
+        }
+
+        public void SetCoinBalance(long coinBalance)
+        {
+            EnsureCoinCounterReference();
+            _coinCounterView?.SetCoinBalance(coinBalance);
+        }
+
+        public CoinCounterView GetCoinCounter()
+        {
+            EnsureCoinCounterReference();
+            return _coinCounterView;
         }
 
         public override void Dispose()
@@ -112,6 +127,14 @@ namespace FoodieMatch.UI.Home
             if (_playLevelText == null)
             {
                 _playLevelText = UiTmpText.FindChild(transform, "Text (TMP)");
+            }
+        }
+
+        private void EnsureCoinCounterReference()
+        {
+            if (_coinCounterView == null)
+            {
+                _coinCounterView = GetComponentInChildren<CoinCounterView>(true);
             }
         }
 

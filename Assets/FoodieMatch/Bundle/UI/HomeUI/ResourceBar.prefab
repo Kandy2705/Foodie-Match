@@ -490,8 +490,46 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 2850004482932567309, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9195090113304540354, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5373342136003834891}
   m_SourcePrefab: {fileID: 100100000, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+--- !u!1 &935865320185675315 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9195090113304540354, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+  m_PrefabInstance: {fileID: 8315713305402346225}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5373342136003834891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935865320185675315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b80796e682f866458ea7d0b3ae761c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _coinCountText: {fileID: 3779880267411446682}
+  _coinTarget: {fileID: 4319195573857163560}
+--- !u!114 &3779880267411446682 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5121591282378887531, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+  m_PrefabInstance: {fileID: 8315713305402346225}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!224 &4319195573857163560 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5230794957677990873, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+  m_PrefabInstance: {fileID: 8315713305402346225}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &5084301047158110194 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}

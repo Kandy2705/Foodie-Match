@@ -92,7 +92,7 @@ namespace FoodieMatch.App
             }
 
             int levelNumber = GetSavedPlayableLevelNumber();
-            OpenHome(levelNumber);
+            OpenHome(levelNumber, _playerProfileService.CoinBalance);
         }
 
         public void StartLevel(int levelNumber)
@@ -144,12 +144,16 @@ namespace FoodieMatch.App
             }
         }
 
-        private async Task EnterHomeWithLoadingSafelyAsync(int levelNumber)
+        private async Task EnterHomeWithLoadingSafelyAsync(
+            int levelNumber,
+            HomeCoinRewardPresentation coinRewardPresentation = null)
         {
             if (!TryBeginTransition())
             {
                 return;
             }
+
+            bool shouldPlayCoinReward = false;
 
             try
             {
@@ -158,7 +162,11 @@ namespace FoodieMatch.App
 
                 if (!_isDestroyed)
                 {
-                    OpenHome(levelNumber);
+                    long displayedCoinBalance = coinRewardPresentation == null
+                        ? _playerProfileService.CoinBalance
+                        : coinRewardPresentation.StartingCoinBalance;
+                    OpenHome(levelNumber, displayedCoinBalance);
+                    shouldPlayCoinReward = coinRewardPresentation != null;
                 }
 
                 await loadingTask;
@@ -170,6 +178,14 @@ namespace FoodieMatch.App
             finally
             {
                 FinishTransition();
+            }
+
+            if (shouldPlayCoinReward && !_isDestroyed)
+            {
+                _uiManager.PlayHomeCoinReward(
+                    coinRewardPresentation.StartingCoinBalance,
+                    coinRewardPresentation.TargetCoinBalance,
+                    coinRewardPresentation.CoinValuePerImage);
             }
         }
 
@@ -189,7 +205,7 @@ namespace FoodieMatch.App
             _gameplayController.StartLevel(levelNumber, _gameplayNavigationActions);
         }
 
-        private void OpenHome(int levelNumber)
+        private void OpenHome(int levelNumber, long coinBalance)
         {
             _levelAwaitingWinReward = 0;
             _isWinRewardProcessing = false;
@@ -197,7 +213,7 @@ namespace FoodieMatch.App
             _uiManager.HideAllPopups();
             _uiManager.HideGameplayHud();
             _uiManager.SetCurrentLevelNumber(levelNumber);
-            _uiManager.ShowHome();
+            _uiManager.ShowHome(coinBalance);
             _audioService?.PlayMusic(AudioKeys.MusicMenu);
             _activeLevelNumber = 0;
         }
@@ -595,6 +611,7 @@ namespace FoodieMatch.App
         {
             int completedLevelNumber = _levelAwaitingWinReward;
             int homeLevelNumber = completedLevelNumber;
+            long startingCoinBalance = _playerProfileService.CoinBalance;
 
             if (_levelRepository.TryGetNextLevel(completedLevelNumber, out _))
             {
@@ -604,8 +621,14 @@ namespace FoodieMatch.App
             _playerProfileService.ApplyLevelCompletionReward(
                 homeLevelNumber,
                 coinReward);
+            HomeCoinRewardPresentation coinRewardPresentation = new(
+                startingCoinBalance,
+                _playerProfileService.CoinBalance,
+                _economyConfig.CoinValuePerRewardImage);
             _levelAwaitingWinReward = 0;
-            _ = EnterHomeWithLoadingSafelyAsync(homeLevelNumber);
+            _ = EnterHomeWithLoadingSafelyAsync(
+                homeLevelNumber,
+                coinRewardPresentation);
         }
 
         private void CancelWinRewardSelection()
@@ -629,6 +652,25 @@ namespace FoodieMatch.App
             public BoosterType BoosterType { get; }
 
             public bool HasGrantedReward { get; set; }
+        }
+
+        private sealed class HomeCoinRewardPresentation
+        {
+            public HomeCoinRewardPresentation(
+                long startingCoinBalance,
+                long targetCoinBalance,
+                int coinValuePerImage)
+            {
+                StartingCoinBalance = startingCoinBalance;
+                TargetCoinBalance = targetCoinBalance;
+                CoinValuePerImage = coinValuePerImage;
+            }
+
+            public long StartingCoinBalance { get; }
+
+            public long TargetCoinBalance { get; }
+
+            public int CoinValuePerImage { get; }
         }
     }
 }
