@@ -1,8 +1,10 @@
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Time;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
@@ -14,6 +16,7 @@ using FoodieMatch.Data.Level;
 using FoodieMatch.Data.Level.Json;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
 using UnityEngine;
 
@@ -40,6 +43,9 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            IGameHeartConfig heartConfig =
+                GameHeartDefaults.CreateSnapshot();
+            IClock clock = new SystemClock();
             PlayerProfileSession profileSession = new();
             IPlayerProfileRepository profileRepository =
                 new PlayerPrefsPlayerProfileRepository(saveService);
@@ -48,10 +54,13 @@ namespace FoodieMatch.App
             PlayerProfileInitializer = new PlayerProfileInitializer(
                 profileRepository,
                 invalidProfileRecovery,
-                profileSession);
+                profileSession,
+                heartConfig);
             PlayerProfileService playerProfileService = new(
                 profileRepository,
-                profileSession);
+                profileSession,
+                heartConfig,
+                clock);
             playerProfileService.SaveFailed += LogPlayerProfileSaveFailure;
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);

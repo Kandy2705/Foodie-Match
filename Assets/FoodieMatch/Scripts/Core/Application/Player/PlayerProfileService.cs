@@ -1,6 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Time;
+using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 using FoodieMatch.Data.Booster;
 
@@ -11,6 +14,8 @@ namespace FoodieMatch.Core.Application.Player
         private readonly object _stateLock = new();
         private readonly IPlayerProfileRepository _profileRepository;
         private readonly PlayerProfileSession _profileSession;
+        private readonly IGameHeartConfig _heartConfig;
+        private readonly IClock _clock;
 
         private Task _saveQueue = Task.CompletedTask;
         private long _currentChangeVersion;
@@ -18,12 +23,17 @@ namespace FoodieMatch.Core.Application.Player
 
         public PlayerProfileService(
             IPlayerProfileRepository profileRepository,
-            PlayerProfileSession profileSession)
+            PlayerProfileSession profileSession,
+            IGameHeartConfig heartConfig,
+            IClock clock)
         {
             _profileRepository = profileRepository ??
                 throw new ArgumentNullException(nameof(profileRepository));
             _profileSession = profileSession ??
                 throw new ArgumentNullException(nameof(profileSession));
+            _heartConfig = heartConfig ??
+                throw new ArgumentNullException(nameof(heartConfig));
+            _clock = clock ?? throw new ArgumentNullException(nameof(clock));
         }
 
         public event Action<string> SaveFailed;
@@ -47,6 +57,54 @@ namespace FoodieMatch.Core.Application.Player
                 {
                     return _profileSession.CurrentRecord.Profile.CoinBalance;
                 }
+            }
+        }
+
+        public HeartState RefreshHeartState()
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                HeartState updatedHeartState =
+                    currentProfile.HeartState.RefreshRecovery(
+                        _heartConfig.MaxHeartCount,
+                        _heartConfig.HeartRecoveryDuration,
+                        _clock.UtcNow);
+
+                QueueProfileChange(
+                    currentProfile.WithHeartState(updatedHeartState));
+                return updatedHeartState;
+            }
+        }
+
+        public bool TrySpendHeart()
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                DateTimeOffset currentUtc = _clock.UtcNow;
+                HeartState refreshedHeartState =
+                    currentProfile.HeartState.RefreshRecovery(
+                        _heartConfig.MaxHeartCount,
+                        _heartConfig.HeartRecoveryDuration,
+                        currentUtc);
+
+                if (!refreshedHeartState.TrySpendHeart(
+                        _heartConfig.MaxHeartCount,
+                        currentUtc,
+                        out HeartState updatedHeartState))
+                {
+                    QueueProfileChange(
+                        currentProfile.WithHeartState(
+                            refreshedHeartState));
+                    return false;
+                }
+
+                QueueProfileChange(
+                    currentProfile.WithHeartState(updatedHeartState));
+                return true;
             }
         }
 
