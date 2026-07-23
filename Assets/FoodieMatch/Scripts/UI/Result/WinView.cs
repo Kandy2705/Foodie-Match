@@ -4,6 +4,7 @@ using FoodieMatch.UI.Popup;
 using Spine.Unity;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Result
@@ -16,8 +17,10 @@ namespace FoodieMatch.UI.Result
         [Header("References")]
         [SerializeField] private Button _claimCoinRewardButton;
         [SerializeField] private Button _doubleCoinRewardButton;
-        [SerializeField] private TMP_Text _rewardAmountText;
-        [SerializeField] private TMP_Text _rewardMultiplierText;
+        [FormerlySerializedAs("_rewardAmountText")]
+        [SerializeField] private TMP_Text _regularRewardAmountText;
+        [FormerlySerializedAs("_rewardMultiplierText")]
+        [SerializeField] private TMP_Text _doubleRewardAmountText;
         [SerializeField] private SkeletonGraphic _chefMascotSkeletonGraphic;
 
         private Action _claimCoinRewardClicked;
@@ -64,16 +67,15 @@ namespace FoodieMatch.UI.Result
             _doubleCoinRewardClicked = actions.DoubleCoinRewardClicked;
         }
 
-        public void SetRewardAmount(string amountText)
+        public void SetRewardAmounts(long regularRewardAmount, long doubleRewardAmount)
         {
             EnsureTextReferences();
-            UiTmpText.SetText(_rewardAmountText, amountText);
-        }
-
-        public void SetRewardMultiplier(string multiplierText)
-        {
-            EnsureTextReferences();
-            UiTmpText.SetText(_rewardMultiplierText, multiplierText);
+            UiTmpText.SetText(
+                _regularRewardAmountText,
+                Math.Max(0, regularRewardAmount).ToString());
+            UiTmpText.SetText(
+                _doubleRewardAmountText,
+                Math.Max(0, doubleRewardAmount).ToString());
         }
 
         public override void Dispose()
@@ -130,14 +132,14 @@ namespace FoodieMatch.UI.Result
 
         private void EnsureTextReferences()
         {
-            if (_rewardAmountText == null)
+            if (_regularRewardAmountText == null)
             {
-                _rewardAmountText = UiTmpText.FindChild(transform, "RewardAmountText");
+                _regularRewardAmountText = UiTmpText.FindChild(transform, "RewardAmountText");
             }
 
-            if (_rewardMultiplierText == null)
+            if (_doubleRewardAmountText == null)
             {
-                _rewardMultiplierText = UiTmpText.FindChild(transform, "RewardMultiplierText");
+                _doubleRewardAmountText = UiTmpText.FindChild(transform, "RewardMultiplierText");
             }
         }
 

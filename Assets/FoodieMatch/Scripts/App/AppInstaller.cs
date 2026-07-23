@@ -1,3 +1,5 @@
+using FoodieMatch.Core.Application.Advertising;
+using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
@@ -12,6 +14,7 @@ using FoodieMatch.Data.Level;
 using FoodieMatch.Data.Level.Json;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.UI.Advertising;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -65,11 +68,16 @@ namespace FoodieMatch.App
             BoardModelFactory boardModelFactory = new();
 
             BoosterManager boosterManager = new(playerProfileService);
+            IGameEconomyConfig economyConfig =
+                GameEconomyDefaults.CreateSnapshot();
 
             appRoot.UIManager.Construct(
                 GameplayEvents,
                 audioService,
-                boosterManager);
+                boosterManager,
+                economyConfig);
+            IRewardedAdService rewardedAdService =
+                new FakeRewardedAdService(appRoot.UIManager);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver);
             appRoot.GameplayMotionPresenter.Construct(
@@ -95,6 +103,8 @@ namespace FoodieMatch.App
                 appRoot.GameplayController,
                 playerProfileService,
                 boosterManager,
+                economyConfig,
+                rewardedAdService,
                 levelRepository,
                 audioService);
 

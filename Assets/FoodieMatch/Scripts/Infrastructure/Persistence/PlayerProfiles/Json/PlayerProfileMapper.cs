@@ -43,6 +43,7 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
             {
                 PlayerProfile profile = new(
                     profileDto.CurrentLevelNumber,
+                    profileDto.CoinBalance,
                     boosterCounts,
                     seenBoosterGuides);
                 record = new PlayerProfileRecord(profile, profileDto.Revision);
@@ -77,6 +78,7 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 SchemaVersion = PlayerProfileDataVersions.Current,
                 Revision = revision,
                 CurrentLevelNumber = profile.CurrentLevelNumber,
+                CoinBalance = profile.CoinBalance,
                 BoosterCounts = profile.BoosterCounts
                     .OrderBy(boosterCount => (int)boosterCount.Key)
                     .Select(

@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Advertising;
+using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Infrastructure.Audio;
@@ -16,12 +18,17 @@ namespace FoodieMatch.App
         private GameplayController _gameplayController;
         private PlayerProfileService _playerProfileService;
         private BoosterManager _boosterManager;
+        private IGameEconomyConfig _economyConfig;
+        private IRewardedAdService _rewardedAdService;
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
+        private BoosterRewardedAdRequest _activeBoosterRewardedAdRequest;
         private bool _isTransitionRunning;
+        private bool _isWinRewardProcessing;
         private bool _isDestroyed;
         private int _activeLevelNumber;
+        private int _levelAwaitingWinReward;
 
         private void OnDestroy()
         {
@@ -35,6 +42,8 @@ namespace FoodieMatch.App
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
+            _uiManager.BoosterCoinPurchaseRequested -= OnBoosterCoinPurchaseRequested;
+            _uiManager.BoosterRewardedAdRequested -= OnBoosterRewardedAdRequested;
             _uiManager.BoosterUseHandler = null;
             _uiManager.HideLoading();
         }
@@ -44,6 +53,8 @@ namespace FoodieMatch.App
             GameplayController gameplayController,
             PlayerProfileService playerProfileService,
             BoosterManager boosterManager,
+            IGameEconomyConfig economyConfig,
+            IRewardedAdService rewardedAdService,
             ILevelRepository levelRepository,
             IAudioService audioService)
         {
@@ -51,12 +62,14 @@ namespace FoodieMatch.App
             _gameplayController = gameplayController;
             _playerProfileService = playerProfileService;
             _boosterManager = boosterManager;
+            _economyConfig = economyConfig;
+            _rewardedAdService = rewardedAdService;
             _levelRepository = levelRepository;
             _audioService = audioService;
             _gameplayNavigationActions = new(
                 OnGameplayHomeRequested,
                 OnGameplayRetryRequested,
-                OnWinRewardClaimed);
+                OnGameplayLevelWon);
 
             _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.PlayGameRequested += OnPlayGameRequested;
@@ -64,6 +77,10 @@ namespace FoodieMatch.App
             _uiManager.LeaveGameRequested += OnLeaveGameRequested;
             _uiManager.RestartGameRequested -= OnRestartGameRequested;
             _uiManager.RestartGameRequested += OnRestartGameRequested;
+            _uiManager.BoosterCoinPurchaseRequested -= OnBoosterCoinPurchaseRequested;
+            _uiManager.BoosterCoinPurchaseRequested += OnBoosterCoinPurchaseRequested;
+            _uiManager.BoosterRewardedAdRequested -= OnBoosterRewardedAdRequested;
+            _uiManager.BoosterRewardedAdRequested += OnBoosterRewardedAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
         }
 
@@ -75,7 +92,7 @@ namespace FoodieMatch.App
             }
 
             int levelNumber = GetSavedPlayableLevelNumber();
-            OpenHome(levelNumber);
+            OpenHome(levelNumber, _playerProfileService.CoinBalance);
         }
 
         public void StartLevel(int levelNumber)
@@ -127,12 +144,16 @@ namespace FoodieMatch.App
             }
         }
 
-        private async Task EnterHomeWithLoadingSafelyAsync(int levelNumber)
+        private async Task EnterHomeWithLoadingSafelyAsync(
+            int levelNumber,
+            HomeCoinRewardPresentation coinRewardPresentation = null)
         {
             if (!TryBeginTransition())
             {
                 return;
             }
+
+            bool shouldPlayCoinReward = false;
 
             try
             {
@@ -141,7 +162,11 @@ namespace FoodieMatch.App
 
                 if (!_isDestroyed)
                 {
-                    OpenHome(levelNumber);
+                    long displayedCoinBalance = coinRewardPresentation == null
+                        ? _playerProfileService.CoinBalance
+                        : coinRewardPresentation.StartingCoinBalance;
+                    OpenHome(levelNumber, displayedCoinBalance);
+                    shouldPlayCoinReward = coinRewardPresentation != null;
                 }
 
                 await loadingTask;
@@ -154,10 +179,20 @@ namespace FoodieMatch.App
             {
                 FinishTransition();
             }
+
+            if (shouldPlayCoinReward && !_isDestroyed)
+            {
+                _uiManager.PlayHomeCoinReward(
+                    coinRewardPresentation.StartingCoinBalance,
+                    coinRewardPresentation.TargetCoinBalance,
+                    coinRewardPresentation.CoinValuePerImage);
+            }
         }
 
         private void OpenLevel(int levelNumber)
         {
+            _levelAwaitingWinReward = 0;
+            _isWinRewardProcessing = false;
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
             _uiManager.HideHome();
@@ -170,13 +205,15 @@ namespace FoodieMatch.App
             _gameplayController.StartLevel(levelNumber, _gameplayNavigationActions);
         }
 
-        private void OpenHome(int levelNumber)
+        private void OpenHome(int levelNumber, long coinBalance)
         {
+            _levelAwaitingWinReward = 0;
+            _isWinRewardProcessing = false;
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
             _uiManager.HideGameplayHud();
             _uiManager.SetCurrentLevelNumber(levelNumber);
-            _uiManager.ShowHome();
+            _uiManager.ShowHome(coinBalance);
             _audioService?.PlayMusic(AudioKeys.MusicMenu);
             _activeLevelNumber = 0;
         }
@@ -241,6 +278,18 @@ namespace FoodieMatch.App
             if (_boosterManager == null)
             {
                 Debug.LogError("BoosterManager has not been constructed.");
+                return false;
+            }
+
+            if (_economyConfig == null)
+            {
+                Debug.LogError("GameEconomyConfig has not been constructed.");
+                return false;
+            }
+
+            if (_rewardedAdService == null)
+            {
+                Debug.LogError("RewardedAdService has not been constructed.");
                 return false;
             }
 
@@ -309,6 +358,114 @@ namespace FoodieMatch.App
             return false;
         }
 
+        private void OnBoosterCoinPurchaseRequested(BoosterType boosterType)
+        {
+            if (_isDestroyed)
+            {
+                return;
+            }
+
+            try
+            {
+                int coinPrice = _economyConfig.GetBoosterPrice(boosterType);
+
+                if (!_boosterManager.TryPurchase(boosterType, coinPrice))
+                {
+                    return;
+                }
+
+                UpdateUiAfterBoosterGranted(boosterType);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void OnBoosterRewardedAdRequested(BoosterType boosterType)
+        {
+            if (_isDestroyed || _activeBoosterRewardedAdRequest != null)
+            {
+                return;
+            }
+
+            BoosterRewardedAdRequest request = new(boosterType);
+            _activeBoosterRewardedAdRequest = request;
+
+            try
+            {
+                bool started = _rewardedAdService.TryShow(
+                    RewardedAdPlacement.BoosterReward,
+                    new RewardedAdCallbacks(
+                        () => OnBoosterAdRewarded(request),
+                        () => OnBoosterAdClosed(request),
+                        () => OnBoosterAdDisplayFailed(request)));
+
+                if (!started)
+                {
+                    FinishBoosterRewardedAd(request);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                FinishBoosterRewardedAd(request);
+            }
+        }
+
+        private void OnBoosterAdRewarded(BoosterRewardedAdRequest request)
+        {
+            if (_isDestroyed || request.HasGrantedReward)
+            {
+                return;
+            }
+
+            try
+            {
+                _boosterManager.Add(request.BoosterType, amount: 1);
+                request.HasGrantedReward = true;
+
+                if (ReferenceEquals(_activeBoosterRewardedAdRequest, request))
+                {
+                    UpdateUiAfterBoosterGranted(request.BoosterType);
+                    return;
+                }
+
+                _uiManager.RefreshBoosterInventory();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void OnBoosterAdClosed(BoosterRewardedAdRequest request)
+        {
+            FinishBoosterRewardedAd(request);
+        }
+
+        private void OnBoosterAdDisplayFailed(BoosterRewardedAdRequest request)
+        {
+            FinishBoosterRewardedAd(request);
+        }
+
+        private void FinishBoosterRewardedAd(BoosterRewardedAdRequest request)
+        {
+            if (ReferenceEquals(_activeBoosterRewardedAdRequest, request))
+            {
+                _activeBoosterRewardedAdRequest = null;
+            }
+        }
+
+        private void UpdateUiAfterBoosterGranted(BoosterType boosterType)
+        {
+            _uiManager.HideBoosterBuyPopup();
+            _uiManager.RefreshBoosterInventory();
+            Debug.Log(
+                $"Granted 1x {boosterType} booster. " +
+                $"Total: {_boosterManager.GetCount(boosterType)}");
+        }
+
         private void OnLeaveGameRequested()
         {
             BackToHome();
@@ -332,17 +489,188 @@ namespace FoodieMatch.App
             StartLevel(levelNumber);
         }
 
-        private void OnWinRewardClaimed(int completedLevelNumber)
+        private void OnGameplayLevelWon(int completedLevelNumber)
         {
+            if (_isDestroyed ||
+                completedLevelNumber != _activeLevelNumber ||
+                _levelAwaitingWinReward > 0)
+            {
+                return;
+            }
+
+            _levelAwaitingWinReward = completedLevelNumber;
+            _isWinRewardProcessing = false;
+
+            long regularCoinReward = _economyConfig.LevelCompleteCoinReward;
+            long doubleCoinReward = checked(
+                regularCoinReward * _economyConfig.RewardedAdCoinMultiplier);
+
+            _uiManager.ShowWinPopup(
+                OnRegularWinRewardSelected,
+                OnRewardedAdWinRewardSelected,
+                regularCoinReward,
+                doubleCoinReward);
+        }
+
+        private void OnRegularWinRewardSelected()
+        {
+            if (!TryBeginWinReward())
+            {
+                return;
+            }
+
+            try
+            {
+                CompleteWinReward(_economyConfig.LevelCompleteCoinReward);
+            }
+            catch (Exception exception)
+            {
+                HandleWinRewardFailure(exception);
+            }
+        }
+
+        private void OnRewardedAdWinRewardSelected()
+        {
+            if (!TryBeginWinReward())
+            {
+                return;
+            }
+
+            try
+            {
+                bool started = _rewardedAdService.TryShow(
+                    RewardedAdPlacement.LevelCompleteCoinReward,
+                    new RewardedAdCallbacks(
+                        OnRewardedAdRewarded,
+                        OnRewardedAdClosed,
+                        OnRewardedAdDisplayFailed));
+
+                if (!started)
+                {
+                    CancelWinRewardSelection();
+                }
+            }
+            catch (Exception exception)
+            {
+                HandleWinRewardFailure(exception);
+            }
+        }
+
+        private void OnRewardedAdRewarded()
+        {
+            if (_isDestroyed ||
+                _levelAwaitingWinReward <= 0 ||
+                _levelAwaitingWinReward != _activeLevelNumber)
+            {
+                return;
+            }
+
+            try
+            {
+                long coinReward = checked(
+                    (long)_economyConfig.LevelCompleteCoinReward *
+                    _economyConfig.RewardedAdCoinMultiplier);
+                CompleteWinReward(coinReward);
+            }
+            catch (Exception exception)
+            {
+                HandleWinRewardFailure(exception);
+            }
+        }
+
+        private void OnRewardedAdClosed()
+        {
+            if (!_isDestroyed && _levelAwaitingWinReward > 0)
+            {
+                CancelWinRewardSelection();
+            }
+        }
+
+        private void OnRewardedAdDisplayFailed()
+        {
+            if (!_isDestroyed)
+            {
+                CancelWinRewardSelection();
+            }
+        }
+
+        private bool TryBeginWinReward()
+        {
+            if (_isWinRewardProcessing ||
+                _levelAwaitingWinReward <= 0 ||
+                _levelAwaitingWinReward != _activeLevelNumber)
+            {
+                return false;
+            }
+
+            _isWinRewardProcessing = true;
+            return true;
+        }
+
+        private void CompleteWinReward(long coinReward)
+        {
+            int completedLevelNumber = _levelAwaitingWinReward;
             int homeLevelNumber = completedLevelNumber;
+            long startingCoinBalance = _playerProfileService.CoinBalance;
 
             if (_levelRepository.TryGetNextLevel(completedLevelNumber, out _))
             {
                 homeLevelNumber++;
             }
 
-            _playerProfileService.SetCurrentLevelNumber(homeLevelNumber);
-            _ = EnterHomeWithLoadingSafelyAsync(homeLevelNumber);
+            _playerProfileService.ApplyLevelCompletionReward(
+                homeLevelNumber,
+                coinReward);
+            HomeCoinRewardPresentation coinRewardPresentation = new(
+                startingCoinBalance,
+                _playerProfileService.CoinBalance,
+                _economyConfig.CoinValuePerRewardImage);
+            _levelAwaitingWinReward = 0;
+            _ = EnterHomeWithLoadingSafelyAsync(
+                homeLevelNumber,
+                coinRewardPresentation);
+        }
+
+        private void CancelWinRewardSelection()
+        {
+            _isWinRewardProcessing = false;
+        }
+
+        private void HandleWinRewardFailure(Exception exception)
+        {
+            Debug.LogException(exception);
+            CancelWinRewardSelection();
+        }
+
+        private sealed class BoosterRewardedAdRequest
+        {
+            public BoosterRewardedAdRequest(BoosterType boosterType)
+            {
+                BoosterType = boosterType;
+            }
+
+            public BoosterType BoosterType { get; }
+
+            public bool HasGrantedReward { get; set; }
+        }
+
+        private sealed class HomeCoinRewardPresentation
+        {
+            public HomeCoinRewardPresentation(
+                long startingCoinBalance,
+                long targetCoinBalance,
+                int coinValuePerImage)
+            {
+                StartingCoinBalance = startingCoinBalance;
+                TargetCoinBalance = targetCoinBalance;
+                CoinValuePerImage = coinValuePerImage;
+            }
+
+            public long StartingCoinBalance { get; }
+
+            public long TargetCoinBalance { get; }
+
+            public int CoinValuePerImage { get; }
         }
     }
 }

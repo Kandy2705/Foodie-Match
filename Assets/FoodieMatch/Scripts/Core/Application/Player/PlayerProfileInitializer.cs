@@ -119,6 +119,7 @@ namespace FoodieMatch.Core.Application.Player
 
             return new PlayerProfile(
                 currentLevelNumber: 1,
+                coinBalance: 0,
                 boosterCounts,
                 seenBoosterGuides: Array.Empty<BoosterType>());
         }

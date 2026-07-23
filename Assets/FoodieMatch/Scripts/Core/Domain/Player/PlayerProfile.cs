@@ -13,6 +13,7 @@ namespace FoodieMatch.Core.Domain.Player
 
         public PlayerProfile(
             int currentLevelNumber,
+            long coinBalance,
             IReadOnlyDictionary<BoosterType, int> boosterCounts,
             IReadOnlyCollection<BoosterType> seenBoosterGuides)
         {
@@ -24,7 +25,16 @@ namespace FoodieMatch.Core.Domain.Player
                     "Current level number must be at least 1.");
             }
 
+            if (coinBalance < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(coinBalance),
+                    coinBalance,
+                    "Coin balance cannot be negative.");
+            }
+
             CurrentLevelNumber = currentLevelNumber;
+            CoinBalance = coinBalance;
             _boosterCounts = CopyBoosterCounts(boosterCounts);
             _seenBoosterGuideSet = CopySeenBoosterGuides(seenBoosterGuides);
             _seenBoosterGuides = new ReadOnlyCollection<BoosterType>(
@@ -32,6 +42,8 @@ namespace FoodieMatch.Core.Domain.Player
         }
 
         public int CurrentLevelNumber { get; }
+
+        public long CoinBalance { get; }
 
         public IReadOnlyDictionary<BoosterType, int> BoosterCounts => _boosterCounts;
 
@@ -60,6 +72,21 @@ namespace FoodieMatch.Core.Domain.Player
 
             return new PlayerProfile(
                 currentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides);
+        }
+
+        public PlayerProfile WithCoinBalance(long coinBalance)
+        {
+            if (coinBalance == CoinBalance)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                coinBalance,
                 _boosterCounts,
                 _seenBoosterGuides);
         }
@@ -90,6 +117,7 @@ namespace FoodieMatch.Core.Domain.Player
 
             return new PlayerProfile(
                 CurrentLevelNumber,
+                CoinBalance,
                 boosterCounts,
                 _seenBoosterGuides);
         }
@@ -110,6 +138,7 @@ namespace FoodieMatch.Core.Domain.Player
 
             return new PlayerProfile(
                 CurrentLevelNumber,
+                CoinBalance,
                 _boosterCounts,
                 seenBoosterGuides);
         }

@@ -857,7 +857,7 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayWorldClickSfx.StopListening();
             _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
-            _uiManager.ShowWinPopup(OnWinRewardClicked, OnWinRewardClicked);
+            _navigationActions?.LevelWon.Invoke(session.LevelNumber);
         }
 
         private void ShowReviveFlow(GameplaySession session)
@@ -925,18 +925,6 @@ namespace FoodieMatch.Features.Gameplay
             return _comboDurationSeconds > 0f &&
                    !float.IsNaN(_comboDurationSeconds) &&
                    !float.IsInfinity(_comboDurationSeconds);
-        }
-
-        private void OnWinRewardClicked()
-        {
-            GameplaySession session = _session;
-
-            if (session == null)
-            {
-                return;
-            }
-
-            _navigationActions?.WinRewardClaimed.Invoke(session.LevelNumber);
         }
 
         private void OnTryAgainClicked()
