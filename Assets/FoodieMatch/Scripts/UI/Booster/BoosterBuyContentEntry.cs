@@ -2,7 +2,7 @@ using System;
 using FoodieMatch.Core.Domain.Booster;
 using UnityEngine;
 
-namespace FoodieMatch.Data.Booster
+namespace FoodieMatch.UI.Booster
 {
     [Serializable]
     public sealed class BoosterBuyContentEntry
