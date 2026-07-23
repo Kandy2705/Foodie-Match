@@ -604,8 +604,8 @@ MonoBehaviour:
     _label: Shop
     _screen: {fileID: 0}
   - _tab: 1
-    _button: {fileID: 0}
-    _target: {fileID: 0}
+    _button: {fileID: 6404797626472140877}
+    _target: {fileID: 7021249737317232918}
     _normalIcon: {fileID: 0}
     _selectedIcon: {fileID: 0}
     _label: 
@@ -618,22 +618,20 @@ MonoBehaviour:
     _label: Home
     _screen: {fileID: 0}
   - _tab: 3
-    _button: {fileID: 0}
-    _target: {fileID: 0}
+    _button: {fileID: 1960511801439968795}
+    _target: {fileID: 6052525040010455197}
     _normalIcon: {fileID: 0}
     _selectedIcon: {fileID: 0}
     _label: 
     _screen: {fileID: 0}
   - _tab: 4
-    _button: {fileID: 0}
-    _target: {fileID: 0}
+    _button: {fileID: 5190759610885600563}
+    _target: {fileID: 4272007524029545215}
     _normalIcon: {fileID: 0}
     _selectedIcon: {fileID: 0}
     _label: 
     _screen: {fileID: 0}
   _initialTab: 2
-  _indicatorMoveDuration: 0.25
-  _indicatorMoveEase: 9
   _screenFadeDuration: 0.15
 --- !u!1 &4048206762028520322
 GameObject:

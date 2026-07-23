@@ -36,7 +36,10 @@ namespace FoodieMatch.UI.Navigation
             private string _label;
 
             [SerializeField]
-            private CanvasGroup _screen;
+            private RectTransform _screenRoot;
+
+            [SerializeField]
+            private CanvasGroup _screenCanvasGroup;
 
             [NonSerialized]
             public UnityAction ClickAction;
@@ -47,7 +50,14 @@ namespace FoodieMatch.UI.Navigation
             public Image NormalIcon => _normalIcon;
             public Sprite SelectedIcon => _selectedIcon;
             public string Label => _label;
-            public CanvasGroup Screen => _screen;
+            public CanvasGroup Screen =>
+                _screenCanvasGroup;
+
+            public RectTransform ScreenRect =>
+                _screenRoot;
+
+            [NonSerialized]
+            public Vector2 InitialAnchoredPosition;
         }
 
         [Header("Selection Indicator")]
@@ -71,21 +81,55 @@ namespace FoodieMatch.UI.Navigation
         private BottomNavigationTab _initialTab =
             BottomNavigationTab.Home;
 
-        [Header("Screen Fade")]
+        [Header("Screen Slide")]
+        [SerializeField, Min(0f)]
+        private float _screenSlideDuration = 0.32f;
+
         [SerializeField]
-        private float _screenFadeDuration = 0.15f;
+        private Ease _screenSlideEase =
+            Ease.OutCubic;
 
         private TabBinding _currentTab;
+        private bool _isInitialized;
         private bool _isTransitioning;
+
+        private void Start()
+        {
+            _ = InitializeNavigationSafelyAsync();
+        }
+
+        private async Task InitializeNavigationSafelyAsync()
+        {
+            if (!HasRequiredReferences())
+            {
+                enabled = false;
+                return;
+            }
+
+            for (int i = 0; i < _tabs.Length; i++)
+            {
+                TabBinding binding = _tabs[i];
+
+                if (binding?.ScreenRect == null)
+                {
+                    continue;
+                }
+
+                binding.ScreenRect.gameObject.SetActive(true);
+            }
+
+            await Task.Yield();
+
+            Canvas.ForceUpdateCanvases();
+
+            InitializeNavigation();
+
+            _isInitialized = true;
+        }
 
         private void OnEnable()
         {
             SubscribeButtons();
-        }
-
-        private void Start()
-        {
-            InitializeNavigation();
         }
 
         private void OnDisable()
@@ -166,6 +210,19 @@ namespace FoodieMatch.UI.Navigation
 
             _currentTab = initialBinding;
 
+            BringScreenToFront(initialBinding);
+
+            for (int i = 0; i < _tabs.Length; i++)
+            {
+                TabBinding b = _tabs[i];
+
+                if (b?.ScreenRect != null)
+                {
+                    b.InitialAnchoredPosition =
+                        b.ScreenRect.anchoredPosition;
+                }
+            }
+
             for (int i = 0; i < _tabs.Length; i++)
             {
                 TabBinding binding = _tabs[i];
@@ -176,7 +233,7 @@ namespace FoodieMatch.UI.Navigation
                         initialBinding);
 
                 SetScreenImmediately(
-                    binding.Screen,
+                    binding,
                     selected);
 
                 SetNormalIconVisible(
@@ -198,7 +255,8 @@ namespace FoodieMatch.UI.Navigation
         private void HandleTabClicked(
             TabBinding selectedBinding)
         {
-            if (selectedBinding == null ||
+            if (!_isInitialized ||
+                selectedBinding == null ||
                 ReferenceEquals(
                     selectedBinding,
                     _currentTab) ||
@@ -259,16 +317,19 @@ namespace FoodieMatch.UI.Navigation
                 selectedBinding,
                 false);
 
-            _currentTab =
-                selectedBinding;
-
             _selectionAnimator.SetBool(
                 IsSelectedHash,
                 true);
 
+            BringScreenToFront(
+                selectedBinding);
+
             await SwitchScreenAsync(
-                previousBinding?.Screen,
-                selectedBinding.Screen);
+                previousBinding,
+                selectedBinding);
+
+            _currentTab =
+                selectedBinding;
         }
 
         private void MoveIndicatorImmediately(
@@ -310,100 +371,164 @@ namespace FoodieMatch.UI.Navigation
             return targetLocalPosition.x;
         }
 
-        private async Task SwitchScreenAsync(
-            CanvasGroup previousScreen,
-            CanvasGroup selectedScreen)
+        private int GetTabIndex(
+            TabBinding binding)
         {
-            if (ReferenceEquals(
-                    previousScreen,
-                    selectedScreen))
+            if (_tabs == null ||
+                binding == null)
             {
-                return;
+                return -1;
             }
 
-            if (previousScreen != null)
+            for (int i = 0;
+                 i < _tabs.Length;
+                 i++)
             {
-                previousScreen.interactable =
-                    false;
-
-                previousScreen.blocksRaycasts =
-                    false;
-
-                await FadeScreenAsync(
-                    previousScreen,
-                    0f,
-                    _screenFadeDuration);
-
-                previousScreen
-                    .gameObject
-                    .SetActive(false);
+                if (ReferenceEquals(
+                        _tabs[i],
+                        binding))
+                {
+                    return i;
+                }
             }
 
-            if (selectedScreen == null)
-            {
-                return;
-            }
-
-            selectedScreen
-                .gameObject
-                .SetActive(true);
-
-            selectedScreen.alpha = 0f;
-            selectedScreen.interactable = false;
-            selectedScreen.blocksRaycasts = false;
-
-            await FadeScreenAsync(
-                selectedScreen,
-                1f,
-                _screenFadeDuration);
-
-            selectedScreen.interactable = true;
-            selectedScreen.blocksRaycasts = true;
+            return -1;
         }
 
-        private static async Task FadeScreenAsync(
-            CanvasGroup canvasGroup,
-            float targetAlpha,
-            float duration)
+        private async Task SwitchScreenAsync(
+            TabBinding previousBinding,
+            TabBinding selectedBinding)
         {
-            if (canvasGroup == null)
+            if (previousBinding == null ||
+                selectedBinding == null ||
+                ReferenceEquals(
+                    previousBinding,
+                    selectedBinding))
             {
                 return;
             }
 
-            float startAlpha =
-                canvasGroup.alpha;
+            CanvasGroup previousScreen =
+                previousBinding.Screen;
 
-            if (duration <= 0f ||
-                Mathf.Approximately(
-                    startAlpha,
-                    targetAlpha))
+            CanvasGroup selectedScreen =
+                selectedBinding.Screen;
+
+            RectTransform previousRect =
+                previousBinding.ScreenRect;
+
+            RectTransform selectedRect =
+                selectedBinding.ScreenRect;
+
+            if (previousScreen == null ||
+                selectedScreen == null ||
+                previousRect == null ||
+                selectedRect == null)
             {
-                canvasGroup.alpha =
-                    targetAlpha;
+                Debug.LogError(
+                    "Bottom navigation screen references " +
+                    "are missing.",
+                    this);
 
                 return;
             }
 
-            await Tween.Custom(
-                startValue: startAlpha,
-                endValue: targetAlpha,
-                duration: duration,
-                onValueChange: value =>
-                {
-                    if (canvasGroup != null)
-                    {
-                        canvasGroup.alpha =
-                            value;
-                    }
-                },
-                ease: Ease.Linear);
+            RectTransform screenParent =
+                previousRect.parent as RectTransform;
 
-            if (canvasGroup != null)
+            if (screenParent == null)
             {
-                canvasGroup.alpha =
-                    targetAlpha;
+                Debug.LogError(
+                    "Bottom navigation ScreenRoot must " +
+                    "use RectTransform.",
+                    this);
+
+                return;
             }
+
+            float screenWidth =
+                screenParent.rect.width;
+
+            if (screenWidth <= 0f)
+            {
+                return;
+            }
+
+            int previousIndex =
+                GetTabIndex(previousBinding);
+
+            int selectedIndex =
+                GetTabIndex(selectedBinding);
+
+            bool selectedIsOnLeft =
+                selectedIndex < previousIndex;
+
+            Vector2 previousBasePosition =
+                previousBinding.InitialAnchoredPosition;
+
+            Vector2 selectedBasePosition =
+                selectedBinding.InitialAnchoredPosition;
+
+            float previousTargetX =
+                previousBasePosition.x +
+                (selectedIsOnLeft
+                    ? screenWidth
+                    : -screenWidth);
+
+            float selectedStartX =
+                selectedBasePosition.x +
+                (selectedIsOnLeft
+                    ? -screenWidth
+                    : screenWidth);
+
+            previousScreen.interactable = false;
+            previousScreen.blocksRaycasts = false;
+
+            selectedScreen.interactable = false;
+            selectedScreen.blocksRaycasts = false;
+            selectedScreen.alpha = 0f;
+
+            previousRect.anchoredPosition =
+                previousBasePosition;
+
+            selectedRect.anchoredPosition =
+                new Vector2(
+                    selectedStartX,
+                    selectedBasePosition.y);
+
+            await Task.Yield();
+
+            selectedScreen.alpha = 1f;
+
+            Sequence sequence =
+                Sequence.Create(
+                    Tween.UIAnchoredPositionX(
+                        previousRect,
+                        previousTargetX,
+                        _screenSlideDuration,
+                        _screenSlideEase))
+                .Group(
+                    Tween.UIAnchoredPositionX(
+                        selectedRect,
+                        selectedBasePosition.x,
+                        _screenSlideDuration,
+                        _screenSlideEase));
+
+            await sequence;
+
+            previousScreen.alpha = 0f;
+            previousScreen.interactable = false;
+            previousScreen.blocksRaycasts = false;
+
+            previousRect.anchoredPosition =
+                previousBasePosition;
+
+            selectedRect.anchoredPosition =
+                selectedBasePosition;
+
+            selectedScreen.alpha = 1f;
+            selectedScreen.interactable = true;
+            selectedScreen.blocksRaycasts = true;
         }
 
         private void UpdateIndicatorContent(
@@ -444,25 +569,42 @@ namespace FoodieMatch.UI.Navigation
         }
 
         private static void SetScreenImmediately(
-            CanvasGroup screen,
+            TabBinding binding,
             bool visible)
         {
-            if (screen == null)
+            if (binding?.Screen == null ||
+                binding.ScreenRect == null)
             {
                 return;
             }
 
-            screen.gameObject.SetActive(
-                visible);
+            binding.ScreenRect.gameObject.SetActive(true);
 
-            screen.alpha =
+            binding.Screen.alpha =
                 visible ? 1f : 0f;
 
-            screen.interactable =
+            binding.Screen.interactable =
                 visible;
 
-            screen.blocksRaycasts =
+            binding.Screen.blocksRaycasts =
                 visible;
+
+            binding.ScreenRect.anchoredPosition =
+                binding.InitialAnchoredPosition;
+        }
+
+        private static void BringScreenToFront(
+            TabBinding binding)
+        {
+            RectTransform screenRect =
+                binding?.ScreenRect;
+
+            if (screenRect == null)
+            {
+                return;
+            }
+
+            screenRect.SetAsLastSibling();
         }
 
         private TabBinding FindBinding(
