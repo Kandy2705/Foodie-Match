@@ -888,7 +888,10 @@ namespace FoodieMatch.UI
 
             if (_returnToReviveOnLeaveClose)
             {
-                ShowRevivePopup();
+                ShowRevivePopup(
+                    onBoxRescueConfirmed:
+                        _pendingBoxRescueCallback);
+
                 return;
             }
 
@@ -934,7 +937,6 @@ namespace FoodieMatch.UI
 
         private void OnReviveCloseClicked()
         {
-            _pendingBoxRescueCallback = null;
             HideRevivePopup();
             _returnToReviveOnLeaveClose = true;
             ShowLeaveGamePopup();
@@ -942,20 +944,31 @@ namespace FoodieMatch.UI
 
         private void OnReviveFreeAdsClicked()
         {
-            Action callback = _pendingBoxRescueCallback;
-            _pendingBoxRescueCallback = null;
-            HideRevivePopup();
-
-            callback?.Invoke();
+            ConfirmBoxRescue();
         }
 
         private void OnRevivePlayOnClicked()
         {
+            Debug.Log("Revive Play On Clicked");
+            ConfirmBoxRescue();
+        }
+
+        private void ConfirmBoxRescue()
+        {
             Action callback = _pendingBoxRescueCallback;
+
+            if (callback == null)
+            {
+                Debug.LogError("Box rescue callback is missing.");
+                return;
+            }
+
             _pendingBoxRescueCallback = null;
+            _returnToReviveOnLeaveClose = false;
+
             HideRevivePopup();
 
-            callback?.Invoke();
+            callback.Invoke();
         }
 
         private void OnLevelStarted(LevelStartedEvent eventData)
