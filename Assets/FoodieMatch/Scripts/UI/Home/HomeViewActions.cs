@@ -8,8 +8,10 @@ namespace FoodieMatch.UI.Home
             Action playClicked,
             Action settingClicked)
         {
-            PlayClicked = playClicked ?? throw new ArgumentNullException(nameof(playClicked));
-            SettingClicked = settingClicked ?? throw new ArgumentNullException(nameof(settingClicked));
+            PlayClicked = playClicked ??
+                throw new ArgumentNullException(nameof(playClicked));
+            SettingClicked = settingClicked ??
+                throw new ArgumentNullException(nameof(settingClicked));
         }
 
         public Action PlayClicked { get; }

@@ -1,4 +1,6 @@
 using System;
+using FoodieMatch.Core.Application.Player;
+using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using Spine.Unity;
 using UnityEngine;
@@ -6,7 +8,7 @@ using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Result
 {
-    public sealed class LoseView : PopupBase
+    public sealed class LoseView : PopupBase, IPlayerResourceView
     {
         private const string LoseAnimationName = "lose";
         private const string IdleAnimationName = "idle";
@@ -15,6 +17,7 @@ namespace FoodieMatch.UI.Result
         [SerializeField] private Button _tryAgainButton;
         [SerializeField] private Button _homeButton;
         [SerializeField] private SkeletonGraphic _chefMascotSkeletonGraphic;
+        [SerializeField] private ResourceBarView _resourceBarView;
 
         private Action _tryAgainClicked;
         private Action _homeClicked;
@@ -57,6 +60,15 @@ namespace FoodieMatch.UI.Result
         {
             _tryAgainClicked = actions.TryAgainClicked;
             _homeClicked = actions.HomeClicked;
+        }
+
+        public void SetPlayerResources(
+            long coinBalance,
+            HeartStatus heartStatus)
+        {
+            _resourceBarView?.SetPlayerResources(
+                coinBalance,
+                heartStatus);
         }
 
         public override void Dispose()

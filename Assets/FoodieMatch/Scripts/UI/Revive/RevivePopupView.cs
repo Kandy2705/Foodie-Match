@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using TMPro;
@@ -7,13 +8,14 @@ using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Revive
 {
-    public sealed class RevivePopupView : PopupBase
+    public sealed class RevivePopupView : PopupBase, IPlayerResourceView
     {
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _freeAdsButton;
         [SerializeField] private Button _playOnButton;
         [SerializeField] private PopupAnimController _popupAnimController;
         [SerializeField] private TMP_Text _costText;
+        [SerializeField] private ResourceBarView _resourceBarView;
 
         private Action _closeClicked;
         private Action _freeAdsClicked;
@@ -69,6 +71,15 @@ namespace FoodieMatch.UI.Revive
             _closeClicked = actions.CloseClicked;
             _freeAdsClicked = actions.FreeAdsClicked;
             _playOnClicked = actions.PlayOnClicked;
+        }
+
+        public void SetPlayerResources(
+            long coinBalance,
+            HeartStatus heartStatus)
+        {
+            _resourceBarView?.SetPlayerResources(
+                coinBalance,
+                heartStatus);
         }
 
         public void SetCost(string costText)

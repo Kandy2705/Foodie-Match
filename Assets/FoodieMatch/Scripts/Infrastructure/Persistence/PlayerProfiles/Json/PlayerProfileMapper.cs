@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 using FoodieMatch.Data.Booster;
 
@@ -33,6 +34,10 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 !TryMapSeenBoosterGuides(
                     profileDto.SeenBoosterGuides,
                     out List<BoosterType> seenBoosterGuides,
+                    out errorMessage) ||
+                !TryMapHeartState(
+                    profileDto,
+                    out HeartState heartState,
                     out errorMessage))
             {
                 record = null;
@@ -45,7 +50,8 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                     profileDto.CurrentLevelNumber,
                     profileDto.CoinBalance,
                     boosterCounts,
-                    seenBoosterGuides);
+                    seenBoosterGuides,
+                    heartState);
                 record = new PlayerProfileRecord(profile, profileDto.Revision);
                 errorMessage = null;
                 return true;
@@ -79,6 +85,10 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 Revision = revision,
                 CurrentLevelNumber = profile.CurrentLevelNumber,
                 CoinBalance = profile.CoinBalance,
+                HeartCount = profile.HeartState.HeartCount,
+                HeartRecoveryStartedAtUtcUnixSeconds =
+                    profile.HeartState.RecoveryStartedAtUtc?
+                        .ToUnixTimeSeconds(),
                 BoosterCounts = profile.BoosterCounts
                     .OrderBy(boosterCount => (int)boosterCount.Key)
                     .Select(
@@ -140,6 +150,33 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
 
             errorMessage = null;
             return true;
+        }
+
+        private static bool TryMapHeartState(
+            PlayerProfileDto profileDto,
+            out HeartState heartState,
+            out string errorMessage)
+        {
+            try
+            {
+                DateTimeOffset? recoveryStartedAtUtc =
+                    profileDto.HeartRecoveryStartedAtUtcUnixSeconds.HasValue
+                        ? DateTimeOffset.FromUnixTimeSeconds(
+                            profileDto.HeartRecoveryStartedAtUtcUnixSeconds.Value)
+                        : null;
+
+                heartState = new HeartState(
+                    profileDto.HeartCount,
+                    recoveryStartedAtUtc);
+                errorMessage = null;
+                return true;
+            }
+            catch (ArgumentOutOfRangeException exception)
+            {
+                heartState = null;
+                errorMessage = exception.Message;
+                return false;
+            }
         }
 
         private static bool TryMapSeenBoosterGuides(

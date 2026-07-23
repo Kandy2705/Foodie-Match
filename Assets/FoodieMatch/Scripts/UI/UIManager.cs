@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Infrastructure.Audio;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.UI.Advertising;
@@ -50,6 +51,7 @@ namespace FoodieMatch.UI
 
         private BoosterManager _boosterManager;
         private IGameEconomyConfig _economyConfig;
+        private PlayerProfileService _playerProfileService;
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
@@ -63,6 +65,7 @@ namespace FoodieMatch.UI
         private Action _loseTryAgainClicked;
         private Action _loseHomeClicked;
         private Action _pendingBoxRescueCallback;
+        private Action _pendingLoseConfirmedCallback;
         private int _currentLevelNumber = 1;
         private int _currentServedCount;
         private int _currentTotalCount;
@@ -77,13 +80,13 @@ namespace FoodieMatch.UI
 
         public event Action LeaveGameRequested;
 
-        public event Action RestartGameRequested;
-
         public event Action<BoosterType> BoosterCoinPurchaseRequested;
 
         public event Action<BoosterType> BoosterRewardedAdRequested;
 
         public Func<BoosterType, bool> BoosterUseHandler { get; set; }
+
+        public Func<bool> RestartGameHandler { get; set; }
 
         private void OnDestroy()
         {
@@ -96,7 +99,8 @@ namespace FoodieMatch.UI
             GameplayEvents gameplayEvents,
             IAudioService audioService,
             BoosterManager boosterManager,
-            IGameEconomyConfig economyConfig)
+            IGameEconomyConfig economyConfig,
+            PlayerProfileService playerProfileService)
         {
             if (_hasConstructed)
             {
@@ -109,6 +113,7 @@ namespace FoodieMatch.UI
             _gameplayEvents = gameplayEvents;
             _boosterManager = boosterManager;
             _economyConfig = economyConfig;
+            _playerProfileService = playerProfileService;
             SubscribeEvents();
 
             _hasConstructed = true;
@@ -135,7 +140,7 @@ namespace FoodieMatch.UI
             _uiGlobalButtonClickSfx.Construct(audioService);
         }
 
-        public void ShowHome(long coinBalance)
+        public void ShowHome(long displayedCoinBalance)
         {
             CompleteCoinRewardImmediately();
 
@@ -157,7 +162,9 @@ namespace FoodieMatch.UI
                     OnHomePlayRequested,
                     OnHomeSettingRequested));
             homeView.SetPlayLevelNumber(_currentLevelNumber);
-            homeView.SetCoinBalance(coinBalance);
+            homeView.SetPlayerResources(
+                displayedCoinBalance,
+                _playerProfileService.GetHeartStatus());
         }
 
         public void PlayHomeCoinReward(
@@ -441,7 +448,8 @@ namespace FoodieMatch.UI
         public void ShowRevivePopup(
             Action loseTryAgainClicked = null,
             Action loseHomeClicked = null,
-            Action onBoxRescueConfirmed = null)
+            Action onBoxRescueConfirmed = null,
+            Action onLoseConfirmed = null)
         {
             if (_popupManager == null)
             {
@@ -464,6 +472,11 @@ namespace FoodieMatch.UI
                 _pendingBoxRescueCallback = onBoxRescueConfirmed;
             }
 
+            if (onLoseConfirmed != null)
+            {
+                _pendingLoseConfirmedCallback = onLoseConfirmed;
+            }
+
             RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
 
             if (revivePopup == null)
@@ -476,6 +489,7 @@ namespace FoodieMatch.UI
                     OnReviveCloseClicked,
                     OnReviveFreeAdsClicked,
                     OnRevivePlayOnClicked));
+            SetCurrentPlayerResources(revivePopup);
         }
 
         public void HideRevivePopup()
@@ -580,6 +594,7 @@ namespace FoodieMatch.UI
                 new LoseViewActions(
                     tryAgainClicked,
                     homeClicked));
+            SetCurrentPlayerResources(loseView);
         }
 
         public void HideLosePopup()
@@ -672,6 +687,7 @@ namespace FoodieMatch.UI
                     OnBoosterBuyCloseClicked,
                     OnBoosterBuyFreeAdsClicked,
                     OnBoosterBuyBuyClicked));
+            SetCurrentPlayerResources(popup);
         }
 
         public void HideBoosterBuyPopup()
@@ -687,6 +703,49 @@ namespace FoodieMatch.UI
         public void RefreshBoosterInventory()
         {
             RefreshBoosterHud();
+        }
+
+        public void RefreshOpenedResourceBars()
+        {
+            if (_playerProfileService == null ||
+                _popupManager == null)
+            {
+                return;
+            }
+
+            long coinBalance = _playerProfileService.CoinBalance;
+            HeartStatus heartStatus =
+                _playerProfileService.GetHeartStatus();
+
+            if (_popupManager.TryGetOpened(out HomeView homeView))
+            {
+                homeView.SetPlayerResources(
+                    coinBalance,
+                    heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(
+                    out BoosterBuyPopupView boosterBuyPopup))
+            {
+                boosterBuyPopup.SetPlayerResources(
+                    coinBalance,
+                    heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(
+                    out RevivePopupView revivePopup))
+            {
+                revivePopup.SetPlayerResources(
+                    coinBalance,
+                    heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(out LoseView loseView))
+            {
+                loseView.SetPlayerResources(
+                    coinBalance,
+                    heartStatus);
+            }
         }
         
         public void ShowUnlockLockedPackagePopup(int slotIndex, Action<int> onUnlockConfirmed)
@@ -900,6 +959,19 @@ namespace FoodieMatch.UI
             ShowSettingPopup();
         }
 
+        private void SetCurrentPlayerResources(
+            IPlayerResourceView resourceView)
+        {
+            if (_playerProfileService == null)
+            {
+                return;
+            }
+
+            resourceView.SetPlayerResources(
+                _playerProfileService.CoinBalance,
+                _playerProfileService.GetHeartStatus());
+        }
+
         private void OnHomeCoinArrived()
         {
             _audioService?.PlaySfx(AudioKeys.SfxCoinReceive);
@@ -1024,7 +1096,9 @@ namespace FoodieMatch.UI
             {
                 ShowRevivePopup(
                     onBoxRescueConfirmed:
-                        _pendingBoxRescueCallback);
+                        _pendingBoxRescueCallback,
+                    onLoseConfirmed:
+                        _pendingLoseConfirmedCallback);
 
                 return;
             }
@@ -1041,14 +1115,21 @@ namespace FoodieMatch.UI
             {
                 HideLeaveGamePopup();
 
-                if (_loseTryAgainClicked == null || _loseHomeClicked == null)
+                if (_loseTryAgainClicked == null ||
+                    _loseHomeClicked == null ||
+                    _pendingLoseConfirmedCallback == null)
                 {
                     Debug.LogError(
-                        "Cannot show lose popup because lose actions are missing.");
+                        "Cannot show lose popup because lose callbacks are missing.");
                     LeaveGameRequested?.Invoke();
                     return;
                 }
 
+                Action loseConfirmedCallback =
+                    _pendingLoseConfirmedCallback;
+                _pendingBoxRescueCallback = null;
+                _pendingLoseConfirmedCallback = null;
+                loseConfirmedCallback.Invoke();
                 ShowLosePopup(_loseTryAgainClicked, _loseHomeClicked);
                 return;
             }
@@ -1065,8 +1146,13 @@ namespace FoodieMatch.UI
 
         private void OnRetryGameRetryClicked()
         {
+            if (RestartGameHandler == null ||
+                !RestartGameHandler.Invoke())
+            {
+                return;
+            }
+
             HideAllPopups();
-            RestartGameRequested?.Invoke();
         }
 
         private void OnReviveCloseClicked()
@@ -1098,6 +1184,7 @@ namespace FoodieMatch.UI
             }
 
             _pendingBoxRescueCallback = null;
+            _pendingLoseConfirmedCallback = null;
             _returnToReviveOnLeaveClose = false;
 
             HideRevivePopup();
