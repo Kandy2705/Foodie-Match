@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Heart;
-using FoodieMatch.Data.Booster;
 
 namespace FoodieMatch.Core.Domain.Player
 {

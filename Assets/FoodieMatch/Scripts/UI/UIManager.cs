@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Audio;
+using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
-using FoodieMatch.Core.Application.Audio;
+using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.Booster;

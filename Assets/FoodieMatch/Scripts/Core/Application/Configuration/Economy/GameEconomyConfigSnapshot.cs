@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using FoodieMatch.Data.Booster;
+using FoodieMatch.Core.Domain.Booster;
 
 namespace FoodieMatch.Core.Application.Configuration.Economy
 {

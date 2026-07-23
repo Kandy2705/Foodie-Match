@@ -1,4 +1,4 @@
-namespace FoodieMatch.Data.Booster
+namespace FoodieMatch.Core.Domain.Booster
 {
     public enum BoosterType
     {

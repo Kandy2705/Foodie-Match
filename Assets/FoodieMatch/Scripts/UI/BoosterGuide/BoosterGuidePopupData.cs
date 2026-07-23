@@ -1,3 +1,4 @@
+using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Data.Booster;
 using FoodieMatch.UI.Popup;
 using UnityEngine;

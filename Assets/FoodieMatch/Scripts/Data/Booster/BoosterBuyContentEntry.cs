@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Domain.Booster;
 using UnityEngine;
 
 namespace FoodieMatch.Data.Booster

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FoodieMatch.Core.Domain.Booster;
 using UnityEngine;
 
 namespace FoodieMatch.Data.Booster

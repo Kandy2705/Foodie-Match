@@ -1,7 +1,8 @@
 using System;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Domain.Booster;
 
-namespace FoodieMatch.Data.Booster
+namespace FoodieMatch.Core.Application.Booster
 {
     public sealed class BoosterManager
     {
