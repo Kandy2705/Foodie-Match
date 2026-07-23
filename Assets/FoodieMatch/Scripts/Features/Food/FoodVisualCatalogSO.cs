@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FoodieMatch.Data.Food
+namespace FoodieMatch.Features.Food
 {
     [CreateAssetMenu(
         fileName = "FoodVisualCatalog",
