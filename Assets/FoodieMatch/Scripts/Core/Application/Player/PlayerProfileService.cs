@@ -66,15 +66,29 @@ namespace FoodieMatch.Core.Application.Player
             {
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
-                HeartState updatedHeartState =
-                    currentProfile.HeartState.RefreshRecovery(
-                        _heartConfig.MaxHeartCount,
-                        _heartConfig.HeartRecoveryDuration,
-                        _clock.UtcNow);
+                HeartState updatedHeartState = GetRefreshedHeartState(
+                    currentProfile,
+                    _clock.UtcNow);
 
                 QueueProfileChange(
                     currentProfile.WithHeartState(updatedHeartState));
                 return updatedHeartState;
+            }
+        }
+
+        public bool HasAvailableHeart()
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                HeartState updatedHeartState = GetRefreshedHeartState(
+                    currentProfile,
+                    _clock.UtcNow);
+
+                QueueProfileChange(
+                    currentProfile.WithHeartState(updatedHeartState));
+                return updatedHeartState.HeartCount > 0;
             }
         }
 
@@ -85,11 +99,9 @@ namespace FoodieMatch.Core.Application.Player
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
                 DateTimeOffset currentUtc = _clock.UtcNow;
-                HeartState refreshedHeartState =
-                    currentProfile.HeartState.RefreshRecovery(
-                        _heartConfig.MaxHeartCount,
-                        _heartConfig.HeartRecoveryDuration,
-                        currentUtc);
+                HeartState refreshedHeartState = GetRefreshedHeartState(
+                    currentProfile,
+                    currentUtc);
 
                 if (!refreshedHeartState.TrySpendHeart(
                         _heartConfig.MaxHeartCount,
@@ -275,6 +287,16 @@ namespace FoodieMatch.Core.Application.Player
                 QueueProfileChange(
                     currentProfile.WithSeenBoosterGuide(boosterType));
             }
+        }
+
+        private HeartState GetRefreshedHeartState(
+            PlayerProfile profile,
+            DateTimeOffset utcNow)
+        {
+            return profile.HeartState.RefreshRecovery(
+                _heartConfig.MaxHeartCount,
+                _heartConfig.HeartRecoveryDuration,
+                utcNow);
         }
 
         private void QueueProfileChange(PlayerProfile updatedProfile)

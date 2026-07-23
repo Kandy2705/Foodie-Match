@@ -876,10 +876,12 @@ namespace FoodieMatch.Features.Gameplay
                 _uiManager.ShowRevivePopup(
                     OnTryAgainClicked,
                     OnHomeClicked,
-                    OnBoxRescueConfirmed);
+                    OnBoxRescueConfirmed,
+                    FinalizeLose);
             }
             else
             {
+                FinalizeLose();
                 _uiManager.ShowLosePopup(
                     OnTryAgainClicked,
                     OnHomeClicked);
@@ -913,6 +915,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, false, LoseReason));
+            _navigationActions?.LevelLost.Invoke(session.LevelNumber);
         }
 
         private bool IsCurrentSession(GameplaySession session)
@@ -935,13 +938,11 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             int levelNumber = _session.LevelNumber;
-            FinalizeLose();
             _navigationActions?.RetryRequested.Invoke(levelNumber);
         }
 
         private void OnHomeClicked()
         {
-            FinalizeLose();
             _navigationActions?.HomeRequested.Invoke();
         }
     }
