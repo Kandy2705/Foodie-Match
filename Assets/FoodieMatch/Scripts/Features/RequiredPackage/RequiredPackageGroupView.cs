@@ -11,6 +11,7 @@ namespace FoodieMatch.Features.RequiredPackage
     {
         private const int InitialPackageSortingOrder = 0;
 
+        [SerializeField] private Transform[] _slotRoots;
         [SerializeField] private RequiredPackageView[] _packages;
         [SerializeField] private LockedRequiredPackageView[] _lockedPackages;
 
@@ -256,20 +257,27 @@ namespace FoodieMatch.Features.RequiredPackage
 
             _layoutItems.Clear();
 
-            if (_packages != null)
+            if (_slotRoots == null || _slotRoots.Length == 0)
             {
-                for (int i = 0; i < _packages.Length; i++)
-                {
-                    TryAddLayoutItem(_packages[i]);
-                }
+                Debug.LogError("Required package slot roots are missing.", this);
+                return false;
             }
 
-            if (_lockedPackages != null)
+            if (_packages == null || _packages.Length != _slotRoots.Length)
             {
-                for (int i = 0; i < _lockedPackages.Length; i++)
-                {
-                    TryAddLayoutItem(_lockedPackages[i]);
-                }
+                Debug.LogError("Required package count must match the slot root count.", this);
+                return false;
+            }
+
+            if (_lockedPackages != null && _lockedPackages.Length != _slotRoots.Length)
+            {
+                Debug.LogError("Locked package count must match the slot root count.", this);
+                return false;
+            }
+
+            for (int i = 0; i < _slotRoots.Length; i++)
+            {
+                TryAddLayoutItem(i, _slotRoots[i]);
             }
 
             _layoutItems.Sort((left, right) =>
@@ -292,30 +300,21 @@ namespace FoodieMatch.Features.RequiredPackage
             return true;
         }
 
-        private void TryAddLayoutItem(Component view)
+        private void TryAddLayoutItem(int slotIndex, Transform root)
         {
-            if (view == null)
+            if (root == null)
             {
+                Debug.LogError($"Required package slot root {slotIndex} is missing.", this);
                 return;
             }
-
-            Transform root = view.transform;
 
             if (root.parent != transform)
             {
-                Debug.LogError($"Required package layout item {root.name} must be a direct child.", view);
+                Debug.LogError($"Required package slot root {root.name} must be a direct child.", root);
                 return;
             }
 
-            for (int i = 0; i < _layoutItems.Count; i++)
-            {
-                if (_layoutItems[i].Root == root)
-                {
-                    return;
-                }
-            }
-
-            _layoutItems.Add(new(root));
+            _layoutItems.Add(new PackageLayoutItem(slotIndex, root));
         }
 
         private List<PackageLayoutItem> GetVisibleLayoutItems()
@@ -325,8 +324,23 @@ namespace FoodieMatch.Features.RequiredPackage
             for (int i = 0; i < _layoutItems.Count; i++)
             {
                 PackageLayoutItem item = _layoutItems[i];
+                int slotIndex = item.SlotIndex;
 
-                if (item.Root.gameObject.activeSelf)
+                bool packageVisible =
+                    _packages != null &&
+                    slotIndex >= 0 &&
+                    slotIndex < _packages.Length &&
+                    _packages[slotIndex] != null &&
+                    _packages[slotIndex].gameObject.activeSelf;
+
+                bool lockedVisible =
+                    _lockedPackages != null &&
+                    slotIndex >= 0 &&
+                    slotIndex < _lockedPackages.Length &&
+                    _lockedPackages[slotIndex] != null &&
+                    _lockedPackages[slotIndex].gameObject.activeSelf;
+
+                if (packageVisible || lockedVisible)
                 {
                     visibleItems.Add(item);
                 }
@@ -387,12 +401,14 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private sealed class PackageLayoutItem
         {
-            public PackageLayoutItem(Transform root)
+            public PackageLayoutItem(int slotIndex, Transform root)
             {
+                SlotIndex = slotIndex;
                 Root = root;
                 InitialLocalPosition = root.localPosition;
             }
 
+            public int SlotIndex { get; }
             public Transform Root { get; }
             public Vector3 InitialLocalPosition { get; }
         }
