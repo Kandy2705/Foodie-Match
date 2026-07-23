@@ -1,4 +1,7 @@
 using FoodieMatch.Core.Application.Advertising;
+using FoodieMatch.Core.Application.Audio;
+using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Events;
@@ -9,13 +12,12 @@ using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
-using FoodieMatch.Core.Infrastructure.Audio;
-using FoodieMatch.Core.Infrastructure.Save;
-using FoodieMatch.Data.Booster;
-using FoodieMatch.Data.Level;
-using FoodieMatch.Data.Level.Json;
 using FoodieMatch.Features.Gameplay;
+using FoodieMatch.Infrastructure.Audio;
+using FoodieMatch.Infrastructure.Level;
+using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
 using UnityEngine;
@@ -77,6 +79,8 @@ namespace FoodieMatch.App
             BoardModelFactory boardModelFactory = new();
 
             BoosterManager boosterManager = new(playerProfileService);
+            IGameBoosterConfig boosterConfig =
+                GameBoosterDefaults.CreateSnapshot();
             IGameEconomyConfig economyConfig =
                 GameEconomyDefaults.CreateSnapshot();
 
@@ -84,6 +88,7 @@ namespace FoodieMatch.App
                 GameplayEvents,
                 audioService,
                 boosterManager,
+                boosterConfig,
                 economyConfig,
                 playerProfileService);
             IRewardedAdService rewardedAdService =

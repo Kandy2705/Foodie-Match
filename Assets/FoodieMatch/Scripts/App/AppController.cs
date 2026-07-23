@@ -1,11 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Advertising;
+using FoodieMatch.Core.Application.Audio;
+using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
-using FoodieMatch.Core.Infrastructure.Audio;
-using FoodieMatch.Data.Booster;
+using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.UI;
 using UnityEngine;

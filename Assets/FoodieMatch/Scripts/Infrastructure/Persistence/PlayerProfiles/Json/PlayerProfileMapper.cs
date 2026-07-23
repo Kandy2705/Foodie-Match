@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
-using FoodieMatch.Data.Booster;
 
 namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
 {

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using FoodieMatch.Data.Food;
 using UnityEngine;
 
 namespace FoodieMatch.Features.Food
