@@ -2,7 +2,7 @@ using System;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Domain.Level;
 
-namespace FoodieMatch.Data.Level
+namespace FoodieMatch.Infrastructure.Level
 {
     public sealed class LevelCatalogRepository : ILevelRepository
     {

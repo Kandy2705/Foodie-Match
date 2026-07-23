@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace FoodieMatch.Data.Level
+namespace FoodieMatch.Infrastructure.Level
 {
     public sealed class LevelValidationResult
     {

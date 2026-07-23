@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Level;
 
-namespace FoodieMatch.Data.Level.Json
+namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class LevelCatalogMapper
     {

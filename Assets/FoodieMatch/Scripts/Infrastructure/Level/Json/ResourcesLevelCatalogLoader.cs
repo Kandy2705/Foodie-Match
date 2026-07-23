@@ -2,7 +2,7 @@ using System;
 using FoodieMatch.Core.Domain.Level;
 using UnityEngine;
 
-namespace FoodieMatch.Data.Level.Json
+namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class ResourcesLevelCatalogLoader
     {

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace FoodieMatch.Data.Level.Json
+namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class PackageSelectionSettingsDto
     {
