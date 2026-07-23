@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 3f7d15f0aa59f424d9296932775947c9
+guid: 95535b57ccd7a42688885500150eab02
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -565571951373190825
-    second: gold_shop_bg_0
+      213: 6029970940291437854
+    second: booster_shop_bg_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: gold_shop_bg_0
+      name: booster_shop_bg_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 159
-        height: 191
+        width: 81
+        height: 86
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 31, y: 31, z: 31, w: 25}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 759f9778e4fa628f0800000000000000
-      internalID: -565571951373190825
+      spriteID: e15dffd3f92cea350800000000000000
+      internalID: 6029970940291437854
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: a76638406f2e34399b9d169bc22555a5
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      gold_shop_bg_0: -565571951373190825
+      booster_shop_bg_0: 6029970940291437854
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
