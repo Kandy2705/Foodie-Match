@@ -309,6 +309,76 @@ namespace FoodieMatch.Core.Application.UseCases
             return candidates[random.NextIndex(candidates.Count)];
         }
 
+        public bool TryCreateWaitingRackRescuePackage(
+            WaitingRackModel waitingRack,
+            IReadOnlyList<RequiredPackageModel> packageReservations,
+            PackageRandom random,
+            out RequiredPackageModel package)
+        {
+            package = null;
+
+            if (waitingRack == null ||
+                packageReservations == null ||
+                random == null)
+            {
+                return false;
+            }
+
+            HashSet<int> reservedFoodIds =
+                GetReservedFoodIds(packageReservations);
+
+            Dictionary<int, int> rackCounts = new();
+
+            for (int i = 0; i < waitingRack.Capacity; i++)
+            {
+                int foodId = waitingRack.GetFoodTokenIdAt(i);
+
+                if (foodId <= BoardRules.EmptyFoodTokenId ||
+                    reservedFoodIds.Contains(foodId))
+                {
+                    continue;
+                }
+
+                rackCounts.TryGetValue(foodId, out int count);
+                rackCounts[foodId] = count + 1;
+            }
+
+            if (rackCounts.Count == 0)
+            {
+                return false;
+            }
+
+            int highestCount = 0;
+            List<int> bestFoodIds = new();
+
+            foreach (KeyValuePair<int, int> pair in rackCounts)
+            {
+                if (pair.Value < highestCount)
+                {
+                    continue;
+                }
+
+                if (pair.Value > highestCount)
+                {
+                    highestCount = pair.Value;
+                    bestFoodIds.Clear();
+                }
+
+                bestFoodIds.Add(pair.Key);
+            }
+
+            bestFoodIds.Sort();
+            int selectedFoodId =
+                bestFoodIds[random.NextIndex(bestFoodIds.Count)];
+
+            package = new RequiredPackageModel(
+                selectedFoodId,
+                highestCount,
+                filledAmount: 0);
+
+            return true;
+        }
+
         private enum FoodLocation
         {
             WaitingRack,

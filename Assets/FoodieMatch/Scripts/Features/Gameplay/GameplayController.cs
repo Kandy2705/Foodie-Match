@@ -55,6 +55,7 @@ namespace FoodieMatch.Features.Gameplay
         private FridgeBoosterCoordinator _fridgeBoosterCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
+        private bool _waitingRackFullResolutionPending;
 
         private void Update()
         {
@@ -66,6 +67,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
+            UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
             _grillCompletionCoordinator?.EndSession();
@@ -159,7 +161,7 @@ namespace FoodieMatch.Features.Gameplay
 
             WaitingRackModel waitingRack = new(WaitingRackRules.InitialCapacity);
 
-            if (_requiredPackageGroupView.PackageCount != LevelRules.ActivePackageCount)
+            if (_requiredPackageGroupView.PackageCount != LevelRules.MaxActivePackageSlotCount)
             {
                 Debug.LogError("Required package view count does not match the level config.");
                 return;
@@ -191,9 +193,11 @@ namespace FoodieMatch.Features.Gameplay
                 combo);
 
             _gameplayMotionPresenter.CancelAllMotions();
+            _waitingRackFullResolutionPending = false;
             _boardLayoutView.Setup(_session.Board);
             _waitingRackView.Clear();
             _packageDeliveryCoordinator.BeginSession(_session);
+            SubscribeLockedPackages();
             _waitingRackAutoFillCoordinator.BeginSession(_session);
             _grillCompletionCoordinator.BeginSession(_session);
             _fridgeBoosterCoordinator?.BeginSession();
@@ -215,6 +219,8 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
+            _waitingRackFullResolutionPending = false;
+            UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
             _grillCompletionCoordinator?.EndSession();
@@ -273,6 +279,198 @@ namespace FoodieMatch.Features.Gameplay
             return _fridgeBoosterCoordinator != null &&
                    _fridgeBoosterCoordinator.TryApply(
                        _session);
+        }
+
+        private void SubscribeLockedPackages()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return;
+            }
+
+            int count = _requiredPackageGroupView.LockedPackageCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                LockedRequiredPackageView locked = _requiredPackageGroupView.GetLockedAt(i);
+
+                if (locked == null)
+                {
+                    continue;
+                }
+
+                locked.UnlockRequested -= HandleLockedRequested;
+                locked.UnlockRequested += HandleLockedRequested;
+            }
+        }
+
+        private void UnsubscribeLockedPackages()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return;
+            }
+
+            int count = _requiredPackageGroupView.LockedPackageCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                LockedRequiredPackageView locked = _requiredPackageGroupView.GetLockedAt(i);
+
+                if (locked == null)
+                {
+                    continue;
+                }
+
+                locked.UnlockRequested -= HandleLockedRequested;
+            }
+        }
+
+        private void HandleLockedRequested(LockedRequiredPackageView view)
+        {
+            if (view == null || _session == null || !_session.CanContinueGameplay)
+            {
+                return;
+            }
+
+            int slotIndex = FindLockedSlotIndex(view);
+
+            if (slotIndex < 0)
+            {
+                return;
+            }
+
+            _uiManager.ShowUnlockLockedPackagePopup(slotIndex, OnUnlockConfirmed);
+        }
+
+        private int FindLockedSlotIndex(LockedRequiredPackageView view)
+        {
+            if (_requiredPackageGroupView == null || view == null)
+            {
+                return -1;
+            }
+
+            int count = _requiredPackageGroupView.LockedPackageCount;
+
+            for (int i = 0; i < count; i++)
+            {
+                if (_requiredPackageGroupView.GetLockedAt(i) == view)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void OnUnlockConfirmed(int slotIndex)
+        {
+            GameplaySession session = _session;
+
+            if (session == null || !session.CanContinueGameplay)
+            {
+                return;
+            }
+
+            _ = UnlockSlotSafelyAsync(slotIndex, session);
+        }
+
+        private async Task UnlockSlotSafelyAsync(int slotIndex, GameplaySession session)
+        {
+            try
+            {
+                await _packageDeliveryCoordinator.TryUnlockSlotAsync(slotIndex, session);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private bool HasAnyLockedPackage()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < _requiredPackageGroupView.LockedPackageCount; i++)
+            {
+                if (_requiredPackageGroupView.HasLockedAt(i))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void OnBoxRescueConfirmed()
+        {
+            GameplaySession session = _session;
+
+            if (session == null ||
+                session.State != LevelSessionState.AwaitingRevive)
+            {
+                return;
+            }
+
+            int slotIndex = FindFirstLockedSlotIndex();
+
+            if (slotIndex < 0)
+            {
+                return;
+            }
+
+            if (!session.TryResumeFromAwaitingRevive())
+            {
+                return;
+            }
+
+            _ = BoxRescueUnlockSafelyAsync(slotIndex, session);
+        }
+
+        private int FindFirstLockedSlotIndex()
+        {
+            if (_requiredPackageGroupView == null)
+            {
+                return -1;
+            }
+
+            for (int i = 0; i < _requiredPackageGroupView.LockedPackageCount; i++)
+            {
+                if (_requiredPackageGroupView.HasLockedAt(i))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private async Task BoxRescueUnlockSafelyAsync(
+            int slotIndex,
+            GameplaySession session)
+        {
+            try
+            {
+                bool unlocked = await _packageDeliveryCoordinator
+                    .TryUnlockSlotRescueAsync(slotIndex, session);
+
+                if (!unlocked || !IsCurrentSession(session))
+                {
+                    return;
+                }
+
+                ResumeGameplayInput(session);
+
+                _waitingRackAutoFillCoordinator
+                    .StartOrRequestRetry(session);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
 
         private void CreateCoordinators()
@@ -516,7 +714,8 @@ namespace FoodieMatch.Features.Gameplay
 
             if (causedWaitingRackFull)
             {
-                session.TryEnterAwaitingRevive();
+                _waitingRackFullResolutionPending = true;
+                session.DisableInput();
             }
 
             WaitingRackPlacementResult placementResult = await placementTask;
@@ -537,10 +736,7 @@ namespace FoodieMatch.Features.Gameplay
                 _waitingRackAutoFillCoordinator.StartOrRequestRetry(session);
             }
 
-            if (causedWaitingRackFull && session.State == LevelSessionState.AwaitingRevive)
-            {
-                ShowReviveFlow(session);
-            }
+            TryResolvePendingWaitingRackFull(session);
         }
 
         private void HandlePackageReplaced(GameplaySession session)
@@ -555,6 +751,7 @@ namespace FoodieMatch.Features.Gameplay
                 _waitingRackAutoFillCoordinator.StartOrRequestRetry(session);
             }
 
+            TryResolvePendingWaitingRackFull(session);
             TryResolveWin(session);
         }
 
@@ -577,11 +774,13 @@ namespace FoodieMatch.Features.Gameplay
             _fridgeBoosterCoordinator?
                 .StartOrRequestRelease(session);
 
+            TryResolvePendingWaitingRackFull(session);
             TryResolveWin(session);
         }
 
         private void HandleGrillCloseFinished(GameplaySession session)
         {
+            TryResolvePendingWaitingRackFull(session);
             TryResolveWin(session);
         }
 
@@ -591,6 +790,46 @@ namespace FoodieMatch.Features.Gameplay
             {
                 session.DisableInput();
             }
+        }
+
+        private void TryResolvePendingWaitingRackFull(
+            GameplaySession session)
+        {
+            if (!_waitingRackFullResolutionPending ||
+                !IsCurrentSession(session) ||
+                session.State != LevelSessionState.Playing)
+            {
+                return;
+            }
+
+            if (_packageDeliveryCoordinator
+                    .HasActiveMotion(session) ||
+                _waitingRackAutoFillCoordinator
+                    .IsRunning(session) ||
+                _grillCompletionCoordinator
+                    .HasActiveMotion(session) ||
+                _fridgeBoosterCoordinator
+                    .IsBusy(session))
+            {
+                return;
+            }
+
+            if (!session.WaitingRack.IsFull)
+            {
+                _waitingRackFullResolutionPending = false;
+
+                ResumeGameplayInput(session);
+                return;
+            }
+
+            _waitingRackFullResolutionPending = false;
+
+            if (!session.TryEnterAwaitingRevive())
+            {
+                return;
+            }
+
+            ShowReviveFlow(session);
         }
 
         private void TryResolveWin(GameplaySession session)
@@ -629,7 +868,39 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayWorldClickSfx.StopListening();
-            _uiManager.ShowRevivePopup(OnTryAgainClicked, OnHomeClicked);
+
+            bool hasLocked = HasAnyLockedPackage();
+
+            if (hasLocked)
+            {
+                _uiManager.ShowRevivePopup(
+                    OnTryAgainClicked,
+                    OnHomeClicked,
+                    OnBoxRescueConfirmed);
+            }
+            else
+            {
+                _uiManager.ShowLosePopup(
+                    OnTryAgainClicked,
+                    OnHomeClicked);
+            }
+        }
+
+        private void ResumeGameplayInput(GameplaySession session)
+        {
+            if (!IsCurrentSession(session) ||
+                !session.CanContinueGameplay)
+            {
+                return;
+            }
+
+            session.StartPlaying();
+
+            _boardLayoutView?
+                .SetRegisteredFoodInteractable(true);
+
+            _gameplayWorldClickSfx?
+                .StartListening();
         }
 
         private void FinalizeLose()

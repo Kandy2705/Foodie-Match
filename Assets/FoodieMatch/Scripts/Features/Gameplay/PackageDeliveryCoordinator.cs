@@ -60,6 +60,16 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             RefreshPackageViews();
+            RefreshLockedOverlays(session);
+        }
+
+        private void RefreshLockedOverlays(GameplaySession session)
+        {
+            for (int i = 0; i < session.RequiredPackages.Length; i++)
+            {
+                bool isLocked = session.RequiredPackages[i] == null;
+                _packageGroupView.SetLockedActive(i, isLocked);
+            }
         }
 
         public void EndSession()
@@ -224,6 +234,132 @@ namespace FoodieMatch.Features.Gameplay
             {
                 Debug.LogError("Level progress could not serve food.");
             }
+        }
+
+        public bool HasLockedSlotAt(GameplaySession session, int slotIndex)
+        {
+            if (_session != session ||
+                slotIndex < 0 ||
+                slotIndex >= session.RequiredPackages.Length)
+            {
+                return false;
+            }
+
+            return session.RequiredPackages[slotIndex] == null &&
+                   _packageGroupView.HasLockedAt(slotIndex);
+        }
+
+        public async Task<bool> TryUnlockSlotAsync(int slotIndex, GameplaySession session)
+        {
+            if (!CanContinue(session) ||
+                !HasLockedSlotAt(session, slotIndex))
+            {
+                return false;
+            }
+
+            IReadOnlyList<RequiredPackageModel> packageReservations = CreatePackageReservations();
+
+            if (!_packageLifecycleUseCase.TryPrepareUnlockedPackage(
+                    slotIndex,
+                    session.Board,
+                    session.WaitingRack,
+                    session.FridgeInventory,
+                    session.RequiredPackages,
+                    packageReservations,
+                    session.Level.PackageSelectionSettings,
+                    session.Progress.ProgressRatio,
+                    session.RandomContext.PackageRandom,
+                    out RequiredPackageModel unlockedPackage))
+            {
+                Debug.LogError($"Required package slot {slotIndex} could not be unlocked.");
+                return false;
+            }
+
+            LockedRequiredPackageView locked =
+                _packageGroupView.GetLockedAt(slotIndex);
+
+            locked?.SetInteractable(false);
+
+            if (!ShowUnlockedPackageAtRest(slotIndex, unlockedPackage))
+            {
+                Debug.LogError($"Required package view {slotIndex} could not be shown after unlock.");
+                return false;
+            }
+
+            if (!_packageLifecycleUseCase.TryPublishUnlockedPackage(
+                    slotIndex, unlockedPackage, session.RequiredPackages))
+            {
+                Debug.LogError($"Required package slot {slotIndex} unlock could not be published.");
+                return false;
+            }
+
+            _motionStates[slotIndex] = new(unlockedPackage);
+
+            if (locked != null)
+            {
+                _ = PlayLockedUnlockVisualSafelyAsync(locked);
+            }
+
+            PackageReplaced?.Invoke(session);
+            return true;
+        }
+
+        public async Task<bool> TryUnlockSlotRescueAsync(int slotIndex, GameplaySession session)
+        {
+            if (!CanContinue(session) ||
+                !HasLockedSlotAt(session, slotIndex))
+            {
+                return false;
+            }
+
+            IReadOnlyList<RequiredPackageModel> packageReservations =
+                CreatePackageReservations();
+
+            if (!_packageLifecycleUseCase.TryPrepareWaitingRackRescuePackage(
+                    slotIndex,
+                    session.WaitingRack,
+                    session.RequiredPackages,
+                    packageReservations,
+                    session.RandomContext.PackageRandom,
+                    out RequiredPackageModel rescuePackage))
+            {
+                Debug.LogError(
+                    $"Rescue package could not be created for slot {slotIndex}.");
+
+                return false;
+            }
+
+            LockedRequiredPackageView locked =
+                _packageGroupView.GetLockedAt(slotIndex);
+
+            locked?.SetInteractable(false);
+
+            if (!ShowUnlockedPackageAtRest(slotIndex, rescuePackage))
+            {
+                Debug.LogError(
+                    $"Required package view {slotIndex} could not be shown after rescue unlock.");
+
+                return false;
+            }
+
+            if (!_packageLifecycleUseCase.TryPublishUnlockedPackage(
+                    slotIndex, rescuePackage, session.RequiredPackages))
+            {
+                Debug.LogError(
+                    $"Required package slot {slotIndex} rescue unlock could not be published.");
+
+                return false;
+            }
+
+            _motionStates[slotIndex] = new(rescuePackage);
+
+            if (locked != null)
+            {
+                _ = PlayLockedUnlockVisualSafelyAsync(locked);
+            }
+
+            PackageReplaced?.Invoke(session);
+            return true;
         }
 
         public bool HasActiveMotion(GameplaySession session)
@@ -662,6 +798,26 @@ namespace FoodieMatch.Features.Gameplay
         {
             Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
             return _packageGroupView.ShowEnteringPackageAt(packageIndex, package, sprite);
+        }
+
+        private bool ShowUnlockedPackageAtRest(int packageIndex, RequiredPackageModel package)
+        {
+            Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
+            return _packageGroupView.ShowPackageAt(packageIndex, package, sprite);
+        }
+
+        private static async Task PlayLockedUnlockVisualSafelyAsync(LockedRequiredPackageView locked)
+        {
+            if (locked == null) return;
+            try
+            {
+                await locked.PlayUnlockDisappearAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, locked);
+                locked.gameObject.SetActive(false);
+            }
         }
 
         private void OnPackageDeliveryFailed(GameplaySession session)
