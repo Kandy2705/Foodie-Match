@@ -1,5 +1,5 @@
 using System;
-using FoodieMatch.Core.Infrastructure.Audio;
+using FoodieMatch.Core.Application.Audio;
 
 namespace FoodieMatch.Features.Gameplay
 {

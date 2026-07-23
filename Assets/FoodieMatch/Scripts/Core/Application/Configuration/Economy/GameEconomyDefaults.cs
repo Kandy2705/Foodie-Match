@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using FoodieMatch.Data.Booster;
+using FoodieMatch.Core.Domain.Booster;
 
 namespace FoodieMatch.Core.Application.Configuration.Economy
 {

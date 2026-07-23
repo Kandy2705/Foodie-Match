@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
-using FoodieMatch.Data.Booster;
 
 namespace FoodieMatch.Core.Application.Player
 {

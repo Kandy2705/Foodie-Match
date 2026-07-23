@@ -1,6 +1,6 @@
 using FoodieMatch.Core.Domain.Level;
-using FoodieMatch.Data.Level;
-using FoodieMatch.Data.Level.Json;
+using FoodieMatch.Infrastructure.Level;
+using FoodieMatch.Infrastructure.Level.Json;
 using UnityEngine;
 
 namespace FoodieMatch.Editor.LevelDesign
