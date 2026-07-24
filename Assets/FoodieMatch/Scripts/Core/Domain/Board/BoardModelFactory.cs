@@ -22,6 +22,7 @@ namespace FoodieMatch.Core.Domain.Board
 
                 grills.Add(
                     new GrillModel(
+                        grill.Id,
                         i,
                         grill.Position,
                         grill.FoodTokenIds,

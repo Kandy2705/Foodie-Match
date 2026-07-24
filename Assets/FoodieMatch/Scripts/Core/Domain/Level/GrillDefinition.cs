@@ -11,10 +11,16 @@ namespace FoodieMatch.Core.Domain.Level
         private readonly ReadOnlyCollection<TrayDefinition> _trays;
 
         public GrillDefinition(
+            int id,
             GrillPosition position,
             IReadOnlyList<int> foodTokenIds,
             IReadOnlyList<TrayDefinition> trays)
         {
+            if (id <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(id));
+            }
+
             if (foodTokenIds == null)
             {
                 throw new ArgumentNullException(nameof(foodTokenIds));
@@ -27,6 +33,7 @@ namespace FoodieMatch.Core.Domain.Level
 
             ValidateFoodTokenIds(foodTokenIds);
             ValidateTrays(trays);
+            Id = id;
             Position = position;
 
             List<int> copiedFoodTokenIds = new(foodTokenIds);
@@ -35,6 +42,7 @@ namespace FoodieMatch.Core.Domain.Level
             _trays = copiedTrays.AsReadOnly();
         }
 
+        public int Id { get; }
         public GrillPosition Position { get; }
         public IReadOnlyList<int> FoodTokenIds => _foodTokenIds;
         public IReadOnlyList<TrayDefinition> Trays => _trays;

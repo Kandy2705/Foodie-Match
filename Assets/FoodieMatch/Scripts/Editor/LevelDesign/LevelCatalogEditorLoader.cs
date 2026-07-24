@@ -12,7 +12,8 @@ namespace FoodieMatch.Editor.LevelDesign
             LevelValidator levelValidator = new(
                 new PackageSelectionSettingsValidator(),
                 new LevelRandomSettingsValidator(),
-                new GrillLayoutValidator());
+                new GrillLayoutValidator(),
+                new GrillMovementGroupValidator());
             ResourcesLevelCatalogLoader loader = new(
                 new LevelCatalogJsonParser(),
                 new LevelCatalogValidator(levelValidator),

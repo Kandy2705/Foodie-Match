@@ -41,6 +41,7 @@ namespace FoodieMatch.Editor.LevelDesign
             }
 
             GrillModel clone = new(
+                source.Id,
                 source.PositionIndex,
                 source.Position,
                 activeFoodIds,

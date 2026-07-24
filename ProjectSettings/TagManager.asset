@@ -47,6 +47,9 @@ TagManager:
   - name: Grill
     uniqueID: 1324392069
     locked: 0
+  - name: Background2
+    uniqueID: 974106445
+    locked: 0
   - name: Tray
     uniqueID: 2723730705
     locked: 0

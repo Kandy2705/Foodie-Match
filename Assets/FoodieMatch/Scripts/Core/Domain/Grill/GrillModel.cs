@@ -11,22 +11,30 @@ namespace FoodieMatch.Core.Domain.Grill
         private readonly List<TrayModel> _trays;
 
         public GrillModel(
+            int id,
             int positionIndex,
             GrillPosition position,
             IReadOnlyList<int> activeFoodTokenIds,
             IReadOnlyList<TrayModel> trays)
         {
+            if (id <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(id));
+            }
+
             if (positionIndex < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(positionIndex));
             }
 
+            Id = id;
             PositionIndex = positionIndex;
             Position = position;
             _activeFoodTokenIds = CopyFoodSlots(activeFoodTokenIds);
             _trays = CopyTrays(trays);
         }
 
+        public int Id { get; }
         public int PositionIndex { get; }
         public GrillPosition Position { get; }
         public int ActiveFoodSlotCount => _activeFoodTokenIds.Length;
