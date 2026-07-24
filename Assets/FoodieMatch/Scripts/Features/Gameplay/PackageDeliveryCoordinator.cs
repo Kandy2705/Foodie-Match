@@ -797,13 +797,13 @@ namespace FoodieMatch.Features.Gameplay
         private bool ShowEnteringPackageViewAt(int packageIndex, RequiredPackageModel package)
         {
             Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
-            return _packageGroupView.ShowEnteringPackageAt(packageIndex, package, sprite);
+            return _packageGroupView.ShowNewPackageAt(packageIndex, package, sprite);
         }
 
         private bool ShowUnlockedPackageAtRest(int packageIndex, RequiredPackageModel package)
         {
             Sprite sprite = package != null ? _foodVisualResolver.ResolveIcon(package.FoodTokenId) : null;
-            return _packageGroupView.ShowPackageAt(packageIndex, package, sprite);
+            return _packageGroupView.ShowNewPackageAt(packageIndex, package, sprite);
         }
 
         private static async Task PlayLockedUnlockVisualSafelyAsync(LockedRequiredPackageView locked)
