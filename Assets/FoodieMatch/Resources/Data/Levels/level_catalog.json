@@ -197,20 +197,20 @@
       },
       "movingGrillGroups": [
         {
-          "direction": "right",
+          "direction": "up",
           "grillIds": [
             1,
-            2
+            2,
+            3,
+            4,
+            5,
+            6
           ],
           "movementSpeed": 1.2
         },
         {
-          "direction": "left",
+          "direction": "down",
           "grillIds": [
-            3,
-            4,
-            5,
-            6,
             7,
             8,
             9,
@@ -226,7 +226,7 @@
           "id": 1,
           "position": {
             "x": -2.4,
-            "y": 0
+            "y": -8
           },
           "foodIds": [
             32,
@@ -288,8 +288,8 @@
         {
           "id": 2,
           "position": {
-            "x": 0.8,
-            "y": 0
+            "x": -2.4,
+            "y": -4.8
           },
           "foodIds": [
             32,
@@ -351,8 +351,8 @@
         {
           "id": 3,
           "position": {
-            "x": -1.6,
-            "y": -3.15
+            "x": -2.4,
+            "y": -1.6
           },
           "foodIds": [
             0,
@@ -414,8 +414,8 @@
         {
           "id": 4,
           "position": {
-            "x": 1.6,
-            "y": -3.15
+            "x": -2.4,
+            "y": 1.6
           },
           "foodIds": [
             32,
@@ -477,8 +477,8 @@
         {
           "id": 5,
           "position": {
-            "x": -14.4,
-            "y": -3.15
+            "x": -2.4,
+            "y": 4.8
           },
           "foodIds": [
             37,
@@ -490,8 +490,8 @@
         {
           "id": 6,
           "position": {
-            "x": -11.2,
-            "y": -3.15
+            "x": -2.4,
+            "y": 8
           },
           "foodIds": [
             38,
@@ -503,8 +503,8 @@
         {
           "id": 7,
           "position": {
-            "x": -8,
-            "y": -3.15
+            "x": 2.4,
+            "y": -8
           },
           "foodIds": [
             39,
@@ -516,8 +516,8 @@
         {
           "id": 8,
           "position": {
-            "x": -4.8,
-            "y": -3.15
+            "x": 2.4,
+            "y": -4.8
           },
           "foodIds": [
             40,
@@ -529,8 +529,8 @@
         {
           "id": 9,
           "position": {
-            "x": 4.8,
-            "y": -3.15
+            "x": 2.4,
+            "y": -1.6
           },
           "foodIds": [
             41,
@@ -542,8 +542,8 @@
         {
           "id": 10,
           "position": {
-            "x": 8,
-            "y": -3.15
+            "x": 2.4,
+            "y": 1.6
           },
           "foodIds": [
             42,
@@ -555,8 +555,8 @@
         {
           "id": 11,
           "position": {
-            "x": 11.2,
-            "y": -3.15
+            "x": 2.4,
+            "y": 4.8
           },
           "foodIds": [
             43,
@@ -568,8 +568,8 @@
         {
           "id": 12,
           "position": {
-            "x": 14.4,
-            "y": -3.15
+            "x": 2.4,
+            "y": 8
           },
           "foodIds": [
             44,
@@ -612,7 +612,25 @@
           "topTray": 20
         }
       },
-      "movingGrillGroups": [],
+      "movingGrillGroups": [
+        {
+          "direction": "right",
+          "grillIds": [
+            1,
+            2,
+            3
+          ],
+          "movementSpeed": 1
+        },
+        {
+          "direction": "left",
+          "grillIds": [
+            4,
+            5
+          ],
+          "movementSpeed": 1
+        }
+      ],
       "grills": [
         {
           "id": 1,

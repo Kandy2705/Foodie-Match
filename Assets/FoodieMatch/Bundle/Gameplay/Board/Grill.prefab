@@ -223,7 +223,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 128870067
-  m_SortingLayer: 7
+  m_SortingLayer: 9
   m_SortingOrder: 1
   m_Sprite: {fileID: -711385577000712157, guid: 9c6fc3fff0cf74e3582ad19c68569256, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -311,7 +311,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 128870067
-  m_SortingLayer: 7
+  m_SortingLayer: 9
   m_SortingOrder: 0
   m_Sprite: {fileID: -2195197369185757200, guid: 2d3102ecd066c4cfea808b00d735c43d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -335,6 +335,7 @@ GameObject:
   - component: {fileID: 5837987409224066540}
   - component: {fileID: 1927698761637590537}
   - component: {fileID: 4248802695803814959}
+  - component: {fileID: 1821179124863078245}
   m_Layer: 0
   m_Name: Grill
   m_TagString: Untagged
@@ -439,6 +440,18 @@ MonoBehaviour:
   _lidDropOffset: {x: 0, y: 0.5, z: 0}
   _lidDropDuration: 0.5
   _lidDropEase: 9
+--- !u!210 &1821179124863078245
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7317151431592351489}
+  m_Enabled: 1
+  m_SortingLayerID: 1324392069
+  m_SortingLayer: 2
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &8076179819582664186
 GameObject:
   m_ObjectHideFlags: 0

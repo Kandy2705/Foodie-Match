@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace FoodieMatch.Features.Board
         public MovingGrillGroup(
             GrillMovementDirection direction,
             float movementSpeed,
+            IReadOnlyList<GrillModel> grillModels,
             IReadOnlyList<GrillView> grillViews)
         {
             if (!Enum.IsDefined(typeof(GrillMovementDirection), direction))
@@ -33,6 +35,17 @@ namespace FoodieMatch.Features.Board
                 throw new ArgumentNullException(nameof(grillViews));
             }
 
+            if (grillModels == null)
+            {
+                throw new ArgumentNullException(nameof(grillModels));
+            }
+
+            if (grillModels.Count != grillViews.Count)
+            {
+                throw new ArgumentException(
+                    "Moving grill models and views must have the same count.");
+            }
+
             if (grillViews.Count < 2)
             {
                 throw new ArgumentException(
@@ -42,7 +55,7 @@ namespace FoodieMatch.Features.Board
 
             _direction = direction;
             _movementSpeed = movementSpeed;
-            _grills = CreateMovingGrills(grillViews);
+            _grills = CreateMovingGrills(grillModels, grillViews);
             _grills.Sort(CompareGrills);
             _spacing = CalculateSpacing(_grills);
             _maximumVisualSize = CalculateMaximumVisualSize(_grills);
@@ -76,18 +89,29 @@ namespace FoodieMatch.Features.Board
 
             for (int i = 0; i < _grills.Count; i++)
             {
-                WrapGrill(_grills[i], cameraBounds, loopDistance);
+                MovingGrill grill = _grills[i];
+                HideSoldOutGrillOutsideCamera(grill, cameraBounds);
+                WrapGrill(grill, cameraBounds, loopDistance);
             }
         }
 
         private List<MovingGrill> CreateMovingGrills(
+            IReadOnlyList<GrillModel> grillModels,
             IReadOnlyList<GrillView> grillViews)
         {
             List<MovingGrill> grills = new(grillViews.Count);
 
             for (int i = 0; i < grillViews.Count; i++)
             {
+                GrillModel grillModel = grillModels[i];
                 GrillView grillView = grillViews[i];
+
+                if (grillModel == null)
+                {
+                    throw new ArgumentException(
+                        "Moving grill model is missing.",
+                        nameof(grillModels));
+                }
 
                 if (grillView == null)
                 {
@@ -96,34 +120,34 @@ namespace FoodieMatch.Features.Board
                         nameof(grillViews));
                 }
 
-                grills.Add(CreateMovingGrill(grillView));
+                grills.Add(CreateMovingGrill(grillModel, grillView));
             }
 
             return grills;
         }
 
-        private MovingGrill CreateMovingGrill(GrillView grillView)
+        private MovingGrill CreateMovingGrill(
+            GrillModel grillModel,
+            GrillView grillView)
         {
             Transform grillTransform = grillView.transform;
             float grillPosition = GetAxisPosition(grillTransform.position);
-            Renderer[] renderers =
-                grillView.GetComponentsInChildren<Renderer>(
-                    includeInactive: true);
+            Renderer[] renderers = grillView.GetComponentsInChildren<Renderer>(includeInactive: true);
 
             if (!TryGetRendererBounds(renderers, out Bounds bounds))
             {
                 return new MovingGrill(
+                    grillModel,
                     grillView,
                     minimumVisualOffset: 0f,
                     maximumVisualOffset: 0f);
             }
 
-            float minimumVisualOffset =
-                GetAxisPosition(bounds.min) - grillPosition;
-            float maximumVisualOffset =
-                GetAxisPosition(bounds.max) - grillPosition;
+            float minimumVisualOffset = GetAxisPosition(bounds.min) - grillPosition;
+            float maximumVisualOffset = GetAxisPosition(bounds.max) - grillPosition;
 
             return new MovingGrill(
+                grillModel,
                 grillView,
                 minimumVisualOffset,
                 maximumVisualOffset);
@@ -131,21 +155,16 @@ namespace FoodieMatch.Features.Board
 
         private int CompareGrills(MovingGrill left, MovingGrill right)
         {
-            return GetAxisPosition(left.View.transform.position)
-                .CompareTo(
-                    GetAxisPosition(
-                        right.View.transform.position));
+            float leftPosition = GetAxisPosition(left.View.transform.position);
+            float rightPosition = GetAxisPosition(right.View.transform.position);
+            return leftPosition.CompareTo(rightPosition);
         }
 
         private float CalculateSpacing(
             IReadOnlyList<MovingGrill> grills)
         {
-            float firstPosition =
-                GetAxisPosition(
-                    grills[0].View.transform.position);
-            float secondPosition =
-                GetAxisPosition(
-                    grills[1].View.transform.position);
+            float firstPosition = GetAxisPosition(grills[0].View.transform.position);
+            float secondPosition = GetAxisPosition(grills[1].View.transform.position);
             float spacing = Mathf.Abs(secondPosition - firstPosition);
 
             if (!IsValidPositiveNumber(spacing))
@@ -166,11 +185,8 @@ namespace FoodieMatch.Features.Board
             for (int i = 0; i < grills.Count; i++)
             {
                 MovingGrill grill = grills[i];
-                float visualSize =
-                    grill.MaximumVisualOffset -
-                    grill.MinimumVisualOffset;
-                maximumVisualSize =
-                    Mathf.Max(maximumVisualSize, visualSize);
+                float visualSize = grill.MaximumVisualOffset - grill.MinimumVisualOffset;
+                maximumVisualSize = Mathf.Max(maximumVisualSize, visualSize);
             }
 
             return maximumVisualSize;
@@ -178,12 +194,8 @@ namespace FoodieMatch.Features.Board
 
         private float CalculateLoopDistance(float cameraSpan)
         {
-            int visibleSlotCount = Mathf.CeilToInt(
-                (cameraSpan + _maximumVisualSize) /
-                _spacing);
-            int loopSlotCount = Mathf.Max(
-                _grills.Count,
-                visibleSlotCount);
+            int visibleSlotCount = Mathf.CeilToInt((cameraSpan + _maximumVisualSize) / _spacing);
+            int loopSlotCount = Mathf.Max(_grills.Count, visibleSlotCount);
 
             return loopSlotCount * _spacing;
         }
@@ -208,13 +220,9 @@ namespace FoodieMatch.Features.Board
                     ? cameraBounds.xMax
                     : cameraBounds.yMax;
 
-                while (GetAxisPosition(position) +
-                       grill.MinimumVisualOffset >
-                       maximumBoundary)
+                while (GetAxisPosition(position) + grill.MinimumVisualOffset > maximumBoundary)
                 {
-                    position = MoveAlongAxis(
-                        position,
-                        -loopDistance);
+                    position = MoveAlongAxis(position, -loopDistance);
                 }
             }
             else
@@ -223,17 +231,46 @@ namespace FoodieMatch.Features.Board
                     ? cameraBounds.xMin
                     : cameraBounds.yMin;
 
-                while (GetAxisPosition(position) +
-                       grill.MaximumVisualOffset <
-                       minimumBoundary)
+                while (GetAxisPosition(position) + grill.MaximumVisualOffset < minimumBoundary)
                 {
-                    position = MoveAlongAxis(
-                        position,
-                        loopDistance);
+                    position = MoveAlongAxis(position, loopDistance);
                 }
             }
 
             grillTransform.position = position;
+        }
+
+        private void HideSoldOutGrillOutsideCamera(
+            MovingGrill grill,
+            Rect cameraBounds)
+        {
+            if (grill.IsHidden ||
+                grill.View == null ||
+                grill.Model == null ||
+                grill.Model.HasRemainingFood ||
+                !IsOutsideCamera(grill, cameraBounds))
+            {
+                return;
+            }
+
+            grill.IsHidden = true;
+            grill.View.gameObject.SetActive(false);
+        }
+
+        private bool IsOutsideCamera(
+            MovingGrill grill,
+            Rect cameraBounds)
+        {
+            float position = GetAxisPosition(grill.View.transform.position);
+            float minimumBoundary = IsHorizontal()
+                ? cameraBounds.xMin
+                : cameraBounds.yMin;
+            float maximumBoundary = IsHorizontal()
+                ? cameraBounds.xMax
+                : cameraBounds.yMax;
+
+            return position + grill.MaximumVisualOffset < minimumBoundary ||
+                   position + grill.MinimumVisualOffset > maximumBoundary;
         }
 
         private Vector3 GetMovementVector()
@@ -250,23 +287,17 @@ namespace FoodieMatch.Features.Board
 
         private bool IsHorizontal()
         {
-            return _direction is
-                GrillMovementDirection.Left or
-                GrillMovementDirection.Right;
+            return _direction is GrillMovementDirection.Left or GrillMovementDirection.Right;
         }
 
         private bool IsMovingPositive()
         {
-            return _direction is
-                GrillMovementDirection.Right or
-                GrillMovementDirection.Up;
+            return _direction is GrillMovementDirection.Right or GrillMovementDirection.Up;
         }
 
         private float GetAxisPosition(Vector3 position)
         {
-            return IsHorizontal()
-                ? position.x
-                : position.y;
+            return IsHorizontal() ? position.x : position.y;
         }
 
         private Vector3 MoveAlongAxis(
@@ -322,21 +353,25 @@ namespace FoodieMatch.Features.Board
                    !float.IsInfinity(value);
         }
 
-        private readonly struct MovingGrill
+        private sealed class MovingGrill
         {
             public MovingGrill(
+                GrillModel model,
                 GrillView view,
                 float minimumVisualOffset,
                 float maximumVisualOffset)
             {
+                Model = model;
                 View = view;
                 MinimumVisualOffset = minimumVisualOffset;
                 MaximumVisualOffset = maximumVisualOffset;
             }
 
+            public GrillModel Model { get; }
             public GrillView View { get; }
             public float MinimumVisualOffset { get; }
             public float MaximumVisualOffset { get; }
+            public bool IsHidden { get; set; }
         }
     }
 }

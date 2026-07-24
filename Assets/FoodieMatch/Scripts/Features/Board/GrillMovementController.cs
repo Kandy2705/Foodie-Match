@@ -21,9 +21,7 @@ namespace FoodieMatch.Features.Board
                 groupDefinitions,
             IReadOnlyDictionary<int, GrillView> grillViews)
         {
-            _worldCamera = worldCamera ??
-                           throw new ArgumentNullException(
-                               nameof(worldCamera));
+            _worldCamera = worldCamera ?? throw new ArgumentNullException(nameof(worldCamera));
 
             if (!_worldCamera.orthographic)
             {
@@ -48,10 +46,7 @@ namespace FoodieMatch.Features.Board
                 throw new ArgumentNullException(nameof(grillViews));
             }
 
-            CreateGroups(
-                board,
-                groupDefinitions,
-                grillViews);
+            CreateGroups(board, groupDefinitions, grillViews);
         }
 
         public void StartMovement()
@@ -75,9 +70,7 @@ namespace FoodieMatch.Features.Board
 
             for (int i = 0; i < _groups.Count; i++)
             {
-                _groups[i].Advance(
-                    deltaTime,
-                    cameraBounds);
+                _groups[i].Advance(deltaTime, cameraBounds);
             }
         }
 
@@ -87,21 +80,15 @@ namespace FoodieMatch.Features.Board
                 groupDefinitions,
             IReadOnlyDictionary<int, GrillView> grillViews)
         {
-            for (int groupIndex = 0;
-                 groupIndex < groupDefinitions.Count;
-                 groupIndex++)
+            for (int groupIndex = 0; groupIndex < groupDefinitions.Count; groupIndex++)
             {
-                GrillMovementGroupDefinition definition =
-                    groupDefinitions[groupIndex];
-                List<GrillView> groupGrillViews =
-                    new(definition.GrillIds.Count);
+                GrillMovementGroupDefinition definition = groupDefinitions[groupIndex];
+                List<GrillModel> groupGrillModels = new(definition.GrillIds.Count);
+                List<GrillView> groupGrillViews = new(definition.GrillIds.Count);
 
-                for (int grillIndex = 0;
-                     grillIndex < definition.GrillIds.Count;
-                     grillIndex++)
+                for (int grillIndex = 0; grillIndex < definition.GrillIds.Count; grillIndex++)
                 {
-                    int grillId =
-                        definition.GrillIds[grillIndex];
+                    int grillId = definition.GrillIds[grillIndex];
 
                     if (!board.TryGetGrillById(
                             grillId,
@@ -115,14 +102,15 @@ namespace FoodieMatch.Features.Board
                             $"Grill movement group references missing grill {grillId}.");
                     }
 
+                    groupGrillModels.Add(grillModel);
                     groupGrillViews.Add(grillView);
                 }
 
-                _groups.Add(
-                    new MovingGrillGroup(
-                        definition.Direction,
-                        definition.MovementSpeed,
-                        groupGrillViews));
+                _groups.Add(new MovingGrillGroup(
+                    definition.Direction,
+                    definition.MovementSpeed,
+                    groupGrillModels,
+                    groupGrillViews));
             }
         }
 
@@ -136,12 +124,8 @@ namespace FoodieMatch.Features.Board
                 return false;
             }
 
-            Vector3 bottomLeft =
-                _worldCamera.ViewportToWorldPoint(
-                    new Vector3(0f, 0f, 0f));
-            Vector3 topRight =
-                _worldCamera.ViewportToWorldPoint(
-                    new Vector3(1f, 1f, 0f));
+            Vector3 bottomLeft = _worldCamera.ViewportToWorldPoint(new Vector3(0f, 0f, 0f));
+            Vector3 topRight = _worldCamera.ViewportToWorldPoint(new Vector3(1f, 1f, 0f));
 
             float width = topRight.x - bottomLeft.x;
             float height = topRight.y - bottomLeft.y;
@@ -152,11 +136,7 @@ namespace FoodieMatch.Features.Board
                 return false;
             }
 
-            bounds = new Rect(
-                bottomLeft.x,
-                bottomLeft.y,
-                width,
-                height);
+            bounds = new Rect(bottomLeft.x, bottomLeft.y, width, height);
             return true;
         }
 
