@@ -135,7 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _popupRoot: {fileID: 6580915268149829251}
   _popupPrefabs:
-  - _prefab: {fileID: 4849106369236042680, guid: f0650f64b95e148d7a30d2e64a051082, type: 3}
+  - _prefab: {fileID: 4761375427008058043, guid: f0650f64b95e148d7a30d2e64a051082, type: 3}
     _cacheAfterHide: 1
   - _prefab: {fileID: 7240000822685251824, guid: 09e42893c3ab04430a77e9e4f35d4e7b, type: 3}
     _cacheAfterHide: 1

@@ -1,7 +1,7 @@
 using System;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.UI.Common;
-using FoodieMatch.UI.Popup;
+using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Reward;
 using TMPro;
 using UnityEngine;
@@ -9,10 +9,12 @@ using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Home
 {
-    public sealed class HomeView : PopupBase, IPlayerResourceView
+    public sealed class HomeView : MonoBehaviour, IPlayerResourceView, IMainMenuViewLifecycle
     {
+        [Header("Actions")]
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
+        [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
 
@@ -28,6 +30,13 @@ namespace FoodieMatch.UI.Home
             {
                 _playButton.onClick.AddListener(OnPlayButtonClicked);
             }
+            else
+            {
+                Debug.LogError(
+                    $"{nameof(HomeView)} on {name} " +
+                    "has no play button assigned.",
+                    this);
+            }
 
             if (_settingButton != null)
             {
@@ -35,7 +44,7 @@ namespace FoodieMatch.UI.Home
             }
             else
             {
-                Debug.LogWarning($"{nameof(HomeView)} on {name} has no setting button assigned.");
+                Debug.LogWarning($"{nameof(HomeView)} on {name} " + "has no setting button assigned.", this);
             }
         }
 
@@ -50,10 +59,21 @@ namespace FoodieMatch.UI.Home
             {
                 _settingButton.onClick.RemoveListener(OnSettingButtonClicked);
             }
+            Clear();
         }
 
         public void SetActions(HomeViewActions actions)
         {
+            if (actions == null)
+            {
+                Debug.LogError(
+                    "Cannot set HomeView actions " +
+                    "because actions are null.",
+                    this);
+
+                return;
+            }
+
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
         }
@@ -79,8 +99,8 @@ namespace FoodieMatch.UI.Home
             HeartStatus heartStatus)
         {
             _resourceBarView?.SetPlayerResources(
-                coinBalance,
-                heartStatus);
+                    coinBalance,
+                    heartStatus);
         }
 
         public CoinCounterView GetCoinCounter()
@@ -88,13 +108,11 @@ namespace FoodieMatch.UI.Home
             return _resourceBarView?.CoinCounterView;
         }
 
-        public override void Dispose()
+        public void Clear()
         {
             _playClicked = null;
             _settingClicked = null;
             _resourceBarView?.Clear();
-
-            base.Dispose();
         }
 
         private void OnPlayButtonClicked()

@@ -17,6 +17,7 @@ using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
 using FoodieMatch.UI.Loading;
+using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Reward;
@@ -151,14 +152,29 @@ namespace FoodieMatch.UI
 
             if (_popupManager == null)
             {
-                Debug.LogError("Cannot show home because PopupManager is missing.");
+                Debug.LogError(
+                    "Cannot show home because " +
+                    "PopupManager is missing.",
+                    this);
+
                 return;
             }
 
-            HomeView homeView = _popupManager.Show<HomeView>();
+            MainMenuView mainMenuView = _popupManager.Show<MainMenuView>();
 
-            if (homeView == null)
+            if (mainMenuView == null)
             {
+                Debug.LogError(
+                    "MainMenuView could not be created. " +
+                    "Check PopupManager Popup Prefabs.",
+                    this);
+
+                return;
+            }
+
+            if (!mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+            {
+                Debug.LogError("HomeView is not registered in MainMenuView.", mainMenuView);
                 return;
             }
 
@@ -166,10 +182,13 @@ namespace FoodieMatch.UI
                 new HomeViewActions(
                     OnHomePlayRequested,
                     OnHomeSettingRequested));
+
             homeView.SetPlayLevelNumber(_currentLevelNumber);
-            homeView.SetPlayerResources(
-                displayedCoinBalance,
-                _playerProfileService.GetHeartStatus());
+
+            if (_playerProfileService != null)
+            {
+                homeView.SetPlayerResources(displayedCoinBalance, _playerProfileService.GetHeartStatus());
+            }
         }
 
         public void PlayHomeCoinReward(
@@ -177,12 +196,17 @@ namespace FoodieMatch.UI
             long targetCoinBalance,
             int coinValuePerImage)
         {
-            if (_popupManager == null)
+            if (_popupManager == null || !_popupManager.IsOpened<MainMenuView>())
             {
                 return;
             }
 
-            if (!_popupManager.TryGetOpened(out HomeView homeView))
+            if (!_popupManager.TryGetOpened(out MainMenuView mainMenuView))
+            {
+                return;
+            }
+
+            if (!mainMenuView.TryGetView<HomeView>(out HomeView homeView))
             {
                 return;
             }
@@ -191,7 +215,11 @@ namespace FoodieMatch.UI
 
             if (coinCounter == null)
             {
-                Debug.LogError("Cannot play home coin reward because CoinCounterView is missing.");
+                Debug.LogError(
+                    "Cannot play home coin reward " +
+                    "because CoinCounterView is missing.",
+                    this);
+
                 return;
             }
 
@@ -248,12 +276,7 @@ namespace FoodieMatch.UI
         {
             CompleteCoinRewardImmediately();
 
-            if (_popupManager == null)
-            {
-                return;
-            }
-
-            _popupManager.Hide<HomeView>();
+            _popupManager?.Hide<MainMenuView>();
         }
 
         public void ShowGameplayHud()
@@ -644,7 +667,7 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            _popupManager.HideAll();
+            _popupManager.HideAllRuntimePopups();
         }
 
         public void ShowBoosterBuyPopup(BoosterType boosterType)
@@ -712,47 +735,44 @@ namespace FoodieMatch.UI
 
         public void RefreshOpenedResourceBars()
         {
-            if (_playerProfileService == null ||
-                _popupManager == null)
+            if (_playerProfileService == null)
             {
                 return;
             }
 
             long coinBalance = _playerProfileService.CoinBalance;
+
             HeartStatus heartStatus =
                 _playerProfileService.GetHeartStatus();
 
-            if (_popupManager.TryGetOpened(out HomeView homeView))
+            if (_popupManager != null &&
+                _popupManager.TryGetOpened(out MainMenuView mainMenuView) &&
+                mainMenuView.TryGetView<HomeView>(out HomeView homeView))
             {
-                homeView.SetPlayerResources(
-                    coinBalance,
-                    heartStatus);
+                homeView.SetPlayerResources(coinBalance, heartStatus);
             }
 
-            if (_popupManager.TryGetOpened(
-                    out BoosterBuyPopupView boosterBuyPopup))
+            if (_popupManager == null)
             {
-                boosterBuyPopup.SetPlayerResources(
-                    coinBalance,
-                    heartStatus);
+                return;
             }
 
-            if (_popupManager.TryGetOpened(
-                    out RevivePopupView revivePopup))
+            if (_popupManager.TryGetOpened(out BoosterBuyPopupView boosterBuyPopup))
             {
-                revivePopup.SetPlayerResources(
-                    coinBalance,
-                    heartStatus);
+                boosterBuyPopup.SetPlayerResources(coinBalance, heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(out RevivePopupView revivePopup))
+            {
+                revivePopup.SetPlayerResources(coinBalance, heartStatus);
             }
 
             if (_popupManager.TryGetOpened(out LoseView loseView))
             {
-                loseView.SetPlayerResources(
-                    coinBalance,
-                    heartStatus);
+                loseView.SetPlayerResources(coinBalance, heartStatus);
             }
         }
-        
+
         public void ShowUnlockLockedPackagePopup(int slotIndex, Action<int> onUnlockConfirmed)
         {
             if (_popupManager == null)
@@ -972,9 +992,7 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            resourceView.SetPlayerResources(
-                _playerProfileService.CoinBalance,
-                _playerProfileService.GetHeartStatus());
+            resourceView.SetPlayerResources(_playerProfileService.CoinBalance, _playerProfileService.GetHeartStatus());
         }
 
         private void OnHomeCoinArrived()

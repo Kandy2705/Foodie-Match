@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8424802084421817062}
   - component: {fileID: 5633935193413672543}
-  - component: {fileID: 4849106369236042680}
+  - component: {fileID: 4761375427008058043}
   m_Layer: 5
   m_Name: MainMenuRoot
   m_TagString: Untagged
@@ -51,7 +51,7 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!114 &4849106369236042680
+--- !u!114 &4761375427008058043
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -60,13 +60,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 2320137446194106567}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09e53b083b00463f803216f927ba4384, type: 3}
+  m_Script: {fileID: 11500000, guid: aba684edd398545b386921f2b0a5e7af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playButton: {fileID: 8688958414376945172}
-  _settingButton: {fileID: 4001627232094476255}
-  _playLevelText: {fileID: 823185715394620573}
-  _resourceBarView: {fileID: 0}
+  _canvasGroup: {fileID: 5633935193413672543}
+  _bottomNavigationBarView: {fileID: 2689595387051894006}
+  _views:
+  - _tab: 2
+    _view: {fileID: 6740955115029221224}
+  - _tab: 0
+    _view: {fileID: 0}
 --- !u!1 &4715777797027945921
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,6 +280,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+--- !u!114 &2689595387051894006 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+  m_PrefabInstance: {fileID: 961165864686201643}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5d0ef2d415d44a13a98a5e5547a8e67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &6968152955410034079 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7918847065488590516, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
@@ -423,47 +437,25 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
---- !u!114 &823185715394620573 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3725143549059234066, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
-  m_PrefabInstance: {fileID: 4097947292626507151}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!225 &2585894180034680830 stripped
 CanvasGroup:
   m_CorrespondingSourceObject: {fileID: 1962483496239841905, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
   m_PrefabInstance: {fileID: 4097947292626507151}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4001627232094476255 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1105202278278857296, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
-  m_PrefabInstance: {fileID: 4097947292626507151}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &5366348275916553370 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8261796388687309077, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
   m_PrefabInstance: {fileID: 4097947292626507151}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8688958414376945172 stripped
+--- !u!114 &6740955115029221224 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4632995642553308059, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
+  m_CorrespondingSourceObject: {fileID: 7301033939809704679, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
   m_PrefabInstance: {fileID: 4097947292626507151}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 09e53b083b00463f803216f927ba4384, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &7852247137752798036
