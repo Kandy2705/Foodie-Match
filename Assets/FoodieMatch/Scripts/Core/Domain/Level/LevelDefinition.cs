@@ -6,13 +6,18 @@ namespace FoodieMatch.Core.Domain.Level
 {
     public sealed class LevelDefinition
     {
+        private const float PositionTolerance = 0.001f;
+
         private readonly ReadOnlyCollection<GrillDefinition> _grills;
+        private readonly ReadOnlyCollection<GrillMovementGroupDefinition>
+            _movingGrillGroups;
 
         public LevelDefinition(
             int id,
             LevelDifficulty difficulty,
             LevelRandomSettings randomSettings,
             PackageSelectionSettings packageSelectionSettings,
+            IReadOnlyList<GrillMovementGroupDefinition> movingGrillGroups,
             IReadOnlyList<GrillDefinition> grills)
         {
             if (id <= 0)
@@ -30,7 +35,13 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentNullException(nameof(grills));
             }
 
+            if (movingGrillGroups == null)
+            {
+                throw new ArgumentNullException(nameof(movingGrillGroups));
+            }
+
             ValidateGrills(grills);
+            ValidateMovingGrillGroups(grills, movingGrillGroups);
 
             Id = id;
             Difficulty = difficulty;
@@ -39,7 +50,10 @@ namespace FoodieMatch.Core.Domain.Level
                                        throw new ArgumentNullException(nameof(packageSelectionSettings));
 
             List<GrillDefinition> copiedGrills = new(grills);
+            List<GrillMovementGroupDefinition> copiedMovementGroups =
+                new(movingGrillGroups);
             _grills = copiedGrills.AsReadOnly();
+            _movingGrillGroups = copiedMovementGroups.AsReadOnly();
 
             CountAndValidateFoodTokens(out int totalFoodCount, out int uniqueFoodCount);
             TotalFoodCount = totalFoodCount;
@@ -50,6 +64,8 @@ namespace FoodieMatch.Core.Domain.Level
         public LevelDifficulty Difficulty { get; }
         public LevelRandomSettings RandomSettings { get; }
         public PackageSelectionSettings PackageSelectionSettings { get; }
+        public IReadOnlyList<GrillMovementGroupDefinition> MovingGrillGroups =>
+            _movingGrillGroups;
         public IReadOnlyList<GrillDefinition> Grills => _grills;
         public int TotalFoodCount { get; }
         public int UniqueFoodCount { get; }
@@ -120,6 +136,7 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentException("Level must contain at least one grill.", nameof(grills));
             }
 
+            HashSet<int> grillIds = new();
             HashSet<GrillPosition> positions = new();
 
             for (int i = 0; i < grills.Count; i++)
@@ -131,11 +148,126 @@ namespace FoodieMatch.Core.Domain.Level
                     throw new ArgumentException("Grill collection cannot contain null.", nameof(grills));
                 }
 
+                if (!grillIds.Add(grill.Id))
+                {
+                    throw new ArgumentException("Grill ids must be unique.", nameof(grills));
+                }
+
                 if (!positions.Add(grill.Position))
                 {
                     throw new ArgumentException("Grill positions must be unique.", nameof(grills));
                 }
             }
+        }
+
+        private static void ValidateMovingGrillGroups(
+            IReadOnlyList<GrillDefinition> grills,
+            IReadOnlyList<GrillMovementGroupDefinition> movementGroups)
+        {
+            Dictionary<int, GrillDefinition> grillsById = new();
+
+            for (int i = 0; i < grills.Count; i++)
+            {
+                grillsById.Add(grills[i].Id, grills[i]);
+            }
+
+            HashSet<int> movingGrillIds = new();
+
+            for (int i = 0; i < movementGroups.Count; i++)
+            {
+                GrillMovementGroupDefinition movementGroup = movementGroups[i];
+
+                if (movementGroup == null)
+                {
+                    throw new ArgumentException(
+                        "Movement group collection cannot contain null.",
+                        nameof(movementGroups));
+                }
+
+                List<float> movementPositions = new(movementGroup.GrillIds.Count);
+                bool isHorizontal = IsHorizontal(movementGroup.Direction);
+                float fixedPosition = 0f;
+
+                for (int grillIndex = 0;
+                     grillIndex < movementGroup.GrillIds.Count;
+                     grillIndex++)
+                {
+                    int grillId = movementGroup.GrillIds[grillIndex];
+
+                    if (!grillsById.TryGetValue(grillId, out GrillDefinition grill))
+                    {
+                        throw new ArgumentException(
+                            $"Movement group references missing grill id {grillId}.",
+                            nameof(movementGroups));
+                    }
+
+                    if (!movingGrillIds.Add(grillId))
+                    {
+                        throw new ArgumentException(
+                            $"Grill id {grillId} belongs to multiple movement groups.",
+                            nameof(movementGroups));
+                    }
+
+                    float currentFixedPosition =
+                        isHorizontal ? grill.Position.Y : grill.Position.X;
+                    float movementPosition =
+                        isHorizontal ? grill.Position.X : grill.Position.Y;
+
+                    if (grillIndex == 0)
+                    {
+                        fixedPosition = currentFixedPosition;
+                    }
+                    else if (!Approximately(fixedPosition, currentFixedPosition))
+                    {
+                        throw new ArgumentException(
+                            $"Movement group {i} grills must be on the same line.",
+                            nameof(movementGroups));
+                    }
+
+                    movementPositions.Add(movementPosition);
+                }
+
+                ValidateEqualSpacing(movementPositions, i, movementGroups);
+            }
+        }
+
+        private static void ValidateEqualSpacing(
+            List<float> positions,
+            int movementGroupIndex,
+            IReadOnlyList<GrillMovementGroupDefinition> movementGroups)
+        {
+            positions.Sort();
+            float expectedSpacing = positions[1] - positions[0];
+
+            if (expectedSpacing <= PositionTolerance)
+            {
+                throw new ArgumentException(
+                    $"Movement group {movementGroupIndex} grill spacing must be greater than zero.",
+                    nameof(movementGroups));
+            }
+
+            for (int i = 2; i < positions.Count; i++)
+            {
+                float spacing = positions[i] - positions[i - 1];
+
+                if (!Approximately(expectedSpacing, spacing))
+                {
+                    throw new ArgumentException(
+                        $"Movement group {movementGroupIndex} grills must be evenly spaced.",
+                        nameof(movementGroups));
+                }
+            }
+        }
+
+        private static bool IsHorizontal(GrillMovementDirection direction)
+        {
+            return direction == GrillMovementDirection.Left ||
+                   direction == GrillMovementDirection.Right;
+        }
+
+        private static bool Approximately(float left, float right)
+        {
+            return Math.Abs(left - right) <= PositionTolerance;
         }
     }
 }

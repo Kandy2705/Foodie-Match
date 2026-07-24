@@ -172,6 +172,22 @@ namespace FoodieMatch.Core.Domain.Board
             return false;
         }
 
+        public bool TryGetGrillById(int grillId, out GrillModel grill)
+        {
+            grill = null;
+
+            for (int i = 0; i < _grills.Count; i++)
+            {
+                if (_grills[i].Id == grillId)
+                {
+                    grill = _grills[i];
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public IReadOnlyList<int> GetActiveFoodTokenIds()
         {
             return GetFoodTokenIdsAtDepth(0);
@@ -289,6 +305,7 @@ namespace FoodieMatch.Core.Domain.Board
             IReadOnlyList<GrillModel> grills)
         {
             List<GrillModel> grillModels = new List<GrillModel>();
+            HashSet<int> grillIds = new HashSet<int>();
             HashSet<int> positionIndexes = new HashSet<int>();
 
             for (int i = 0; i < grills.Count; i++)
@@ -306,6 +323,13 @@ namespace FoodieMatch.Core.Domain.Board
                 {
                     throw new ArgumentException(
                         "Board grill position indexes must be unique.",
+                        nameof(grills));
+                }
+
+                if (!grillIds.Add(grill.Id))
+                {
+                    throw new ArgumentException(
+                        "Board grill ids must be unique.",
                         nameof(grills));
                 }
 

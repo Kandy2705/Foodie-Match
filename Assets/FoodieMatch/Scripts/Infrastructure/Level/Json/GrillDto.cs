@@ -5,6 +5,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class GrillDto
     {
+        [JsonProperty("id")]
+        public int? Id { get; set; }
+
         [JsonProperty("position")]
         public GrillPositionDto Position { get; set; }
 

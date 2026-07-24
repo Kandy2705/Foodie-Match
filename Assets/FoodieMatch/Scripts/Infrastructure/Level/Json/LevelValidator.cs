@@ -8,11 +8,13 @@ namespace FoodieMatch.Infrastructure.Level.Json
         private readonly PackageSelectionSettingsValidator _packageSelectionValidator;
         private readonly LevelRandomSettingsValidator _randomSettingsValidator;
         private readonly GrillLayoutValidator _grillLayoutValidator;
+        private readonly GrillMovementGroupValidator _grillMovementGroupValidator;
 
         public LevelValidator(
             PackageSelectionSettingsValidator packageSelectionValidator,
             LevelRandomSettingsValidator randomSettingsValidator,
-            GrillLayoutValidator grillLayoutValidator)
+            GrillLayoutValidator grillLayoutValidator,
+            GrillMovementGroupValidator grillMovementGroupValidator)
         {
             _packageSelectionValidator = packageSelectionValidator ??
                                          throw new ArgumentNullException(nameof(packageSelectionValidator));
@@ -20,6 +22,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
                                        throw new ArgumentNullException(nameof(randomSettingsValidator));
             _grillLayoutValidator = grillLayoutValidator ??
                                     throw new ArgumentNullException(nameof(grillLayoutValidator));
+            _grillMovementGroupValidator = grillMovementGroupValidator ??
+                                           throw new ArgumentNullException(
+                                               nameof(grillMovementGroupValidator));
         }
 
         public void Validate(
@@ -42,6 +47,11 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 levelPath,
                 result);
             _grillLayoutValidator.Validate(level.Grills, levelPath, result);
+            _grillMovementGroupValidator.Validate(
+                level.Grills,
+                level.MovingGrillGroups,
+                levelPath,
+                result);
         }
 
         private static void ValidateIdentity(

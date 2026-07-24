@@ -137,10 +137,12 @@ namespace FoodieMatch.App
             PackageSelectionSettingsValidator packageSelectionValidator = new();
             LevelRandomSettingsValidator randomSettingsValidator = new();
             GrillLayoutValidator grillLayoutValidator = new();
+            GrillMovementGroupValidator grillMovementGroupValidator = new();
             LevelValidator levelValidator = new(
                 packageSelectionValidator,
                 randomSettingsValidator,
-                grillLayoutValidator);
+                grillLayoutValidator,
+                grillMovementGroupValidator);
             LevelCatalogValidator catalogValidator = new(levelValidator);
             LevelCatalogMapper mapper = new();
             ResourcesLevelCatalogLoader loader = new(parser, catalogValidator, mapper);

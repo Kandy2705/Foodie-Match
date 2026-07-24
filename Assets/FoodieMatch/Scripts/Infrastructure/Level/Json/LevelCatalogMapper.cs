@@ -44,6 +44,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 difficulty,
                 MapRandomSettings(levelDto.RandomSettings),
                 MapPackageSelectionSettings(levelDto.PackageSelectionSettings),
+                MapMovementGroups(levelDto.MovingGrillGroups),
                 MapGrills(levelDto.Grills));
         }
 
@@ -86,6 +87,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
 
                 grills.Add(
                     new GrillDefinition(
+                        grillDto.Id.Value,
                         new GrillPosition(
                             grillDto.Position.X.Value,
                             grillDto.Position.Y.Value),
@@ -94,6 +96,31 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             return grills;
+        }
+
+        private static IReadOnlyList<GrillMovementGroupDefinition>
+            MapMovementGroups(
+                IReadOnlyList<GrillMovementGroupDto> movementGroupDtos)
+        {
+            List<GrillMovementGroupDefinition> movementGroups = new();
+
+            for (int i = 0; i < movementGroupDtos.Count; i++)
+            {
+                GrillMovementGroupDto movementGroupDto = movementGroupDtos[i];
+
+                Enum.TryParse(
+                    movementGroupDto.Direction,
+                    ignoreCase: true,
+                    out GrillMovementDirection direction);
+
+                movementGroups.Add(
+                    new GrillMovementGroupDefinition(
+                        direction,
+                        movementGroupDto.GrillIds,
+                        movementGroupDto.MovementSpeed.Value));
+            }
+
+            return movementGroups;
         }
 
         private static IReadOnlyList<TrayDefinition> MapTrays(
