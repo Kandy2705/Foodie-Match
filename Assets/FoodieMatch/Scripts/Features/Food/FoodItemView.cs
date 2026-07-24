@@ -181,12 +181,21 @@ namespace FoodieMatch.Features.Food
         }
 
         public Task<MotionResult> PlayFlightToGrillAsync(
-            Vector3 targetPosition,
+            Transform target,
             float startDelay = 0f)
         {
+            if (target == null)
+            {
+                Debug.LogError(
+                    "Food grill flight target is missing.",
+                    this);
+                return Task.FromResult(
+                    MotionResult.Failed);
+            }
+
             return PlayFlightAsync(
-                targetPosition,
-                null,
+                target.position,
+                target,
                 FoodItemVisualState.OnGrill,
                 _topTrayToGrillFlightDuration,
                 startDelay);

@@ -8,18 +8,18 @@ namespace FoodieMatch.Features.Board
     {
         public TopTrayMoveVisuals(
             IReadOnlyList<FoodItemView> movingFoodItems,
-            IReadOnlyList<Vector3> targetPositions,
+            IReadOnlyList<Transform> targetAnchors,
             TrayView departingTray,
             IReadOnlyList<FoodItemView> newTopTrayFoodItems)
         {
             MovingFoodItems = movingFoodItems;
-            TargetPositions = targetPositions;
+            TargetAnchors = targetAnchors;
             DepartingTray = departingTray;
             NewTopTrayFoodItems = newTopTrayFoodItems;
         }
 
         public IReadOnlyList<FoodItemView> MovingFoodItems { get; }
-        public IReadOnlyList<Vector3> TargetPositions { get; }
+        public IReadOnlyList<Transform> TargetAnchors { get; }
         public TrayView DepartingTray { get; }
         public IReadOnlyList<FoodItemView> NewTopTrayFoodItems { get; }
     }

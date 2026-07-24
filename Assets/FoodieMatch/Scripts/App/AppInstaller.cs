@@ -67,6 +67,15 @@ namespace FoodieMatch.App
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
             GameplayWorldClickSfx gameplayWorldClickSfx = CreateGameplayWorldClickSfx(appRoot, audioService);
+            Camera worldCamera = Camera.main;
+
+            if (worldCamera == null)
+            {
+                Debug.LogError(
+                    "Cannot install app because Main Camera is missing.");
+                return false;
+            }
+
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
             RequiredPackageGenerator requiredPackageGenerator = new();
@@ -94,7 +103,8 @@ namespace FoodieMatch.App
             IRewardedAdService rewardedAdService =
                 new FakeRewardedAdService(appRoot.UIManager);
             appRoot.BoardLayoutView.Construct(
-                appRoot.FoodVisualResolver);
+                appRoot.FoodVisualResolver,
+                worldCamera);
             appRoot.GameplayMotionPresenter.Construct(
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView);

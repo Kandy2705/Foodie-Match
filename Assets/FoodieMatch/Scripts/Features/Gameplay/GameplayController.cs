@@ -67,6 +67,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
+            _boardLayoutView?.StopGrillMovement();
             UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
@@ -194,7 +195,9 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayMotionPresenter.CancelAllMotions();
             _waitingRackFullResolutionPending = false;
-            _boardLayoutView.Setup(_session.Board);
+            _boardLayoutView.Setup(
+                _session.Board,
+                _session.Level.MovingGrillGroups);
             _waitingRackView.Clear();
             _packageDeliveryCoordinator.BeginSession(_session);
             SubscribeLockedPackages();
@@ -219,6 +222,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
+            _boardLayoutView?.StopGrillMovement();
             _waitingRackFullResolutionPending = false;
             UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
@@ -856,6 +860,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayWorldClickSfx.StopListening();
+            _boardLayoutView.StopGrillMovement();
             _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
             _navigationActions?.LevelWon.Invoke(session.LevelNumber);
         }
@@ -914,6 +919,7 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
+            _boardLayoutView.StopGrillMovement();
             _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, false, LoseReason));
             _navigationActions?.LevelLost.Invoke(session.LevelNumber);
         }

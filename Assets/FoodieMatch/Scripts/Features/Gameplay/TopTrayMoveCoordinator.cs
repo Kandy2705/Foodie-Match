@@ -110,7 +110,7 @@ namespace FoodieMatch.Features.Gameplay
             {
                 motionResult = await _motionPresenter.MoveTopTrayFoodToGrillAsync(
                     foodItemView,
-                    moveVisuals.TargetPositions[foodItemIndex],
+                    moveVisuals.TargetAnchors[foodItemIndex],
                     startDelay);
             }
             catch (Exception exception)

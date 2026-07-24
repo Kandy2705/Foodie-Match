@@ -38,10 +38,11 @@ namespace FoodieMatch.Features.Gameplay
 
         public async Task<MotionResult> MoveTopTrayFoodToGrillAsync(
             FoodItemView foodItemView,
-            Vector3 targetPosition,
+            Transform target,
             float startDelay)
         {
-            if (!CanStartFoodMotion(foodItemView, startDelay) ||
+            if (target == null ||
+                !CanStartFoodMotion(foodItemView, startDelay) ||
                 !_activeFoodMotions.Add(foodItemView))
             {
                 return MotionResult.Failed;
@@ -49,7 +50,10 @@ namespace FoodieMatch.Features.Gameplay
 
             try
             {
-                return await foodItemView.PlayFlightToGrillAsync(targetPosition, startDelay);
+                return await foodItemView
+                    .PlayFlightToGrillAsync(
+                        target,
+                        startDelay);
             }
             finally
             {
