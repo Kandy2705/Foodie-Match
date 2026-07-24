@@ -593,6 +593,65 @@ namespace FoodieMatch.UI.Navigation
                 binding.InitialAnchoredPosition;
         }
 
+        public void ShowTabImmediately(
+            BottomNavigationTab tab)
+        {
+            TabBinding binding =
+                FindBinding(tab);
+
+            if (binding == null)
+            {
+                Debug.LogError(
+                    $"Bottom navigation tab {tab} is missing.",
+                    this);
+
+                return;
+            }
+
+            if (_currentTab != null &&
+                !ReferenceEquals(
+                    _currentTab,
+                    binding))
+            {
+                SetNormalIconVisible(
+                    _currentTab,
+                    true);
+            }
+
+            for (int i = 0;
+                 i < _tabs.Length;
+                 i++)
+            {
+                bool selected =
+                    ReferenceEquals(
+                        _tabs[i],
+                        binding);
+
+                SetScreenImmediately(
+                    _tabs[i],
+                    selected);
+
+                SetNormalIconVisible(
+                    _tabs[i],
+                    !selected);
+            }
+
+            BringScreenToFront(binding);
+
+            MoveIndicatorImmediately(
+                binding);
+
+            UpdateIndicatorContent(
+                binding);
+
+            _currentTab =
+                binding;
+
+            _selectionAnimator.SetBool(
+                IsSelectedHash,
+                true);
+        }
+
         private static void BringScreenToFront(
             TabBinding binding)
         {

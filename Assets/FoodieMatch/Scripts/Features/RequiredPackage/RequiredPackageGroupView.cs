@@ -75,7 +75,7 @@ namespace FoodieMatch.Features.RequiredPackage
             return true;
         }
 
-        public bool ShowEnteringPackageAt(int packageIndex, RequiredPackageModel package, Sprite sprite)
+        public bool ShowNewPackageAt(int packageIndex, RequiredPackageModel package, Sprite sprite)
         {
             RequiredPackageView packageView = GetPackageAt(packageIndex);
 
