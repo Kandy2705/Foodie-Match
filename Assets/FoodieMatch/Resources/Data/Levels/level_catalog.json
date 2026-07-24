@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "levelOrder": [
     1,
     2,
@@ -47,6 +47,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": 0
@@ -68,6 +69,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": 0
@@ -121,6 +123,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": 0
@@ -142,6 +145,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": 0
@@ -224,6 +228,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": -8
@@ -287,6 +292,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": -4.8
@@ -350,6 +356,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": -1.6
@@ -413,6 +420,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": 1.6
@@ -476,6 +484,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": 4.8
@@ -489,6 +498,7 @@
         },
         {
           "id": 6,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": 8
@@ -502,6 +512,7 @@
         },
         {
           "id": 7,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": -8
@@ -515,6 +526,7 @@
         },
         {
           "id": 8,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": -4.8
@@ -528,6 +540,7 @@
         },
         {
           "id": 9,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": -1.6
@@ -541,6 +554,7 @@
         },
         {
           "id": 10,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": 1.6
@@ -554,6 +568,7 @@
         },
         {
           "id": 11,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": 4.8
@@ -567,6 +582,7 @@
         },
         {
           "id": 12,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": 8
@@ -634,6 +650,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": 0
@@ -697,6 +714,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": 0
@@ -760,6 +778,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": 0
@@ -823,6 +842,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": -3.15
@@ -886,6 +906,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": -3.15
@@ -985,6 +1006,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": 0
@@ -1048,6 +1070,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": 0
@@ -1111,6 +1134,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": -3.15
@@ -1174,6 +1198,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": -3.15
@@ -1273,6 +1298,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": 0
@@ -1329,6 +1355,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": 0
@@ -1385,6 +1412,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": -3.15
@@ -1441,6 +1469,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": -3.15
@@ -1497,6 +1526,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": -3.15
@@ -1589,6 +1619,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": 0
@@ -1652,6 +1683,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": 0
@@ -1715,6 +1747,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": 0
@@ -1778,6 +1811,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": -3.15
@@ -1841,6 +1875,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": -3.15
@@ -1940,6 +1975,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": 0
@@ -2010,6 +2046,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": 0
@@ -2080,6 +2117,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": -3.15
@@ -2150,6 +2188,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": -3.15
@@ -2220,6 +2259,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": -3.15
@@ -2326,6 +2366,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -0.8,
             "y": 0
@@ -2389,6 +2430,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 2.4,
             "y": 0
@@ -2452,6 +2494,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": -2.4,
             "y": -3.15
@@ -2515,6 +2558,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": 0.8,
             "y": -3.15
@@ -2614,6 +2658,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": 0
@@ -2677,6 +2722,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": 0
@@ -2740,6 +2786,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": 0
@@ -2803,6 +2850,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": -3.15
@@ -2866,6 +2914,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": -3.15
@@ -2965,6 +3014,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": 0.2
@@ -3028,6 +3078,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": -0.1
@@ -3091,6 +3142,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": 0.2
@@ -3154,6 +3206,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": -3.05
@@ -3217,6 +3270,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": -3.3
@@ -3316,6 +3370,7 @@
       "grills": [
         {
           "id": 1,
+          "type": "standard",
           "position": {
             "x": -3,
             "y": -0.1
@@ -3379,6 +3434,7 @@
         },
         {
           "id": 2,
+          "type": "standard",
           "position": {
             "x": 0,
             "y": 0.25
@@ -3442,6 +3498,7 @@
         },
         {
           "id": 3,
+          "type": "standard",
           "position": {
             "x": 3,
             "y": -0.1
@@ -3505,6 +3562,7 @@
         },
         {
           "id": 4,
+          "type": "standard",
           "position": {
             "x": -1.5,
             "y": -3.3
@@ -3568,6 +3626,7 @@
         },
         {
           "id": 5,
+          "type": "standard",
           "position": {
             "x": 1.5,
             "y": -3.05

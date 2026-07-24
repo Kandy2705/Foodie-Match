@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
 
 namespace FoodieMatch.Core.Domain.Level
 {
@@ -12,6 +13,7 @@ namespace FoodieMatch.Core.Domain.Level
 
         public GrillDefinition(
             int id,
+            GrillType type,
             GrillPosition position,
             IReadOnlyList<int> foodTokenIds,
             IReadOnlyList<TrayDefinition> trays)
@@ -31,9 +33,12 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentNullException(nameof(trays));
             }
 
+            ValidateType(type);
             ValidateFoodTokenIds(foodTokenIds);
             ValidateTrays(trays);
+            ValidateSingleGrill(type, foodTokenIds, trays);
             Id = id;
+            Type = type;
             Position = position;
 
             List<int> copiedFoodTokenIds = new(foodTokenIds);
@@ -43,9 +48,18 @@ namespace FoodieMatch.Core.Domain.Level
         }
 
         public int Id { get; }
+        public GrillType Type { get; }
         public GrillPosition Position { get; }
         public IReadOnlyList<int> FoodTokenIds => _foodTokenIds;
         public IReadOnlyList<TrayDefinition> Trays => _trays;
+
+        private static void ValidateType(GrillType type)
+        {
+            if (!Enum.IsDefined(typeof(GrillType), type))
+            {
+                throw new ArgumentOutOfRangeException(nameof(type));
+            }
+        }
 
         private static void ValidateFoodTokenIds(IReadOnlyList<int> foodTokenIds)
         {
@@ -80,6 +94,41 @@ namespace FoodieMatch.Core.Domain.Level
                 if (trays[i] == null)
                 {
                     throw new ArgumentException("Tray collection cannot contain null.", nameof(trays));
+                }
+            }
+        }
+
+        private static void ValidateSingleGrill(
+            GrillType type,
+            IReadOnlyList<int> foodTokenIds,
+            IReadOnlyList<TrayDefinition> trays)
+        {
+            if (type != GrillType.Single)
+            {
+                return;
+            }
+
+            if (foodTokenIds.Count != 1)
+            {
+                throw new ArgumentException(
+                    "Single grill must contain exactly one active food token.",
+                    nameof(foodTokenIds));
+            }
+
+            if (trays.Count != 3)
+            {
+                throw new ArgumentException(
+                    "Single grill must contain exactly three hidden food trays.",
+                    nameof(trays));
+            }
+
+            for (int i = 0; i < trays.Count; i++)
+            {
+                if (trays[i].FoodTokenIds.Count != 1)
+                {
+                    throw new ArgumentException(
+                        "Each single grill hidden food tray must contain exactly one food token.",
+                        nameof(trays));
                 }
             }
         }

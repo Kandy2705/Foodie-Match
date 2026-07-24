@@ -25,6 +25,7 @@ namespace FoodieMatch.Core.Domain.Board
                         grill.Id,
                         i,
                         grill.Position,
+                        grill.Type,
                         grill.FoodTokenIds,
                         CreateTrays(grill.Trays)));
             }
