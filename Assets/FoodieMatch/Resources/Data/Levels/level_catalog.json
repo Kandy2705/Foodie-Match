@@ -593,6 +593,34 @@
             0
           ],
           "trays": []
+        },
+        {
+          "id": 13,
+          "type": "single",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "foodIds": [
+            45
+          ],
+          "trays": [
+            {
+              "foodIds": [
+                46
+              ]
+            },
+            {
+              "foodIds": [
+                47
+              ]
+            },
+            {
+              "foodIds": [
+                48
+              ]
+            }
+          ]
         }
       ]
     },

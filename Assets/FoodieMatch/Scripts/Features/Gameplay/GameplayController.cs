@@ -7,6 +7,7 @@ using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
@@ -47,6 +48,7 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackPlacementCoordinator _waitingRackPlacementCoordinator;
         private WaitingRackAutoFillCoordinator _waitingRackAutoFillCoordinator;
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
+        private SingleGrillRevealCoordinator _singleGrillRevealCoordinator;
         private GrillCompletionCoordinator _grillCompletionCoordinator;
         private ComboCoordinator _comboCoordinator;
         private PlateBoosterCoordinator _plateBoosterCoordinator;
@@ -487,6 +489,8 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
             _topTrayMoveCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _boardLayoutView);
+            _singleGrillRevealCoordinator = new(
+                _sessionGuard, _gameplayAudioPresenter, _boardLayoutView);
             _grillCompletionCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
             _comboCoordinator = new(_sessionGuard, _gameplayEvents, _gameplayAudioPresenter);
@@ -520,6 +524,7 @@ namespace FoodieMatch.Features.Gameplay
             _packageDeliveryCoordinator.PackageDeliveryFailed += HandleGameplayFlowFailed;
             _waitingRackAutoFillCoordinator.AutoFillFinished += HandleAutoFillFinished;
             _waitingRackAutoFillCoordinator.AutoFillFailed += HandleGameplayFlowFailed;
+            _singleGrillRevealCoordinator.RevealFailed += HandleGameplayFlowFailed;
             _grillCompletionCoordinator.GrillCloseFinished += HandleGrillCloseFinished;
         }
 
@@ -536,6 +541,11 @@ namespace FoodieMatch.Features.Gameplay
             {
                 _waitingRackAutoFillCoordinator.AutoFillFinished -= HandleAutoFillFinished;
                 _waitingRackAutoFillCoordinator.AutoFillFailed -= HandleGameplayFlowFailed;
+            }
+
+            if (_singleGrillRevealCoordinator != null)
+            {
+                _singleGrillRevealCoordinator.RevealFailed -= HandleGameplayFlowFailed;
             }
 
             if (_grillCompletionCoordinator != null)
@@ -697,7 +707,7 @@ namespace FoodieMatch.Features.Gameplay
             Task deliveryTask = _packageDeliveryCoordinator.DeliverSelectedFoodAsync(
                 context.FoodItemView, result.TargetIndex, session);
 
-            _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            RefillGrill(context.Address.GrillPositionIndex, session);
             _grillCompletionCoordinator.TryCloseCompletedGrill(context.Address.GrillPositionIndex, session);
             await deliveryTask;
             TryResolveWin(session);
@@ -712,7 +722,7 @@ namespace FoodieMatch.Features.Gameplay
             Task<WaitingRackPlacementResult> placementTask = _waitingRackPlacementCoordinator.PlaceFoodAsync(
                 context.FoodItemView, result.TargetIndex, session);
 
-            _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            RefillGrill(context.Address.GrillPositionIndex, session);
             _grillCompletionCoordinator.TryCloseCompletedGrill(context.Address.GrillPositionIndex, session);
             bool causedWaitingRackFull = session.WaitingRack.IsFull;
 
@@ -945,6 +955,22 @@ namespace FoodieMatch.Features.Gameplay
 
             int levelNumber = _session.LevelNumber;
             _navigationActions?.RetryRequested.Invoke(levelNumber);
+        }
+
+        private void RefillGrill(int grillPositionIndex, GameplaySession session)
+        {
+            if (!session.Board.TryGetGrill(grillPositionIndex, out GrillModel grillModel))
+            {
+                return;
+            }
+
+            if (grillModel.Type == GrillType.Single)
+            {
+                _singleGrillRevealCoordinator.RevealNextFood(grillPositionIndex, session);
+                return;
+            }
+
+            _topTrayMoveCoordinator.MoveFoodToGrill(grillPositionIndex, session);
         }
 
         private void OnHomeClicked()

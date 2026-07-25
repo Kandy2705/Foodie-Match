@@ -19,7 +19,7 @@ namespace FoodieMatch.Features.Board
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
                 groupDefinitions,
-            IReadOnlyDictionary<int, GrillView> grillViews)
+            IReadOnlyDictionary<int, GrillViewBase> grillViews)
         {
             _worldCamera = worldCamera ?? throw new ArgumentNullException(nameof(worldCamera));
 
@@ -78,13 +78,13 @@ namespace FoodieMatch.Features.Board
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
                 groupDefinitions,
-            IReadOnlyDictionary<int, GrillView> grillViews)
+            IReadOnlyDictionary<int, GrillViewBase> grillViews)
         {
             for (int groupIndex = 0; groupIndex < groupDefinitions.Count; groupIndex++)
             {
                 GrillMovementGroupDefinition definition = groupDefinitions[groupIndex];
                 List<GrillModel> groupGrillModels = new(definition.GrillIds.Count);
-                List<GrillView> groupGrillViews = new(definition.GrillIds.Count);
+                List<GrillViewBase> groupGrillViews = new(definition.GrillIds.Count);
 
                 for (int grillIndex = 0; grillIndex < definition.GrillIds.Count; grillIndex++)
                 {
@@ -95,7 +95,7 @@ namespace FoodieMatch.Features.Board
                             out GrillModel grillModel) ||
                         !grillViews.TryGetValue(
                             grillModel.PositionIndex,
-                            out GrillView grillView) ||
+                            out GrillViewBase grillView) ||
                         grillView == null)
                     {
                         throw new InvalidOperationException(

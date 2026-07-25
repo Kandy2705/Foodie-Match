@@ -46,8 +46,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _grillPrefab: {fileID: 4248802695803814959, guid: c69090a09bde3ba4186d0a06f7d44672, type: 3}
+  _singleGrillPrefab: {fileID: 3418296666930267748, guid: 37a252c76ea9f384fb0fdd856f1de2c9, type: 3}
   _foodItemPrefab: {fileID: 5990025429725289749, guid: 25d9e0b115ad255499a9a997fbc1316e, type: 3}
   _foodItemRoot: {fileID: 4706382025159141917}
+  _topTrayReleaseScaleDuration: 0.18
 --- !u!1 &5211099872304265297
 GameObject:
   m_ObjectHideFlags: 0
