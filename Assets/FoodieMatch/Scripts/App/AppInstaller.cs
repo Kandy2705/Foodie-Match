@@ -32,11 +32,6 @@ namespace FoodieMatch.App
 
         public bool Install(AppRoot appRoot)
         {
-            if (!HasValidReferences(appRoot))
-            {
-                return false;
-            }
-
             if (!TryCreateLevelRepository(out ILevelRepository levelRepository))
             {
                 return false;
@@ -213,64 +208,5 @@ namespace FoodieMatch.App
             return worldClickSfx;
         }
 
-        private bool HasValidReferences(AppRoot appRoot)
-        {
-            if (appRoot == null)
-            {
-                Debug.LogError("Cannot install app because AppRoot is null.");
-                return false;
-            }
-
-            if (appRoot.AppController == null)
-            {
-                Debug.LogError("Cannot install app because AppController is missing.");
-                return false;
-            }
-
-            if (appRoot.GameplayController == null)
-            {
-                Debug.LogError("Cannot install app because GameplayController is missing.");
-                return false;
-            }
-
-            if (appRoot.UIManager == null)
-            {
-                Debug.LogError("Cannot install app because UIManager is missing.");
-                return false;
-            }
-
-            if (appRoot.GameplayMotionPresenter == null)
-            {
-                Debug.LogError(
-                    "Cannot install app because GameplayMotionPresenter is missing.");
-                return false;
-            }
-
-            if (appRoot.BoardLayoutView == null)
-            {
-                Debug.LogError("Cannot install app because BoardLayoutView is missing.");
-                return false;
-            }
-
-            if (appRoot.RequiredPackageGroupView == null)
-            {
-                Debug.LogError("Cannot install app because RequiredPackageGroupView is missing.");
-                return false;
-            }
-
-            if (appRoot.WaitingRackView == null)
-            {
-                Debug.LogError("Cannot install app because WaitingRackView is missing.");
-                return false;
-            }
-
-            if (appRoot.FoodVisualResolver == null)
-            {
-                Debug.LogError("Cannot install app because FoodVisualResolver is missing.");
-                return false;
-            }
-
-            return true;
-        }
     }
 }

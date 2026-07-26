@@ -62,7 +62,6 @@ namespace FoodieMatch.UI
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
         private CoinRewardOverlayView _coinRewardOverlayView;
-        private bool _hasConstructed;
         private bool _returnToReviveOnLeaveClose;
         private bool _isBoosterGuideShowing;
         private Action _loseTryAgainClicked;
@@ -106,11 +105,6 @@ namespace FoodieMatch.UI
             IGameEconomyConfig economyConfig,
             PlayerProfileService playerProfileService)
         {
-            if (_hasConstructed)
-            {
-                UnsubscribeEvents();
-            }
-
             _audioService = audioService;
             EnsureGlobalButtonClickSfx(audioService);
 
@@ -121,8 +115,6 @@ namespace FoodieMatch.UI
             _economyConfig = economyConfig;
             _playerProfileService = playerProfileService;
             SubscribeEvents();
-
-            _hasConstructed = true;
 
             if (_popupManager == null)
             {
