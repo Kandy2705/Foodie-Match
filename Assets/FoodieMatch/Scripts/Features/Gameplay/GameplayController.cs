@@ -22,9 +22,6 @@ namespace FoodieMatch.Features.Gameplay
 {
     public sealed class GameplayController : MonoBehaviour
     {
-        private const string WinReason = "Completed";
-        private const string LoseReason = "WaitingRackFull";
-
         [Header("Combo")]
         [SerializeField] private float _comboDurationSeconds = 8f;
 
@@ -757,7 +754,6 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayWorldClickSfx.StopListening();
             _boardLayoutView.StopGrillMovement();
-            _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
             _navigationActions?.LevelWon.Invoke(session.LevelNumber);
         }
 
@@ -816,7 +812,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _boardLayoutView.StopGrillMovement();
-            _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, false, LoseReason));
             _navigationActions?.LevelLost.Invoke(session.LevelNumber);
         }
 

@@ -181,13 +181,6 @@ namespace FoodieMatch.App
             AppRoot appRoot,
             ISaveService saveService)
         {
-            if (appRoot.AudioService == null)
-            {
-                Debug.LogWarning(
-                    "UnityAudioService is missing. Falling back to NullAudioService.");
-                return new NullAudioService();
-            }
-
             appRoot.AudioService.Construct(saveService);
             return appRoot.AudioService;
         }

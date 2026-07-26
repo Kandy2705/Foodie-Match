@@ -8,8 +8,6 @@ namespace FoodieMatch.Core.Application.Events
 
         public event Action<LevelProgressChangedEvent> LevelProgressChanged;
 
-        public event Action<LevelEndedEvent> LevelEnded;
-
         public event Action<ComboChangedEvent> ComboChanged;
 
         public void OnLevelStarted(LevelStartedEvent eventData)
@@ -20,11 +18,6 @@ namespace FoodieMatch.Core.Application.Events
         public void OnLevelProgressChanged(LevelProgressChangedEvent eventData)
         {
             LevelProgressChanged?.Invoke(eventData);
-        }
-
-        public void OnLevelEnded(LevelEndedEvent eventData)
-        {
-            LevelEnded?.Invoke(eventData);
         }
 
         public void OnComboChanged(ComboChangedEvent eventData)

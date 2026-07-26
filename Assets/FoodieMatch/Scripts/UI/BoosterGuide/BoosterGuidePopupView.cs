@@ -17,7 +17,6 @@ namespace FoodieMatch.UI.BoosterGuide
         [SerializeField] private TMP_Text _descriptionText;
         [SerializeField] private Image _iconImage;
 
-        private Action _closeClicked;
         private Action _confirmClicked;
         private bool _isClosing;
 
@@ -104,7 +103,6 @@ namespace FoodieMatch.UI.BoosterGuide
 
         public override void Dispose()
         {
-            _closeClicked = null;
             _confirmClicked = null;
             _isClosing = false;
 
@@ -131,11 +129,6 @@ namespace FoodieMatch.UI.BoosterGuide
             RectTransform iconRect = _iconImage.rectTransform;
             Vector2 nativeSize = iconRect.sizeDelta;
             iconRect.sizeDelta = nativeSize * IconNativeSizeScale;
-        }
-
-        private void OnCloseButtonClicked()
-        {
-            _closeClicked?.Invoke();
         }
 
         private void OnConfirmButtonClicked()

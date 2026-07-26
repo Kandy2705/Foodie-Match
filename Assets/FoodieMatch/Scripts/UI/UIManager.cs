@@ -659,7 +659,7 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            _popupManager.HideAllRuntimePopups();
+            _popupManager.HideAll();
         }
 
         public void ShowBoosterBuyPopup(BoosterType boosterType)
@@ -856,7 +856,6 @@ namespace FoodieMatch.UI
             _isBoosterGuideShowing = true;
             popup.SetActions(
                 new BoosterGuidePopupViewActions(
-                    OnBoosterGuideClosed,
                     OnBoosterGuideClosed));
         }
 
@@ -948,7 +947,6 @@ namespace FoodieMatch.UI
 
             _gameplayEvents.LevelStarted += OnLevelStarted;
             _gameplayEvents.LevelProgressChanged += OnLevelProgressChanged;
-            _gameplayEvents.LevelEnded += OnLevelEnded;
             _gameplayEvents.ComboChanged += OnComboChanged;
         }
 
@@ -961,7 +959,6 @@ namespace FoodieMatch.UI
 
             _gameplayEvents.LevelStarted -= OnLevelStarted;
             _gameplayEvents.LevelProgressChanged -= OnLevelProgressChanged;
-            _gameplayEvents.LevelEnded -= OnLevelEnded;
             _gameplayEvents.ComboChanged -= OnComboChanged;
         }
 
@@ -1318,11 +1315,6 @@ namespace FoodieMatch.UI
                     eventData.ComboCount,
                     eventData.RemainingSeconds);
             }
-        }
-
-        private void OnLevelEnded(LevelEndedEvent eventData)
-        {
-            Debug.Log($"Level Ended: {eventData.LevelNumber}, Win: {eventData.IsWin}, Reason: {eventData.Reason}");
         }
 
         private void RefreshBoosterHud()
