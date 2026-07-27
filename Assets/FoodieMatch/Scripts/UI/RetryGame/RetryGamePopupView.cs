@@ -14,7 +14,6 @@ namespace FoodieMatch.UI.RetryGame
 
         private Action _closeClicked;
         private Action _retryClicked;
-        private bool _isClosing;
 
         private void Awake()
         {
@@ -36,7 +35,6 @@ namespace FoodieMatch.UI.RetryGame
 
         public override void Show()
         {
-            _isClosing = false;
             base.Show();
 
             _popupAnimController.Open();
@@ -44,14 +42,8 @@ namespace FoodieMatch.UI.RetryGame
 
         public override void Hide()
         {
-            if (_isClosing)
-            {
-                return;
-            }
-
             if (gameObject.activeInHierarchy)
             {
-                _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
                 return;
             }
@@ -63,7 +55,6 @@ namespace FoodieMatch.UI.RetryGame
         {
             _closeClicked = null;
             _retryClicked = null;
-            _isClosing = false;
 
             base.Dispose();
         }
@@ -80,7 +71,6 @@ namespace FoodieMatch.UI.RetryGame
 
         private void OnCloseAnimationFinished()
         {
-            _isClosing = false;
             base.Hide();
         }
 

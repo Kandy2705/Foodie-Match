@@ -24,22 +24,12 @@ namespace FoodieMatch.Features.Board
         private bool _didLidMotionFinish;
         private bool _isLidClosed;
 
-        public override int FoodAnchorCount => _foodAnchors != null ? _foodAnchors.Length : 0;
+        public override int FoodAnchorCount => _foodAnchors.Length;
 
         private void Awake()
         {
             EnsureInitialLidVisual();
             HideLid();
-
-            if (_lid == null)
-            {
-                Debug.LogWarning("Grill lid is missing.", this);
-            }
-
-            if (_lidSpriteRenderers == null || _lidSpriteRenderers.Length == 0)
-            {
-                Debug.LogWarning("Grill lid sprite renderers are missing.", this);
-            }
         }
 
         private void OnDestroy()
@@ -49,18 +39,12 @@ namespace FoodieMatch.Features.Board
 
         public void SetupTrayStack(int trayCount)
         {
-            if (_trayStackView == null)
-            {
-                Debug.LogWarning("Tray stack view is missing.", this);
-                return;
-            }
-
             _trayStackView.Setup(trayCount);
         }
 
         public override Transform GetFoodAnchor(int index)
         {
-            if (_foodAnchors == null || index < 0 || index >= _foodAnchors.Length)
+            if (index < 0 || index >= _foodAnchors.Length)
             {
                 return null;
             }
@@ -70,29 +54,22 @@ namespace FoodieMatch.Features.Board
 
         public Transform GetTopTrayFoodAnchor(int index)
         {
-            if (_trayStackView == null)
-            {
-                return null;
-            }
-
             return _trayStackView.GetTopTrayFoodAnchor(index);
         }
 
         public Transform GetNextTrayFoodAnchor(int index)
         {
-            return _trayStackView != null
-                ? _trayStackView.GetNextTrayFoodAnchor(index)
-                : null;
+            return _trayStackView.GetNextTrayFoodAnchor(index);
         }
 
         public TrayView GetTopTray()
         {
-            return _trayStackView != null ? _trayStackView.GetTopTray() : null;
+            return _trayStackView.GetTopTray();
         }
 
         public bool HideTopTray(TrayView expectedTray)
         {
-            if (_trayStackView == null || expectedTray == null)
+            if (expectedTray == null)
             {
                 return false;
             }
@@ -185,11 +162,6 @@ namespace FoodieMatch.Features.Board
 
         private void HideLid()
         {
-            if (_lid == null)
-            {
-                return;
-            }
-
             ResetLidVisual();
             _lid.gameObject.SetActive(false);
         }
@@ -213,7 +185,7 @@ namespace FoodieMatch.Features.Board
 
         private void EnsureInitialLidVisual()
         {
-            if (_hasInitialLidVisual || _lid == null)
+            if (_hasInitialLidVisual)
             {
                 return;
             }

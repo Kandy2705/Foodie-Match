@@ -120,7 +120,6 @@ namespace FoodieMatch.Features.Gameplay
         private void Awake()
         {
             CaptureBaseScales();
-            ValidateReferences();
         }
 
         private void OnDisable()
@@ -139,23 +138,10 @@ namespace FoodieMatch.Features.Gameplay
             CaptureBaseScales();
 
             gameObject.SetActive(true);
-
-            if (_offscreenRightAnchor != null)
-            {
-                transform.position =
-                    _offscreenRightAnchor.position;
-            }
-
-            transform.localScale =
-                _fridgeBaseScale;
-
+            transform.position = _offscreenRightAnchor.position;
+            transform.localScale = _fridgeBaseScale;
             SetFridgeSprite(_fridgeCloseSprite);
-
-            if (_fridgeRenderer != null)
-            {
-                _fridgeRenderer.enabled = true;
-            }
-
+            _fridgeRenderer.enabled = true;
             SetFridgeAlpha(0f);
 
             HideSpoon();
@@ -166,11 +152,6 @@ namespace FoodieMatch.Features.Gameplay
 
         public async Task PlayEnterAndOpenAsync()
         {
-            if (!ValidateReferences())
-            {
-                return;
-            }
-
             SetOffscreen();
             IsVisible = true;
 
@@ -213,12 +194,6 @@ namespace FoodieMatch.Features.Gameplay
 
         public void ShowSpoon()
         {
-            if (_spoonRoot == null ||
-                _spoonRenderer == null)
-            {
-                return;
-            }
-
             ResetSpoonPosition();
 
             _spoonRoot.gameObject.SetActive(true);
@@ -230,13 +205,6 @@ namespace FoodieMatch.Features.Gameplay
 
         private void ShowSpoonAtOutsideLeft()
         {
-            if (_spoonRoot == null ||
-                _spoonRenderer == null ||
-                _spoonExitLeftAnchor == null)
-            {
-                return;
-            }
-
             _spoonRoot.gameObject.SetActive(true);
             _spoonRoot.localScale = _spoonBaseScale;
             _spoonRoot.position =
@@ -248,15 +216,8 @@ namespace FoodieMatch.Features.Gameplay
 
         public void HideSpoon()
         {
-            if (_spoonRenderer != null)
-            {
-                _spoonRenderer.enabled = false;
-            }
-
-            if (_spoonRoot != null)
-            {
-                _spoonRoot.gameObject.SetActive(false);
-            }
+            _spoonRenderer.enabled = false;
+            _spoonRoot.gameObject.SetActive(false);
         }
 
         public async Task PlayScoopFlickAsync(
@@ -265,8 +226,7 @@ namespace FoodieMatch.Features.Gameplay
             bool hasNextFood,
             Vector3 nextFoodWorldPosition)
         {
-            if (foodItemView == null ||
-                _spoonRoot == null)
+            if (foodItemView == null)
             {
                 return;
             }
@@ -373,8 +333,7 @@ namespace FoodieMatch.Features.Gameplay
         public async Task PlayFoodEnterAsync(
             FoodItemView foodItemView)
         {
-            if (foodItemView == null ||
-                _fridgeFoodEntryPoint == null)
+            if (foodItemView == null)
             {
                 return;
             }
@@ -429,8 +388,7 @@ namespace FoodieMatch.Features.Gameplay
 
         public async Task PlayFridgeBumpAsync()
         {
-            if (!IsVisible ||
-                _fridgeRenderer == null)
+            if (!IsVisible)
             {
                 return;
             }
@@ -475,8 +433,7 @@ namespace FoodieMatch.Features.Gameplay
         public async Task<Vector3> PlayReleasePopAsync(
             FoodItemView foodItemView)
         {
-            if (foodItemView == null ||
-                _fridgeFoodEntryPoint == null)
+            if (foodItemView == null)
             {
                 return Vector3.one;
             }
@@ -538,9 +495,7 @@ namespace FoodieMatch.Features.Gameplay
 
         public async Task PlaySpoonExitLeftAsync()
         {
-            if (_spoonRoot == null ||
-                _spoonExitLeftAnchor == null ||
-                !_spoonRoot.gameObject.activeSelf)
+            if (!_spoonRoot.gameObject.activeSelf)
             {
                 return;
             }
@@ -565,15 +520,8 @@ namespace FoodieMatch.Features.Gameplay
             IsVisible = true;
             SetFridgeAlpha(1f);
             SetFridgeSprite(_fridgeCloseSprite);
-
-            if (_visibleAnchor != null)
-            {
-                transform.position =
-                    _visibleAnchor.position;
-            }
-
-            transform.localScale =
-                _fridgeBaseScale;
+            transform.position = _visibleAnchor.position;
+            transform.localScale = _fridgeBaseScale;
         }
 
         public void SetFullState()
@@ -594,20 +542,12 @@ namespace FoodieMatch.Features.Gameplay
 
         public Vector3 GetFridgeEntryWorldPosition()
         {
-            return _fridgeFoodEntryPoint != null
-                ? _fridgeFoodEntryPoint.position
-                : transform.position;
+            return _fridgeFoodEntryPoint.position;
         }
 
         public async Task PlayDisappearAsync()
         {
             if (!IsVisible)
-            {
-                HideImmediately();
-                return;
-            }
-
-            if (_offscreenRightAnchor == null)
             {
                 HideImmediately();
                 return;
@@ -634,12 +574,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             CancelAnimations();
             HideSpoon();
-
-            if (_fridgeRenderer != null)
-            {
-                _fridgeRenderer.enabled = false;
-            }
-
+            _fridgeRenderer.enabled = false;
             IsVisible = false;
         }
 
@@ -683,134 +618,27 @@ namespace FoodieMatch.Features.Gameplay
         private void CaptureBaseScales()
         {
             _fridgeBaseScale = transform.localScale;
-
-            if (_fridgeRenderer != null)
-            {
-                _fridgeRendererBaseScale =
-                    _fridgeRenderer.transform.localScale;
-            }
-
-            if (_spoonRoot != null)
-            {
-                _spoonBaseScale =
-                    _spoonRoot.localScale;
-            }
+            _fridgeRendererBaseScale = _fridgeRenderer.transform.localScale;
+            _spoonBaseScale = _spoonRoot.localScale;
         }
 
         private void ResetSpoonPosition()
         {
-            if (_spoonRoot == null)
-            {
-                return;
-            }
-
-            if (_spoonStartAnchor != null)
-            {
-                _spoonRoot.position =
-                    _spoonStartAnchor.position;
-            }
-
-            _spoonRoot.localScale =
-                _spoonBaseScale;
+            _spoonRoot.position = _spoonStartAnchor.position;
+            _spoonRoot.localScale = _spoonBaseScale;
         }
 
         private void SetFridgeSprite(Sprite sprite)
         {
-            if (_fridgeRenderer == null)
-            {
-                return;
-            }
-
             _fridgeRenderer.sprite = sprite;
-            _fridgeRenderer.enabled =
-                sprite != null;
+            _fridgeRenderer.enabled = true;
         }
 
         private void SetFridgeAlpha(float alpha)
         {
-            if (_fridgeRenderer == null)
-            {
-                return;
-            }
-
             Color color = _fridgeRenderer.color;
             color.a = Mathf.Clamp01(alpha);
             _fridgeRenderer.color = color;
-        }
-
-        private bool ValidateReferences()
-        {
-            bool valid = true;
-
-            valid &= ValidateReference(
-                _fridgeRenderer,
-                nameof(_fridgeRenderer));
-
-            valid &= ValidateReference(
-                _fridgeCloseSprite,
-                nameof(_fridgeCloseSprite));
-
-            valid &= ValidateReference(
-                _fridgeOpenSprite,
-                nameof(_fridgeOpenSprite));
-
-            valid &= ValidateReference(
-                _fridgeFullSprite,
-                nameof(_fridgeFullSprite));
-
-            valid &= ValidateReference(
-                _fridgeFoodEntryPoint,
-                nameof(_fridgeFoodEntryPoint));
-
-            valid &= ValidateReference(
-                _spoonRenderer,
-                nameof(_spoonRenderer));
-
-            valid &= ValidateReference(
-                _spoonRoot,
-                nameof(_spoonRoot));
-
-            valid &= ValidateReference(
-                _spoonFoodHoldPoint,
-                nameof(_spoonFoodHoldPoint));
-
-            valid &= ValidateReference(
-                _spoonSprite,
-                nameof(_spoonSprite));
-
-            valid &= ValidateReference(
-                _offscreenRightAnchor,
-                nameof(_offscreenRightAnchor));
-
-            valid &= ValidateReference(
-                _visibleAnchor,
-                nameof(_visibleAnchor));
-
-            valid &= ValidateReference(
-                _spoonStartAnchor,
-                nameof(_spoonStartAnchor));
-
-            valid &= ValidateReference(
-                _spoonExitLeftAnchor,
-                nameof(_spoonExitLeftAnchor));
-
-            return valid;
-        }
-
-        private bool ValidateReference(
-            Object reference,
-            string fieldName)
-        {
-            if (reference != null)
-            {
-                return true;
-            }
-
-            Debug.LogError(
-                $"FridgeBoosterView: {fieldName} is missing.",
-                this);
-
-            return false;
         }
     }
 }

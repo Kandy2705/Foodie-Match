@@ -9,16 +9,5 @@ namespace FoodieMatch.Features.Gameplay
 
         public FridgeBoosterView FridgeBoosterView =>
             _fridgeBoosterView;
-
-        private void Awake()
-        {
-            if (_fridgeBoosterView == null)
-            {
-                Debug.LogError(
-                    "FridgeBoosterAnchors: " +
-                    "FridgeBoosterView is missing.",
-                    this);
-            }
-        }
     }
 }

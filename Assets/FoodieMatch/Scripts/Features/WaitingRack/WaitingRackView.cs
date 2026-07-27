@@ -34,11 +34,6 @@ namespace FoodieMatch.Features.WaitingRack
 
         private void Awake()
         {
-            if (_slotRoot == null)
-            {
-                _slotRoot = transform;
-            }
-
             BuildInitialSlotList();
             LayoutSlotsImmediately();
         }
@@ -85,9 +80,7 @@ namespace FoodieMatch.Features.WaitingRack
         public bool CanAddSlot()
         {
             return !_isAddSlotAnimating &&
-                   !IsAtMaxCapacity &&
-                   _slotPrefab != null &&
-                   _slotRoot != null;
+                   !IsAtMaxCapacity;
         }
 
         public async Task<MotionResult> PlayAddSlotAsync()

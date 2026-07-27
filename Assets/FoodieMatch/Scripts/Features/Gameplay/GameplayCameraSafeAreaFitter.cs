@@ -14,11 +14,6 @@ namespace FoodieMatch.Features.Gameplay
         private Rect _lastSafeArea;
         private bool _hasReferenceCameraState;
 
-        private void Reset()
-        {
-            _worldCamera = GetComponent<Camera>();
-        }
-
         private void Awake()
         {
             if (!TryCaptureReferenceCameraState())
@@ -53,17 +48,6 @@ namespace FoodieMatch.Features.Gameplay
             if (_hasReferenceCameraState)
             {
                 return true;
-            }
-
-            if (_worldCamera == null)
-            {
-                _worldCamera = GetComponent<Camera>();
-            }
-
-            if (_worldCamera == null)
-            {
-                Debug.LogError("Gameplay safe area camera is missing.", this);
-                return false;
             }
 
             if (!_worldCamera.orthographic)

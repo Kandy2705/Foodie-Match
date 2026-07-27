@@ -81,30 +81,8 @@ namespace FoodieMatch.Features.RequiredPackage
         private void Awake()
         {
             EnsureInitialMotionRootTransform();
-            FindLidSpriteRenderer();
-            FindSortingGroup();
             EnsureInitialLidVisual();
             HideLid();
-
-            if (_motionRoot == null)
-            {
-                Debug.LogWarning("Required package motion root is missing.", this);
-            }
-
-            if (_lid == null)
-            {
-                Debug.LogWarning("Required package lid is missing.", this);
-            }
-
-            if (_lidSpriteRenderer == null)
-            {
-                Debug.LogWarning("Required package lid sprite renderer is missing.", this);
-            }
-
-            if (_sortingGroup == null)
-            {
-                Debug.LogWarning("Required package sorting group is missing.", this);
-            }
         }
 
         private void OnDestroy()
@@ -117,7 +95,7 @@ namespace FoodieMatch.Features.RequiredPackage
             int filledSlotIndex)
         {
             RequiredPackageAmountView amountView = GetView(requiredAmount);
-            return amountView?.GetSlotAt(filledSlotIndex);
+            return amountView.GetSlotAt(filledSlotIndex);
         }
 
         public void Setup(int foodTokenId, int requiredAmount, Sprite sprite)
@@ -158,16 +136,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void SetSortingOrder(int sortingOrder)
         {
-            FindSortingGroup();
-
-            if (_sortingGroup == null)
-            {
-                Debug.LogError(
-                    "Required package sorting order could not be set because its sorting group is missing.",
-                    this);
-                return;
-            }
-
             _sortingGroup.sortingOrder = sortingOrder;
         }
 
@@ -185,7 +153,6 @@ namespace FoodieMatch.Features.RequiredPackage
         public async Task<MotionResult> PlayEnterAsync(Action onEnterStarted)
         {
             if (IsEmpty ||
-                _motionRoot == null ||
                 _isMotionPlaying ||
                 !IsValidTime(_enterDuration) ||
                 !IsValidTime(_enterScaleStartDelay) ||
@@ -258,9 +225,6 @@ namespace FoodieMatch.Features.RequiredPackage
             Action onLidClosed)
         {
             if (IsEmpty ||
-                _motionRoot == null ||
-                _lid == null ||
-                _lidSpriteRenderer == null ||
                 _isMotionPlaying ||
                 !IsValidTime(_lidDropDuration) ||
                 !IsValidTime(_horizontalSquashDuration) ||
@@ -351,22 +315,6 @@ namespace FoodieMatch.Features.RequiredPackage
             HideAllViews();
 
             RequiredPackageAmountView activeView = GetView(RequiredAmount);
-
-            if (activeView == null)
-            {
-                Debug.LogWarning($"Required package view for amount {RequiredAmount} is missing.", this);
-                return;
-            }
-
-            if (activeView.SlotCount != RequiredAmount)
-            {
-                Debug.LogWarning(
-                    "Required package view for amount " +
-                    $"{RequiredAmount} must have " +
-                    $"{RequiredAmount} slots.",
-                    this);
-            }
-
             activeView.Show(_sprite, FilledAmount);
         }
 
@@ -377,15 +325,15 @@ namespace FoodieMatch.Features.RequiredPackage
                 1 => _amount1View,
                 2 => _amount2View,
                 3 => _amount3View,
-                _ => null
+                _ => throw new ArgumentOutOfRangeException(nameof(requiredAmount))
             };
         }
 
         private void HideAllViews()
         {
-            _amount1View?.Hide();
-            _amount2View?.Hide();
-            _amount3View?.Hide();
+            _amount1View.Hide();
+            _amount2View.Hide();
+            _amount3View.Hide();
         }
 
         private void MarkMotionFinished()
@@ -401,12 +349,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void PlayCompleteBurst()
         {
-            if (_completeBurstPrefab == null)
-            {
-                Debug.LogError("Package complete burst prefab is missing.", this);
-                return;
-            }
-
             Vector3 spawnPosition = transform.position + _completeBurstOffset;
             ParticleSystem burst = Instantiate(
                 _completeBurstPrefab,
@@ -465,11 +407,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void ResetMotionRootTransform()
         {
-            if (_motionRoot == null)
-            {
-                return;
-            }
-
             EnsureInitialMotionRootTransform();
             _motionRoot.localPosition = _initialMotionRootLocalPosition;
             _motionRoot.localScale = _initialMotionRootLocalScale;
@@ -485,11 +422,8 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void HideLid()
         {
-            if (_lid != null)
-            {
-                ResetLidVisual();
-                _lid.SetActive(false);
-            }
+            ResetLidVisual();
+            _lid.SetActive(false);
         }
 
         private void ResetLidVisual()
@@ -512,25 +446,9 @@ namespace FoodieMatch.Features.RequiredPackage
             _lidSpriteRenderer.color = color;
         }
 
-        private void FindLidSpriteRenderer()
-        {
-            if (_lidSpriteRenderer == null && _lid != null)
-            {
-                _lidSpriteRenderer = _lid.GetComponentInChildren<SpriteRenderer>(includeInactive: true);
-            }
-        }
-
-        private void FindSortingGroup()
-        {
-            if (_sortingGroup == null)
-            {
-                _sortingGroup = GetComponent<SortingGroup>();
-            }
-        }
-
         private void EnsureInitialLidVisual()
         {
-            if (_hasInitialLidVisual || _lid == null || _lidSpriteRenderer == null)
+            if (_hasInitialLidVisual)
             {
                 return;
             }
@@ -543,7 +461,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void EnsureInitialMotionRootTransform()
         {
-            if (_hasInitialMotionRootTransform || _motionRoot == null)
+            if (_hasInitialMotionRootTransform)
             {
                 return;
             }

@@ -24,11 +24,8 @@ namespace FoodieMatch.App
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
-        private BoosterRewardedAdRequest _activeBoosterRewardedAdRequest;
         private bool _isTransitionRunning;
-        private bool _isWinRewardProcessing;
         private int _activeLevelNumber;
-        private int _levelAwaitingWinReward;
 
         public void Construct(
             UIManager uiManager,
@@ -116,6 +113,15 @@ namespace FoodieMatch.App
                 return;
             }
 
+            await RunHomeTransitionSafelyAsync(
+                levelNumber,
+                coinRewardPresentation);
+        }
+
+        private async Task RunHomeTransitionSafelyAsync(
+            int levelNumber,
+            HomeCoinRewardPresentation coinRewardPresentation)
+        {
             bool shouldPlayCoinReward = false;
 
             try
@@ -150,8 +156,6 @@ namespace FoodieMatch.App
 
         private void OpenLevel(int levelNumber)
         {
-            _levelAwaitingWinReward = 0;
-            _isWinRewardProcessing = false;
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
             _uiManager.HideHome();
@@ -168,8 +172,6 @@ namespace FoodieMatch.App
             int levelNumber,
             long displayedCoinBalance)
         {
-            _levelAwaitingWinReward = 0;
-            _isWinRewardProcessing = false;
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
             _uiManager.HideGameplayHud();
@@ -289,76 +291,31 @@ namespace FoodieMatch.App
 
         private void OnBoosterRewardedAdRequested(BoosterType boosterType)
         {
-            if (_activeBoosterRewardedAdRequest != null)
-            {
-                return;
-            }
-
-            BoosterRewardedAdRequest request = new(boosterType);
-            _activeBoosterRewardedAdRequest = request;
-
             try
             {
-                bool started = _rewardedAdService.TryShow(
+                _rewardedAdService.TryShow(
                     RewardedAdPlacement.BoosterReward,
                     new RewardedAdCallbacks(
-                        () => OnBoosterAdRewarded(request),
-                        () => OnBoosterAdClosed(request),
-                        () => OnBoosterAdDisplayFailed(request)));
-
-                if (!started)
-                {
-                    FinishBoosterRewardedAd(request);
-                }
+                        () => OnBoosterAdRewarded(boosterType),
+                        closed: null,
+                        displayFailed: null));
             }
             catch (Exception exception)
             {
                 Debug.LogException(exception);
-                FinishBoosterRewardedAd(request);
             }
         }
 
-        private void OnBoosterAdRewarded(BoosterRewardedAdRequest request)
+        private void OnBoosterAdRewarded(BoosterType boosterType)
         {
-            if (request.HasGrantedReward)
-            {
-                return;
-            }
-
             try
             {
-                _boosterManager.Add(request.BoosterType, amount: 1);
-                request.HasGrantedReward = true;
-
-                if (ReferenceEquals(_activeBoosterRewardedAdRequest, request))
-                {
-                    UpdateUiAfterBoosterGranted(request.BoosterType);
-                    return;
-                }
-
-                _uiManager.RefreshBoosterInventory();
+                _boosterManager.Add(boosterType, amount: 1);
+                UpdateUiAfterBoosterGranted(boosterType);
             }
             catch (Exception exception)
             {
                 Debug.LogException(exception);
-            }
-        }
-
-        private void OnBoosterAdClosed(BoosterRewardedAdRequest request)
-        {
-            FinishBoosterRewardedAd(request);
-        }
-
-        private void OnBoosterAdDisplayFailed(BoosterRewardedAdRequest request)
-        {
-            FinishBoosterRewardedAd(request);
-        }
-
-        private void FinishBoosterRewardedAd(BoosterRewardedAdRequest request)
-        {
-            if (ReferenceEquals(_activeBoosterRewardedAdRequest, request))
-            {
-                _activeBoosterRewardedAdRequest = null;
             }
         }
 
@@ -414,14 +371,10 @@ namespace FoodieMatch.App
 
         private void OnGameplayLevelWon(int completedLevelNumber)
         {
-            if (completedLevelNumber != _activeLevelNumber ||
-                _levelAwaitingWinReward > 0)
+            if (completedLevelNumber != _activeLevelNumber)
             {
                 return;
             }
-
-            _levelAwaitingWinReward = completedLevelNumber;
-            _isWinRewardProcessing = false;
 
             long regularCoinReward = _economyConfig.LevelCompleteCoinReward;
             long doubleCoinReward = checked(
@@ -436,140 +389,67 @@ namespace FoodieMatch.App
 
         private void OnRegularWinRewardSelected()
         {
-            if (!TryBeginWinReward())
-            {
-                return;
-            }
-
-            try
-            {
-                CompleteWinReward(_economyConfig.LevelCompleteCoinReward);
-            }
-            catch (Exception exception)
-            {
-                HandleWinRewardFailure(exception);
-            }
+            CompleteWinReward(_economyConfig.LevelCompleteCoinReward);
         }
 
         private void OnRewardedAdWinRewardSelected()
         {
-            if (!TryBeginWinReward())
-            {
-                return;
-            }
-
             try
             {
-                bool started = _rewardedAdService.TryShow(
+                _rewardedAdService.TryShow(
                     RewardedAdPlacement.LevelCompleteCoinReward,
                     new RewardedAdCallbacks(
                         OnRewardedAdRewarded,
-                        OnRewardedAdClosed,
-                        OnRewardedAdDisplayFailed));
-
-                if (!started)
-                {
-                    CancelWinRewardSelection();
-                }
+                        closed: null,
+                        displayFailed: null));
             }
             catch (Exception exception)
             {
-                HandleWinRewardFailure(exception);
+                Debug.LogException(exception);
             }
         }
 
         private void OnRewardedAdRewarded()
         {
-            if (_levelAwaitingWinReward <= 0 ||
-                _levelAwaitingWinReward != _activeLevelNumber)
+            long coinReward = checked(
+                (long)_economyConfig.LevelCompleteCoinReward *
+                _economyConfig.RewardedAdCoinMultiplier);
+            CompleteWinReward(coinReward);
+        }
+
+        private void CompleteWinReward(long coinReward)
+        {
+            if (!TryBeginTransition())
             {
                 return;
             }
 
             try
             {
-                long coinReward = checked(
-                    (long)_economyConfig.LevelCompleteCoinReward *
-                    _economyConfig.RewardedAdCoinMultiplier);
-                CompleteWinReward(coinReward);
+                int homeLevelNumber = _activeLevelNumber;
+                long startingCoinBalance = _playerProfileService.CoinBalance;
+
+                if (_levelRepository.TryGetNextLevel(_activeLevelNumber, out _))
+                {
+                    homeLevelNumber++;
+                }
+
+                _playerProfileService.ApplyLevelCompletionReward(
+                    homeLevelNumber,
+                    coinReward);
+                HomeCoinRewardPresentation coinRewardPresentation = new(
+                    startingCoinBalance,
+                    _playerProfileService.CoinBalance,
+                    _economyConfig.CoinValuePerRewardImage);
+                _ = RunHomeTransitionSafelyAsync(
+                    homeLevelNumber,
+                    coinRewardPresentation);
             }
             catch (Exception exception)
             {
-                HandleWinRewardFailure(exception);
+                Debug.LogException(exception);
+                FinishTransition();
             }
-        }
-
-        private void OnRewardedAdClosed()
-        {
-            if (_levelAwaitingWinReward > 0)
-            {
-                CancelWinRewardSelection();
-            }
-        }
-
-        private void OnRewardedAdDisplayFailed()
-        {
-            CancelWinRewardSelection();
-        }
-
-        private bool TryBeginWinReward()
-        {
-            if (_isWinRewardProcessing ||
-                _levelAwaitingWinReward <= 0 ||
-                _levelAwaitingWinReward != _activeLevelNumber)
-            {
-                return false;
-            }
-
-            _isWinRewardProcessing = true;
-            return true;
-        }
-
-        private void CompleteWinReward(long coinReward)
-        {
-            int completedLevelNumber = _levelAwaitingWinReward;
-            int homeLevelNumber = completedLevelNumber;
-            long startingCoinBalance = _playerProfileService.CoinBalance;
-
-            if (_levelRepository.TryGetNextLevel(completedLevelNumber, out _))
-            {
-                homeLevelNumber++;
-            }
-
-            _playerProfileService.ApplyLevelCompletionReward(
-                homeLevelNumber,
-                coinReward);
-            HomeCoinRewardPresentation coinRewardPresentation = new(
-                startingCoinBalance,
-                _playerProfileService.CoinBalance,
-                _economyConfig.CoinValuePerRewardImage);
-            _levelAwaitingWinReward = 0;
-            _ = EnterHomeWithLoadingSafelyAsync(
-                homeLevelNumber,
-                coinRewardPresentation);
-        }
-
-        private void CancelWinRewardSelection()
-        {
-            _isWinRewardProcessing = false;
-        }
-
-        private void HandleWinRewardFailure(Exception exception)
-        {
-            Debug.LogException(exception);
-            CancelWinRewardSelection();
-        }
-
-        private sealed class BoosterRewardedAdRequest
-        {
-            public BoosterRewardedAdRequest(BoosterType boosterType)
-            {
-                BoosterType = boosterType;
-            }
-
-            public BoosterType BoosterType { get; }
-
-            public bool HasGrantedReward { get; set; }
         }
 
         private sealed class HomeCoinRewardPresentation

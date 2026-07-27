@@ -18,7 +18,6 @@ namespace FoodieMatch.UI.BoosterGuide
         [SerializeField] private Image _iconImage;
 
         private Action _confirmClicked;
-        private bool _isClosing;
 
         private void Awake()
         {
@@ -59,7 +58,6 @@ namespace FoodieMatch.UI.BoosterGuide
 
         public override void Show()
         {
-            _isClosing = false;
             base.Show();
 
             _popupAnimController.Open();
@@ -67,14 +65,8 @@ namespace FoodieMatch.UI.BoosterGuide
 
         public override void Hide()
         {
-            if (_isClosing)
-            {
-                return;
-            }
-
             if (gameObject.activeInHierarchy)
             {
-                _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
                 return;
             }
@@ -85,7 +77,6 @@ namespace FoodieMatch.UI.BoosterGuide
         public override void Dispose()
         {
             _confirmClicked = null;
-            _isClosing = false;
 
             base.Dispose();
         }
@@ -114,7 +105,6 @@ namespace FoodieMatch.UI.BoosterGuide
 
         private void OnCloseAnimationFinished()
         {
-            _isClosing = false;
             base.Hide();
         }
 
