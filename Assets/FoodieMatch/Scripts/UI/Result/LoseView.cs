@@ -24,30 +24,14 @@ namespace FoodieMatch.UI.Result
 
         private void Awake()
         {
-            EnsureMascotReference();
-
-            if (_tryAgainButton != null)
-            {
-                _tryAgainButton.onClick.AddListener(OnTryAgainButtonClicked);
-            }
-
-            if (_homeButton != null)
-            {
-                _homeButton.onClick.AddListener(OnHomeButtonClicked);
-            }
+            _tryAgainButton.onClick.AddListener(OnTryAgainButtonClicked);
+            _homeButton.onClick.AddListener(OnHomeButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_tryAgainButton != null)
-            {
-                _tryAgainButton.onClick.RemoveListener(OnTryAgainButtonClicked);
-            }
-
-            if (_homeButton != null)
-            {
-                _homeButton.onClick.RemoveListener(OnHomeButtonClicked);
-            }
+            _tryAgainButton.onClick.RemoveListener(OnTryAgainButtonClicked);
+            _homeButton.onClick.RemoveListener(OnHomeButtonClicked);
         }
 
         public override void Show()
@@ -66,9 +50,7 @@ namespace FoodieMatch.UI.Result
             long coinBalance,
             HeartStatus heartStatus)
         {
-            _resourceBarView?.SetPlayerResources(
-                coinBalance,
-                heartStatus);
+            _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
         }
 
         public override void Dispose()
@@ -81,13 +63,6 @@ namespace FoodieMatch.UI.Result
 
         private void PlayLoseMascotAnimation()
         {
-            EnsureMascotReference();
-
-            if (_chefMascotSkeletonGraphic == null)
-            {
-                return;
-            }
-
             if (!_chefMascotSkeletonGraphic.IsValid)
             {
                 _chefMascotSkeletonGraphic.Initialize(overwrite: false);
@@ -123,15 +98,5 @@ namespace FoodieMatch.UI.Result
             _homeClicked?.Invoke();
         }
 
-        private void EnsureMascotReference()
-        {
-            if (_chefMascotSkeletonGraphic != null)
-            {
-                return;
-            }
-
-            _chefMascotSkeletonGraphic =
-                GetComponentInChildren<SkeletonGraphic>(includeInactive: true);
-        }
     }
 }

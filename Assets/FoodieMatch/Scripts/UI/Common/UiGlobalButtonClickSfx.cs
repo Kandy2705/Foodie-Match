@@ -20,7 +20,7 @@ namespace FoodieMatch.UI.Common
 
         private void Update()
         {
-            if (_audioService == null || !_audioService.IsSfxEnabled)
+            if (!_audioService.IsSfxEnabled)
             {
                 return;
             }
@@ -31,11 +31,6 @@ namespace FoodieMatch.UI.Common
             }
 
             EventSystem eventSystem = EventSystem.current;
-
-            if (eventSystem == null)
-            {
-                return;
-            }
 
             PointerEventData pointerEventData = new PointerEventData(eventSystem)
             {

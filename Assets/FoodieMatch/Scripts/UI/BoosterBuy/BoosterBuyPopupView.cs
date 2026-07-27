@@ -30,46 +30,16 @@ namespace FoodieMatch.UI.BoosterBuy
 
         private void Awake()
         {
-            if (_popupAnimController == null)
-            {
-                _popupAnimController = GetComponent<PopupAnimController>();
-            }
-
-            EnsureButtonReferences();
-            EnsureContentReferences();
-
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
-
-            if (_freeAdsButton != null)
-            {
-                _freeAdsButton.onClick.AddListener(OnFreeAdsButtonClicked);
-            }
-
-            if (_buyButton != null)
-            {
-                _buyButton.onClick.AddListener(OnBuyButtonClicked);
-            }
+            _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _freeAdsButton.onClick.AddListener(OnFreeAdsButtonClicked);
+            _buyButton.onClick.AddListener(OnBuyButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
-
-            if (_freeAdsButton != null)
-            {
-                _freeAdsButton.onClick.RemoveListener(OnFreeAdsButtonClicked);
-            }
-
-            if (_buyButton != null)
-            {
-                _buyButton.onClick.RemoveListener(OnBuyButtonClicked);
-            }
+            _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+            _freeAdsButton.onClick.RemoveListener(OnFreeAdsButtonClicked);
+            _buyButton.onClick.RemoveListener(OnBuyButtonClicked);
         }
 
         public void SetActions(BoosterBuyPopupViewActions actions)
@@ -83,9 +53,7 @@ namespace FoodieMatch.UI.BoosterBuy
             long coinBalance,
             HeartStatus heartStatus)
         {
-            _resourceBarView?.SetPlayerResources(
-                coinBalance,
-                heartStatus);
+            _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
         }
 
         public override void Setup(IPopupData data)
@@ -105,23 +73,16 @@ namespace FoodieMatch.UI.BoosterBuy
                 return;
             }
 
-            EnsureContentReferences();
-
-            UiTmpText.SetText(_titleText, popupData.Title);
-            UiTmpText.SetText(_descriptionText, popupData.Description);
-            UiTmpText.SetText(_costText, popupData.CostText);
-            UiTmpText.SetText(_bonusAmountText, popupData.BonusAmountText);
+            _titleText.text = popupData.Title;
+            _descriptionText.text = popupData.Description;
+            _costText.text = popupData.CostText;
+            _bonusAmountText.text = popupData.BonusAmountText;
 
             ApplyIcon(popupData.Icon);
         }
 
         private void ApplyIcon(Sprite icon)
         {
-            if (_iconImage == null)
-            {
-                return;
-            }
-
             _iconImage.sprite = icon;
             _iconImage.enabled = icon != null;
 
@@ -142,10 +103,7 @@ namespace FoodieMatch.UI.BoosterBuy
             _isClosing = false;
             base.Show();
 
-            if (_popupAnimController != null)
-            {
-                _popupAnimController.Open();
-            }
+            _popupAnimController.Open();
         }
 
         public override void Hide()
@@ -155,7 +113,7 @@ namespace FoodieMatch.UI.BoosterBuy
                 return;
             }
 
-            if (_popupAnimController != null && gameObject.activeInHierarchy)
+            if (gameObject.activeInHierarchy)
             {
                 _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
@@ -196,89 +154,5 @@ namespace FoodieMatch.UI.BoosterBuy
             base.Hide();
         }
 
-        private void EnsureButtonReferences()
-        {
-            if (_closeButton == null)
-            {
-                _closeButton = FindChildButton("CloseButton");
-            }
-
-            if (_freeAdsButton == null)
-            {
-                _freeAdsButton = FindChildButton("FreeAdsButton");
-            }
-
-            if (_buyButton == null)
-            {
-                _buyButton = FindChildButton("PlayOnButton");
-            }
-
-            if (_buyButton == null)
-            {
-                _buyButton = FindChildButton("BuyButton");
-            }
-        }
-
-        private void EnsureContentReferences()
-        {
-            if (_titleText == null)
-            {
-                _titleText = UiTmpText.FindChild(transform, "BoosterBuyTitleText");
-            }
-
-            if (_descriptionText == null)
-            {
-                _descriptionText = UiTmpText.FindChild(transform, "DescriptionText");
-            }
-
-            if (_costText == null)
-            {
-                _costText = UiTmpText.FindChild(transform, "CostText");
-            }
-
-            if (_bonusAmountText == null)
-            {
-                _bonusAmountText = UiTmpText.FindChild(transform, "BonusAmountText");
-            }
-
-            if (_iconImage == null)
-            {
-                _iconImage = FindChildImage("BoosterBuyIconImage");
-            }
-        }
-
-        private Button FindChildButton(string objectName)
-        {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Button button = buttons[i];
-
-                if (button != null && button.gameObject.name == objectName)
-                {
-                    return button;
-                }
-            }
-
-            return null;
-        }
-
-        private Image FindChildImage(string objectName)
-        {
-            Image[] images = GetComponentsInChildren<Image>(true);
-
-            for (int i = 0; i < images.Length; i++)
-            {
-                Image image = images[i];
-
-                if (image != null && image.gameObject.name == objectName)
-                {
-                    return image;
-                }
-            }
-
-            return null;
-        }
     }
 }

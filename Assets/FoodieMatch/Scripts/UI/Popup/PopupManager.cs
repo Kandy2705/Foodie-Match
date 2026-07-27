@@ -12,6 +12,7 @@ namespace FoodieMatch.UI.Popup
         private readonly Dictionary<Type, PopupPrefabEntry> _entryMap = new();
         private readonly Dictionary<Type, PopupBase> _openedPopups = new();
         private readonly Dictionary<Type, PopupBase> _cachedPopups = new();
+
         private void Awake()
         {
             BuildEntryMap();
@@ -29,19 +30,7 @@ namespace FoodieMatch.UI.Popup
                 return openedPopup as TPopup;
             }
 
-            if (_popupRoot == null)
-            {
-                Debug.LogError("Cannot show popup because PopupRoot is missing.");
-                return null;
-            }
-
             TPopup popup = GetOrCreatePopup<TPopup>();
-
-            if (popup == null)
-            {
-                return null;
-            }
-
             popup.Setup(data);
             popup.Show();
 
@@ -79,8 +68,8 @@ namespace FoodieMatch.UI.Popup
         {
             if (_openedPopups.TryGetValue(typeof(TPopup), out PopupBase openedPopup))
             {
-                popup = openedPopup as TPopup;
-                return popup != null;
+                popup = (TPopup)openedPopup;
+                return true;
             }
 
             popup = null;
@@ -97,11 +86,7 @@ namespace FoodieMatch.UI.Popup
             popup.Hide();
             _openedPopups.Remove(popupType);
 
-            if (!_entryMap.TryGetValue(popupType, out PopupPrefabEntry entry))
-            {
-                DestroyPopup(popup);
-                return;
-            }
+            PopupPrefabEntry entry = _entryMap[popupType];
 
             if (entry.CacheAfterHide)
             {
@@ -125,17 +110,7 @@ namespace FoodieMatch.UI.Popup
                 return cachedPopup as TPopup;
             }
 
-            if (!_entryMap.TryGetValue(popupType, out PopupPrefabEntry entry))
-            {
-                Debug.LogError($"Popup prefab entry not found for type: {popupType.Name}");
-                return null;
-            }
-
-            if (entry.Prefab == null)
-            {
-                Debug.LogError($"Popup prefab is null for type: {popupType.Name}");
-                return null;
-            }
+            PopupPrefabEntry entry = _entryMap[popupType];
 
             PopupBase popup = Instantiate(entry.Prefab, _popupRoot);
             popup.transform.SetAsLastSibling();
@@ -147,11 +122,6 @@ namespace FoodieMatch.UI.Popup
 
         private void DestroyPopup(PopupBase popup)
         {
-            if (popup == null)
-            {
-                return;
-            }
-
             popup.HideRequested -= OnPopupHideRequested;
             popup.Dispose();
 
@@ -160,11 +130,6 @@ namespace FoodieMatch.UI.Popup
 
         private void OnPopupHideRequested(PopupBase popup)
         {
-            if (popup == null)
-            {
-                return;
-            }
-
             Hide(popup.GetType());
         }
 
@@ -176,19 +141,7 @@ namespace FoodieMatch.UI.Popup
             {
                 PopupPrefabEntry entry = _popupPrefabs[i];
 
-                if (entry == null || entry.Prefab == null)
-                {
-                    continue;
-                }
-
                 Type popupType = entry.Prefab.GetType();
-
-                if (_entryMap.ContainsKey(popupType))
-                {
-                    Debug.LogError($"Duplicated popup prefab type: {popupType.Name}");
-                    continue;
-                }
-
                 _entryMap.Add(popupType, entry);
             }
         }

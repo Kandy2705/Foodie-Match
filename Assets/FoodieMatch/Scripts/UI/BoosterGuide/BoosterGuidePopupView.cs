@@ -22,26 +22,12 @@ namespace FoodieMatch.UI.BoosterGuide
 
         private void Awake()
         {
-            if (_popupAnimController == null)
-            {
-                _popupAnimController = GetComponent<PopupAnimController>();
-            }
-
-            EnsureButtonReferences();
-            EnsureContentReferences();
-
-            if (_confirmButton != null)
-            {
-                _confirmButton.onClick.AddListener(OnConfirmButtonClicked);
-            }
+            _confirmButton.onClick.AddListener(OnConfirmButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_confirmButton != null)
-            {
-                _confirmButton.onClick.RemoveListener(OnConfirmButtonClicked);
-            }
+            _confirmButton.onClick.RemoveListener(OnConfirmButtonClicked);
         }
 
         public void SetActions(BoosterGuidePopupViewActions actions)
@@ -66,10 +52,8 @@ namespace FoodieMatch.UI.BoosterGuide
                 return;
             }
 
-            EnsureContentReferences();
-
-            UiTmpText.SetText(_titleText, popupData.Title);
-            UiTmpText.SetText(_descriptionText, popupData.Description);
+            _titleText.text = popupData.Title;
+            _descriptionText.text = popupData.Description;
             ApplyIcon(popupData.Icon);
         }
 
@@ -78,10 +62,7 @@ namespace FoodieMatch.UI.BoosterGuide
             _isClosing = false;
             base.Show();
 
-            if (_popupAnimController != null)
-            {
-                _popupAnimController.Open();
-            }
+            _popupAnimController.Open();
         }
 
         public override void Hide()
@@ -91,7 +72,7 @@ namespace FoodieMatch.UI.BoosterGuide
                 return;
             }
 
-            if (_popupAnimController != null && gameObject.activeInHierarchy)
+            if (gameObject.activeInHierarchy)
             {
                 _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
@@ -111,11 +92,6 @@ namespace FoodieMatch.UI.BoosterGuide
 
         private void ApplyIcon(Sprite icon)
         {
-            if (_iconImage == null)
-            {
-                return;
-            }
-
             _iconImage.sprite = icon;
             _iconImage.enabled = icon != null;
 
@@ -142,79 +118,5 @@ namespace FoodieMatch.UI.BoosterGuide
             base.Hide();
         }
 
-        private void EnsureButtonReferences()
-        {
-            if (_confirmButton == null)
-            {
-                _confirmButton = FindChildButton("PlayOnButton");
-            }
-
-            if (_confirmButton == null)
-            {
-                _confirmButton = FindChildButton("ConfirmButton");
-            }
-        }
-
-        private void EnsureContentReferences()
-        {
-            if (_titleText == null)
-            {
-                _titleText = UiTmpText.FindChild(transform, "BoosterBuyTitleText");
-            }
-
-            if (_titleText == null)
-            {
-                _titleText = UiTmpText.FindChild(transform, "BoosterGuideTitleText");
-            }
-
-            if (_descriptionText == null)
-            {
-                _descriptionText = UiTmpText.FindChild(transform, "DescriptionText");
-            }
-
-            if (_iconImage == null)
-            {
-                _iconImage = FindChildImage("BoosterBuyIconImage");
-            }
-
-            if (_iconImage == null)
-            {
-                _iconImage = FindChildImage("BoosterGuideIconImage");
-            }
-        }
-
-        private Button FindChildButton(string objectName)
-        {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Button button = buttons[i];
-
-                if (button != null && button.gameObject.name == objectName)
-                {
-                    return button;
-                }
-            }
-
-            return null;
-        }
-
-        private Image FindChildImage(string objectName)
-        {
-            Image[] images = GetComponentsInChildren<Image>(true);
-
-            for (int i = 0; i < images.Length; i++)
-            {
-                Image image = images[i];
-
-                if (image != null && image.gameObject.name == objectName)
-                {
-                    return image;
-                }
-            }
-
-            return null;
-        }
     }
 }

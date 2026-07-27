@@ -1,6 +1,5 @@
 using System;
 using FoodieMatch.Core.Application.Player;
-using FoodieMatch.UI.Common;
 using TMPro;
 using UnityEngine;
 
@@ -69,10 +68,7 @@ namespace FoodieMatch.UI.Home
 
         private void SetRecoveryTimerVisible(bool isVisible)
         {
-            if (_recoveryTimerRoot != null)
-            {
-                _recoveryTimerRoot.SetActive(isVisible);
-            }
+            _recoveryTimerRoot.SetActive(isVisible);
         }
 
         private void UpdateDisplayedHeartStatus(DateTimeOffset currentUtc)
@@ -104,7 +100,7 @@ namespace FoodieMatch.UI.Home
 
         private void UpdateHeartCountText()
         {
-            UiTmpText.SetText(_heartCountText, _heartCount.ToString());
+            _heartCountText.text = _heartCount.ToString();
         }
 
         private void UpdateRecoveryTimerText(TimeSpan remainingTime)
@@ -121,9 +117,7 @@ namespace FoodieMatch.UI.Home
             _displayedSecondCount = totalSeconds;
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            UiTmpText.SetText(
-                _recoveryTimerText,
-                $"{minutes:00}:{seconds:00}");
+            _recoveryTimerText.text = $"{minutes:00}:{seconds:00}";
         }
     }
 }

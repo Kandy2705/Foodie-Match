@@ -1,5 +1,4 @@
 using System;
-using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using Spine.Unity;
 using TMPro;
@@ -17,9 +16,7 @@ namespace FoodieMatch.UI.Result
         [Header("References")]
         [SerializeField] private Button _claimCoinRewardButton;
         [SerializeField] private Button _doubleCoinRewardButton;
-        [FormerlySerializedAs("_rewardAmountText")]
         [SerializeField] private TMP_Text _regularRewardAmountText;
-        [FormerlySerializedAs("_rewardMultiplierText")]
         [SerializeField] private TMP_Text _doubleRewardAmountText;
         [SerializeField] private SkeletonGraphic _chefMascotSkeletonGraphic;
 
@@ -28,31 +25,14 @@ namespace FoodieMatch.UI.Result
 
         private void Awake()
         {
-            EnsureTextReferences();
-            EnsureMascotReference();
-
-            if (_claimCoinRewardButton != null)
-            {
-                _claimCoinRewardButton.onClick.AddListener(OnClaimCoinRewardButtonClicked);
-            }
-
-            if (_doubleCoinRewardButton != null)
-            {
-                _doubleCoinRewardButton.onClick.AddListener(OnDoubleCoinRewardButtonClicked);
-            }
+            _claimCoinRewardButton.onClick.AddListener(OnClaimCoinRewardButtonClicked);
+            _doubleCoinRewardButton.onClick.AddListener(OnDoubleCoinRewardButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_claimCoinRewardButton != null)
-            {
-                _claimCoinRewardButton.onClick.RemoveListener(OnClaimCoinRewardButtonClicked);
-            }
-
-            if (_doubleCoinRewardButton != null)
-            {
-                _doubleCoinRewardButton.onClick.RemoveListener(OnDoubleCoinRewardButtonClicked);
-            }
+            _claimCoinRewardButton.onClick.RemoveListener(OnClaimCoinRewardButtonClicked);
+            _doubleCoinRewardButton.onClick.RemoveListener(OnDoubleCoinRewardButtonClicked);
         }
 
         public override void Show()
@@ -69,13 +49,8 @@ namespace FoodieMatch.UI.Result
 
         public void SetRewardAmounts(long regularRewardAmount, long doubleRewardAmount)
         {
-            EnsureTextReferences();
-            UiTmpText.SetText(
-                _regularRewardAmountText,
-                Math.Max(0, regularRewardAmount).ToString());
-            UiTmpText.SetText(
-                _doubleRewardAmountText,
-                Math.Max(0, doubleRewardAmount).ToString());
+            _regularRewardAmountText.text = Math.Max(0, regularRewardAmount).ToString();
+            _doubleRewardAmountText.text = Math.Max(0, doubleRewardAmount).ToString();
         }
 
         public override void Dispose()
@@ -88,13 +63,6 @@ namespace FoodieMatch.UI.Result
 
         private void PlayWinMascotAnimation()
         {
-            EnsureMascotReference();
-
-            if (_chefMascotSkeletonGraphic == null)
-            {
-                return;
-            }
-
             if (!_chefMascotSkeletonGraphic.IsValid)
             {
                 _chefMascotSkeletonGraphic.Initialize(overwrite: false);
@@ -130,28 +98,5 @@ namespace FoodieMatch.UI.Result
             _doubleCoinRewardClicked?.Invoke();
         }
 
-        private void EnsureTextReferences()
-        {
-            if (_regularRewardAmountText == null)
-            {
-                _regularRewardAmountText = UiTmpText.FindChild(transform, "RewardAmountText");
-            }
-
-            if (_doubleRewardAmountText == null)
-            {
-                _doubleRewardAmountText = UiTmpText.FindChild(transform, "RewardMultiplierText");
-            }
-        }
-
-        private void EnsureMascotReference()
-        {
-            if (_chefMascotSkeletonGraphic != null)
-            {
-                return;
-            }
-
-            _chefMascotSkeletonGraphic =
-                GetComponentInChildren<SkeletonGraphic>(includeInactive: true);
-        }
     }
 }
