@@ -17,20 +17,20 @@ namespace FoodieMatch.Features.Gameplay
         private readonly GameplaySessionGuard _sessionGuard;
         private readonly BoardLayoutView _boardLayoutView;
         private readonly PackageDeliveryCoordinator _packageDeliveryCoordinator;
-        private readonly TopTrayMoveCoordinator _topTrayMoveCoordinator;
+        private readonly Action<int, GameplaySession> _refillGrill;
         private readonly Action<GameplaySession> _resolveWin;
 
         public StorageBoosterCoordinator(
             GameplaySessionGuard sessionGuard,
             BoardLayoutView boardLayoutView,
             PackageDeliveryCoordinator packageDeliveryCoordinator,
-            TopTrayMoveCoordinator topTrayMoveCoordinator,
+            Action<int, GameplaySession> refillGrill,
             Action<GameplaySession> resolveWin)
         {
             _sessionGuard = sessionGuard;
             _boardLayoutView = boardLayoutView;
             _packageDeliveryCoordinator = packageDeliveryCoordinator;
-            _topTrayMoveCoordinator = topTrayMoveCoordinator;
+            _refillGrill = refillGrill;
             _resolveWin = resolveWin;
         }
 
@@ -151,30 +151,36 @@ namespace FoodieMatch.Features.Gameplay
         {
             int count = 0;
 
-            count += CountMatchingFood(
-                session.Board.GetActiveFoodTokenIds(),
-                foodTokenId);
-            count += CountMatchingFood(
-                session.Board.GetTopTrayFoodTokenIds(),
-                foodTokenId);
+            for (int grillIndex = 0; grillIndex < session.Board.GrillCount; grillIndex++)
+            {
+                GrillModel grill = session.Board.GetGrillAt(grillIndex);
+                count += CountMatchingFood(
+                    grill.ActiveFoodSlotCount,
+                    grill.GetFoodTokenIdAt,
+                    foodTokenId);
+
+                if (grill.Type == GrillType.Standard && grill.TopTray != null)
+                {
+                    count += CountMatchingFood(
+                        grill.TopTray.SlotCount,
+                        grill.TopTray.GetFoodTokenIdAt,
+                        foodTokenId);
+                }
+            }
 
             return count;
         }
 
         private static int CountMatchingFood(
-            IReadOnlyList<int> foodTokenIds,
+            int foodSlotCount,
+            Func<int, int> getFoodTokenIdAt,
             int foodTokenId)
         {
-            if (foodTokenIds == null)
-            {
-                return 0;
-            }
-
             int count = 0;
 
-            for (int i = 0; i < foodTokenIds.Count; i++)
+            for (int i = 0; i < foodSlotCount; i++)
             {
-                if (foodTokenIds[i] == foodTokenId)
+                if (getFoodTokenIdAt(i) == foodTokenId)
                 {
                     count++;
                 }
@@ -203,7 +209,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             int slotsToFill = plan.TargetPackage.RemainingAmount;
             List<Task> deliveryTasks = new();
-            HashSet<int> topTrayMoveCandidates = new();
+            HashSet<int> grillRefillCandidates = new();
             int flightOrder = 0;
 
             CollectGrillFood(
@@ -211,7 +217,7 @@ namespace FoodieMatch.Features.Gameplay
                 plan,
                 slotsToFill,
                 deliveryTasks,
-                topTrayMoveCandidates,
+                grillRefillCandidates,
                 ref flightOrder);
 
             CollectTrayFood(
@@ -219,10 +225,10 @@ namespace FoodieMatch.Features.Gameplay
                 plan,
                 slotsToFill,
                 deliveryTasks,
-                topTrayMoveCandidates,
+                grillRefillCandidates,
                 ref flightOrder);
 
-            MoveTopTraysToEmptyGrills(session, topTrayMoveCandidates);
+            RefillEmptyGrills(session, grillRefillCandidates);
 
             await Task.WhenAll(deliveryTasks);
 
@@ -237,7 +243,7 @@ namespace FoodieMatch.Features.Gameplay
             StorageBoosterPlan plan,
             int slotsToFill,
             List<Task> deliveryTasks,
-            HashSet<int> topTrayMoveCandidates,
+            HashSet<int> grillRefillCandidates,
             ref int flightOrder)
         {
             for (int i = 0; i < plan.GrillFoodViews.Count && deliveryTasks.Count < slotsToFill; i++)
@@ -258,7 +264,7 @@ namespace FoodieMatch.Features.Gameplay
 
                     if (session.Board.TryRemoveFood(address, foodView.FoodTokenId))
                     {
-                        topTrayMoveCandidates.Add(address.GrillPositionIndex);
+                        grillRefillCandidates.Add(address.GrillPositionIndex);
                     }
                 }
 
@@ -275,7 +281,7 @@ namespace FoodieMatch.Features.Gameplay
             StorageBoosterPlan plan,
             int slotsToFill,
             List<Task> deliveryTasks,
-            HashSet<int> topTrayMoveCandidates,
+            HashSet<int> grillRefillCandidates,
             ref int flightOrder)
         {
             for (int i = 0; i < plan.TrayFoodViews.Count && deliveryTasks.Count < slotsToFill; i++)
@@ -307,7 +313,7 @@ namespace FoodieMatch.Features.Gameplay
                     if (removedTrayFood && trayGrill.TopTray.FoodCount == 0)
                     {
                         RemoveEmptyTopTray(trayGrill, grillPositionIndex);
-                        topTrayMoveCandidates.Add(grillPositionIndex);
+                        grillRefillCandidates.Add(grillPositionIndex);
                     }
                 }
 
@@ -347,18 +353,18 @@ namespace FoodieMatch.Features.Gameplay
                 startDelay);
         }
 
-        private void MoveTopTraysToEmptyGrills(
+        private void RefillEmptyGrills(
             GameplaySession session,
-            HashSet<int> topTrayMoveCandidates)
+            HashSet<int> grillPositionIndices)
         {
-            foreach (int grillPositionIndex in topTrayMoveCandidates)
+            foreach (int grillPositionIndex in grillPositionIndices)
             {
                 if (session.Board.TryGetGrill(
                         grillPositionIndex,
                         out GrillModel grill) &&
                     grill.IsEmpty)
                 {
-                    _topTrayMoveCoordinator.MoveFoodToGrill(grillPositionIndex, session);
+                    _refillGrill(grillPositionIndex, session);
                 }
             }
         }

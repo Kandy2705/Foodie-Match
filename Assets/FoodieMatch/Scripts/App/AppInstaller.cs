@@ -95,7 +95,8 @@ namespace FoodieMatch.App
                 boosterManager,
                 boosterConfig,
                 economyConfig,
-                playerProfileService);
+                playerProfileService,
+                levelRepository);
             IRewardedAdService rewardedAdService =
                 new FakeRewardedAdService(appRoot.UIManager);
             appRoot.BoardLayoutView.Construct(

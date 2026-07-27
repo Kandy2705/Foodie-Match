@@ -296,6 +296,50 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public void ApplyDebugUpdate(PlayerProfileDebugUpdate update)
+        {
+            if (update.HeartCount > _heartConfig.MaxHeartCount)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(update),
+                    update.HeartCount,
+                    "Heart count cannot exceed the configured maximum.");
+            }
+
+            lock (_stateLock)
+            {
+                DateTimeOffset? recoveryStartedAtUtc =
+                    update.HeartCount < _heartConfig.MaxHeartCount
+                        ? _clock.UtcNow
+                        : null;
+
+                HeartState heartState = new(
+                    update.HeartCount,
+                    recoveryStartedAtUtc);
+
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                PlayerProfile updatedProfile = currentProfile
+                    .WithCurrentLevelNumber(update.CurrentLevelNumber)
+                    .WithCoinBalance(update.CoinBalance)
+                    .WithHeartState(heartState)
+                    .WithBoosterCount(
+                        BoosterType.Plate,
+                        update.PlateBoosterCount)
+                    .WithBoosterCount(
+                        BoosterType.Storage,
+                        update.StorageBoosterCount)
+                    .WithBoosterCount(
+                        BoosterType.Swap,
+                        update.SwapBoosterCount)
+                    .WithBoosterCount(
+                        BoosterType.Fridge,
+                        update.FridgeBoosterCount);
+
+                QueueProfileChange(updatedProfile);
+            }
+        }
+
         public bool HasSeenBoosterGuide(BoosterType boosterType)
         {
             lock (_stateLock)
