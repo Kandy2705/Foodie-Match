@@ -59,6 +59,8 @@ namespace FoodieMatch.App
             _uiManager.LeaveGameRequested += OnLeaveGameRequested;
             _uiManager.BoosterCoinPurchaseRequested += OnBoosterCoinPurchaseRequested;
             _uiManager.BoosterRewardedAdRequested += OnBoosterRewardedAdRequested;
+            _uiManager.AddBoxCoinPaymentRequested += OnAddBoxCoinPaymentRequested;
+            _uiManager.AddBoxRewardedAdRequested += OnAddBoxRewardedAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
             _uiManager.ShopPurchaseHandler = OnShopPurchaseRequestedAsync;
@@ -322,6 +324,48 @@ namespace FoodieMatch.App
             {
                 Debug.LogException(exception);
             }
+        }
+
+        private void OnAddBoxCoinPaymentRequested()
+        {
+            try
+            {
+                int coinPrice = _economyConfig.GetBoosterPrice(BoosterType.Box);
+
+                if (!_playerProfileService.TrySpendCoins(coinPrice))
+                {
+                    return;
+                }
+
+                _uiManager.RefreshOpenedResourceBars();
+                _uiManager.CompleteAddBoxRequest();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void OnAddBoxRewardedAdRequested()
+        {
+            try
+            {
+                _rewardedAdService.TryShow(
+                    RewardedAdPlacement.BoosterReward,
+                    new RewardedAdCallbacks(
+                        OnAddBoxAdRewarded,
+                        closed: null,
+                        displayFailed: null));
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void OnAddBoxAdRewarded()
+        {
+            _uiManager.CompleteAddBoxRequest();
         }
 
         private void UpdateUiAfterBoosterGranted(BoosterType boosterType)

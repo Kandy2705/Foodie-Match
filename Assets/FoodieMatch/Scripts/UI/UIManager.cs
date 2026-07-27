@@ -69,6 +69,7 @@ namespace FoodieMatch.UI
         private LoadingScreenView _loadingScreenView;
         private CoinRewardOverlayView _coinRewardOverlayView;
         private bool _isBoosterGuideShowing;
+        private AddBoxFlowSource _addBoxFlowSource;
         private LeavePopupSource _leavePopupSource;
         private ReviveFlowContext _reviveFlowContext;
         private int _currentLevelNumber = 1;
@@ -88,6 +89,10 @@ namespace FoodieMatch.UI
         public event Action<BoosterType> BoosterCoinPurchaseRequested;
 
         public event Action<BoosterType> BoosterRewardedAdRequested;
+
+        public event Action AddBoxCoinPaymentRequested;
+
+        public event Action AddBoxRewardedAdRequested;
 
         public Func<BoosterType, bool> BoosterUseHandler { get; set; }
 
@@ -368,11 +373,14 @@ namespace FoodieMatch.UI
         private void OpenRevivePopup()
         {
             RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
+            _addBoxFlowSource = AddBoxFlowSource.Revive;
             revivePopup.SetActions(
                 new RevivePopupViewActions(
                     OnReviveCloseClicked,
                     OnReviveFreeAdsClicked,
                     OnRevivePlayOnClicked));
+            revivePopup.SetCost(
+                _economyConfig.GetBoosterPrice(BoosterType.Box).ToString());
             SetCurrentPlayerResources(revivePopup);
         }
 
@@ -454,8 +462,10 @@ namespace FoodieMatch.UI
             CompleteCoinRewardImmediately();
             _pendingBoosterGuides.Clear();
             _isBoosterGuideShowing = false;
+            _addBoxFlowSource = AddBoxFlowSource.None;
             _leavePopupSource = LeavePopupSource.None;
             _reviveFlowContext = null;
+            ClearLockedPackageUnlock();
 
             _popupManager.HideAll();
         }
@@ -544,37 +554,71 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            BoosterBuyPopupData popupData = BoosterBuyPopupData.FromCatalogEntry(entry);
+            int coinPrice = _economyConfig.GetBoosterPrice(BoosterType.Box);
+            BoosterBuyPopupData popupData =
+                BoosterBuyPopupData.FromCatalogEntry(entry, coinPrice.ToString());
             BoosterBuyPopupView popup = _popupManager.Show<BoosterBuyPopupView>(popupData);
+            _addBoxFlowSource = AddBoxFlowSource.LockedPackage;
             _pendingUnlockSlotIndex = slotIndex;
             _pendingUnlockCallback = onUnlockConfirmed;
 
             popup.SetActions(
                 new BoosterBuyPopupViewActions(
                     OnUnlockPopupCloseClicked,
-                    OnUnlockPopupBuyClicked,
+                    OnUnlockPopupFreeAdsClicked,
                     OnUnlockPopupBuyClicked));
+            SetCurrentPlayerResources(popup);
         }
 
         private void OnUnlockPopupCloseClicked()
         {
-            _pendingUnlockSlotIndex = -1;
-            _pendingUnlockCallback = null;
+            _addBoxFlowSource = AddBoxFlowSource.None;
+            ClearLockedPackageUnlock();
             HideBoosterBuyPopup();
+        }
+
+        private void OnUnlockPopupFreeAdsClicked()
+        {
+            AddBoxRewardedAdRequested();
         }
 
         private void OnUnlockPopupBuyClicked()
         {
+            AddBoxCoinPaymentRequested();
+        }
+
+        public void CompleteAddBoxRequest()
+        {
+            AddBoxFlowSource source = _addBoxFlowSource;
+            _addBoxFlowSource = AddBoxFlowSource.None;
+
+            switch (source)
+            {
+                case AddBoxFlowSource.LockedPackage:
+                    CompleteLockedPackageUnlock();
+                    return;
+                case AddBoxFlowSource.Revive:
+                    ConfirmBoxRescue();
+                    return;
+                default:
+                    throw new InvalidOperationException(
+                        "No Add Box request is waiting for completion.");
+            }
+        }
+
+        private void CompleteLockedPackageUnlock()
+        {
             int slotIndex = _pendingUnlockSlotIndex;
             Action<int> callback = _pendingUnlockCallback;
+            ClearLockedPackageUnlock();
+            HideBoosterBuyPopup();
+            callback(slotIndex);
+        }
+
+        private void ClearLockedPackageUnlock()
+        {
             _pendingUnlockSlotIndex = -1;
             _pendingUnlockCallback = null;
-            HideBoosterBuyPopup();
-
-            if (slotIndex >= 0 && callback != null)
-            {
-                callback.Invoke(slotIndex);
-            }
         }
 
         public void ShowBoosterGuidePopup(BoosterType boosterType)
@@ -890,6 +934,7 @@ namespace FoodieMatch.UI
 
         private void OnReviveCloseClicked()
         {
+            _addBoxFlowSource = AddBoxFlowSource.None;
             HideRevivePopup();
             _leavePopupSource = LeavePopupSource.Revive;
             ShowLeaveGamePopup();
@@ -897,13 +942,12 @@ namespace FoodieMatch.UI
 
         private void OnReviveFreeAdsClicked()
         {
-            ConfirmBoxRescue();
+            AddBoxRewardedAdRequested();
         }
 
         private void OnRevivePlayOnClicked()
         {
-            Debug.Log("Revive Play On Clicked");
-            ConfirmBoxRescue();
+            AddBoxCoinPaymentRequested();
         }
 
         private void ConfirmBoxRescue()
@@ -1073,33 +1117,40 @@ namespace FoodieMatch.UI
         }
 
         private enum LeavePopupSource
-    {
-        None,
-        Pause,
-        Revive
-    }
-
-    private sealed class ReviveFlowContext
-    {
-        public ReviveFlowContext(
-            Action loseTryAgainClicked,
-            Action loseHomeClicked,
-            Action boxRescueConfirmed,
-            Action loseConfirmed)
         {
-            LoseTryAgainClicked = loseTryAgainClicked;
-            LoseHomeClicked = loseHomeClicked;
-            BoxRescueConfirmed = boxRescueConfirmed;
-            LoseConfirmed = loseConfirmed;
+            None,
+            Pause,
+            Revive
         }
 
-        public Action LoseTryAgainClicked { get; }
+        private enum AddBoxFlowSource
+        {
+            None,
+            LockedPackage,
+            Revive
+        }
 
-        public Action LoseHomeClicked { get; }
+        private sealed class ReviveFlowContext
+        {
+            public ReviveFlowContext(
+                Action loseTryAgainClicked,
+                Action loseHomeClicked,
+                Action boxRescueConfirmed,
+                Action loseConfirmed)
+            {
+                LoseTryAgainClicked = loseTryAgainClicked;
+                LoseHomeClicked = loseHomeClicked;
+                BoxRescueConfirmed = boxRescueConfirmed;
+                LoseConfirmed = loseConfirmed;
+            }
 
-        public Action BoxRescueConfirmed { get; }
+            public Action LoseTryAgainClicked { get; }
 
-        public Action LoseConfirmed { get; }
+            public Action LoseHomeClicked { get; }
+
+            public Action BoxRescueConfirmed { get; }
+
+            public Action LoseConfirmed { get; }
+        }
     }
-}
 }
