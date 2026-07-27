@@ -4,9 +4,11 @@ using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Heart;
+using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Application.Time;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
@@ -18,6 +20,7 @@ using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using FoodieMatch.Infrastructure.Persistence.Save;
+using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
 using UnityEngine;
@@ -33,6 +36,11 @@ namespace FoodieMatch.App
         public bool Install(AppRoot appRoot)
         {
             if (!TryCreateLevelRepository(out ILevelRepository levelRepository))
+            {
+                return false;
+            }
+
+            if (!TryCreateShopConfig(out IGameShopConfig shopConfig))
             {
                 return false;
             }
@@ -88,6 +96,10 @@ namespace FoodieMatch.App
                 GameBoosterDefaults.CreateSnapshot();
             IGameEconomyConfig economyConfig =
                 GameEconomyDefaults.CreateSnapshot();
+            ShopPurchaseService shopPurchaseService = new(
+                shopConfig,
+                new DebugFreeShopPaymentGateway(),
+                playerProfileService);
 
             appRoot.UIManager.Construct(
                 GameplayEvents,
@@ -96,7 +108,8 @@ namespace FoodieMatch.App
                 boosterConfig,
                 economyConfig,
                 playerProfileService,
-                levelRepository);
+                levelRepository,
+                shopConfig);
             IRewardedAdService rewardedAdService =
                 new FakeRewardedAdService(appRoot.UIManager);
             appRoot.BoardLayoutView.Construct(
@@ -126,11 +139,26 @@ namespace FoodieMatch.App
                 playerProfileService,
                 boosterManager,
                 economyConfig,
+                shopPurchaseService,
                 rewardedAdService,
                 levelRepository,
                 audioService);
 
             return true;
+        }
+
+        private static bool TryCreateShopConfig(out IGameShopConfig shopConfig)
+        {
+            ResourcesGameShopConfigLoader loader = new();
+
+            if (loader.TryLoad(out shopConfig, out string errorMessage))
+            {
+                return true;
+            }
+
+            Debug.LogError($"Cannot install app because shop config is invalid: {errorMessage}");
+            shopConfig = null;
+            return false;
         }
 
         private static void LogPlayerProfileSaveFailure(string errorMessage)
