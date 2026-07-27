@@ -7,12 +7,14 @@ using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.Common;
+using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
@@ -56,6 +58,7 @@ namespace FoodieMatch.UI
         private IGameBoosterConfig _boosterConfig;
         private IGameEconomyConfig _economyConfig;
         private PlayerProfileService _playerProfileService;
+        private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
@@ -99,7 +102,8 @@ namespace FoodieMatch.UI
             BoosterManager boosterManager,
             IGameBoosterConfig boosterConfig,
             IGameEconomyConfig economyConfig,
-            PlayerProfileService playerProfileService)
+            PlayerProfileService playerProfileService,
+            ILevelRepository levelRepository)
         {
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
@@ -109,6 +113,7 @@ namespace FoodieMatch.UI
             _boosterConfig = boosterConfig;
             _economyConfig = economyConfig;
             _playerProfileService = playerProfileService;
+            _levelRepository = levelRepository;
             SubscribeEvents();
         }
 
@@ -245,7 +250,8 @@ namespace FoodieMatch.UI
                 new SettingPopupViewActions(
                     OnSettingCloseClicked,
                     OnSettingSoundChanged,
-                    OnSettingMusicChanged));
+                    OnSettingMusicChanged,
+                    OnSettingDebugMenuRequested));
 
             settingPopup.SetToggleStates(
                 _audioService.IsSfxEnabled,
@@ -255,6 +261,34 @@ namespace FoodieMatch.UI
         public void HideSettingPopup()
         {
             _popupManager.Hide<SettingPopupView>();
+        }
+
+        private void ShowPlayerDebugPopup()
+        {
+            HeartStatus heartStatus =
+                _playerProfileService.GetHeartStatus();
+
+            PlayerProfileDebugUpdate values = new(
+                _playerProfileService.CurrentLevelNumber,
+                _playerProfileService.CoinBalance,
+                heartStatus.HeartCount,
+                _boosterManager.GetCount(BoosterType.Plate),
+                _boosterManager.GetCount(BoosterType.Storage),
+                _boosterManager.GetCount(BoosterType.Swap),
+                _boosterManager.GetCount(BoosterType.Fridge));
+
+            PlayerDebugPopupView popup =
+                _popupManager.Show<PlayerDebugPopupView>();
+            popup.SetActions(
+                new PlayerDebugPopupViewActions(
+                    HidePlayerDebugPopup,
+                    OnPlayerDebugApplyClicked));
+            popup.SetValues(values, heartStatus.MaxHeartCount);
+        }
+
+        private void HidePlayerDebugPopup()
+        {
+            _popupManager.Hide<PlayerDebugPopupView>();
         }
 
         public void ShowPausePopup()
@@ -628,29 +662,23 @@ namespace FoodieMatch.UI
         {
             if (!BoosterBuyCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
             {
-                Debug.LogWarning($"Unknown booster button index: {boosterIndex}");
                 return;
             }
 
             if (!IsBoosterUnlocked(boosterType))
             {
-                Debug.Log($"Booster {boosterType} is locked until a later level.");
                 return;
             }
 
             if (!_boosterManager.HasCount(boosterType))
             {
-                Debug.Log($"No {boosterType} booster left.");
                 return;
             }
 
             if (BoosterUseHandler == null || !BoosterUseHandler.Invoke(boosterType))
             {
-                Debug.Log($"Booster {boosterType} could not be applied.");
                 return;
             }
-
-            Debug.Log($"Used {boosterType} booster. Remaining: {_boosterManager.GetCount(boosterType)}");
             RefreshBoosterHud();
         }
 
@@ -658,13 +686,11 @@ namespace FoodieMatch.UI
         {
             if (!BoosterBuyCatalogSO.TryFromButtonIndex(boosterIndex, out BoosterType boosterType))
             {
-                Debug.LogWarning($"Unknown booster button index: {boosterIndex}");
                 return;
             }
 
             if (!IsBoosterUnlocked(boosterType))
             {
-                Debug.Log($"Booster {boosterType} is locked until a later level.");
                 return;
             }
 
@@ -699,6 +725,55 @@ namespace FoodieMatch.UI
         private void OnSettingMusicChanged(bool isOn)
         {
             _audioService.SetMusicEnabled(isOn);
+        }
+
+        private void OnSettingDebugMenuRequested()
+        {
+            ShowPlayerDebugPopup();
+        }
+
+        private void OnPlayerDebugApplyClicked(
+            PlayerProfileDebugUpdate values)
+        {
+            if (!_levelRepository.TryGetLevel(
+                    values.CurrentLevelNumber,
+                    out _))
+            {
+                ShowPlayerDebugStatus(
+                    $"Level {values.CurrentLevelNumber} does not exist.");
+                return;
+            }
+
+            CompleteCoinRewardImmediately();
+            _playerProfileService.ApplyDebugUpdate(values);
+            SetCurrentLevelNumber(values.CurrentLevelNumber);
+            RefreshHomePlayerData();
+            ShowPlayerDebugStatus("Applied");
+        }
+
+        private void RefreshHomePlayerData()
+        {
+            if (!_popupManager.TryGetOpened(
+                    out MainMenuView mainMenuView) ||
+                !mainMenuView.TryGetView(
+                    out HomeView homeView))
+            {
+                return;
+            }
+
+            homeView.SetPlayLevelNumber(_currentLevelNumber);
+            homeView.SetPlayerResources(
+                _playerProfileService.CoinBalance,
+                _playerProfileService.GetHeartStatus());
+        }
+
+        private void ShowPlayerDebugStatus(string message)
+        {
+            if (_popupManager.TryGetOpened(
+                    out PlayerDebugPopupView popup))
+            {
+                popup.ShowStatus(message);
+            }
         }
 
         private void OnPauseResumeClicked()

@@ -173,6 +173,8 @@ MonoBehaviour:
     _cacheAfterHide: 1
   - _prefab: {fileID: 8483208802978512984, guid: 12c038bb33c2a0042948c4eb62b1bd83, type: 3}
     _cacheAfterHide: 1
+  - _prefab: {fileID: 8267067768933717303, guid: 6d3861de6cf708d4f82c9af89a1eeac3, type: 3}
+    _cacheAfterHide: 1
 --- !u!1 &5414341360215047437
 GameObject:
   m_ObjectHideFlags: 0
