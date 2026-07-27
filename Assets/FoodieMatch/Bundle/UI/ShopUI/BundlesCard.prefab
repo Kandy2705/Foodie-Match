@@ -798,6 +798,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BoosterRewardItem (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 6304085355698076403, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
+      propertyPath: _boosterType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8473464634681540164, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1050,6 +1054,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BoosterRewardItem (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 6304085355698076403, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
+      propertyPath: _boosterType
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 8473464634681540164, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1163,6 +1171,10 @@ PrefabInstance:
     - target: {fileID: 4582476535655261460, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Name
       value: BoosterRewardItem (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304085355698076403, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
+      propertyPath: _boosterType
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8473464634681540164, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Pivot.x
