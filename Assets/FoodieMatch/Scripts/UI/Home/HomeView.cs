@@ -1,5 +1,6 @@
 using System;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Reward;
@@ -17,12 +18,16 @@ namespace FoodieMatch.UI.Home
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
+        [SerializeField] private Sprite _hardPlayButtonSprite;
+        [SerializeField] private Sprite _superHardPlayButtonSprite;
 
         private Action _playClicked;
         private Action _settingClicked;
+        private Sprite _normalPlayButtonSprite;
 
         private void Awake()
         {
+            _normalPlayButtonSprite = _playButton.image.sprite;
             _playButton.onClick.AddListener(OnPlayButtonClicked);
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
         }
@@ -40,9 +45,16 @@ namespace FoodieMatch.UI.Home
             _settingClicked = actions.SettingClicked;
         }
 
-        public void SetPlayLevelNumber(int levelNumber)
+        public void SetPlayLevel(int levelNumber, LevelDifficulty difficulty)
         {
             _playLevelText.text = $"Level {levelNumber}";
+
+            _playButton.image.sprite = difficulty switch
+            {
+                LevelDifficulty.Hard => _hardPlayButtonSprite,
+                LevelDifficulty.SuperHard => _superHardPlayButtonSprite,
+                _ => _normalPlayButtonSprite
+            };
         }
 
         public void SetCoinBalance(long coinBalance)
