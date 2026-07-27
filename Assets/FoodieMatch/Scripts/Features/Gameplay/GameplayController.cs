@@ -483,7 +483,7 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard,
                 _boardLayoutView,
                 _packageDeliveryCoordinator,
-                _topTrayMoveCoordinator,
+                RefillGrill,
                 TryResolveWin);
             _swapBoosterCoordinator = new(
                 _sessionGuard,
