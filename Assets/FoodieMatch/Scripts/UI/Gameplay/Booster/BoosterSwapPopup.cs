@@ -15,14 +15,10 @@ namespace FoodieMatch.UI.Booster
 
         private TrackEntry _trackEntry;
         private TaskCompletionSource<bool> _animationTcs;
-        private void OnDestroy()
-        {
-            StopListeningForCompletion();
-        }
 
         private void OnDisable()
         {
-            StopListeningForCompletion();
+            CompleteAnimation(false);
         }
 
         public override void Show()
@@ -33,17 +29,17 @@ namespace FoodieMatch.UI.Booster
 
         public Task StartSwapAnimationAsync()
         {
-            if (_skeletonGraphic.AnimationState == null)
-            {
-                return Task.CompletedTask;
-            }
-
             if (!_skeletonGraphic.IsValid)
             {
                 _skeletonGraphic.Initialize(overwrite: false);
             }
 
-            StopListeningForCompletion();
+            if (_skeletonGraphic.AnimationState == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            CompleteAnimation(false);
 
             gameObject.SetActive(true);
             _canvasGroup.alpha = 1f;
@@ -112,8 +108,14 @@ namespace FoodieMatch.UI.Booster
                 return;
             }
 
+            CompleteAnimation(true);
+        }
+
+        private void CompleteAnimation(bool completed)
+        {
             StopListeningForCompletion();
-            _animationTcs?.TrySetResult(true);
+            _animationTcs?.TrySetResult(completed);
+            _animationTcs = null;
         }
 
         private void StopListeningForCompletion()
