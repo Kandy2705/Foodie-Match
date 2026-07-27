@@ -5,9 +5,11 @@ using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.Booster;
@@ -27,6 +29,7 @@ using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
 using FoodieMatch.UI.Setting;
+using FoodieMatch.UI.Shop;
 using UnityEngine;
 
 namespace FoodieMatch.UI
@@ -59,6 +62,7 @@ namespace FoodieMatch.UI
         private IGameEconomyConfig _economyConfig;
         private PlayerProfileService _playerProfileService;
         private ILevelRepository _levelRepository;
+        private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
@@ -94,6 +98,8 @@ namespace FoodieMatch.UI
 
         public Func<bool> RestartGameHandler { get; set; }
 
+        public Func<string, Task<ShopPurchaseResult>> ShopPurchaseHandler { get; set; }
+
         private void OnDestroy()
         {
             CompleteCoinRewardImmediately();
@@ -108,7 +114,8 @@ namespace FoodieMatch.UI
             IGameBoosterConfig boosterConfig,
             IGameEconomyConfig economyConfig,
             PlayerProfileService playerProfileService,
-            ILevelRepository levelRepository)
+            ILevelRepository levelRepository,
+            IGameShopConfig shopConfig)
         {
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
@@ -119,6 +126,7 @@ namespace FoodieMatch.UI
             _economyConfig = economyConfig;
             _playerProfileService = playerProfileService;
             _levelRepository = levelRepository;
+            _shopConfig = shopConfig;
             SubscribeEvents();
         }
 
@@ -128,20 +136,20 @@ namespace FoodieMatch.UI
 
             MainMenuView mainMenuView = _popupManager.Show<MainMenuView>();
 
-            if (!mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+            if (mainMenuView.TryGetView<HomeView>(out HomeView homeView))
             {
-                Debug.LogError("HomeView is not registered in MainMenuView.", mainMenuView);
-                return;
+                homeView.SetActions(
+                    new HomeViewActions(
+                        OnHomePlayRequested,
+                        OnHomeSettingRequested));
+
+                homeView.SetPlayLevelNumber(_currentLevelNumber);
+                homeView.SetPlayerResources(
+                    displayedCoinBalance,
+                    _playerProfileService.GetHeartStatus());
             }
 
-            homeView.SetActions(
-                new HomeViewActions(
-                    OnHomePlayRequested,
-                    OnHomeSettingRequested));
-
-            homeView.SetPlayLevelNumber(_currentLevelNumber);
-
-            homeView.SetPlayerResources(displayedCoinBalance, _playerProfileService.GetHeartStatus());
+            BindShopView(mainMenuView);
         }
 
         public void PlayHomeCoinReward(
@@ -498,6 +506,11 @@ namespace FoodieMatch.UI
 
         public void RefreshOpenedResourceBars()
         {
+            RefreshAllPlayerResources();
+        }
+
+        public void RefreshAllPlayerResources()
+        {
             long coinBalance = _playerProfileService.CoinBalance;
 
             HeartStatus heartStatus =
@@ -507,6 +520,12 @@ namespace FoodieMatch.UI
                 mainMenuView.TryGetView<HomeView>(out HomeView homeView))
             {
                 homeView.SetPlayerResources(coinBalance, heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(out mainMenuView) &&
+                mainMenuView.TryGetView<ShopView>(out ShopView shopView))
+            {
+                shopView.SetPlayerResources(coinBalance, heartStatus);
             }
 
             if (_popupManager.TryGetOpened(out BoosterBuyPopupView boosterBuyPopup))
@@ -523,6 +542,8 @@ namespace FoodieMatch.UI
             {
                 loseView.SetPlayerResources(coinBalance, heartStatus);
             }
+
+            RefreshBoosterHud();
         }
 
         public void ShowUnlockLockedPackagePopup(int slotIndex, Action<int> onUnlockConfirmed)
@@ -634,6 +655,21 @@ namespace FoodieMatch.UI
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboRemainingSeconds);
             RefreshBoosterHud();
+        }
+
+        private void BindShopView(MainMenuView mainMenuView)
+        {
+            if (!mainMenuView.TryGetView<ShopView>(out ShopView shopView))
+            {
+                Debug.LogError("ShopView is not registered in MainMenuView.", mainMenuView);
+                return;
+            }
+
+            shopView.SetPurchaseHandler(ShopPurchaseHandler);
+            shopView.Bind(_shopConfig);
+            shopView.SetPlayerResources(
+                _playerProfileService.CoinBalance,
+                _playerProfileService.GetHeartStatus());
         }
 
         private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
@@ -1118,4 +1154,3 @@ namespace FoodieMatch.UI
         }
     }
 }
-
