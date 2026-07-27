@@ -11,6 +11,7 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private TMP_Text _heartCountText;
         [SerializeField] private GameObject _recoveryTimerRoot;
         [SerializeField] private TMP_Text _recoveryTimerText;
+        [SerializeField] private Button _lifeCounterButton;
         [SerializeField] private Image _heartIconImage;
         [SerializeField] private GameObject _addLifeButton;
         [SerializeField] private Sprite _normalHeartIconSprite;
@@ -25,6 +26,13 @@ namespace FoodieMatch.UI.Home
         private bool _isUnlimited;
         private DateTimeOffset _unlimitedHeartEndUtc;
         private TimeSpan _timeUntilNextHeart;
+        private Action _clicked;
+
+        private void Awake()
+        {
+            _lifeCounterButton.onClick.AddListener(OnClicked);
+            _lifeCounterButton.enabled = false;
+        }
 
         private void Update()
         {
@@ -40,6 +48,11 @@ namespace FoodieMatch.UI.Home
             }
 
             UpdateDisplayedHeartStatus(DateTimeOffset.UtcNow);
+        }
+
+        private void OnDestroy()
+        {
+            _lifeCounterButton.onClick.RemoveListener(OnClicked);
         }
 
         public void SetHeartStatus(HeartStatus heartStatus)
@@ -85,8 +98,15 @@ namespace FoodieMatch.UI.Home
             UpdateDisplayedHeartStatus(DateTimeOffset.UtcNow);
         }
 
+        public void SetClickAction(Action clicked)
+        {
+            _clicked = clicked;
+            _lifeCounterButton.enabled = clicked != null;
+        }
+
         public void Clear()
         {
+            SetClickAction(null);
             _isUnlimited = false;
             StopCountdown();
             SetUnlimitedPresentation(false);
@@ -184,6 +204,11 @@ namespace FoodieMatch.UI.Home
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
             _recoveryTimerText.text = $"{minutes:00}:{seconds:00}";
+        }
+
+        private void OnClicked()
+        {
+            _clicked();
         }
     }
 }

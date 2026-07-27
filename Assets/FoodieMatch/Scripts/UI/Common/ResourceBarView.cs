@@ -1,3 +1,4 @@
+using System;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.Reward;
@@ -28,6 +29,11 @@ namespace FoodieMatch.UI.Common
         public void SetHeartStatus(HeartStatus heartStatus)
         {
             _heartCounterView.SetHeartStatus(heartStatus);
+        }
+
+        public void SetHeartClickAction(Action clicked)
+        {
+            _heartCounterView.SetClickAction(clicked);
         }
 
         public void Clear()

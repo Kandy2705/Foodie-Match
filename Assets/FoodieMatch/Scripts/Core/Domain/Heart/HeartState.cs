@@ -147,6 +147,37 @@ namespace FoodieMatch.Core.Domain.Heart
             return true;
         }
 
+        public bool TryAddHeart(
+            int maxHeartCount,
+            DateTimeOffset utcNow,
+            out HeartState updatedState)
+        {
+            ValidateMaxHeartCount(maxHeartCount);
+
+            if (HeartCount > maxHeartCount)
+            {
+                throw new InvalidOperationException(
+                    "Heart count cannot exceed the configured maximum.");
+            }
+
+            if (HeartCount == maxHeartCount)
+            {
+                updatedState = this;
+                return false;
+            }
+
+            int updatedHeartCount = HeartCount + 1;
+            DateTimeOffset? recoveryStartedAtUtc =
+                updatedHeartCount == maxHeartCount
+                    ? null
+                    : RecoveryStartedAtUtc ?? utcNow.ToUniversalTime();
+
+            updatedState = new HeartState(
+                updatedHeartCount,
+                recoveryStartedAtUtc);
+            return true;
+        }
+
         private static void ValidateRecoveryRules(
             int maxHeartCount,
             TimeSpan recoveryDuration)

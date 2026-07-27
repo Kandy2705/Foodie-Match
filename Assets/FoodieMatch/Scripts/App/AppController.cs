@@ -61,6 +61,10 @@ namespace FoodieMatch.App
             _uiManager.BoosterRewardedAdRequested += OnBoosterRewardedAdRequested;
             _uiManager.AddBoxCoinPaymentRequested += OnAddBoxCoinPaymentRequested;
             _uiManager.AddBoxRewardedAdRequested += OnAddBoxRewardedAdRequested;
+            _uiManager.FillHeartCoinPurchaseRequested +=
+                OnFillHeartCoinPurchaseRequested;
+            _uiManager.FillHeartRewardedAdRequested +=
+                OnFillHeartRewardedAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
             _uiManager.ShopPurchaseHandler = OnShopPurchaseRequestedAsync;
@@ -74,8 +78,15 @@ namespace FoodieMatch.App
 
         public void StartLevel(int levelNumber)
         {
-            if (!CanStartLevel(levelNumber))
+            if (!CanLoadLevel(levelNumber))
             {
+                return;
+            }
+
+            if (!_playerProfileService.HasAvailableHeart())
+            {
+                _uiManager.ShowFillHeartPopup(
+                    () => StartLevel(levelNumber));
                 return;
             }
 
@@ -203,16 +214,6 @@ namespace FoodieMatch.App
         {
             _uiManager.HideLoading();
             _isTransitionRunning = false;
-        }
-
-        private bool CanStartLevel(int levelNumber)
-        {
-            if (!CanLoadLevel(levelNumber))
-            {
-                return false;
-            }
-
-            return _playerProfileService.HasAvailableHeart();
         }
 
         private bool CanLoadLevel(int levelNumber)
@@ -368,6 +369,37 @@ namespace FoodieMatch.App
             _uiManager.CompleteAddBoxRequest();
         }
 
+        private void OnFillHeartCoinPurchaseRequested()
+        {
+            int coinPrice = _economyConfig.FullHeartCoinPrice;
+
+            if (!_playerProfileService.TryFillHeartsWithCoins(coinPrice))
+            {
+                _uiManager.ShowActionFeedback("Not enough coins.");
+                return;
+            }
+
+            _uiManager.CompleteHeartRefill();
+        }
+
+        private void OnFillHeartRewardedAdRequested()
+        {
+            _rewardedAdService.TryShow(
+                RewardedAdPlacement.BoosterReward,
+                new RewardedAdCallbacks(
+                    OnFillHeartAdRewarded,
+                    closed: null,
+                    displayFailed: null));
+        }
+
+        private void OnFillHeartAdRewarded()
+        {
+            if (_playerProfileService.TryAddHeart())
+            {
+                _uiManager.CompleteHeartRefill();
+            }
+        }
+
         private void UpdateUiAfterBoosterGranted(BoosterType boosterType)
         {
             _uiManager.HideBoosterBuyPopup();
@@ -407,14 +439,27 @@ namespace FoodieMatch.App
         {
             if (_isTransitionRunning ||
                 _activeLevelNumber <= 0 ||
-                !CanLoadLevel(_activeLevelNumber) ||
-                !_playerProfileService.TrySpendHeart())
+                !CanLoadLevel(_activeLevelNumber))
             {
+                return false;
+            }
+
+            if (!_playerProfileService.TrySpendHeart())
+            {
+                _uiManager.ShowFillHeartPopup(RestartAfterHeartRefill);
                 return false;
             }
 
             _ = EnterLevelWithLoadingSafelyAsync(_activeLevelNumber);
             return true;
+        }
+
+        private void RestartAfterHeartRefill()
+        {
+            if (OnRestartGameRequested())
+            {
+                _uiManager.HideAllPopups();
+            }
         }
 
         private void OnGameplayHomeRequested()

@@ -19,6 +19,7 @@ using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Gameplay;
+using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
 using FoodieMatch.UI.Loading;
@@ -86,6 +87,7 @@ namespace FoodieMatch.UI
         private BoosterType _currentBoosterGuideType;
         private int _pendingUnlockSlotIndex = -1;
         private Action<int> _pendingUnlockCallback;
+        private Action _heartRefillCompleted;
 
         public event Action PlayGameRequested;
 
@@ -98,6 +100,10 @@ namespace FoodieMatch.UI
         public event Action AddBoxCoinPaymentRequested;
 
         public event Action AddBoxRewardedAdRequested;
+
+        public event Action FillHeartCoinPurchaseRequested;
+
+        public event Action FillHeartRewardedAdRequested;
 
         public Func<BoosterType, bool> BoosterUseHandler { get; set; }
 
@@ -146,7 +152,8 @@ namespace FoodieMatch.UI
                 homeView.SetActions(
                     new HomeViewActions(
                         OnHomePlayRequested,
-                        OnHomeSettingRequested));
+                        OnHomeSettingRequested,
+                        OnHomeHeartClicked));
 
                 SetHomePlayLevel(homeView);
                 homeView.SetPlayerResources(
@@ -463,6 +470,41 @@ namespace FoodieMatch.UI
             _popupManager.Hide<LoseView>();
         }
 
+        public void ShowFillHeartPopup(Action heartRefillCompleted = null)
+        {
+            HeartStatus heartStatus = _playerProfileService.GetHeartStatus();
+
+            if (heartStatus.IsFull || heartStatus.IsUnlimited)
+            {
+                return;
+            }
+
+            _heartRefillCompleted = heartRefillCompleted;
+
+            FillHeartPopupView popup =
+                _popupManager.Show<FillHeartPopupView>();
+            popup.SetActions(
+                new FillHeartPopupViewActions(
+                    OnFillHeartCloseClicked,
+                    OnFillHeartFreeAdsClicked,
+                    OnFillHeartBuyClicked,
+                    OnHeartRecoveredToFull));
+            popup.SetFullHeartCoinPrice(
+                _economyConfig.FullHeartCoinPrice);
+            popup.SetPlayerResources(
+                _playerProfileService.CoinBalance,
+                heartStatus);
+        }
+
+        public void CompleteHeartRefill()
+        {
+            Action heartRefillCompleted = _heartRefillCompleted;
+            _heartRefillCompleted = null;
+            _popupManager.Hide<FillHeartPopupView>();
+            RefreshAllPlayerResources();
+            heartRefillCompleted?.Invoke();
+        }
+
         public BoosterSwapPopup ShowSwapPopup()
         {
             return _popupManager.Show<BoosterSwapPopup>();
@@ -481,6 +523,7 @@ namespace FoodieMatch.UI
             _addBoxFlowSource = AddBoxFlowSource.None;
             _leavePopupSource = LeavePopupSource.None;
             _reviveFlowContext = null;
+            _heartRefillCompleted = null;
             ClearLockedPackageUnlock();
 
             _popupManager.HideAll();
@@ -557,6 +600,11 @@ namespace FoodieMatch.UI
             if (_popupManager.TryGetOpened(out LoseView loseView))
             {
                 loseView.SetPlayerResources(coinBalance, heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(out FillHeartPopupView fillHeartPopup))
+            {
+                fillHeartPopup.SetPlayerResources(coinBalance, heartStatus);
             }
 
             RefreshBoosterHud();
@@ -750,6 +798,38 @@ namespace FoodieMatch.UI
         private void OnHomeSettingRequested()
         {
             ShowSettingPopup();
+        }
+
+        private void OnHomeHeartClicked()
+        {
+            ShowFillHeartPopup();
+        }
+
+        private void OnFillHeartCloseClicked()
+        {
+            _heartRefillCompleted = null;
+            _popupManager.Hide<FillHeartPopupView>();
+        }
+
+        private void OnFillHeartFreeAdsClicked()
+        {
+            FillHeartRewardedAdRequested?.Invoke();
+        }
+
+        private void OnFillHeartBuyClicked()
+        {
+            FillHeartCoinPurchaseRequested?.Invoke();
+        }
+
+        private void OnHeartRecoveredToFull()
+        {
+            HeartStatus heartStatus =
+                _playerProfileService.GetHeartStatus();
+
+            if (heartStatus.IsFull || heartStatus.IsUnlimited)
+            {
+                CompleteHeartRefill();
+            }
         }
 
         private void SetCurrentPlayerResources(

@@ -43,6 +43,7 @@ namespace FoodieMatch.UI.Home
         {
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
+            _resourceBarView.SetHeartClickAction(actions.HeartClicked);
         }
 
         public void SetPlayLevel(int levelNumber, LevelDifficulty difficulty)
