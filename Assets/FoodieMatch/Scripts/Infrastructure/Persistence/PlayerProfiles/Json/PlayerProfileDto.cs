@@ -29,5 +29,11 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
 
         [JsonProperty("seenBoosterGuides", Required = Required.Always)]
         public List<int> SeenBoosterGuides { get; set; }
+
+        [JsonProperty("adsRemoved", Required = Required.Always)]
+        public bool AdsRemoved { get; set; }
+
+        [JsonProperty("unlimitedHeartEndUnixSeconds", Required = Required.Always)]
+        public long UnlimitedHeartEndUnixSeconds { get; set; }
     }
 }

@@ -14,6 +14,7 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
         private readonly ISaveService _saveService;
         private readonly PlayerProfileJsonParser _jsonParser = new();
         private readonly PlayerProfileMapper _mapper = new();
+        private readonly PlayerProfileMigration _migration = new();
 
         public PlayerPrefsPlayerProfileRepository(ISaveService saveService)
         {
@@ -85,8 +86,30 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
 
                 if (schemaVersion != PlayerProfileDataVersions.Current)
                 {
-                    return PlayerProfileLoadResult.InvalidData(
-                        $"Player profile schema version {schemaVersion} is invalid.");
+                    if (!_migration.TryMigrate(
+                            json,
+                            schemaVersion,
+                            out string migratedJson,
+                            out string migrationError))
+                    {
+                        return PlayerProfileLoadResult.InvalidData(migrationError);
+                    }
+
+                    try
+                    {
+                        _saveService.SetString(
+                            PlayerProfileSaveKeys.Profile,
+                            migratedJson);
+                        _saveService.Save();
+                    }
+                    catch (Exception exception)
+                    {
+                        return PlayerProfileLoadResult.Failed(
+                            $"Player profile migration could not be saved: " +
+                            exception.Message);
+                    }
+
+                    json = migratedJson;
                 }
 
                 if (!_jsonParser.TryDeserialize(

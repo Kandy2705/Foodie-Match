@@ -51,7 +51,9 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                     profileDto.CoinBalance,
                     boosterCounts,
                     seenBoosterGuides,
-                    heartState);
+                    heartState,
+                    profileDto.AdsRemoved,
+                    profileDto.UnlimitedHeartEndUnixSeconds);
                 record = new PlayerProfileRecord(profile, profileDto.Revision);
                 errorMessage = null;
                 return true;
@@ -101,7 +103,10 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 SeenBoosterGuides = profile.SeenBoosterGuides
                     .Select(boosterType => (int)boosterType)
                     .OrderBy(boosterType => boosterType)
-                    .ToList()
+                    .ToList(),
+                AdsRemoved = profile.AdsRemoved,
+                UnlimitedHeartEndUnixSeconds =
+                    profile.UnlimitedHeartEndUnixSeconds
             };
         }
 
