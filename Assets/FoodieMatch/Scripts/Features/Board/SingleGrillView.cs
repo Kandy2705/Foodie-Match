@@ -7,7 +7,7 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private Transform _foodAnchor;
         [SerializeField] private SingleGrillCounterView _counterView;
 
-        public override int FoodAnchorCount => _foodAnchor != null ? 1 : 0;
+        public override int FoodAnchorCount => 1;
 
         public override Transform GetFoodAnchor(int index)
         {
@@ -16,18 +16,6 @@ namespace FoodieMatch.Features.Board
 
         public bool TrySetHiddenFoodCount(int hiddenFoodCount)
         {
-            if (_foodAnchor == null)
-            {
-                Debug.LogError("Single grill food anchor is missing.", this);
-                return false;
-            }
-
-            if (_counterView == null)
-            {
-                Debug.LogError("Single grill counter view is missing.", this);
-                return false;
-            }
-
             return _counterView.TrySetHiddenFoodCount(hiddenFoodCount);
         }
     }

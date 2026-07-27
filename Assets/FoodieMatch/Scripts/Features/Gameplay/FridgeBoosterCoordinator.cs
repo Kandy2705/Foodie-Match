@@ -375,18 +375,7 @@ namespace FoodieMatch.Features.Gameplay
                 GameplaySession session,
                 FridgeTransfer transfer)
         {
-            Sprite foodSprite =
-                _foodVisualResolver.ResolveIcon(
-                    transfer.FoodTokenId);
-
-            if (foodSprite == null)
-            {
-                Debug.LogError(
-                    $"Fridge sprite could not be resolved " +
-                    $"for token {transfer.FoodTokenId}.");
-
-                return false;
-            }
+            Sprite foodSprite = _foodVisualResolver.ResolveIcon(transfer.FoodTokenId);
 
             FoodItemView foodItemView =
                 _boardLayoutView

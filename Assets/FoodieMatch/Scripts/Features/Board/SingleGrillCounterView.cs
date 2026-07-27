@@ -24,24 +24,6 @@ namespace FoodieMatch.Features.Board
                 return false;
             }
 
-            if (_counterRoot == null)
-            {
-                Debug.LogError("Single grill counter root is missing.", this);
-                return false;
-            }
-
-            if (_hiddenFoodCountText == null)
-            {
-                Debug.LogError("Single grill hidden food count text is missing.", this);
-                return false;
-            }
-
-            if (_remainingFoodScaleObject == null)
-            {
-                Debug.LogError("Single grill remaining food scale object is missing.", this);
-                return false;
-            }
-
             if (!_hasRemainingFoodFullScale)
             {
                 _remainingFoodFullScale = _remainingFoodScaleObject.localScale;

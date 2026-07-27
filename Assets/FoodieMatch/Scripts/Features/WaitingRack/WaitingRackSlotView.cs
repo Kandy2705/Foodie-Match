@@ -42,12 +42,6 @@ namespace FoodieMatch.Features.WaitingRack
                 return false;
             }
 
-            if (_foodAnchor == null)
-            {
-                Debug.LogWarning("Food anchor is missing.", this);
-                return false;
-            }
-
             if (!IsEmpty)
             {
                 Debug.LogWarning("Waiting rack slot is already occupied.", this);
@@ -66,8 +60,7 @@ namespace FoodieMatch.Features.WaitingRack
         {
             if (!IsReserved ||
                 expectedFoodItem == null ||
-                _foodItemView != expectedFoodItem ||
-                _foodAnchor == null)
+                _foodItemView != expectedFoodItem)
             {
                 return false;
             }
@@ -82,8 +75,7 @@ namespace FoodieMatch.Features.WaitingRack
         {
             if (!IsReserved ||
                 expectedFoodItem == null ||
-                _foodItemView != expectedFoodItem ||
-                _foodAnchor == null)
+                _foodItemView != expectedFoodItem)
             {
                 return false;
             }

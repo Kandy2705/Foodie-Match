@@ -40,17 +40,9 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            if (_trayPrefab == null)
-            {
-                Debug.LogWarning("Tray prefab is missing.", this);
-                return;
-            }
-
-            var root = _trayRoot != null ? _trayRoot : transform;
-
             for (var i = 0; i < trayCount; i++)
             {
-                var tray = Instantiate(_trayPrefab, root);
+                var tray = Instantiate(_trayPrefab, _trayRoot);
                 tray.transform.localPosition = _trayOffset * i;
                 tray.transform.localRotation = Quaternion.identity;
                 tray.transform.localScale = Vector3.one;

@@ -13,11 +13,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void Awake()
         {
-            if (_spriteRenderer == null)
-            {
-                _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-            }
-
             ApplyVisibility();
         }
 
@@ -25,12 +20,7 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             IsVisible = true;
             IsFilled = isFilled;
-
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.sprite = sprite;
-            }
-
+            _spriteRenderer.sprite = sprite;
             ApplyVisibility();
         }
 
@@ -38,12 +28,7 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             IsVisible = false;
             IsFilled = false;
-
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.sprite = null;
-            }
-
+            _spriteRenderer.sprite = null;
             ApplyVisibility();
         }
 
@@ -60,21 +45,12 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void ApplyVisibility()
         {
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.enabled =
-                    IsVisible && _spriteRenderer.sprite != null;
-                _spriteRenderer.color = GetCurrentColor();
-            }
+            _spriteRenderer.enabled = IsVisible && _spriteRenderer.sprite != null;
+            _spriteRenderer.color = GetCurrentColor();
         }
 
         private Color GetCurrentColor()
         {
-            if (_spriteRenderer == null)
-            {
-                return Color.white;
-            }
-
             Color color = _spriteRenderer.color;
             color.a = IsFilled ? _filledAlpha : _previewAlpha;
             return color;

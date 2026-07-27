@@ -20,10 +20,7 @@ namespace FoodieMatch.Features.Board
 
         public void SetSortingOrder(int sortingOrder)
         {
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.sortingOrder = sortingOrder;
-            }
+            _spriteRenderer.sortingOrder = sortingOrder;
         }
 
         public Transform GetFoodAnchor(int index)
@@ -38,7 +35,7 @@ namespace FoodieMatch.Features.Board
 
         public async Task<MotionResult> PlayFadeOutAsync(float duration)
         {
-            if (_spriteRenderer == null || _fadeTween.isAlive || !IsValidTime(duration))
+            if (_fadeTween.isAlive || !IsValidTime(duration))
             {
                 return MotionResult.Failed;
             }
@@ -81,7 +78,7 @@ namespace FoodieMatch.Features.Board
 
             _fadeTween = default;
 
-            if (!resetAlpha || _spriteRenderer == null)
+            if (!resetAlpha)
             {
                 return;
             }

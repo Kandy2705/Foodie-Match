@@ -20,13 +20,6 @@ namespace FoodieMatch.Features.Food
                 return false;
             }
 
-            if (_visualCatalog == null)
-            {
-                Debug.LogError("Food visual catalog is missing.", this);
-
-                return false;
-            }
-
             List<int> uniqueFoodTokenIds = GetUniqueFoodTokenIds(foodTokenIds);
             List<Sprite> availableIcons = GetAvailableIcons();
 
@@ -52,17 +45,10 @@ namespace FoodieMatch.Features.Food
 
         public Sprite ResolveIcon(int foodTokenId)
         {
-            if (!_iconByFoodTokenId.TryGetValue(foodTokenId, out Sprite icon))
-            {
-                Debug.LogWarning($"Food visual is missing for token id {foodTokenId}.", this);
-
-                return null;
-            }
-
-            return icon;
+            return _iconByFoodTokenId[foodTokenId];
         }
 
-        public void ClearMapping()
+        private void ClearMapping()
         {
             _iconByFoodTokenId.Clear();
         }
@@ -92,11 +78,6 @@ namespace FoodieMatch.Features.Food
             List<Sprite> result = new();
 
             IReadOnlyList<Sprite> icons = _visualCatalog.Icons;
-
-            if (icons == null)
-            {
-                return result;
-            }
 
             for (int i = 0; i < icons.Count; i++)
             {

@@ -65,24 +65,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void Awake()
         {
-            if (_pressTarget == null)
-            {
-                _pressTarget = transform;
-            }
-
-            if (_clickCollider == null)
-            {
-                _clickCollider = GetComponent<Collider2D>();
-            }
-
-            FindSortingGroup();
-
-            if (_sortingGroup == null)
-            {
-                Debug.LogWarning("Locked required package sorting group is missing.", this);
-            }
-
-            EnsureFadeRenderers();
             CacheInitialTransform();
             CacheInitialAlphas();
 
@@ -108,16 +90,6 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public void SetSortingOrder(int sortingOrder)
         {
-            FindSortingGroup();
-
-            if (_sortingGroup == null)
-            {
-                Debug.LogError(
-                    "Locked required package sorting order could not be set because its sorting group is missing.",
-                    this);
-                return;
-            }
-
             _sortingGroup.sortingOrder = sortingOrder;
         }
 
@@ -165,7 +137,6 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             SetInteractable(false);
             CacheInitialTransform();
-            EnsureFadeRenderers();
 
             if (_unlockSequence.isAlive)
             {
@@ -176,10 +147,7 @@ namespace FoodieMatch.Features.RequiredPackage
                 _initialLocalPosition +
                 _unlockRiseOffset;
 
-            Transform scaleTarget =
-                _pressTarget != null
-                    ? _pressTarget
-                    : transform;
+            Transform scaleTarget = _pressTarget;
 
             Vector3 wideScale =
                 Vector3.Scale(
@@ -264,62 +232,23 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void ApplyScale(Vector3 scale)
         {
-            if (_pressTarget != null)
-            {
-                _pressTarget.localScale = scale;
-            }
+            _pressTarget.localScale = scale;
         }
 
         private void ApplyColliderState()
         {
-            if (_clickCollider != null)
-            {
-                _clickCollider.enabled = IsInteractable;
-            }
+            _clickCollider.enabled = IsInteractable;
         }
 
         private void ApplyFadeAlpha(float alpha)
         {
-            if (_fadeRenderers == null)
-            {
-                return;
-            }
-
             for (int i = 0; i < _fadeRenderers.Length; i++)
             {
                 SpriteRenderer renderer = _fadeRenderers[i];
-
-                if (renderer == null)
-                {
-                    continue;
-                }
-
                 Color color = renderer.color;
-                float baseAlpha =
-                    _initialRendererAlphas != null && i < _initialRendererAlphas.Length
-                        ? _initialRendererAlphas[i]
-                        : 1f;
-                color.a = baseAlpha * alpha;
+                color.a = _initialRendererAlphas[i] * alpha;
                 renderer.color = color;
             }
-        }
-
-        private void FindSortingGroup()
-        {
-            if (_sortingGroup == null)
-            {
-                _sortingGroup = GetComponent<SortingGroup>();
-            }
-        }
-
-        private void EnsureFadeRenderers()
-        {
-            if (_fadeRenderers != null && _fadeRenderers.Length > 0)
-            {
-                return;
-            }
-
-            _fadeRenderers = GetComponentsInChildren<SpriteRenderer>(includeInactive: true);
         }
 
         private void CacheInitialTransform()
@@ -335,18 +264,11 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void CacheInitialAlphas()
         {
-            if (_fadeRenderers == null)
-            {
-                _initialRendererAlphas = Array.Empty<float>();
-                return;
-            }
-
             _initialRendererAlphas = new float[_fadeRenderers.Length];
 
             for (int i = 0; i < _fadeRenderers.Length; i++)
             {
-                _initialRendererAlphas[i] =
-                    _fadeRenderers[i] != null ? _fadeRenderers[i].color.a : 1f;
+                _initialRendererAlphas[i] = _fadeRenderers[i].color.a;
             }
         }
     }

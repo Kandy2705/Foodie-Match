@@ -85,16 +85,6 @@ namespace FoodieMatch.Features.Food
 
         private void Awake()
         {
-            if (_spriteRenderer == null)
-            {
-                _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-            }
-
-            if (_clickCollider == null)
-            {
-                _clickCollider = GetComponent<Collider2D>();
-            }
-
             FindFlyingSortingLayer();
             ApplyColliderState();
             ApplyVisualState();
@@ -141,12 +131,9 @@ namespace FoodieMatch.Features.Food
             FoodTokenId = foodTokenId;
             VisualState = FoodItemVisualState.OnGrill;
 
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.sprite = sprite;
-                _spriteRenderer.enabled = sprite != null;
-                SetSpriteAlpha(1f);
-            }
+            _spriteRenderer.sprite = sprite;
+            _spriteRenderer.enabled = true;
+            SetSpriteAlpha(1f);
 
             ApplyColliderState();
             ApplyVisualState();
@@ -157,11 +144,8 @@ namespace FoodieMatch.Features.Food
             CancelMotion();
             FoodTokenId = 0;
 
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.sprite = null;
-                _spriteRenderer.enabled = false;
-            }
+            _spriteRenderer.sprite = null;
+            _spriteRenderer.enabled = false;
 
             ApplyColliderState();
             ApplyVisualState();
@@ -274,7 +258,6 @@ namespace FoodieMatch.Features.Food
         public async Task<MotionResult> PlayFadeInAsync(float duration)
         {
             if (IsEmpty ||
-                _spriteRenderer == null ||
                 _fadeTween.isAlive ||
                 !IsValidTime(duration))
             {
@@ -304,7 +287,6 @@ namespace FoodieMatch.Features.Food
         public async Task<MotionResult> PlayFadeOutAsync(float duration)
         {
             if (IsEmpty ||
-                _spriteRenderer == null ||
                 _fadeTween.isAlive ||
                 !IsValidTime(duration))
             {
@@ -385,12 +367,6 @@ namespace FoodieMatch.Features.Food
 
         public void PlayGrillSmoke()
         {
-            if (_grillSmokePrefab == null)
-            {
-                Debug.LogError("Grill smoke prefab is missing.", this);
-                return;
-            }
-
             Vector3 spawnPosition = transform.position + _grillSmokeOffset;
             ParticleSystem smoke = Instantiate(
                 _grillSmokePrefab,
@@ -472,11 +448,7 @@ namespace FoodieMatch.Features.Food
 
         public void ForceHiddenVisual()
         {
-            if (_spriteRenderer != null)
-            {
-                SetSpriteAlpha(0f);
-            }
-
+            SetSpriteAlpha(0f);
             transform.localScale = Vector3.zero;
         }
 
@@ -648,7 +620,7 @@ namespace FoodieMatch.Features.Food
 
             _fadeTween = default;
 
-            if (resetAlpha && _spriteRenderer != null)
+            if (resetAlpha)
             {
                 SetSpriteAlpha(1f);
             }
@@ -697,7 +669,7 @@ namespace FoodieMatch.Features.Food
 
         private void UseFlyingSortingLayer()
         {
-            if (_spriteRenderer == null || !_hasFlyingSortingLayer)
+            if (!_hasFlyingSortingLayer)
             {
                 return;
             }
@@ -713,7 +685,7 @@ namespace FoodieMatch.Features.Food
 
         private void RestoreSortingLayerBeforeFlight()
         {
-            if (_spriteRenderer != null && _hasSortingLayerBeforeFlight)
+            if (_hasSortingLayerBeforeFlight)
             {
                 _spriteRenderer.sortingLayerID = _sortingLayerBeforeFlightId;
             }
@@ -735,10 +707,7 @@ namespace FoodieMatch.Features.Food
 
         private void ApplyColliderState()
         {
-            if (_clickCollider != null)
-            {
-                _clickCollider.enabled = !IsEmpty && IsInteractable;
-            }
+            _clickCollider.enabled = !IsEmpty && IsInteractable;
         }
 
         private void ApplyVisualState()
@@ -746,20 +715,11 @@ namespace FoodieMatch.Features.Food
             if (IsEmpty)
             {
                 VisualState = FoodItemVisualState.Empty;
-
-                if (_spriteRenderer != null)
-                {
-                    _spriteRenderer.enabled = false;
-                }
-
+                _spriteRenderer.enabled = false;
                 return;
             }
 
-            if (_spriteRenderer != null)
-            {
-                _spriteRenderer.enabled = _spriteRenderer.sprite != null;
-            }
-
+            _spriteRenderer.enabled = true;
             transform.localScale = GetVisualScale(VisualState);
             transform.localRotation = GetVisualRotation(VisualState);
         }
