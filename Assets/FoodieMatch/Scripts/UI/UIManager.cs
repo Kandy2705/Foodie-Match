@@ -52,6 +52,9 @@ namespace FoodieMatch.UI
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
         [SerializeField] private Transform _rewardEffectRoot;
 
+        [Header("Action Feedback")]
+        [SerializeField] private ActionFeedbackView _actionFeedbackPrefab;
+
         [Header("Booster Guide")]
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
 
@@ -68,6 +71,7 @@ namespace FoodieMatch.UI
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
         private CoinRewardOverlayView _coinRewardOverlayView;
+        private readonly List<ActionFeedbackView> _actionFeedbackViews = new();
         private bool _isBoosterGuideShowing;
         private AddBoxFlowSource _addBoxFlowSource;
         private LeavePopupSource _leavePopupSource;
@@ -243,6 +247,17 @@ namespace FoodieMatch.UI
         public void ShowComboFeedback(Vector3 worldPosition)
         {
             _gameplayHudView?.ShowComboFeedback(worldPosition);
+        }
+
+        public void ShowActionFeedback(string message)
+        {
+            ActionFeedbackView actionFeedback = Instantiate(
+                _actionFeedbackPrefab,
+                _rewardEffectRoot);
+            actionFeedback.gameObject.name = _actionFeedbackPrefab.gameObject.name;
+            _actionFeedbackViews.Add(actionFeedback);
+            actionFeedback.Show(message, OnActionFeedbackHidden);
+            RefreshActionFeedbackPositions();
         }
 
         public Task PlayLoadingAsync()
@@ -684,6 +699,20 @@ namespace FoodieMatch.UI
             return _coinRewardOverlayView;
         }
 
+        private void OnActionFeedbackHidden(ActionFeedbackView actionFeedback)
+        {
+            _actionFeedbackViews.Remove(actionFeedback);
+            RefreshActionFeedbackPositions();
+        }
+
+        private void RefreshActionFeedbackPositions()
+        {
+            for (int index = 0; index < _actionFeedbackViews.Count; index++)
+            {
+                _actionFeedbackViews[index].SetStackIndex(index);
+            }
+        }
+
         private LoadingScreenView GetOrCreateLoadingScreen()
         {
             if (_loadingScreenView != null)
@@ -747,16 +776,19 @@ namespace FoodieMatch.UI
 
             if (!IsBoosterUnlocked(boosterType))
             {
+                ShowActionFeedback("This booster is locked.");
                 return;
             }
 
             if (!_boosterManager.HasCount(boosterType))
             {
+                ShowActionFeedback("You don't have this booster.");
                 return;
             }
 
             if (BoosterUseHandler == null || !BoosterUseHandler.Invoke(boosterType))
             {
+                ShowActionFeedback("This booster can't be used right now.");
                 return;
             }
             RefreshBoosterHud();
