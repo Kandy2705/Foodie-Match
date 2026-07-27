@@ -1066,7 +1066,12 @@ namespace FoodieMatch.UI
 
         private void OnBoosterGuideClosed()
         {
-            MarkBoosterGuideSeen(_currentBoosterGuideType);
+            if (_boosterManager.TryClaimUnlockReward(
+                    _currentBoosterGuideType))
+            {
+                RefreshBoosterHud();
+            }
+
             HideBoosterGuidePopup();
             TryShowNextBoosterGuide();
         }
@@ -1074,11 +1079,6 @@ namespace FoodieMatch.UI
         private bool HasSeenBoosterGuide(BoosterType boosterType)
         {
             return _boosterManager.HasSeenGuide(boosterType);
-        }
-
-        private void MarkBoosterGuideSeen(BoosterType boosterType)
-        {
-            _boosterManager.MarkGuideSeen(boosterType);
         }
 
         private void OnLevelProgressChanged(LevelProgressChangedEvent eventData)

@@ -57,9 +57,9 @@ namespace FoodieMatch.Core.Application.Booster
             return _playerProfileService.HasSeenBoosterGuide(type);
         }
 
-        public void MarkGuideSeen(BoosterType type)
+        public bool TryClaimUnlockReward(BoosterType type)
         {
-            _playerProfileService.MarkBoosterGuideSeen(type);
+            return _playerProfileService.TryClaimBoosterUnlockReward(type);
         }
     }
 }
