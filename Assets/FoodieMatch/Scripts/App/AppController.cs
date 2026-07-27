@@ -386,6 +386,7 @@ namespace FoodieMatch.App
             if (result.IsSuccess)
             {
                 _uiManager.RefreshAllPlayerResources();
+                _uiManager.ShowActionFeedback("Purchase successful!");
             }
             else
             {

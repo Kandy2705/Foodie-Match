@@ -228,9 +228,12 @@ namespace FoodieMatch.Features.Gameplay
 
         public bool TryApplyBooster(BoosterType boosterType)
         {
-            if (_session == null ||
-                !_session.CanContinueGameplay ||
-                !_session.IsInputEnabled)
+            if (_session == null || !_session.CanContinueGameplay)
+            {
+                return false;
+            }
+
+            if (!_session.IsInputEnabled)
             {
                 return false;
             }
@@ -557,8 +560,14 @@ namespace FoodieMatch.Features.Gameplay
         {
             GameplaySession session = _session;
 
-            if (session == null || !session.CanSelectFood || context.FoodItemView == null)
+            if (session == null || context.FoodItemView == null)
             {
+                return;
+            }
+
+            if (!session.CanSelectFood)
+            {
+                _uiManager.ShowActionFeedback("Wait for the food to finish moving!");
                 return;
             }
 

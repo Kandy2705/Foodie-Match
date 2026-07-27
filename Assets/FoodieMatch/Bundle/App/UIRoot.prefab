@@ -55,6 +55,7 @@ MonoBehaviour:
   _loadingRoot: {fileID: 6758003521176904712}
   _coinRewardOverlayPrefab: {fileID: 796654897352748538, guid: 682972031a027134a9375906f5c06ab3, type: 3}
   _rewardEffectRoot: {fileID: 6443555530003102396}
+  _actionFeedbackPrefab: {fileID: 970213579789557558, guid: a510e4ff824994d8eb7d6d8193512769, type: 3}
   _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
 --- !u!114 &2571854868624730069
 MonoBehaviour:
