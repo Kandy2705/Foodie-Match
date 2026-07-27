@@ -23,11 +23,8 @@ namespace FoodieMatch.Features.Gameplay
             _foodVisualResolver;
 
         private GameplaySession _activeSession;
-
-        private bool _isApplying;
-        private bool _isReleasing;
+        private FridgeOperationState _operationState;
         private bool _releaseRetryRequested;
-        private bool _hasFailed;
 
         public FridgeBoosterCoordinator(
             GameplaySessionGuard sessionGuard,
@@ -55,32 +52,22 @@ namespace FoodieMatch.Features.Gameplay
         public void BeginSession()
         {
             _activeSession = null;
-            _isApplying = false;
-            _isReleasing = false;
+            _operationState = FridgeOperationState.Idle;
             _releaseRetryRequested = false;
-            _hasFailed = false;
 
-            _view?.HideImmediately();
+            _view.HideImmediately();
         }
 
         public bool TryApply(GameplaySession session)
         {
-            if (_isApplying ||
-                _isReleasing ||
-                _view == null ||
-                _waitingRackView == null ||
-                _boardLayoutView == null ||
-                _packageLifecycleUseCase == null ||
-                _packageDeliveryCoordinator == null ||
-                _foodVisualResolver == null ||
+            if (_operationState != FridgeOperationState.Idle ||
                 !CanContinue(session) ||
                 !session.IsInputEnabled)
             {
                 return false;
             }
 
-            if (session.WaitingRack == null ||
-                session.WaitingRack.OccupiedCount <= 0)
+            if (session.WaitingRack.OccupiedCount <= 0)
             {
                 Debug.Log(
                     "Fridge booster cannot run because " +
@@ -104,8 +91,7 @@ namespace FoodieMatch.Features.Gameplay
                 !_view.IsVisible;
 
             _activeSession = session;
-            _isApplying = true;
-            _hasFailed = false;
+            _operationState = FridgeOperationState.Applying;
             _releaseRetryRequested = false;
 
             session.DisableInput();
@@ -131,13 +117,13 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (_isApplying || _isReleasing)
+            if (_operationState != FridgeOperationState.Idle)
             {
                 _releaseRetryRequested = true;
                 return;
             }
 
-            _isReleasing = true;
+            _operationState = FridgeOperationState.Releasing;
 
             _ = ReleaseSafelyAsync(session);
         }
@@ -148,59 +134,59 @@ namespace FoodieMatch.Features.Gameplay
                 _activeSession;
 
             _activeSession = null;
-            _isApplying = false;
-            _isReleasing = false;
+            _operationState = FridgeOperationState.Idle;
             _releaseRetryRequested = false;
-            _hasFailed = false;
 
-            _view?.CancelAnimations();
-            _view?.HideImmediately();
+            _view.CancelAnimations();
+            _view.HideImmediately();
 
             session?.ClearFridgeInventory();
         }
 
         public bool IsBusy(GameplaySession session)
         {
-            return ReferenceEquals(
-                       _activeSession,
-                       session) &&
-                   (_isApplying || _isReleasing);
+            return ReferenceEquals(_activeSession, session) &&
+                   _operationState != FridgeOperationState.Idle;
         }
 
         private async Task ApplySafelyAsync(
             GameplaySession session,
             bool shouldPlayEnter)
         {
+            bool succeeded = false;
+
             try
             {
-                await ApplyAsync(
-                    session,
-                    shouldPlayEnter);
+                succeeded = await ApplyAsync(session, shouldPlayEnter);
             }
             catch (Exception exception)
             {
-                _hasFailed = true;
                 Debug.LogException(exception);
             }
             finally
             {
-                if (ReferenceEquals(
-                        _activeSession,
-                        session))
+                if (ReferenceEquals(_activeSession, session))
                 {
-                    _isApplying = false;
+                    _operationState = FridgeOperationState.Idle;
 
-                    if (!_isReleasing &&
-                        !_hasFailed &&
-                        CanContinue(session))
+                    bool shouldRetry =
+                        _releaseRetryRequested &&
+                        succeeded &&
+                        CanContinue(session) &&
+                        session.FridgeInventory != null &&
+                        !session.FridgeInventory.IsEmpty;
+
+                    _releaseRetryRequested = false;
+
+                    if (shouldRetry)
                     {
-                        session.StartPlaying();
+                        StartOrRequestRelease(session);
                     }
                 }
             }
         }
 
-        private async Task ApplyAsync(
+        private async Task<bool> ApplyAsync(
             GameplaySession session,
             bool shouldPlayEnter)
         {
@@ -210,7 +196,7 @@ namespace FoodieMatch.Features.Gameplay
 
                 if (!CanContinue(session))
                 {
-                    return;
+                    return false;
                 }
             }
             else
@@ -220,7 +206,7 @@ namespace FoodieMatch.Features.Gameplay
                     Debug.LogWarning(
                         "Fridge became hidden before scoop started.");
 
-                    return;
+                    return false;
                 }
             }
 
@@ -233,7 +219,7 @@ namespace FoodieMatch.Features.Gameplay
             {
                 if (!CanContinue(session))
                 {
-                    return;
+                    return false;
                 }
 
                 int foodTokenId =
@@ -272,14 +258,13 @@ namespace FoodieMatch.Features.Gameplay
             {
                 if (!enterResults[i])
                 {
-                    _hasFailed = true;
-                    break;
+                    return false;
                 }
             }
 
             if (!CanContinue(session))
             {
-                return;
+                return false;
             }
 
             UpdateFridgeVisualState(session);
@@ -288,46 +273,36 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!CanContinue(session))
             {
-                return;
+                return false;
             }
 
             session.StartPlaying();
 
             Debug.Log(
                 $"Fridge scoop completed. Stored food: " +
-                $"{session.FridgeInventory?.Count ?? 0}");
+                $"{session.FridgeInventory.Count}");
 
             if (!CanContinue(session) ||
-                session.FridgeInventory == null ||
                 session.FridgeInventory.IsEmpty)
             {
-                return;
+                return true;
             }
 
-            _isReleasing = true;
-
-            try
-            {
-                await ReleaseAvailableMatchesCoreAsync(
-                    session);
-            }
-            finally
-            {
-                _isReleasing = false;
-            }
+            _operationState = FridgeOperationState.Releasing;
+            return await ReleaseAvailableMatchesCoreAsync(session);
         }
 
         private async Task ReleaseSafelyAsync(
             GameplaySession session)
         {
+            bool succeeded = false;
+
             try
             {
-                await ReleaseAvailableMatchesCoreAsync(
-                    session);
+                succeeded = await ReleaseAvailableMatchesCoreAsync(session);
             }
             catch (Exception exception)
             {
-                _hasFailed = true;
                 Debug.LogException(exception);
             }
             finally
@@ -336,11 +311,11 @@ namespace FoodieMatch.Features.Gameplay
                         _activeSession,
                         session))
                 {
-                    _isReleasing = false;
+                    _operationState = FridgeOperationState.Idle;
 
                     bool shouldRetry =
                         _releaseRetryRequested &&
-                        !_hasFailed &&
+                        succeeded &&
                         CanContinue(session) &&
                         session.FridgeInventory != null &&
                         !session.FridgeInventory.IsEmpty;
@@ -355,7 +330,7 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task
+        private async Task<bool>
             ReleaseAvailableMatchesCoreAsync(
                 GameplaySession session)
         {
@@ -383,15 +358,16 @@ namespace FoodieMatch.Features.Gameplay
 
                     if (!releaseSucceeded)
                     {
-                        break;
+                        await UpdateFridgeVisualStateAsync(session);
+                        return false;
                     }
                 }
             }
             while (_releaseRetryRequested &&
-                   !_hasFailed &&
                    CanContinue(session));
 
             await UpdateFridgeVisualStateAsync(session);
+            return true;
         }
 
         private async Task<bool>
@@ -515,7 +491,6 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!delivered)
             {
-                _hasFailed = true;
                 DestroyTransientFood(foodItemView);
 
                 Debug.LogError(
@@ -747,11 +722,6 @@ namespace FoodieMatch.Features.Gameplay
             bool modelWasRemoved,
             bool viewWasRemoved)
         {
-            if (session == null)
-            {
-                return;
-            }
-
             if (modelWasRemoved)
             {
                 RestoreModelFood(
@@ -779,12 +749,6 @@ namespace FoodieMatch.Features.Gameplay
             int slotIndex,
             int foodTokenId)
         {
-            if (session == null ||
-                session.WaitingRack == null)
-            {
-                return;
-            }
-
             if (!session.WaitingRack
                 .TryRestoreFoodAt(
                     slotIndex,
@@ -802,12 +766,6 @@ namespace FoodieMatch.Features.Gameplay
             out Vector3 nextFoodWorldPosition)
         {
             nextFoodWorldPosition = default;
-
-            if (session?.WaitingRack == null ||
-                _waitingRackView == null)
-            {
-                return false;
-            }
 
             for (int slotIndex = currentSlotIndex + 1;
                  slotIndex < session.WaitingRack.Capacity;
@@ -842,12 +800,7 @@ namespace FoodieMatch.Features.Gameplay
         private void UpdateFridgeVisualState(
             GameplaySession session)
         {
-            if (_view == null)
-            {
-                return;
-            }
-
-            if (session?.FridgeInventory != null &&
+            if (session.FridgeInventory != null &&
                 !session.FridgeInventory.IsEmpty)
             {
                 _view.SetFullState();
@@ -861,12 +814,7 @@ namespace FoodieMatch.Features.Gameplay
         private async Task UpdateFridgeVisualStateAsync(
             GameplaySession session)
         {
-            if (_view == null)
-            {
-                return;
-            }
-
-            if (session?.FridgeInventory != null &&
+            if (session.FridgeInventory != null &&
                 !session.FridgeInventory.IsEmpty)
             {
                 _view.SetFullState();
@@ -890,10 +838,16 @@ namespace FoodieMatch.Features.Gameplay
         private bool CanContinue(
             GameplaySession session)
         {
-            return session != null &&
-                   _sessionGuard.IsCurrentSession(
+            return _sessionGuard.IsCurrentSession(
                        session.SessionId) &&
                    session.CanContinueGameplay;
+        }
+
+        private enum FridgeOperationState
+        {
+            Idle,
+            Applying,
+            Releasing
         }
     }
 }
