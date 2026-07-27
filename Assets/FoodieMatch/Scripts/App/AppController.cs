@@ -8,6 +8,7 @@ using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.UI;
 using UnityEngine;
@@ -109,8 +110,34 @@ namespace FoodieMatch.App
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
                 await Task.Yield();
-                OpenLevel(levelNumber);
                 await loadingTask;
+
+                if (!_levelRepository.TryGetLevel(
+                        levelNumber,
+                        out LevelDefinition levelDefinition))
+                {
+                    throw new InvalidOperationException(
+                        $"Level {levelNumber} disappeared during transition.");
+                }
+
+                bool shouldShowLevelWarning =
+                    levelDefinition.Difficulty != LevelDifficulty.Normal;
+                OpenLevel(
+                    levelNumber,
+                    enableGameplayInput: !shouldShowLevelWarning);
+
+                try
+                {
+                    await _uiManager.PlayLevelWarningAsync(
+                        levelDefinition.Difficulty);
+                }
+                finally
+                {
+                    if (shouldShowLevelWarning)
+                    {
+                        _gameplayController.EnableGameplayInput();
+                    }
+                }
             }
             catch (Exception exception)
             {
@@ -172,7 +199,7 @@ namespace FoodieMatch.App
             }
         }
 
-        private void OpenLevel(int levelNumber)
+        private void OpenLevel(int levelNumber, bool enableGameplayInput)
         {
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
@@ -183,7 +210,10 @@ namespace FoodieMatch.App
 
             _playerProfileService.SetCurrentLevelNumber(levelNumber);
             _activeLevelNumber = levelNumber;
-            _gameplayController.StartLevel(levelNumber, _gameplayNavigationActions);
+            _gameplayController.StartLevel(
+                levelNumber,
+                _gameplayNavigationActions,
+                enableGameplayInput);
         }
 
         private void OpenHome(

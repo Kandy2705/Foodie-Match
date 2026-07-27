@@ -1,0 +1,2148 @@
+{
+  "skeleton": {
+    "hash": "n/7BuiT9ZyQ",
+    "spine": "4.2.43",
+    "x": -361,
+    "y": -641,
+    "width": 722,
+    "height": 1282,
+    "images": "./images/",
+    "audio": "./audio"
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "main",
+      "parent": "root"
+    },
+    {
+      "name": "main_muiten",
+      "parent": "main"
+    },
+    {
+      "name": "muiten1",
+      "parent": "main_muiten",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten2",
+      "parent": "main_muiten",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten3",
+      "parent": "main_muiten",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten4",
+      "parent": "main_muiten",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten5",
+      "parent": "main_muiten",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten6",
+      "parent": "main_muiten",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "main_muiten2",
+      "parent": "main",
+      "scaleX": -1
+    },
+    {
+      "name": "muiten7",
+      "parent": "main_muiten2",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten8",
+      "parent": "main_muiten2",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten9",
+      "parent": "main_muiten2",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten10",
+      "parent": "main_muiten2",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten11",
+      "parent": "main_muiten2",
+      "x": -191.08,
+      "y": 7.42
+    },
+    {
+      "name": "muiten12",
+      "parent": "main_muiten2",
+      "x": -191.08,
+      "y": 7.42
+    }
+  ],
+  "slots": [
+    {
+      "name": "panel1",
+      "bone": "main",
+      "attachment": "panel1"
+    },
+    {
+      "name": "clipping",
+      "bone": "main",
+      "attachment": "clipping"
+    },
+    {
+      "name": "muiten2",
+      "bone": "muiten2"
+    },
+    {
+      "name": "muiten8",
+      "bone": "muiten8"
+    },
+    {
+      "name": "muiten3",
+      "bone": "muiten3"
+    },
+    {
+      "name": "muiten9",
+      "bone": "muiten9"
+    },
+    {
+      "name": "muiten4",
+      "bone": "muiten4"
+    },
+    {
+      "name": "muiten10",
+      "bone": "muiten10"
+    },
+    {
+      "name": "muiten5",
+      "bone": "muiten5"
+    },
+    {
+      "name": "muiten11",
+      "bone": "muiten11"
+    },
+    {
+      "name": "muiten6",
+      "bone": "muiten6"
+    },
+    {
+      "name": "muiten12",
+      "bone": "muiten12"
+    },
+    {
+      "name": "muiten7",
+      "bone": "muiten7"
+    },
+    {
+      "name": "muiten1",
+      "bone": "muiten1"
+    },
+    {
+      "name": "Icon_Warning2",
+      "bone": "main",
+      "attachment": "Icon_Warning1"
+    },
+    {
+      "name": "Icon_Warning4",
+      "bone": "main",
+      "dark": "ffc900",
+      "blend": "additive"
+    },
+    {
+      "name": "Icon_Warning1",
+      "bone": "main",
+      "attachment": "Icon_Warning1"
+    },
+    {
+      "name": "Icon_Warning3",
+      "bone": "main",
+      "dark": "ffc900",
+      "blend": "additive"
+    },
+    {
+      "name": "hard",
+      "bone": "main",
+      "attachment": "hard"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "clipping": {
+          "clipping": {
+            "type": "clipping",
+            "end": "muiten1",
+            "vertexCount": 33,
+            "color": "ce3a3aff",
+            "vertices": [
+              -327.52,
+              75.39,
+              -326.68,
+              77.93,
+              -324.61,
+              80.76,
+              -322.18,
+              82.8,
+              -319.23,
+              84.57,
+              -316.18,
+              85.12,
+              320.4,
+              84.62,
+              322.44,
+              84.02,
+              324.02,
+              83.24,
+              325.54,
+              82.24,
+              326.66,
+              81.16,
+              327.94,
+              79.74,
+              329.06,
+              78.32,
+              330.08,
+              76.16,
+              330.66,
+              74.46,
+              330.65,
+              -66.26,
+              329.95,
+              -67.72,
+              329.03,
+              -69.22,
+              328.11,
+              -70.36,
+              327.03,
+              -71.68,
+              325.47,
+              -72.98,
+              324.01,
+              -73.84,
+              322.35,
+              -74.8,
+              320.21,
+              -75.62,
+              318.91,
+              -75.64,
+              -315.74,
+              -75.63,
+              -318.8,
+              -75.11,
+              -321.44,
+              -73.73,
+              -323.56,
+              -72.05,
+              -325.28,
+              -69.87,
+              -326.8,
+              -67.64,
+              -327.68,
+              -65.2,
+              -327.9,
+              73.85
+            ]
+          }
+        },
+        "hard": {
+          "hard": {
+            "width": 152,
+            "height": 50
+          },
+          "super_hard": {
+            "width": 329,
+            "height": 51
+          }
+        },
+        "Icon_Warning1": {
+          "Icon_Warning1": {
+            "x": -251.71,
+            "y": 5.98,
+            "width": 92,
+            "height": 86
+          }
+        },
+        "Icon_Warning2": {
+          "Icon_Warning1": {
+            "x": 244.73,
+            "y": 5.98,
+            "width": 92,
+            "height": 86
+          }
+        },
+        "Icon_Warning3": {
+          "Icon_Warning1": {
+            "type": "mesh",
+            "hull": 4,
+            "width": 92,
+            "height": 86,
+            "uvs": [
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0
+            ],
+            "triangles": [
+              1,
+              2,
+              3,
+              1,
+              3,
+              0
+            ],
+            "vertices": [
+              -205.71,
+              -37.02,
+              -297.71,
+              -37.02,
+              -297.71,
+              48.98,
+              -205.71,
+              48.98
+            ],
+            "edges": [
+              0,
+              2,
+              2,
+              4,
+              4,
+              6,
+              0,
+              6
+            ]
+          }
+        },
+        "Icon_Warning4": {
+          "Icon_Warning1": {
+            "type": "mesh",
+            "hull": 4,
+            "width": 92,
+            "height": 86,
+            "uvs": [
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0
+            ],
+            "triangles": [
+              1,
+              2,
+              3,
+              1,
+              3,
+              0
+            ],
+            "vertices": [
+              290.73,
+              -37.02,
+              198.73,
+              -37.02,
+              198.73,
+              48.98,
+              290.73,
+              48.98
+            ],
+            "edges": [
+              0,
+              2,
+              2,
+              4,
+              4,
+              6,
+              0,
+              6
+            ]
+          }
+        },
+        "muiten1": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten2": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten3": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten4": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten5": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten6": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten7": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten8": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten9": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten10": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten11": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "muiten12": {
+          "muiten1": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          },
+          "muiten2": {
+            "x": -10.64,
+            "y": -0.94,
+            "width": 64,
+            "height": 156
+          }
+        },
+        "panel1": {
+          "panel1": {
+            "width": 687,
+            "height": 193
+          },
+          "panel2": {
+            "width": 687,
+            "height": 193
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "hard": {
+      "slots": {
+        "hard": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ]
+        },
+        "Icon_Warning1": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ]
+        },
+        "Icon_Warning2": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ]
+        },
+        "Icon_Warning3": {
+          "rgba2": [
+            {
+              "time": 0.4,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.6,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.8262,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 0.8333,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.0333,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.2596,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.2667,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.4667,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.6929,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.7,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.8,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 2,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.4,
+              "name": "Icon_Warning1"
+            }
+          ]
+        },
+        "Icon_Warning4": {
+          "rgba2": [
+            {
+              "time": 0.4,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.6,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.8262,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 0.8333,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.0333,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.2596,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.2667,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.4667,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.6929,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.7,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.8,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 2,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.4,
+              "name": "Icon_Warning1"
+            }
+          ]
+        },
+        "muiten1": {
+          "rgba": [
+            {
+              "time": 0.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 0.7667,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten2": {
+          "rgba": [
+            {
+              "time": 0.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.1,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.3333,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten3": {
+          "rgba": [
+            {
+              "time": 1.1333,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.4333,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.6667,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten4": {
+          "rgba": [
+            {
+              "time": 1.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.5,
+              "color": "ffffffdb"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten5": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.3333,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten6": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.6667,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten7": {
+          "rgba": [
+            {
+              "time": 0.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 0.7667,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten8": {
+          "rgba": [
+            {
+              "time": 0.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.1,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.3333,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten9": {
+          "rgba": [
+            {
+              "time": 1.1333,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.4333,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.6667,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten10": {
+          "rgba": [
+            {
+              "time": 1.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.5,
+              "color": "ffffffdb"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten11": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.3333,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "muiten12": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.6667,
+              "name": "muiten1"
+            }
+          ]
+        },
+        "panel1": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ]
+        }
+      },
+      "bones": {
+        "main": {
+          "scale": [
+            {
+              "x": 0.051,
+              "y": 0.051,
+              "curve": [
+                0.072,
+                0.329,
+                0.23,
+                1.292,
+                0.072,
+                0.329,
+                0.23,
+                1.292
+              ]
+            },
+            {
+              "time": 0.4,
+              "curve": "stepped"
+            },
+            {
+              "time": 1.7
+            },
+            {
+              "time": 2,
+              "x": 0.08,
+              "y": 0.08
+            }
+          ]
+        },
+        "muiten7": {
+          "translate": [
+            {
+              "x": -157.53
+            },
+            {
+              "time": 0.7667
+            }
+          ]
+        },
+        "muiten1": {
+          "translate": [
+            {
+              "x": -157.53
+            },
+            {
+              "time": 0.7667
+            }
+          ]
+        },
+        "muiten8": {
+          "translate": [
+            {
+              "time": 0.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.1
+            }
+          ]
+        },
+        "muiten2": {
+          "translate": [
+            {
+              "time": 0.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.1
+            }
+          ]
+        },
+        "muiten9": {
+          "translate": [
+            {
+              "time": 0.6667,
+              "x": -157.53
+            },
+            {
+              "time": 1.4333
+            }
+          ]
+        },
+        "muiten3": {
+          "translate": [
+            {
+              "time": 0.6667,
+              "x": -157.53
+            },
+            {
+              "time": 1.4333
+            }
+          ]
+        },
+        "muiten10": {
+          "translate": [
+            {
+              "time": 1,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -52.51
+            },
+            {
+              "time": 1.7667
+            }
+          ]
+        },
+        "muiten4": {
+          "translate": [
+            {
+              "time": 1,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -52.51
+            },
+            {
+              "time": 1.7667
+            }
+          ]
+        },
+        "muiten11": {
+          "translate": [
+            {
+              "time": 1.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -122.52
+            },
+            {
+              "time": 2,
+              "x": -17.5
+            }
+          ]
+        },
+        "muiten5": {
+          "translate": [
+            {
+              "time": 1.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -122.52
+            },
+            {
+              "time": 2,
+              "x": -17.5
+            }
+          ]
+        },
+        "muiten12": {
+          "translate": [
+            {
+              "time": 1.5
+            },
+            {
+              "time": 1.6667,
+              "x": -157.53
+            },
+            {
+              "time": 2,
+              "x": -87.52
+            }
+          ]
+        },
+        "muiten6": {
+          "translate": [
+            {
+              "time": 1.5
+            },
+            {
+              "time": 1.6667,
+              "x": -157.53
+            },
+            {
+              "time": 2,
+              "x": -87.52
+            }
+          ]
+        }
+      },
+      "attachments": {
+        "default": {
+          "Icon_Warning3": {
+            "Icon_Warning1": {
+              "deform": [
+                {
+                  "time": 0.4
+                },
+                {
+                  "time": 0.8262,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                },
+                {
+                  "time": 0.8333
+                },
+                {
+                  "time": 1.2596,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                },
+                {
+                  "time": 1.2667
+                },
+                {
+                  "time": 1.6929,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                },
+                {
+                  "time": 1.7
+                },
+                {
+                  "time": 2,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                }
+              ]
+            }
+          },
+          "Icon_Warning4": {
+            "Icon_Warning1": {
+              "deform": [
+                {
+                  "time": 0.4
+                },
+                {
+                  "time": 0.8262,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                },
+                {
+                  "time": 0.8333
+                },
+                {
+                  "time": 1.2596,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                },
+                {
+                  "time": 1.2667
+                },
+                {
+                  "time": 1.6929,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                },
+                {
+                  "time": 1.7
+                },
+                {
+                  "time": 2,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "super_hard": {
+      "slots": {
+        "hard": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "name": "super_hard"
+            }
+          ]
+        },
+        "Icon_Warning1": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ]
+        },
+        "Icon_Warning2": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ]
+        },
+        "Icon_Warning3": {
+          "rgba2": [
+            {
+              "time": 0.4,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.6,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.8262,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 0.8333,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.0333,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.2596,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.2667,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.4667,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.6929,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.7,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.8,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 2,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.4,
+              "name": "Icon_Warning1"
+            }
+          ]
+        },
+        "Icon_Warning4": {
+          "rgba2": [
+            {
+              "time": 0.4,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.6,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 0.8262,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 0.8333,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.0333,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.2596,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.2667,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.4667,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.6929,
+              "light": "ffffff00",
+              "dark": "ffc900",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.7,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            },
+            {
+              "time": 1.8,
+              "light": "ffffffcc",
+              "dark": "ffc900"
+            },
+            {
+              "time": 2,
+              "light": "ffffff00",
+              "dark": "ffc900"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.4,
+              "name": "Icon_Warning1"
+            }
+          ]
+        },
+        "muiten1": {
+          "rgba": [
+            {
+              "time": 0.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 0.7667,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten2": {
+          "rgba": [
+            {
+              "time": 0.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.1,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.3333,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten3": {
+          "rgba": [
+            {
+              "time": 1.1333,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.4333,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.6667,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten4": {
+          "rgba": [
+            {
+              "time": 1.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.5,
+              "color": "ffffffdb"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten5": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.3333,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten6": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.6667,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten7": {
+          "rgba": [
+            {
+              "time": 0.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 0.7667,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten8": {
+          "rgba": [
+            {
+              "time": 0.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.1,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.3333,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten9": {
+          "rgba": [
+            {
+              "time": 1.1333,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.4333,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 0.6667,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten10": {
+          "rgba": [
+            {
+              "time": 1.4667,
+              "color": "ffffffff"
+            },
+            {
+              "time": 1.5,
+              "color": "ffffffdb"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten11": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.3333,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "muiten12": {
+          "rgba": [
+            {
+              "time": 1.5,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "time": 1.6667,
+              "name": "muiten2"
+            }
+          ]
+        },
+        "panel1": {
+          "rgba": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff",
+              "curve": "stepped"
+            },
+            {
+              "time": 1.8,
+              "color": "ffffffff"
+            },
+            {
+              "time": 2,
+              "color": "ffffff00"
+            }
+          ],
+          "attachment": [
+            {
+              "name": "panel2"
+            }
+          ]
+        }
+      },
+      "bones": {
+        "main": {
+          "scale": [
+            {
+              "x": 0.051,
+              "y": 0.051,
+              "curve": [
+                0.072,
+                0.329,
+                0.23,
+                1.292,
+                0.072,
+                0.329,
+                0.23,
+                1.292
+              ]
+            },
+            {
+              "time": 0.4,
+              "curve": "stepped"
+            },
+            {
+              "time": 1.7
+            },
+            {
+              "time": 2,
+              "x": 0.08,
+              "y": 0.08
+            }
+          ]
+        },
+        "muiten1": {
+          "translate": [
+            {
+              "x": -157.53
+            },
+            {
+              "time": 0.7667
+            }
+          ]
+        },
+        "muiten2": {
+          "translate": [
+            {
+              "time": 0.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.1
+            }
+          ]
+        },
+        "muiten3": {
+          "translate": [
+            {
+              "time": 0.6667,
+              "x": -157.53
+            },
+            {
+              "time": 1.4333
+            }
+          ]
+        },
+        "muiten4": {
+          "translate": [
+            {
+              "time": 1,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -52.51
+            },
+            {
+              "time": 1.7667
+            }
+          ]
+        },
+        "muiten5": {
+          "translate": [
+            {
+              "time": 1.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -122.52
+            },
+            {
+              "time": 2,
+              "x": -17.5
+            }
+          ]
+        },
+        "muiten6": {
+          "translate": [
+            {
+              "time": 1.5
+            },
+            {
+              "time": 1.6667,
+              "x": -157.53
+            },
+            {
+              "time": 2,
+              "x": -87.52
+            }
+          ]
+        },
+        "muiten7": {
+          "translate": [
+            {
+              "x": -157.53
+            },
+            {
+              "time": 0.7667
+            }
+          ]
+        },
+        "muiten8": {
+          "translate": [
+            {
+              "time": 0.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.1
+            }
+          ]
+        },
+        "muiten9": {
+          "translate": [
+            {
+              "time": 0.6667,
+              "x": -157.53
+            },
+            {
+              "time": 1.4333
+            }
+          ]
+        },
+        "muiten10": {
+          "translate": [
+            {
+              "time": 1,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -52.51
+            },
+            {
+              "time": 1.7667
+            }
+          ]
+        },
+        "muiten11": {
+          "translate": [
+            {
+              "time": 1.3333,
+              "x": -157.53
+            },
+            {
+              "time": 1.5,
+              "x": -122.52
+            },
+            {
+              "time": 2,
+              "x": -17.5
+            }
+          ]
+        },
+        "muiten12": {
+          "translate": [
+            {
+              "time": 1.5
+            },
+            {
+              "time": 1.6667,
+              "x": -157.53
+            },
+            {
+              "time": 2,
+              "x": -87.52
+            }
+          ]
+        }
+      },
+      "attachments": {
+        "default": {
+          "Icon_Warning3": {
+            "Icon_Warning1": {
+              "deform": [
+                {
+                  "time": 0.4
+                },
+                {
+                  "time": 0.8262,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                },
+                {
+                  "time": 0.8333
+                },
+                {
+                  "time": 1.2596,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                },
+                {
+                  "time": 1.2667
+                },
+                {
+                  "time": 1.6929,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                },
+                {
+                  "time": 1.7
+                },
+                {
+                  "time": 2,
+                  "vertices": [
+                    26.37772,
+                    -24.65744,
+                    -26.37775,
+                    -24.65744,
+                    -26.37775,
+                    24.65744,
+                    26.37772,
+                    24.65744
+                  ]
+                }
+              ]
+            }
+          },
+          "Icon_Warning4": {
+            "Icon_Warning1": {
+              "deform": [
+                {
+                  "time": 0.4
+                },
+                {
+                  "time": 0.8262,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                },
+                {
+                  "time": 0.8333
+                },
+                {
+                  "time": 1.2596,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                },
+                {
+                  "time": 1.2667
+                },
+                {
+                  "time": 1.6929,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                },
+                {
+                  "time": 1.7
+                },
+                {
+                  "time": 2,
+                  "vertices": [
+                    26.37778,
+                    -24.65749,
+                    -26.37778,
+                    -24.65749,
+                    -26.37778,
+                    24.65749,
+                    26.37778,
+                    24.65749
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -50,6 +50,9 @@ namespace FoodieMatch.UI
         [SerializeField] private LoadingScreenView _loadingScreenPrefab;
         [SerializeField] private Transform _loadingRoot;
 
+        [Header("Level Warning")]
+        [SerializeField] private WarningLevelView _levelWarningPrefab;
+
         [Header("Reward Effect")]
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
         [SerializeField] private Transform _rewardEffectRoot;
@@ -72,6 +75,7 @@ namespace FoodieMatch.UI
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
+        private WarningLevelView _levelWarningView;
         private CoinRewardOverlayView _coinRewardOverlayView;
         private readonly List<ActionFeedbackView> _actionFeedbackViews = new();
         private bool _isBoosterGuideShowing;
@@ -271,6 +275,25 @@ namespace FoodieMatch.UI
         public Task PlayLoadingAsync()
         {
             return GetOrCreateLoadingScreen().PlayAsync();
+        }
+
+        public Task PlayLevelWarningAsync(LevelDifficulty difficulty)
+        {
+            if (difficulty == LevelDifficulty.Normal)
+            {
+                return Task.CompletedTask;
+            }
+
+            if (_levelWarningView == null)
+            {
+                _levelWarningView = Instantiate(
+                    _levelWarningPrefab,
+                    _rewardEffectRoot);
+                _levelWarningView.gameObject.name = _levelWarningPrefab.gameObject.name;
+            }
+
+            _loadingScreenView?.Hide();
+            return _levelWarningView.PlayAsync(difficulty);
         }
 
         public void HideLoading()

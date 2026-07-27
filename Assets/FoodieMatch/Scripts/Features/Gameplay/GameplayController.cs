@@ -118,7 +118,10 @@ namespace FoodieMatch.Features.Gameplay
             _boardLayoutView.FoodSelected += HandleFoodSelected;
         }
 
-        public void StartLevel(int levelNumber, GameplayNavigationActions navigationActions)
+        public void StartLevel(
+            int levelNumber,
+            GameplayNavigationActions navigationActions,
+            bool enableInput)
         {
             if (!IsValidComboDuration())
             {
@@ -195,7 +198,16 @@ namespace FoodieMatch.Features.Gameplay
             _grillCompletionCoordinator.BeginSession(_session);
             _fridgeBoosterCoordinator?.BeginSession();
             _session.StartPlaying();
-            _gameplayWorldClickSfx.StartListening();
+
+            if (enableInput)
+            {
+                _gameplayWorldClickSfx.StartListening();
+            }
+            else
+            {
+                _session.DisableInput();
+                _boardLayoutView.SetRegisteredFoodInteractable(false);
+            }
 
             Debug.Log(
                 $"Start Level {levelNumber} with package seed " +
@@ -205,6 +217,11 @@ namespace FoodieMatch.Features.Gameplay
             _comboCoordinator.BeginSession(_session);
             _gameplayEvents.OnLevelProgressChanged(
                 new LevelProgressChangedEvent(_session.Progress.ServedCount, _session.Progress.TotalCount));
+        }
+
+        public void EnableGameplayInput()
+        {
+            ResumeGameplayInput(_session);
         }
 
         public void ClearLevel()
