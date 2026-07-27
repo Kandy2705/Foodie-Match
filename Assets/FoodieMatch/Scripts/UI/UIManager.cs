@@ -11,6 +11,7 @@ using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
@@ -147,7 +148,7 @@ namespace FoodieMatch.UI
                         OnHomePlayRequested,
                         OnHomeSettingRequested));
 
-                homeView.SetPlayLevelNumber(_currentLevelNumber);
+                SetHomePlayLevel(homeView);
                 homeView.SetPlayerResources(
                     displayedCoinBalance,
                     _playerProfileService.GetHeartStatus());
@@ -873,7 +874,7 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            homeView.SetPlayLevelNumber(_currentLevelNumber);
+            SetHomePlayLevel(homeView);
             homeView.SetPlayerResources(
                 _playerProfileService.CoinBalance,
                 _playerProfileService.GetHeartStatus());
@@ -886,6 +887,19 @@ namespace FoodieMatch.UI
             {
                 popup.ShowStatus(message);
             }
+        }
+
+        private void SetHomePlayLevel(HomeView homeView)
+        {
+            if (!_levelRepository.TryGetLevel(
+                    _currentLevelNumber,
+                    out LevelDefinition level))
+            {
+                Debug.LogError($"Level {_currentLevelNumber} could not be loaded.");
+                return;
+            }
+
+            homeView.SetPlayLevel(level.Id, level.Difficulty);
         }
 
         private void OnPauseResumeClicked()

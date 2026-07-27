@@ -271,6 +271,8 @@ MonoBehaviour:
   _settingButton: {fileID: 1105202278278857296}
   _playLevelText: {fileID: 3725143549059234066}
   _resourceBarView: {fileID: 4250100812085702141}
+  _hardPlayButtonSprite: {fileID: 7158726796229424830, guid: 4f4c6305170cf4f2db6ea4496ba431ee, type: 3}
+  _superHardPlayButtonSprite: {fileID: 5815313891412978213, guid: 881b3a9fd349e4be0a6ea67a07a69334, type: 3}
 --- !u!1 &5145028446534278820
 GameObject:
   m_ObjectHideFlags: 0
