@@ -44,6 +44,7 @@ namespace FoodieMatch.Editor.LevelDesign
                 source.Id,
                 source.PositionIndex,
                 source.Position,
+                source.Type,
                 activeFoodIds,
                 trays);
 

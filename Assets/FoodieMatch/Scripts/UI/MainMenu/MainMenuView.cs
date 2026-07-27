@@ -33,7 +33,6 @@ namespace FoodieMatch.UI.MainMenu
 
         public bool IsVisible =>
             gameObject.activeInHierarchy &&
-            _canvasGroup != null &&
             _canvasGroup.alpha > 0f;
 
         private void Awake()
@@ -46,24 +45,17 @@ namespace FoodieMatch.UI.MainMenu
             EnsureInitialized();
             base.Show();
 
-            if (_canvasGroup != null)
-            {
-                _canvasGroup.alpha = 1f;
-                _canvasGroup.interactable = true;
-                _canvasGroup.blocksRaycasts = true;
-            }
-
-            _bottomNavigationBarView?.ShowTabImmediately(BottomNavigationTab.Home);
+            _canvasGroup.alpha = 1f;
+            _canvasGroup.interactable = true;
+            _canvasGroup.blocksRaycasts = true;
+            _bottomNavigationBarView.ShowTabImmediately(BottomNavigationTab.Home);
         }
 
         public override void Hide()
         {
-            if (_canvasGroup != null)
-            {
-                _canvasGroup.alpha = 0f;
-                _canvasGroup.interactable = false;
-                _canvasGroup.blocksRaycasts = false;
-            }
+            _canvasGroup.alpha = 0f;
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
 
             base.Hide();
         }
@@ -124,14 +116,7 @@ namespace FoodieMatch.UI.MainMenu
         {
             if (_isInitialized) return;
 
-            if (_canvasGroup == null)
-                _canvasGroup = GetComponent<CanvasGroup>();
-
-            if (_bottomNavigationBarView == null)
-                _bottomNavigationBarView = GetComponentInChildren<BottomNavigationBarView>(true);
-
             BuildViewMaps();
-            ValidateReferences();
             _isInitialized = true;
         }
 
@@ -140,27 +125,10 @@ namespace FoodieMatch.UI.MainMenu
             _viewsByType.Clear();
             _viewsByTab.Clear();
 
-            if (_views == null) return;
-
             for (int i = 0; i < _views.Count; i++)
             {
                 ViewEntry entry = _views[i];
-                if (entry == null || entry.View == null) continue;
-
                 Type viewType = entry.View.GetType();
-
-                if (_viewsByType.ContainsKey(viewType))
-                {
-                    Debug.LogError($"Duplicated Main Menu view type: {viewType.Name}.", entry.View);
-                    continue;
-                }
-
-                if (_viewsByTab.ContainsKey(entry.Tab))
-                {
-                    Debug.LogError($"Duplicated Main Menu tab: {entry.Tab}.", entry.View);
-                    continue;
-                }
-
                 _viewsByType.Add(viewType, entry.View);
                 _viewsByTab.Add(entry.Tab, entry.View);
             }
@@ -168,29 +136,12 @@ namespace FoodieMatch.UI.MainMenu
 
         private void ClearRegisteredViews()
         {
-            if (_views == null) return;
-
             for (int i = 0; i < _views.Count; i++)
             {
-                MonoBehaviour view = _views[i]?.View;
+                MonoBehaviour view = _views[i].View;
                 if (view is IMainMenuViewLifecycle lifecycle)
                     lifecycle.Clear();
             }
-        }
-
-        private void ValidateReferences()
-        {
-            if (_canvasGroup == null)
-                Debug.LogError("MainMenuView CanvasGroup is missing.", this);
-
-            if (_bottomNavigationBarView == null)
-                Debug.LogError("MainMenuView BottomNavigationBarView is missing.", this);
-
-            if (_views == null || _views.Count == 0)
-                Debug.LogError("MainMenuView has no registered views.", this);
-
-            if (!_viewsByTab.ContainsKey(BottomNavigationTab.Home))
-                Debug.LogError("MainMenuView does not contain a Home tab view.", this);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace FoodieMatch.Core.Domain.Grill
             int id,
             int positionIndex,
             GrillPosition position,
+            GrillType type,
             IReadOnlyList<int> activeFoodTokenIds,
             IReadOnlyList<TrayModel> trays)
         {
@@ -27,16 +28,24 @@ namespace FoodieMatch.Core.Domain.Grill
                 throw new ArgumentOutOfRangeException(nameof(positionIndex));
             }
 
+            if (!Enum.IsDefined(typeof(GrillType), type))
+            {
+                throw new ArgumentOutOfRangeException(nameof(type));
+            }
+
             Id = id;
             PositionIndex = positionIndex;
             Position = position;
+            Type = type;
             _activeFoodTokenIds = CopyFoodSlots(activeFoodTokenIds);
             _trays = CopyTrays(trays);
+            ValidateSingleGrill(type, _activeFoodTokenIds, _trays);
         }
 
         public int Id { get; }
         public int PositionIndex { get; }
         public GrillPosition Position { get; }
+        public GrillType Type { get; }
         public int ActiveFoodSlotCount => _activeFoodTokenIds.Length;
         public int TrayCount => _trays.Count;
         public bool IsEmpty => ActiveFoodCount == 0;
@@ -254,6 +263,41 @@ namespace FoodieMatch.Core.Domain.Grill
             }
 
             return trayModels;
+        }
+
+        private static void ValidateSingleGrill(
+            GrillType type,
+            IReadOnlyList<int> activeFoodTokenIds,
+            IReadOnlyList<TrayModel> trays)
+        {
+            if (type != GrillType.Single)
+            {
+                return;
+            }
+
+            if (activeFoodTokenIds.Count != 1)
+            {
+                throw new ArgumentException(
+                    "Single grill must contain exactly one active food slot.",
+                    nameof(activeFoodTokenIds));
+            }
+
+            if (trays.Count > 3)
+            {
+                throw new ArgumentException(
+                    "Single grill cannot contain more than three hidden food trays.",
+                    nameof(trays));
+            }
+
+            for (int i = 0; i < trays.Count; i++)
+            {
+                if (trays[i].SlotCount != 1)
+                {
+                    throw new ArgumentException(
+                        "Each single grill hidden food tray must contain exactly one food slot.",
+                        nameof(trays));
+                }
+            }
         }
     }
 }

@@ -16,28 +16,14 @@ namespace FoodieMatch.UI.Advertising
 
         private void Awake()
         {
-            if (_completeButton != null)
-            {
-                _completeButton.onClick.AddListener(OnCompleteButtonClicked);
-            }
-
-            if (_cancelButton != null)
-            {
-                _cancelButton.onClick.AddListener(OnCancelButtonClicked);
-            }
+            _completeButton.onClick.AddListener(OnCompleteButtonClicked);
+            _cancelButton.onClick.AddListener(OnCancelButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_completeButton != null)
-            {
-                _completeButton.onClick.RemoveListener(OnCompleteButtonClicked);
-            }
-
-            if (_cancelButton != null)
-            {
-                _cancelButton.onClick.RemoveListener(OnCancelButtonClicked);
-            }
+            _completeButton.onClick.RemoveListener(OnCompleteButtonClicked);
+            _cancelButton.onClick.RemoveListener(OnCancelButtonClicked);
         }
 
         public override void Show()
@@ -86,15 +72,8 @@ namespace FoodieMatch.UI.Advertising
         {
             _isSelectionEnabled = isEnabled;
 
-            if (_completeButton != null)
-            {
-                _completeButton.interactable = isEnabled;
-            }
-
-            if (_cancelButton != null)
-            {
-                _cancelButton.interactable = isEnabled;
-            }
+            _completeButton.interactable = isEnabled;
+            _cancelButton.interactable = isEnabled;
         }
     }
 }

@@ -50,13 +50,14 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (!CanContinue(session) ||
                 !session.Board.TryGetGrill(grillPositionIndex, out GrillModel grillModel) ||
+                grillModel.Type == GrillType.Single ||
                 grillModel.HasRemainingFood ||
                 _motionOwners.ContainsKey(grillPositionIndex))
             {
                 return;
             }
 
-            if (!_boardLayoutView.TryGetGrillView(grillPositionIndex, out GrillView grillView))
+            if (!_boardLayoutView.TryGetStandardGrillView(grillPositionIndex, out GrillView grillView))
             {
                 Debug.LogError($"Completed grill view {grillPositionIndex} could not be found.");
                 return;

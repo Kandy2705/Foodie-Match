@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Infrastructure.Level.Json
@@ -88,6 +89,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 grills.Add(
                     new GrillDefinition(
                         grillDto.Id.Value,
+                        MapGrillType(grillDto.Type),
                         new GrillPosition(
                             grillDto.Position.X.Value,
                             grillDto.Position.Y.Value),
@@ -96,6 +98,21 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             return grills;
+        }
+
+        private static GrillType MapGrillType(string type)
+        {
+            if (string.Equals(type, "standard", StringComparison.OrdinalIgnoreCase))
+            {
+                return GrillType.Standard;
+            }
+
+            if (string.Equals(type, "single", StringComparison.OrdinalIgnoreCase))
+            {
+                return GrillType.Single;
+            }
+
+            throw new ArgumentException($"Unsupported grill type: {type}.", nameof(type));
         }
 
         private static IReadOnlyList<GrillMovementGroupDefinition>

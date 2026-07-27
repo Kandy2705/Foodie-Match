@@ -19,18 +19,6 @@ namespace FoodieMatch.UI.Loading
 
         public async Task PlayAsync()
         {
-            if (_progressSlider == null)
-            {
-                Debug.LogError("Loading progress slider is missing.");
-                return;
-            }
-
-            if (!IsValidDuration())
-            {
-                Debug.LogError("Loading duration must be greater than zero.");
-                return;
-            }
-
             StopProgressMotion();
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
@@ -64,10 +52,7 @@ namespace FoodieMatch.UI.Loading
 
         private void SetProgress(float progress)
         {
-            if (_progressSlider != null)
-            {
-                _progressSlider.SetValueWithoutNotify(progress);
-            }
+            _progressSlider.SetValueWithoutNotify(progress);
         }
 
         private void MarkCompleted()
@@ -83,11 +68,6 @@ namespace FoodieMatch.UI.Loading
             }
 
             _progressTween = default;
-        }
-
-        private bool IsValidDuration()
-        {
-            return _duration > 0f && !float.IsNaN(_duration) && !float.IsInfinity(_duration);
         }
     }
 }

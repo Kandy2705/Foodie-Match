@@ -6,6 +6,8 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class GrillMovementGroupValidator
     {
+        private const int MinimumMovingGrillCount = 8;
+        private const int MaximumMovingGrillCount = 12;
         private const float PositionTolerance = 0.001f;
 
         public void Validate(
@@ -24,6 +26,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             HashSet<int> movingGrillIds = new();
+            MovementAxis? levelMovementAxis = null;
 
             for (int i = 0; i < movementGroups.Count; i++)
             {
@@ -33,6 +36,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
                     levelPath,
                     grillsById,
                     movingGrillIds,
+                    ref levelMovementAxis,
                     result);
             }
         }
@@ -88,6 +92,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
             string levelPath,
             IReadOnlyDictionary<int, GrillDto> grillsById,
             ISet<int> movingGrillIds,
+            ref MovementAxis? levelMovementAxis,
             LevelValidationResult result)
         {
             string groupPath =
@@ -104,20 +109,38 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 groupPath,
                 result,
                 out GrillMovementDirection direction);
+
+            if (hasValidDirection)
+            {
+                ValidateLevelMovementAxis(
+                    direction,
+                    groupPath,
+                    ref levelMovementAxis,
+                    result);
+            }
+
             ValidateMovementSpeed(movementGroup.MovementSpeed, groupPath, result);
 
-            if (movementGroup.GrillIds == null ||
-                movementGroup.GrillIds.Count < 2)
+            if (movementGroup.GrillIds == null)
             {
-                result.AddError(
-                    $"{groupPath}.grillIds must contain at least two grill ids.");
+                result.AddError($"{groupPath}.grillIds is required.");
                 return;
             }
 
-            HashSet<int> groupGrillIds = new();
-            List<GrillDto> groupGrills = new(movementGroup.GrillIds.Count);
+            int grillCount = movementGroup.GrillIds.Count;
 
-            for (int i = 0; i < movementGroup.GrillIds.Count; i++)
+            if (grillCount < MinimumMovingGrillCount ||
+                grillCount > MaximumMovingGrillCount)
+            {
+                result.AddError(
+                    $"{groupPath}.grillIds must contain between " +
+                    $"{MinimumMovingGrillCount} and {MaximumMovingGrillCount} grill ids.");
+            }
+
+            HashSet<int> groupGrillIds = new();
+            List<GrillDto> groupGrills = new(grillCount);
+
+            for (int i = 0; i < grillCount; i++)
             {
                 int grillId = movementGroup.GrillIds[i];
                 string grillIdPath = $"{groupPath}.grillIds[{i}]";
@@ -149,17 +172,64 @@ namespace FoodieMatch.Infrastructure.Level.Json
                     continue;
                 }
 
+                ValidateMovingGrill(grill, grillIdPath, result);
                 groupGrills.Add(grill);
             }
 
             if (hasValidDirection &&
-                groupGrills.Count == movementGroup.GrillIds.Count)
+                grillCount >= 2 &&
+                groupGrills.Count == grillCount)
             {
                 ValidateGroupLayout(
                     groupGrills,
                     direction,
                     groupPath,
                     result);
+            }
+        }
+
+        private static void ValidateLevelMovementAxis(
+            GrillMovementDirection direction,
+            string groupPath,
+            ref MovementAxis? levelMovementAxis,
+            LevelValidationResult result)
+        {
+            MovementAxis movementAxis = GetMovementAxis(direction);
+
+            if (!levelMovementAxis.HasValue)
+            {
+                levelMovementAxis = movementAxis;
+                return;
+            }
+
+            if (levelMovementAxis.Value != movementAxis)
+            {
+                result.AddError(
+                    $"{groupPath}.direction cannot mix horizontal and vertical movement in the same level.");
+            }
+        }
+
+        private static MovementAxis GetMovementAxis(GrillMovementDirection direction)
+        {
+            return direction == GrillMovementDirection.Left ||
+                   direction == GrillMovementDirection.Right
+                ? MovementAxis.Horizontal
+                : MovementAxis.Vertical;
+        }
+
+        private static void ValidateMovingGrill(
+            GrillDto grill,
+            string grillIdPath,
+            LevelValidationResult result)
+        {
+            if (!string.Equals(grill.Type, "standard", StringComparison.OrdinalIgnoreCase))
+            {
+                result.AddError($"{grillIdPath} must reference a standard grill.");
+            }
+
+            if (grill.Trays != null && grill.Trays.Count > 0)
+            {
+                result.AddError($"{grillIdPath} must reference a grill without trays.");
             }
         }
 
@@ -274,6 +344,12 @@ namespace FoodieMatch.Infrastructure.Level.Json
         private static bool Approximately(float left, float right)
         {
             return Math.Abs(left - right) <= PositionTolerance;
+        }
+
+        private enum MovementAxis
+        {
+            Horizontal,
+            Vertical
         }
     }
 }

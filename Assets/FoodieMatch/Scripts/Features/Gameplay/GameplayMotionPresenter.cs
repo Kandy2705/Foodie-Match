@@ -320,26 +320,6 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task<MotionResult> PlayFoodFlightAsync(
-            FoodItemView foodItemView,
-            Vector3 targetPosition,
-            float startDelay)
-        {
-            if (!_activeFoodMotions.Add(foodItemView))
-            {
-                return MotionResult.Failed;
-            }
-
-            try
-            {
-                return await foodItemView.PlayFlightAsync(targetPosition, startDelay);
-            }
-            finally
-            {
-                _activeFoodMotions.Remove(foodItemView);
-            }
-        }
-
         private async Task<MotionResult> PlayFoodFlightAndLandingAsync(
             FoodItemView foodItemView,
             Transform target,

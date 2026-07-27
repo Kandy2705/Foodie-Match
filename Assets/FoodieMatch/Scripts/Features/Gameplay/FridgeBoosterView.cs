@@ -52,9 +52,6 @@ namespace FoodieMatch.Features.Gameplay
         [SerializeField, Min(0f)]
         private float _spoonEnterDuration = 0.24f;
 
-        [SerializeField, Min(0f)]
-        private float _scoopGatherDuration = 0.16f;
-
         [Header("Scoop Motion")]
         [SerializeField]
         private Vector3 _scoopHoverOffset =

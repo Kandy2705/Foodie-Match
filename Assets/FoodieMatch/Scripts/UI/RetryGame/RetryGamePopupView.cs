@@ -18,35 +18,14 @@ namespace FoodieMatch.UI.RetryGame
 
         private void Awake()
         {
-            if (_popupAnimController == null)
-            {
-                _popupAnimController = GetComponent<PopupAnimController>();
-            }
-
-            EnsureButtonReferences();
-
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
-
-            if (_retryButton != null)
-            {
-                _retryButton.onClick.AddListener(OnRetryButtonClicked);
-            }
+            _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _retryButton.onClick.AddListener(OnRetryButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
-
-            if (_retryButton != null)
-            {
-                _retryButton.onClick.RemoveListener(OnRetryButtonClicked);
-            }
+            _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+            _retryButton.onClick.RemoveListener(OnRetryButtonClicked);
         }
 
         public void SetActions(RetryGamePopupViewActions actions)
@@ -60,10 +39,7 @@ namespace FoodieMatch.UI.RetryGame
             _isClosing = false;
             base.Show();
 
-            if (_popupAnimController != null)
-            {
-                _popupAnimController.Open();
-            }
+            _popupAnimController.Open();
         }
 
         public override void Hide()
@@ -73,7 +49,7 @@ namespace FoodieMatch.UI.RetryGame
                 return;
             }
 
-            if (_popupAnimController != null && gameObject.activeInHierarchy)
+            if (gameObject.activeInHierarchy)
             {
                 _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
@@ -108,39 +84,5 @@ namespace FoodieMatch.UI.RetryGame
             base.Hide();
         }
 
-        private void EnsureButtonReferences()
-        {
-            if (_closeButton == null)
-            {
-                _closeButton = FindChildButton("CloseButton");
-            }
-
-            if (_retryButton == null)
-            {
-                _retryButton = FindChildButton("RetryButton");
-            }
-
-            if (_retryButton == null)
-            {
-                _retryButton = FindChildButton("PrimaryButton");
-            }
-        }
-
-        private Button FindChildButton(string objectName)
-        {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Button button = buttons[i];
-
-                if (button != null && button.gameObject.name == objectName)
-                {
-                    return button;
-                }
-            }
-
-            return null;
-        }
     }
 }

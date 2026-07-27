@@ -44,9 +44,6 @@ namespace FoodieMatch.App
         [SerializeField] private FridgeBoosterAnchors _fridgeBoosterAnchors;
 
         private CancellationTokenSource _initializationCancellation;
-        private bool _isInitializing;
-        private bool _isInitialized;
-        private bool _isDestroyed;
 
         public AppInstaller AppInstaller => _appInstaller;
         public AppController AppController => _appController;
@@ -63,28 +60,16 @@ namespace FoodieMatch.App
 
         private void OnDestroy()
         {
-            _isDestroyed = true;
             _initializationCancellation?.Cancel();
         }
 
         public void Initialize()
         {
-            if (_isInitializing || _isInitialized)
-            {
-                return;
-            }
-
-            if (!HasValidReferences())
-            {
-                return;
-            }
-
             if (!_appInstaller.Install(this))
             {
                 return;
             }
 
-            _isInitializing = true;
             _initializationCancellation = new CancellationTokenSource();
             _ = InitializeSafelyAsync(_initializationCancellation.Token);
         }
@@ -114,14 +99,7 @@ namespace FoodieMatch.App
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-
-                if (_isDestroyed)
-                {
-                    return;
-                }
-
                 _appController.EnterHome();
-                _isInitialized = true;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -132,97 +110,14 @@ namespace FoodieMatch.App
             }
             finally
             {
-                if (!_isDestroyed)
+                if (!cancellationToken.IsCancellationRequested)
                 {
                     _uiManager.HideLoading();
                 }
 
                 _initializationCancellation?.Dispose();
                 _initializationCancellation = null;
-                _isInitializing = false;
             }
-        }
-
-        private bool HasValidReferences()
-        {
-            if (_appInstaller == null)
-            {
-                Debug.LogError("AppInstaller is missing.");
-                return false;
-            }
-
-            if (_appController == null)
-            {
-                Debug.LogError("AppController is missing.");
-                return false;
-            }
-
-            if (_gameplayController == null)
-            {
-                Debug.LogError("GameplayController is missing.");
-                return false;
-            }
-
-            if (_uiManager == null)
-            {
-                Debug.LogError("UIManager is missing.");
-                return false;
-            }
-
-            if (_audioService == null)
-            {
-                Debug.LogWarning(
-                    "UnityAudioService is missing. Audio will use NullAudioService.");
-            }
-
-            if (_gameplayMotionPresenter == null)
-            {
-                Debug.LogError("GameplayMotionPresenter is missing.");
-                return false;
-            }
-
-            if (_boardLayoutView == null)
-            {
-                Debug.LogError("BoardLayoutView is missing.");
-                return false;
-            }
-
-            if (_requiredPackageGroupView == null)
-            {
-                Debug.LogError("RequiredPackageGroupView is missing.");
-                return false;
-            }
-
-            if (_waitingRackView == null)
-            {
-                Debug.LogError("WaitingRackView is missing.");
-                return false;
-            }
-
-            if (_foodVisualResolver == null)
-            {
-                Debug.LogError("FoodVisualResolver is missing.");
-                return false;
-            }
-
-            if (_fridgeBoosterAnchors == null)
-            {
-                Debug.LogError(
-                    "FridgeBoosterAnchors is missing.");
-
-                return false;
-            }
-
-            if (_fridgeBoosterAnchors.FridgeBoosterView == null)
-            {
-                Debug.LogError(
-                    "FridgeBoosterView is missing from " +
-                    "FridgeBoosterAnchors.");
-
-                return false;
-            }
-
-            return true;
         }
     }
 }

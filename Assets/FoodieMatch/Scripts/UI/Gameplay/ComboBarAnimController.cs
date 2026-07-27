@@ -12,11 +12,6 @@ namespace FoodieMatch.UI.Gameplay
         [Header("References")]
         [SerializeField] private Animator _animator;
 
-        [Header("Triggers")]
-        [SerializeField] private string _startTrigger = "Start";
-        [SerializeField] private string _continueTrigger = "Continue";
-        [SerializeField] private string _breakTrigger = "Break";
-
         [Header("States")]
         [SerializeField] private string _startState = DefaultStartState;
         [SerializeField] private string _continueState = DefaultContinueState;
@@ -25,60 +20,27 @@ namespace FoodieMatch.UI.Gameplay
         [Header("Timing")]
         [SerializeField] private float _breakDuration = 0.6f;
 
-        private int _startTriggerHash;
-        private int _continueTriggerHash;
-        private int _breakTriggerHash;
-
         public float BreakDuration => Mathf.Max(0.01f, _breakDuration);
-
-        private void Awake()
-        {
-            EnsureAnimator();
-            CacheHashes();
-        }
-
-        private void OnValidate()
-        {
-            CacheHashes();
-        }
 
         public void PlayStart()
         {
-            PlayState(_startState, _startTriggerHash);
+            PlayState(_startState);
         }
 
         public void PlayContinue()
         {
-            PlayState(_continueState, _continueTriggerHash);
+            PlayState(_continueState);
         }
 
         public void PlayBreak()
         {
-            PlayState(_breakState, _breakTriggerHash);
+            PlayState(_breakState);
         }
 
-        private void PlayState(string stateName, int triggerHash)
+        private void PlayState(string stateName)
         {
-            EnsureAnimator();
-
-            if (_animator == null)
-            {
-                Debug.LogWarning(
-                    $"{nameof(ComboBarAnimController)} on {name} has no Animator.",
-                    this);
-                return;
-            }
-
             if (!_animator.isActiveAndEnabled)
             {
-                return;
-            }
-
-            if (_animator.runtimeAnimatorController == null)
-            {
-                Debug.LogWarning(
-                    $"{nameof(ComboBarAnimController)} on {name} has no Animator Controller.",
-                    this);
                 return;
             }
 
@@ -89,31 +51,5 @@ namespace FoodieMatch.UI.Gameplay
             }
         }
 
-        private void EnsureAnimator()
-        {
-            if (_animator != null)
-            {
-                return;
-            }
-
-            _animator = GetComponent<Animator>();
-
-            if (_animator == null)
-            {
-                _animator = GetComponentInChildren<Animator>(true);
-            }
-
-            if (_animator == null)
-            {
-                _animator = GetComponentInParent<Animator>();
-            }
-        }
-
-        private void CacheHashes()
-        {
-            _startTriggerHash = Animator.StringToHash(_startTrigger);
-            _continueTriggerHash = Animator.StringToHash(_continueTrigger);
-            _breakTriggerHash = Animator.StringToHash(_breakTrigger);
-        }
     }
 }

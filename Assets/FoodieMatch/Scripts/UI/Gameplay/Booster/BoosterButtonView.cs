@@ -32,28 +32,18 @@ namespace FoodieMatch.UI.Gameplay.Booster
         private Sprite _lockedIconSprite;
         private Sprite _defaultButtonSprite;
         private Sprite _defaultIconSprite;
-        private bool _didCacheDefaultSprites;
-
         public bool IsUnlocked => _isUnlocked;
 
         private void Awake()
         {
-            if (_button != null)
-            {
-                _button.onClick.AddListener(OnButtonClicked);
-            }
-
-            EnsureLevelLockedTextReference();
+            _button.onClick.AddListener(OnButtonClicked);
             CacheDefaultSprites();
             ApplyLockedVisuals();
         }
 
         private void OnDestroy()
         {
-            if (_button != null)
-            {
-                _button.onClick.RemoveListener(OnButtonClicked);
-            }
+            _button.onClick.RemoveListener(OnButtonClicked);
 
             _useBoosterClicked = null;
             _addBoosterClicked = null;
@@ -111,142 +101,78 @@ namespace FoodieMatch.UI.Gameplay.Booster
 
         private void CacheDefaultSprites()
         {
-            if (_didCacheDefaultSprites)
-            {
-                return;
-            }
-
-            if (_lockedButtonImage != null)
-            {
-                _defaultButtonSprite = _lockedButtonImage.sprite;
-            }
-
-            if (_lockedIconImage != null)
-            {
-                _defaultIconSprite = _lockedIconImage.sprite;
-            }
-
-            _didCacheDefaultSprites = true;
+            _defaultButtonSprite = _lockedButtonImage.sprite;
+            _defaultIconSprite = _lockedIconImage.sprite;
         }
 
         private void ApplyLockedVisuals()
         {
-            CacheDefaultSprites();
-            EnsureLevelLockedTextReference();
+            Sprite buttonSprite = !_isUnlocked && _lockedButtonSprite != null
+                ? _lockedButtonSprite
+                : _defaultButtonSprite;
 
-            if (_lockedButtonImage != null)
+            if (buttonSprite != null)
             {
-                Sprite buttonSprite = !_isUnlocked && _lockedButtonSprite != null
-                    ? _lockedButtonSprite
-                    : _defaultButtonSprite;
-
-                if (buttonSprite != null)
-                {
-                    _lockedButtonImage.sprite = buttonSprite;
-                }
-
-                _lockedButtonImage.enabled = buttonSprite != null;
+                _lockedButtonImage.sprite = buttonSprite;
             }
 
-            if (_lockedIconImage != null)
+            _lockedButtonImage.enabled = buttonSprite != null;
+
+            if (!_isUnlocked)
             {
-                if (!_isUnlocked)
+                if (_lockedIconSprite != null)
                 {
-                    if (_lockedIconSprite != null)
-                    {
-                        _lockedIconImage.sprite = _lockedIconSprite;
-                        _lockedIconImage.enabled = true;
-                    }
-                    else
-                    {
-                        _lockedIconImage.enabled = false;
-                    }
+                    _lockedIconImage.sprite = _lockedIconSprite;
+                    _lockedIconImage.enabled = true;
                 }
                 else
                 {
-                    if (_defaultIconSprite != null)
-                    {
-                        _lockedIconImage.sprite = _defaultIconSprite;
-                    }
-
-                    _lockedIconImage.enabled = _defaultIconSprite != null;
+                    _lockedIconImage.enabled = false;
                 }
             }
-
-            if (_levelLockedText != null)
+            else
             {
-                if (!_isUnlocked)
+                if (_defaultIconSprite != null)
                 {
-                    _levelLockedText.gameObject.SetActive(true);
-                    _levelLockedText.text = string.Format(LevelLockedFormat, _unlockLevel);
+                    _lockedIconImage.sprite = _defaultIconSprite;
                 }
-                else
-                {
-                    _levelLockedText.gameObject.SetActive(false);
-                }
+
+                _lockedIconImage.enabled = _defaultIconSprite != null;
             }
 
-            if (_button != null)
+            if (!_isUnlocked)
             {
-                _button.interactable = _isUnlocked;
+                _levelLockedText.gameObject.SetActive(true);
+                _levelLockedText.text = string.Format(LevelLockedFormat, _unlockLevel);
             }
+            else
+            {
+                _levelLockedText.gameObject.SetActive(false);
+            }
+
+            _button.interactable = _isUnlocked;
         }
 
         private void RefreshBadgeVisuals()
         {
             if (!_isUnlocked)
             {
-                if (_badgeBackgroundImage != null)
-                {
-                    _badgeBackgroundImage.gameObject.SetActive(false);
-                }
-
-                if (_countText != null)
-                {
-                    _countText.gameObject.SetActive(false);
-                }
+                _badgeBackgroundImage.gameObject.SetActive(false);
+                _countText.gameObject.SetActive(false);
 
                 return;
             }
 
             bool hasBooster = _currentCount > 0;
 
-            if (_badgeBackgroundImage != null)
-            {
-                _badgeBackgroundImage.gameObject.SetActive(true);
-                _badgeBackgroundImage.sprite = hasBooster
-                    ? _countBadgeSprite
-                    : _addBadgeSprite;
-            }
-
-            if (_countText != null)
-            {
-                _countText.gameObject.SetActive(hasBooster);
-                _countText.text = hasBooster
-                    ? _currentCount.ToString()
-                    : string.Empty;
-            }
-        }
-
-        private void EnsureLevelLockedTextReference()
-        {
-            if (_levelLockedText != null)
-            {
-                return;
-            }
-
-            TMP_Text[] texts = GetComponentsInChildren<TMP_Text>(includeInactive: true);
-
-            for (int i = 0; i < texts.Length; i++)
-            {
-                TMP_Text text = texts[i];
-
-                if (text != null && text.gameObject.name == "LevelLockedText")
-                {
-                    _levelLockedText = text;
-                    return;
-                }
-            }
+            _badgeBackgroundImage.gameObject.SetActive(true);
+            _badgeBackgroundImage.sprite = hasBooster
+                ? _countBadgeSprite
+                : _addBadgeSprite;
+            _countText.gameObject.SetActive(hasBooster);
+            _countText.text = hasBooster
+                ? _currentCount.ToString()
+                : string.Empty;
         }
     }
 }

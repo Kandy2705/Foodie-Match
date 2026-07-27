@@ -24,46 +24,16 @@ namespace FoodieMatch.UI.Revive
 
         private void Awake()
         {
-            if (_popupAnimController == null)
-            {
-                _popupAnimController = GetComponent<PopupAnimController>();
-            }
-
-            EnsureButtonReferences();
-            EnsureTextReferences();
-
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
-
-            if (_freeAdsButton != null)
-            {
-                _freeAdsButton.onClick.AddListener(OnFreeAdsButtonClicked);
-            }
-
-            if (_playOnButton != null)
-            {
-                _playOnButton.onClick.AddListener(OnPlayOnButtonClicked);
-            }
+            _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _freeAdsButton.onClick.AddListener(OnFreeAdsButtonClicked);
+            _playOnButton.onClick.AddListener(OnPlayOnButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
-
-            if (_freeAdsButton != null)
-            {
-                _freeAdsButton.onClick.RemoveListener(OnFreeAdsButtonClicked);
-            }
-
-            if (_playOnButton != null)
-            {
-                _playOnButton.onClick.RemoveListener(OnPlayOnButtonClicked);
-            }
+            _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+            _freeAdsButton.onClick.RemoveListener(OnFreeAdsButtonClicked);
+            _playOnButton.onClick.RemoveListener(OnPlayOnButtonClicked);
         }
 
         public void SetActions(RevivePopupViewActions actions)
@@ -77,15 +47,12 @@ namespace FoodieMatch.UI.Revive
             long coinBalance,
             HeartStatus heartStatus)
         {
-            _resourceBarView?.SetPlayerResources(
-                coinBalance,
-                heartStatus);
+            _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
         }
 
         public void SetCost(string costText)
         {
-            EnsureTextReferences();
-            UiTmpText.SetText(_costText, costText);
+            _costText.text = costText;
         }
 
         public override void Show()
@@ -93,10 +60,7 @@ namespace FoodieMatch.UI.Revive
             _isClosing = false;
             base.Show();
 
-            if (_popupAnimController != null)
-            {
-                _popupAnimController.Open();
-            }
+            _popupAnimController.Open();
         }
 
         public override void Hide()
@@ -106,7 +70,7 @@ namespace FoodieMatch.UI.Revive
                 return;
             }
 
-            if (_popupAnimController != null && gameObject.activeInHierarchy)
+            if (gameObject.activeInHierarchy)
             {
                 _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
@@ -147,47 +111,5 @@ namespace FoodieMatch.UI.Revive
             base.Hide();
         }
 
-        private void EnsureButtonReferences()
-        {
-            if (_closeButton == null)
-            {
-                _closeButton = FindChildButton("CloseButton");
-            }
-
-            if (_freeAdsButton == null)
-            {
-                _freeAdsButton = FindChildButton("FreeAdsButton");
-            }
-
-            if (_playOnButton == null)
-            {
-                _playOnButton = FindChildButton("PlayOnButton");
-            }
-        }
-
-        private void EnsureTextReferences()
-        {
-            if (_costText == null)
-            {
-                _costText = UiTmpText.FindChild(transform, "CostText");
-            }
-        }
-
-        private Button FindChildButton(string objectName)
-        {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Button button = buttons[i];
-
-                if (button != null && button.gameObject.name == objectName)
-                {
-                    return button;
-                }
-            }
-
-            return null;
-        }
     }
 }

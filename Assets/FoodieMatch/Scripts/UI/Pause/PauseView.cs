@@ -26,80 +26,22 @@ namespace FoodieMatch.UI.Pause
 
         private void Awake()
         {
-            if (_popupAnimController == null)
-            {
-                _popupAnimController = GetComponent<PopupAnimController>();
-            }
-
-            EnsureButtonReferences();
-            EnsureToggleReferences();
-
-            if (_resumeButton != null)
-            {
-                _resumeButton.onClick.AddListener(OnResumeButtonClicked);
-            }
-
-            if (_restartButton != null)
-            {
-                _restartButton.onClick.AddListener(OnRestartButtonClicked);
-            }
-
-            if (_homeButton != null)
-            {
-                _homeButton.onClick.AddListener(OnHomeButtonClicked);
-            }
-
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
-            else
-            {
-                Debug.LogWarning($"{nameof(PauseView)} on {name} has no close button assigned.");
-            }
-
-            if (_soundToggle != null)
-            {
-                _soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
-            }
-
-            if (_musicToggle != null)
-            {
-                _musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
-            }
+            _resumeButton.onClick.AddListener(OnResumeButtonClicked);
+            _restartButton.onClick.AddListener(OnRestartButtonClicked);
+            _homeButton.onClick.AddListener(OnHomeButtonClicked);
+            _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
+            _musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
         }
 
         private void OnDestroy()
         {
-            if (_resumeButton != null)
-            {
-                _resumeButton.onClick.RemoveListener(OnResumeButtonClicked);
-            }
-
-            if (_restartButton != null)
-            {
-                _restartButton.onClick.RemoveListener(OnRestartButtonClicked);
-            }
-
-            if (_homeButton != null)
-            {
-                _homeButton.onClick.RemoveListener(OnHomeButtonClicked);
-            }
-
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
-
-            if (_soundToggle != null)
-            {
-                _soundToggle.onValueChanged.RemoveListener(OnSoundToggleChanged);
-            }
-
-            if (_musicToggle != null)
-            {
-                _musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
-            }
+            _resumeButton.onClick.RemoveListener(OnResumeButtonClicked);
+            _restartButton.onClick.RemoveListener(OnRestartButtonClicked);
+            _homeButton.onClick.RemoveListener(OnHomeButtonClicked);
+            _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+            _soundToggle.onValueChanged.RemoveListener(OnSoundToggleChanged);
+            _musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
         }
 
         public void SetActions(PauseViewActions actions)
@@ -114,15 +56,8 @@ namespace FoodieMatch.UI.Pause
 
         public void SetToggleStates(bool isSoundOn, bool isMusicOn)
         {
-            if (_soundToggle != null)
-            {
-                _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
-            }
-
-            if (_musicToggle != null)
-            {
-                _musicToggle.SetIsOnWithoutNotify(!isMusicOn);
-            }
+            _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
+            _musicToggle.SetIsOnWithoutNotify(!isMusicOn);
         }
 
         public override void Show()
@@ -130,10 +65,7 @@ namespace FoodieMatch.UI.Pause
             _isClosing = false;
             base.Show();
 
-            if (_popupAnimController != null)
-            {
-                _popupAnimController.Open();
-            }
+            _popupAnimController.Open();
         }
 
         public override void Hide()
@@ -143,7 +75,7 @@ namespace FoodieMatch.UI.Pause
                 return;
             }
 
-            if (_popupAnimController != null && gameObject.activeInHierarchy)
+            if (gameObject.activeInHierarchy)
             {
                 _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
@@ -204,74 +136,5 @@ namespace FoodieMatch.UI.Pause
             base.Hide();
         }
 
-        private void EnsureButtonReferences()
-        {
-            if (_closeButton == null)
-            {
-                _closeButton = FindChildButton("CloseButton");
-            }
-
-            if (_resumeButton == null)
-            {
-                _resumeButton = FindChildButton("ResumeButton");
-            }
-
-            if (_restartButton == null)
-            {
-                _restartButton = FindChildButton("RestartButton");
-            }
-
-            if (_homeButton == null)
-            {
-                _homeButton = FindChildButton("HomeButton");
-            }
-        }
-
-        private void EnsureToggleReferences()
-        {
-            if (_soundToggle == null)
-            {
-                _soundToggle = FindChildToggle("SoundToggleRoot");
-            }
-
-            if (_musicToggle == null)
-            {
-                _musicToggle = FindChildToggle("MusicToggleRoot");
-            }
-        }
-
-        private Button FindChildButton(string objectName)
-        {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Button button = buttons[i];
-
-                if (button != null && button.gameObject.name == objectName)
-                {
-                    return button;
-                }
-            }
-
-            return null;
-        }
-
-        private Toggle FindChildToggle(string objectName)
-        {
-            Toggle[] toggles = GetComponentsInChildren<Toggle>(true);
-
-            for (int i = 0; i < toggles.Length; i++)
-            {
-                Toggle toggle = toggles[i];
-
-                if (toggle != null && toggle.gameObject.name == objectName)
-                {
-                    return toggle;
-                }
-            }
-
-            return null;
-        }
     }
 }

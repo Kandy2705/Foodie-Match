@@ -8,6 +8,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
         [JsonProperty("id")]
         public int? Id { get; set; }
 
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("position")]
         public GrillPositionDto Position { get; set; }
 

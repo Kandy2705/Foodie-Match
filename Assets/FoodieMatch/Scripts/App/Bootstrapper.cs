@@ -13,11 +13,6 @@ namespace FoodieMatch.App
 
         private void CreateAppRoot()
         {
-            if (_appRootPrefab == null)
-            {
-                Debug.LogError("AppRoot prefab is missing.");
-                return;
-            }
             Application.targetFrameRate = 60;
             AppRoot appRoot = Instantiate(_appRootPrefab);
             appRoot.gameObject.name = _appRootPrefab.gameObject.name;

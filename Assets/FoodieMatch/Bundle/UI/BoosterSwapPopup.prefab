@@ -225,4 +225,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _skeletonGraphic: {fileID: 386496338053554181}
+  _canvasGroup: {fileID: 4008146502054122189}
   _fadeOutDuration: 0.2
