@@ -51,14 +51,6 @@ namespace FoodieMatch.Features.Board
             _worldCamera = worldCamera;
         }
 
-        private void Awake()
-        {
-            if (_foodItemRoot == null)
-            {
-                Debug.LogWarning("Food item root is missing.", this);
-            }
-        }
-
         private void Update()
         {
             _grillMovementController?.Advance(Time.deltaTime);
@@ -67,30 +59,13 @@ namespace FoodieMatch.Features.Board
         public void Setup(
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
-                movementGroups)
+            movementGroups)
         {
             Clear();
-
-            if (board == null)
-            {
-                Debug.LogWarning("Board model is missing.", this);
-                return;
-            }
-
-            if (!HasRequiredGrillPrefabs(board))
-            {
-                return;
-            }
 
             for (int i = 0; i < board.GrillCount; i++)
             {
                 GrillModel grillModel = board.GetGrillAt(i);
-
-                if (grillModel == null)
-                {
-                    continue;
-                }
-
                 GrillViewBase grillPrefab = GetGrillPrefab(grillModel.Type);
                 GrillViewBase grillView = Instantiate(grillPrefab, transform);
                 SetGrillPosition(grillView.transform, grillModel.Position);
@@ -109,40 +84,6 @@ namespace FoodieMatch.Features.Board
             StartGrillMovement(
                 board,
                 movementGroups);
-        }
-
-        private bool HasRequiredGrillPrefabs(BoardModel board)
-        {
-            bool requiresStandardGrill = false;
-            bool requiresSingleGrill = false;
-
-            for (int i = 0; i < board.GrillCount; i++)
-            {
-                GrillModel grillModel = board.GetGrillAt(i);
-
-                if (grillModel?.Type == GrillType.Single)
-                {
-                    requiresSingleGrill = true;
-                }
-                else if (grillModel != null)
-                {
-                    requiresStandardGrill = true;
-                }
-            }
-
-            if (requiresStandardGrill && _grillPrefab == null)
-            {
-                Debug.LogError("Standard grill prefab is missing.", this);
-                return false;
-            }
-
-            if (requiresSingleGrill && _singleGrillPrefab == null)
-            {
-                Debug.LogError("Single grill prefab is missing.", this);
-                return false;
-            }
-
-            return true;
         }
 
         private GrillViewBase GetGrillPrefab(GrillType type)
@@ -401,20 +342,13 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                SpriteRenderer spriteRenderer =
-                    view.GetComponentInChildren<SpriteRenderer>();
-
-                tasks.Add(AnimateSinglePopupHideAsync(
-                    view,
-                    spriteRenderer));
+                tasks.Add(AnimateSinglePopupHideAsync(view));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private static async Task AnimateSinglePopupHideAsync(
-            FoodItemView view,
-            SpriteRenderer spriteRenderer)
+        private static async Task AnimateSinglePopupHideAsync(FoodItemView view)
         {
             if (view == null)
             {
@@ -430,13 +364,7 @@ namespace FoodieMatch.Features.Board
             float totalDuration =
                 HidePunchDuration + HideShrinkDuration;
 
-            if (spriteRenderer != null)
-            {
-                _ = Tween.Alpha(
-                    spriteRenderer,
-                    0f,
-                    totalDuration);
-            }
+            Task fadeTask = view.PlayFadeOutAsync(totalDuration);
 
             Sequence sequence = Sequence.Create()
                 .Chain(Tween.Scale(
@@ -451,6 +379,7 @@ namespace FoodieMatch.Features.Board
                     Ease.InBack));
 
             await sequence;
+            await fadeTask;
         }
 
         public async Task AnimateRevealFoodAsync(
@@ -472,20 +401,13 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                SpriteRenderer spriteRenderer =
-                    view.GetComponentInChildren<SpriteRenderer>();
-
-                tasks.Add(AnimateSinglePopupRevealAsync(
-                    view,
-                    spriteRenderer));
+                tasks.Add(AnimateSinglePopupRevealAsync(view));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private static async Task AnimateSinglePopupRevealAsync(
-            FoodItemView view,
-            SpriteRenderer spriteRenderer)
+        private static async Task AnimateSinglePopupRevealAsync(FoodItemView view)
         {
             if (view == null)
             {
@@ -499,18 +421,7 @@ namespace FoodieMatch.Features.Board
                 targetScale * RevealOvershootScaleMultiplier;
 
             view.transform.localScale = Vector3.zero;
-
-            if (spriteRenderer != null)
-            {
-                Color color = spriteRenderer.color;
-                color.a = 0f;
-                spriteRenderer.color = color;
-
-                _ = Tween.Alpha(
-                    spriteRenderer,
-                    1f,
-                    RevealGrowDuration);
-            }
+            Task fadeTask = view.PlayFadeInAsync(RevealGrowDuration);
 
             Sequence sequence = Sequence.Create()
                 .Chain(Tween.Scale(
@@ -525,6 +436,7 @@ namespace FoodieMatch.Features.Board
                     Ease.OutQuad));
 
             await sequence;
+            await fadeTask;
         }
 
         public void UpdateFoodSprite(FoodItemView view, int newTokenId, Sprite sprite)
@@ -572,8 +484,7 @@ namespace FoodieMatch.Features.Board
                     grillModel.GetFoodTokenIdAt,
                     grillView.GetFoodAnchor,
                     FoodItemVisualState.OnGrill,
-                    true,
-                    $"grill position {grillModel.PositionIndex}");
+                    true);
 
                 AppendNonNullViews(allViews, grillViews);
                 AppendNonNullViews(allViews, trayViews);
@@ -665,12 +576,6 @@ namespace FoodieMatch.Features.Board
             Vector3 worldPosition,
             int foodTokenId)
         {
-            if (_foodItemPrefab == null ||
-                _foodItemRoot == null)
-            {
-                return null;
-            }
-
             FoodItemView foodItemView =
                 Instantiate(
                     _foodItemPrefab,
@@ -735,8 +640,7 @@ namespace FoodieMatch.Features.Board
                 grillModel.GetFoodTokenIdAt,
                 singleGrillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
-                false,
-                $"single grill position {grillModel.PositionIndex}");
+                false);
 
             if (foodItems.Count != 1 || foodItems[0] == null)
             {
@@ -985,8 +889,7 @@ namespace FoodieMatch.Features.Board
                 topTray.GetFoodTokenIdAt,
                 resolveAnchor,
                 FoodItemVisualState.OnTray,
-                false,
-                $"top tray on grill position {grillModel.PositionIndex}");
+                false);
 
             _topTrayFoodItems[grillModel.PositionIndex] = foodItemViews;
             return foodItemViews;
@@ -1002,15 +905,12 @@ namespace FoodieMatch.Features.Board
                 grillModel.GetFoodTokenIdAt,
                 grillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
-                true,
-                $"grill position {grillModel.PositionIndex}");
+                true);
         }
 
         private Sprite ResolveFoodSprite(int foodTokenId)
         {
-            return _foodVisualResolver != null
-                ? _foodVisualResolver.ResolveIcon(foodTokenId)
-                : null;
+            return _foodVisualResolver.ResolveIcon(foodTokenId);
         }
 
         private List<FoodItemView> SpawnFoodItems(
@@ -1019,28 +919,10 @@ namespace FoodieMatch.Features.Board
             Func<int, int> resolveFoodTokenId,
             Func<int, Transform> resolveAnchor,
             FoodItemVisualState visualState,
-            bool isInteractable,
-            string context)
+            bool isInteractable)
         {
             List<FoodItemView> foodItemViews =
                 new List<FoodItemView>(foodSlotCount);
-
-            if (_foodItemPrefab == null)
-            {
-                Debug.LogWarning("Food item prefab is missing.", this);
-                return foodItemViews;
-            }
-
-            if (_foodItemRoot == null)
-            {
-                Debug.LogWarning("Food item root is missing.", this);
-                return foodItemViews;
-            }
-
-            if (resolveFoodTokenId == null)
-            {
-                return foodItemViews;
-            }
 
             for (int i = 0; i < foodSlotCount; i++)
             {
@@ -1052,26 +934,8 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                Transform foodAnchor = resolveAnchor?.Invoke(i);
-
-                if (foodAnchor == null)
-                {
-                    Debug.LogWarning($"Food anchor {i} is missing for {context}.", this);
-                    foodItemViews.Add(null);
-                    continue;
-                }
-
-                if (!_grillViews.TryGetValue(
-                        grillPositionIndex,
-                        out GrillViewBase grillView) ||
-                    grillView == null)
-                {
-                    Debug.LogWarning(
-                        $"Grill view {grillPositionIndex} is missing for {context}.",
-                        this);
-                    foodItemViews.Add(null);
-                    continue;
-                }
+                Transform foodAnchor = resolveAnchor.Invoke(i);
+                GrillViewBase grillView = _grillViews[grillPositionIndex];
 
                 FoodItemView foodItemView =
                     Instantiate(
@@ -1139,17 +1003,8 @@ namespace FoodieMatch.Features.Board
         {
             StopGrillMovement();
 
-            if (movementGroups == null ||
-                movementGroups.Count == 0)
+            if (movementGroups.Count == 0)
             {
-                return;
-            }
-
-            if (_worldCamera == null)
-            {
-                Debug.LogError(
-                    "World camera is missing for grill movement.",
-                    this);
                 return;
             }
 
@@ -1173,8 +1028,7 @@ namespace FoodieMatch.Features.Board
         private void MoveFoodToFlightRoot(
             FoodItemView foodItemView)
         {
-            if (foodItemView == null ||
-                _foodItemRoot == null)
+            if (foodItemView == null)
             {
                 return;
             }
@@ -1251,11 +1105,6 @@ namespace FoodieMatch.Features.Board
             _foodAddresses.Clear();
             _topTrayFoodItems.Clear();
             _revealingSingleGrillFoodItems.Clear();
-
-            if (_foodItemRoot == null)
-            {
-                return;
-            }
 
             for (int childIndex =
                      _foodItemRoot.childCount - 1;

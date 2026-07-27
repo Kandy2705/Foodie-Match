@@ -61,7 +61,8 @@ namespace FoodieMatch.App
             playerProfileService.SaveFailed += LogPlayerProfileSaveFailure;
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
-            GameplayWorldClickSfx gameplayWorldClickSfx = CreateGameplayWorldClickSfx(appRoot, audioService);
+            GameplayWorldClickSfx gameplayWorldClickSfx = appRoot.GameplayWorldClickSfx;
+            gameplayWorldClickSfx.Construct(audioService);
             Camera worldCamera = Camera.main;
 
             if (worldCamera == null)
@@ -183,22 +184,6 @@ namespace FoodieMatch.App
         {
             appRoot.AudioService.Construct(saveService);
             return appRoot.AudioService;
-        }
-
-        private static GameplayWorldClickSfx CreateGameplayWorldClickSfx(
-            AppRoot appRoot,
-            IAudioService audioService)
-        {
-            GameplayWorldClickSfx worldClickSfx =
-                appRoot.GameplayController.GetComponent<GameplayWorldClickSfx>();
-
-            if (worldClickSfx == null)
-            {
-                worldClickSfx = appRoot.GameplayController.gameObject.AddComponent<GameplayWorldClickSfx>();
-            }
-
-            worldClickSfx.Construct(audioService);
-            return worldClickSfx;
         }
 
     }

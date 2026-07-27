@@ -149,11 +149,6 @@ namespace FoodieMatch.Features.Gameplay
             GameplaySession session,
             int foodTokenId)
         {
-            if (session?.Board == null)
-            {
-                return 0;
-            }
-
             int count = 0;
 
             count += CountMatchingFood(
@@ -373,11 +368,6 @@ namespace FoodieMatch.Features.Gameplay
             return session != null &&
                    session.CanContinueGameplay &&
                    session.IsInputEnabled &&
-                   session.RequiredPackages != null &&
-                   session.Board != null &&
-                   _boardLayoutView != null &&
-                   _packageDeliveryCoordinator != null &&
-                   _topTrayMoveCoordinator != null &&
                    IsCurrentSession(session);
         }
 

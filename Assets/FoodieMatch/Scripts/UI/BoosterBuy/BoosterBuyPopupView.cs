@@ -26,7 +26,6 @@ namespace FoodieMatch.UI.BoosterBuy
         private Action _closeClicked;
         private Action _freeAdsClicked;
         private Action _buyClicked;
-        private bool _isClosing;
 
         private void Awake()
         {
@@ -100,7 +99,6 @@ namespace FoodieMatch.UI.BoosterBuy
 
         public override void Show()
         {
-            _isClosing = false;
             base.Show();
 
             _popupAnimController.Open();
@@ -108,14 +106,8 @@ namespace FoodieMatch.UI.BoosterBuy
 
         public override void Hide()
         {
-            if (_isClosing)
-            {
-                return;
-            }
-
             if (gameObject.activeInHierarchy)
             {
-                _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
                 return;
             }
@@ -128,7 +120,6 @@ namespace FoodieMatch.UI.BoosterBuy
             _closeClicked = null;
             _freeAdsClicked = null;
             _buyClicked = null;
-            _isClosing = false;
 
             base.Dispose();
         }
@@ -150,7 +141,6 @@ namespace FoodieMatch.UI.BoosterBuy
 
         private void OnCloseAnimationFinished()
         {
-            _isClosing = false;
             base.Hide();
         }
 

@@ -55,9 +55,6 @@ namespace FoodieMatch.Features.Gameplay
             return session != null &&
                    session.CanContinueGameplay &&
                    session.IsInputEnabled &&
-                   session.Board != null &&
-                   _boardLayoutView != null &&
-                   _uiManager != null &&
                    IsCurrentSession(session);
         }
 
@@ -105,14 +102,8 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             BoosterSwapPopup swapPopup = _uiManager.ShowSwapPopup();
-
-            Task popupAnimationTask = null;
-
-            if (swapPopup != null)
-            {
-                popupAnimationTask = swapPopup.StartSwapAnimationAsync();
-                await swapPopup.WaitForAnimationProgressAsync(0.9f);
-            }
+            Task popupAnimationTask = swapPopup.StartSwapAnimationAsync();
+            await swapPopup.WaitForAnimationProgressAsync(0.9f);
 
             if (!IsCurrentSession(session) || !session.CanContinueGameplay)
             {
@@ -121,11 +112,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!TryRearrangeAllBoardFood(session))
             {
-                if (popupAnimationTask != null)
-                {
-                    await popupAnimationTask;
-                }
-
+                await popupAnimationTask;
                 return;
             }
 
@@ -136,20 +123,9 @@ namespace FoodieMatch.Features.Gameplay
             Task foodRevealTask =
                 _boardLayoutView.AnimateRevealFoodAsync(newFoodViews);
 
-            if (popupAnimationTask != null)
-            {
-                await Task.WhenAll(popupAnimationTask, foodRevealTask);
-            }
-            else
-            {
-                await foodRevealTask;
-            }
-
-            if (swapPopup != null)
-            {
-                await swapPopup.HideAsync();
-                _uiManager.HideSwapPopup();
-            }
+            await Task.WhenAll(popupAnimationTask, foodRevealTask);
+            await swapPopup.HideAsync();
+            _uiManager.HideSwapPopup();
 
             if (IsCurrentSession(session) && session.CanContinueGameplay)
             {
@@ -167,11 +143,6 @@ namespace FoodieMatch.Features.Gameplay
 
         private static int CountAllBoardFood(BoardModel board)
         {
-            if (board == null)
-            {
-                return 0;
-            }
-
             int count = 0;
 
             for (int g = 0; g < board.GrillCount; g++)
@@ -210,11 +181,6 @@ namespace FoodieMatch.Features.Gameplay
 
         private static bool TryRearrangeAllBoardFood(GameplaySession session)
         {
-            if (session?.Board == null)
-            {
-                return false;
-            }
-
             BoardModel board = session.Board;
 
             List<(int grillIndex, int trayIndex, int slotIndex)> grillSlots = new();

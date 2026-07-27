@@ -9,12 +9,11 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private GameObject _root;
         [SerializeField] private RequiredPackageSlotView[] _slots;
 
-        public int SlotCount => _slots != null ? _slots.Length : 0;
+        public int SlotCount => _slots.Length;
 
         public RequiredPackageSlotView GetSlotAt(int slotIndex)
         {
-            return _slots != null &&
-                   slotIndex >= 0 &&
+            return slotIndex >= 0 &&
                    slotIndex < _slots.Length
                 ? _slots[slotIndex]
                 : null;
@@ -24,31 +23,17 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             SetRootActive(true);
 
-            if (_slots == null)
+            for (int i = 0; i < _slots.Length; i++)
             {
-                return;
-            }
-
-            for (var i = 0; i < _slots.Length; i++)
-            {
-                if (_slots[i] != null)
-                {
-                    _slots[i].Show(sprite, i < filledAmount);
-                }
+                _slots[i].Show(sprite, i < filledAmount);
             }
         }
 
         public void Hide()
         {
-            if (_slots != null)
+            for (int i = 0; i < _slots.Length; i++)
             {
-                for (var i = 0; i < _slots.Length; i++)
-                {
-                    if (_slots[i] != null)
-                    {
-                        _slots[i].Hide();
-                    }
-                }
+                _slots[i].Hide();
             }
 
             SetRootActive(false);
@@ -56,10 +41,7 @@ namespace FoodieMatch.Features.RequiredPackage
 
         private void SetRootActive(bool isActive)
         {
-            if (_root != null)
-            {
-                _root.SetActive(isActive);
-            }
+            _root.SetActive(isActive);
         }
     }
 }

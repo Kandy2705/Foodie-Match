@@ -51,8 +51,6 @@ namespace FoodieMatch.Features.Gameplay
             return session != null &&
                    session.CanContinueGameplay &&
                    session.IsInputEnabled &&
-                   session.WaitingRack != null &&
-                   _waitingRackView != null &&
                    _waitingRackView.CanAddSlot() &&
                    _sessionGuard.IsCurrentSession(session.SessionId);
         }

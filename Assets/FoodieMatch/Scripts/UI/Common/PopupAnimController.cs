@@ -40,17 +40,14 @@ namespace FoodieMatch.UI.Common
         private int _closeTriggerHash;
         private int _hiddenStateHash;
         private Coroutine _waitCoroutine;
-        private bool _isOpened;
-        private bool _hasAwakened;
+        private PopupMotionState _state;
 
-        public bool IsOpened => _isOpened;
+        public bool IsOpened => _state == PopupMotionState.Open;
 
         private void Awake()
         {
             CacheHashes();
-            _hasAwakened = true;
-
-            _isOpened = false;
+            _state = PopupMotionState.Closed;
             SetInteractable(false);
             gameObject.SetActive(false);
         }
@@ -66,6 +63,7 @@ namespace FoodieMatch.UI.Common
 
             gameObject.SetActive(true);
             SetInteractable(false);
+            _state = PopupMotionState.Opening;
 
             if (_animator != null)
             {
@@ -93,7 +91,7 @@ namespace FoodieMatch.UI.Common
 
         public void Close(Action onComplete = null)
         {
-            if (!gameObject.activeSelf)
+            if (_state == PopupMotionState.Closed)
             {
                 onComplete?.Invoke();
                 return;
@@ -101,6 +99,7 @@ namespace FoodieMatch.UI.Common
 
             StopWaiting();
             SetInteractable(false);
+            _state = PopupMotionState.Closing;
 
             if (_animator != null)
             {
@@ -127,7 +126,8 @@ namespace FoodieMatch.UI.Common
 
         public void Toggle()
         {
-            if (gameObject.activeSelf && _isOpened)
+            if (_state == PopupMotionState.Open ||
+                _state == PopupMotionState.Opening)
             {
                 Close();
                 return;
@@ -139,7 +139,7 @@ namespace FoodieMatch.UI.Common
         public void HideInstantly()
         {
             StopWaiting();
-            _isOpened = false;
+            _state = PopupMotionState.Closed;
             SampleHiddenStateIfPossible();
             SetInteractable(false);
             gameObject.SetActive(false);
@@ -149,7 +149,6 @@ namespace FoodieMatch.UI.Common
         {
             if (_animator == null ||
                 string.IsNullOrEmpty(_hiddenState) ||
-                !_hasAwakened ||
                 !_animator.isInitialized)
             {
                 return;
@@ -165,13 +164,13 @@ namespace FoodieMatch.UI.Common
 
         public void OnOpenAnimationFinished()
         {
-            _isOpened = true;
+            _state = PopupMotionState.Open;
             SetInteractable(true);
         }
 
         public void OnCloseAnimationFinished()
         {
-            _isOpened = false;
+            _state = PopupMotionState.Closed;
 
             if (_canvasGroup != null)
             {
@@ -253,6 +252,14 @@ namespace FoodieMatch.UI.Common
 
             onComplete?.Invoke();
             _waitCoroutine = null;
+        }
+
+        private enum PopupMotionState
+        {
+            Closed,
+            Opening,
+            Open,
+            Closing
         }
     }
 }
