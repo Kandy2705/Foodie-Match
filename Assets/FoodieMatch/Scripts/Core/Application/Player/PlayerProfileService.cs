@@ -452,14 +452,26 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
-        public void MarkBoosterGuideSeen(BoosterType boosterType)
+        public bool TryClaimBoosterUnlockReward(BoosterType boosterType)
         {
             lock (_stateLock)
             {
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
-                QueueProfileChange(
-                    currentProfile.WithSeenBoosterGuide(boosterType));
+
+                if (currentProfile.HasSeenBoosterGuide(boosterType))
+                {
+                    return false;
+                }
+
+                int updatedBoosterCount = checked(
+                    currentProfile.GetBoosterCount(boosterType) + 1);
+                PlayerProfile updatedProfile = currentProfile
+                    .WithBoosterCount(boosterType, updatedBoosterCount)
+                    .WithSeenBoosterGuide(boosterType);
+
+                QueueProfileChange(updatedProfile);
+                return true;
             }
         }
 
