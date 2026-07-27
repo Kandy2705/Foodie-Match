@@ -2,6 +2,7 @@ using System;
 using FoodieMatch.Core.Application.Player;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Home
 {
@@ -10,6 +11,10 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private TMP_Text _heartCountText;
         [SerializeField] private GameObject _recoveryTimerRoot;
         [SerializeField] private TMP_Text _recoveryTimerText;
+        [SerializeField] private Image _heartIconImage;
+        [SerializeField] private GameObject _addLifeButton;
+        [SerializeField] private Sprite _normalHeartIconSprite;
+        [SerializeField] private Sprite _unlimitedHeartIconSprite;
 
         private DateTimeOffset _nextRecoveryAtUtc;
         private TimeSpan _recoveryDuration;
@@ -17,9 +22,18 @@ namespace FoodieMatch.UI.Home
         private int _maxHeartCount;
         private int _displayedSecondCount = -1;
         private bool _isCountingDown;
+        private bool _isUnlimited;
+        private DateTimeOffset _unlimitedHeartEndUtc;
+        private TimeSpan _timeUntilNextHeart;
 
         private void Update()
         {
+            if (_isUnlimited)
+            {
+                UpdateUnlimitedHeartStatus(DateTimeOffset.UtcNow);
+                return;
+            }
+
             if (!_isCountingDown)
             {
                 return;
@@ -38,6 +52,22 @@ namespace FoodieMatch.UI.Home
             _heartCount = heartStatus.HeartCount;
             _maxHeartCount = heartStatus.MaxHeartCount;
             _recoveryDuration = heartStatus.RecoveryDuration;
+            _timeUntilNextHeart = heartStatus.TimeUntilNextHeart;
+
+            if (heartStatus.IsUnlimited)
+            {
+                _isUnlimited = true;
+                _unlimitedHeartEndUtc = heartStatus.UnlimitedHeartEndUtc.Value;
+                StopCountdown();
+                _displayedSecondCount = -1;
+                SetUnlimitedPresentation(true);
+                SetRecoveryTimerVisible(true);
+                UpdateUnlimitedHeartStatus(DateTimeOffset.UtcNow);
+                return;
+            }
+
+            _isUnlimited = false;
+            SetUnlimitedPresentation(false);
             UpdateHeartCountText();
 
             if (heartStatus.IsFull)
@@ -48,7 +78,7 @@ namespace FoodieMatch.UI.Home
             }
 
             _nextRecoveryAtUtc =
-                DateTimeOffset.UtcNow + heartStatus.TimeUntilNextHeart;
+                DateTimeOffset.UtcNow + _timeUntilNextHeart;
             _displayedSecondCount = -1;
             _isCountingDown = true;
             SetRecoveryTimerVisible(true);
@@ -57,7 +87,9 @@ namespace FoodieMatch.UI.Home
 
         public void Clear()
         {
+            _isUnlimited = false;
             StopCountdown();
+            SetUnlimitedPresentation(false);
         }
 
         private void StopCountdown()
@@ -98,9 +130,43 @@ namespace FoodieMatch.UI.Home
             UpdateRecoveryTimerText(_nextRecoveryAtUtc - currentUtc);
         }
 
+        private void UpdateUnlimitedHeartStatus(DateTimeOffset currentUtc)
+        {
+            if (currentUtc < _unlimitedHeartEndUtc)
+            {
+                UpdateRecoveryTimerText(_unlimitedHeartEndUtc - currentUtc);
+                return;
+            }
+
+            _isUnlimited = false;
+            SetUnlimitedPresentation(false);
+            UpdateHeartCountText();
+
+            if (_heartCount >= _maxHeartCount)
+            {
+                SetRecoveryTimerVisible(false);
+                return;
+            }
+
+            _nextRecoveryAtUtc = _unlimitedHeartEndUtc + _timeUntilNextHeart;
+            _displayedSecondCount = -1;
+            _isCountingDown = true;
+            SetRecoveryTimerVisible(true);
+            UpdateDisplayedHeartStatus(currentUtc);
+        }
+
         private void UpdateHeartCountText()
         {
             _heartCountText.text = _heartCount.ToString();
+        }
+
+        private void SetUnlimitedPresentation(bool isUnlimited)
+        {
+            _heartCountText.text = isUnlimited ? "Unlimited" : _heartCount.ToString();
+            _heartIconImage.sprite = isUnlimited
+                ? _unlimitedHeartIconSprite
+                : _normalHeartIconSprite;
+            _addLifeButton.SetActive(!isUnlimited);
         }
 
         private void UpdateRecoveryTimerText(TimeSpan remainingTime)

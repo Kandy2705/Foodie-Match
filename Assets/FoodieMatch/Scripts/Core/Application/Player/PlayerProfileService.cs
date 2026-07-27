@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Configuration.Heart;
+using FoodieMatch.Core.Application.Configuration.Shop;
+using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Time;
 using FoodieMatch.Core.Domain.Booster;
@@ -17,7 +20,7 @@ namespace FoodieMatch.Core.Application.Player
         private readonly IGameHeartConfig _heartConfig;
         private readonly IClock _clock;
 
-        private Task _saveQueue = Task.CompletedTask;
+        private Task<bool> _saveQueue = Task.FromResult(true);
         private long _currentChangeVersion;
         private long _savedChangeVersion;
 
@@ -60,12 +63,28 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public bool AdsRemoved
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.AdsRemoved;
+                }
+            }
+        }
+
         public HeartState RefreshHeartState()
         {
             lock (_stateLock)
             {
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
+                if (HasUnlimitedHearts(currentProfile, _clock.UtcNow))
+                {
+                    return currentProfile.HeartState;
+                }
+
                 HeartState updatedHeartState = GetRefreshedHeartState(
                     currentProfile,
                     _clock.UtcNow);
@@ -83,6 +102,14 @@ namespace FoodieMatch.Core.Application.Player
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
                 DateTimeOffset currentUtc = _clock.UtcNow;
+                if (HasUnlimitedHearts(currentProfile, currentUtc))
+                {
+                    return CreateHeartStatus(
+                        currentProfile.HeartState,
+                        currentUtc,
+                        currentProfile.UnlimitedHeartEndUnixSeconds);
+                }
+
                 HeartState updatedHeartState = GetRefreshedHeartState(
                     currentProfile,
                     currentUtc);
@@ -90,16 +117,7 @@ namespace FoodieMatch.Core.Application.Player
                 QueueProfileChange(
                     currentProfile.WithHeartState(updatedHeartState));
 
-                TimeSpan timeUntilNextHeart =
-                    updatedHeartState.GetTimeUntilNextHeart(
-                        _heartConfig.HeartRecoveryDuration,
-                        currentUtc);
-
-                return new HeartStatus(
-                    updatedHeartState.HeartCount,
-                    _heartConfig.MaxHeartCount,
-                    timeUntilNextHeart,
-                    _heartConfig.HeartRecoveryDuration);
+                return CreateHeartStatus(updatedHeartState, currentUtc, 0);
             }
         }
 
@@ -109,6 +127,11 @@ namespace FoodieMatch.Core.Application.Player
             {
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
+                if (HasUnlimitedHearts(currentProfile, _clock.UtcNow))
+                {
+                    return true;
+                }
+
                 HeartState updatedHeartState = GetRefreshedHeartState(
                     currentProfile,
                     _clock.UtcNow);
@@ -126,6 +149,11 @@ namespace FoodieMatch.Core.Application.Player
                 PlayerProfile currentProfile =
                     _profileSession.CurrentRecord.Profile;
                 DateTimeOffset currentUtc = _clock.UtcNow;
+                if (HasUnlimitedHearts(currentProfile, currentUtc))
+                {
+                    return true;
+                }
+
                 HeartState refreshedHeartState = GetRefreshedHeartState(
                     currentProfile,
                     currentUtc);
@@ -360,6 +388,76 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public async Task<ShopRewardApplyResult> ApplyShopRewardsAsync(
+            ShopRewardDefinition rewards)
+        {
+            if (rewards == null)
+            {
+                throw new ArgumentNullException(nameof(rewards));
+            }
+
+            PlayerProfile updatedProfile;
+            Task<bool> saveTask;
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile = _profileSession.CurrentRecord.Profile;
+                DateTimeOffset currentUtc = _clock.UtcNow;
+                long currentUnixSeconds = currentUtc.ToUnixTimeSeconds();
+                long updatedCoinBalance = checked(
+                    currentProfile.CoinBalance + rewards.Coins);
+                Dictionary<BoosterType, int> updatedBoosterCounts = new(
+                    currentProfile.BoosterCounts);
+
+                foreach (KeyValuePair<BoosterType, int> boosterReward in rewards.BoosterAmounts)
+                {
+                    updatedBoosterCounts[boosterReward.Key] = checked(
+                        currentProfile.GetBoosterCount(boosterReward.Key) +
+                        boosterReward.Value);
+                }
+
+                HeartState updatedHeartState =
+                    HasUnlimitedHearts(currentProfile, currentUtc)
+                        ? currentProfile.HeartState
+                        : GetRefreshedHeartState(currentProfile, currentUtc);
+                long updatedUnlimitedHeartEnd =
+                    currentProfile.UnlimitedHeartEndUnixSeconds;
+
+                if (rewards.UnlimitedHeartSeconds > 0)
+                {
+                    updatedHeartState = ShiftHeartRecovery(
+                        updatedHeartState,
+                        rewards.UnlimitedHeartSeconds);
+                    long baseEnd = Math.Max(
+                        currentUnixSeconds,
+                        currentProfile.UnlimitedHeartEndUnixSeconds);
+                    updatedUnlimitedHeartEnd = checked(
+                        baseEnd + rewards.UnlimitedHeartSeconds);
+                }
+
+                updatedProfile = currentProfile.WithShopState(
+                    updatedCoinBalance,
+                    updatedBoosterCounts,
+                    updatedHeartState,
+                    currentProfile.AdsRemoved || rewards.RemoveAds,
+                    updatedUnlimitedHeartEnd);
+                saveTask = QueueProfileChange(updatedProfile);
+            }
+
+            if (!await saveTask)
+            {
+                throw new InvalidOperationException(
+                    "Shop rewards could not be saved to the player profile.");
+            }
+
+            return new ShopRewardApplyResult(
+                updatedProfile.CoinBalance,
+                updatedProfile.HeartState.HeartCount,
+                updatedProfile.UnlimitedHeartEndUnixSeconds,
+                updatedProfile.AdsRemoved,
+                updatedProfile.BoosterCounts);
+        }
+
         private HeartState GetRefreshedHeartState(
             PlayerProfile profile,
             DateTimeOffset utcNow)
@@ -370,7 +468,54 @@ namespace FoodieMatch.Core.Application.Player
                 utcNow);
         }
 
-        private void QueueProfileChange(PlayerProfile updatedProfile)
+        private HeartStatus CreateHeartStatus(
+            HeartState heartState,
+            DateTimeOffset currentUtc,
+            long unlimitedHeartEndUnixSeconds)
+        {
+            DateTimeOffset? unlimitedHeartEndUtc =
+                unlimitedHeartEndUnixSeconds > currentUtc.ToUnixTimeSeconds()
+                    ? DateTimeOffset.FromUnixTimeSeconds(unlimitedHeartEndUnixSeconds)
+                    : null;
+
+            DateTimeOffset recoveryReferenceUtc =
+                unlimitedHeartEndUtc ?? currentUtc;
+            TimeSpan timeUntilNextHeart =
+                heartState.GetTimeUntilNextHeart(
+                    _heartConfig.HeartRecoveryDuration,
+                    recoveryReferenceUtc);
+
+            return new HeartStatus(
+                heartState.HeartCount,
+                _heartConfig.MaxHeartCount,
+                timeUntilNextHeart,
+                _heartConfig.HeartRecoveryDuration,
+                unlimitedHeartEndUtc);
+        }
+
+        private static HeartState ShiftHeartRecovery(
+            HeartState heartState,
+            long durationSeconds)
+        {
+            if (!heartState.RecoveryStartedAtUtc.HasValue)
+            {
+                return heartState;
+            }
+
+            return new HeartState(
+                heartState.HeartCount,
+                heartState.RecoveryStartedAtUtc.Value.AddSeconds(durationSeconds));
+        }
+
+        private static bool HasUnlimitedHearts(
+            PlayerProfile profile,
+            DateTimeOffset currentUtc)
+        {
+            return profile.UnlimitedHeartEndUnixSeconds >
+                   currentUtc.ToUnixTimeSeconds();
+        }
+
+        private Task<bool> QueueProfileChange(PlayerProfile updatedProfile)
         {
             PlayerProfileRecord currentRecord = _profileSession.CurrentRecord;
 
@@ -385,7 +530,7 @@ namespace FoodieMatch.Core.Application.Player
                         _currentChangeVersion);
                 }
 
-                return;
+                return _saveQueue;
             }
 
             _currentChangeVersion++;
@@ -398,10 +543,11 @@ namespace FoodieMatch.Core.Application.Player
                 _saveQueue,
                 updatedProfile,
                 changeVersion);
+            return _saveQueue;
         }
 
-        private async Task SaveAfterAsync(
-            Task previousSave,
+        private async Task<bool> SaveAfterAsync(
+            Task<bool> previousSave,
             PlayerProfile profile,
             long changeVersion)
         {
@@ -431,7 +577,7 @@ namespace FoodieMatch.Core.Application.Player
                 if (!saveResult.IsSuccess)
                 {
                     RaiseSaveFailed(CreateSaveErrorMessage(saveResult));
-                    return;
+                    return false;
                 }
 
                 lock (_stateLock)
@@ -446,10 +592,13 @@ namespace FoodieMatch.Core.Application.Player
                         _savedChangeVersion,
                         changeVersion);
                 }
+
+                return true;
             }
             catch (Exception exception)
             {
                 RaiseSaveFailed(exception.Message);
+                return false;
             }
         }
 

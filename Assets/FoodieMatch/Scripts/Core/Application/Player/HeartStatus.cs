@@ -8,7 +8,8 @@ namespace FoodieMatch.Core.Application.Player
             int heartCount,
             int maxHeartCount,
             TimeSpan timeUntilNextHeart,
-            TimeSpan recoveryDuration)
+            TimeSpan recoveryDuration,
+            DateTimeOffset? unlimitedHeartEndUtc = null)
         {
             if (maxHeartCount <= 0)
             {
@@ -46,6 +47,7 @@ namespace FoodieMatch.Core.Application.Player
             MaxHeartCount = maxHeartCount;
             TimeUntilNextHeart = timeUntilNextHeart;
             RecoveryDuration = recoveryDuration;
+            UnlimitedHeartEndUtc = unlimitedHeartEndUtc?.ToUniversalTime();
         }
 
         public int HeartCount { get; }
@@ -55,6 +57,10 @@ namespace FoodieMatch.Core.Application.Player
         public TimeSpan TimeUntilNextHeart { get; }
 
         public TimeSpan RecoveryDuration { get; }
+
+        public DateTimeOffset? UnlimitedHeartEndUtc { get; }
+
+        public bool IsUnlimited => UnlimitedHeartEndUtc.HasValue;
 
         public bool IsFull => HeartCount >= MaxHeartCount;
     }

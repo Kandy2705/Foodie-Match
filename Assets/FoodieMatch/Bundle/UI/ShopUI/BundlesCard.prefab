@@ -675,9 +675,9 @@ RectTransform:
   m_Father: {fileID: 8712291851466176787}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 103, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: -188.79855, y: 1.3189}
+  m_SizeDelta: {x: -377.5971, y: 134.4207}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2317377046107365350
 CanvasRenderer:
@@ -737,9 +737,9 @@ MonoBehaviour:
   m_fontSize: 64
   m_fontSizeBase: 64
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 64
   m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
@@ -797,6 +797,10 @@ PrefabInstance:
     - target: {fileID: 4582476535655261460, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Name
       value: BoosterRewardItem (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304085355698076403, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
+      propertyPath: _boosterType
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8473464634681540164, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Pivot.x
@@ -1050,6 +1054,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BoosterRewardItem (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 6304085355698076403, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
+      propertyPath: _boosterType
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 8473464634681540164, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1163,6 +1171,10 @@ PrefabInstance:
     - target: {fileID: 4582476535655261460, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Name
       value: BoosterRewardItem (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6304085355698076403, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
+      propertyPath: _boosterType
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8473464634681540164, guid: 7643d7b0dcc8b482194310df9aa4644e, type: 3}
       propertyPath: m_Pivot.x

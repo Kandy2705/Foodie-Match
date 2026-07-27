@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 
@@ -13,7 +14,10 @@ namespace FoodieMatch.UI.Reward
 
         public void SetCoinBalance(long coinBalance)
         {
-            _coinCountText.text = Math.Max(0, coinBalance).ToString();
+            long displayedBalance = Math.Max(0, coinBalance);
+            _coinCountText.text = displayedBalance.ToString(
+                "N0",
+                CultureInfo.InvariantCulture);
         }
     }
 }

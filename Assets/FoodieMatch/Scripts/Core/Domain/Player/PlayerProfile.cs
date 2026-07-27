@@ -17,7 +17,9 @@ namespace FoodieMatch.Core.Domain.Player
             long coinBalance,
             IReadOnlyDictionary<BoosterType, int> boosterCounts,
             IReadOnlyCollection<BoosterType> seenBoosterGuides,
-            HeartState heartState)
+            HeartState heartState,
+            bool adsRemoved = false,
+            long unlimitedHeartEndUnixSeconds = 0)
         {
             if (currentLevelNumber < 1)
             {
@@ -35,8 +37,18 @@ namespace FoodieMatch.Core.Domain.Player
                     "Coin balance cannot be negative.");
             }
 
+            if (unlimitedHeartEndUnixSeconds < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(unlimitedHeartEndUnixSeconds),
+                    unlimitedHeartEndUnixSeconds,
+                    "Unlimited heart end time cannot be negative.");
+            }
+
             CurrentLevelNumber = currentLevelNumber;
             CoinBalance = coinBalance;
+            AdsRemoved = adsRemoved;
+            UnlimitedHeartEndUnixSeconds = unlimitedHeartEndUnixSeconds;
             HeartState = heartState ??
                 throw new ArgumentNullException(nameof(heartState));
             _boosterCounts = CopyBoosterCounts(boosterCounts);
@@ -48,6 +60,10 @@ namespace FoodieMatch.Core.Domain.Player
         public int CurrentLevelNumber { get; }
 
         public long CoinBalance { get; }
+
+        public bool AdsRemoved { get; }
+
+        public long UnlimitedHeartEndUnixSeconds { get; }
 
         public HeartState HeartState { get; }
 
@@ -81,7 +97,9 @@ namespace FoodieMatch.Core.Domain.Player
                 CoinBalance,
                 _boosterCounts,
                 _seenBoosterGuides,
-                HeartState);
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds);
         }
 
         public PlayerProfile WithCoinBalance(long coinBalance)
@@ -96,7 +114,9 @@ namespace FoodieMatch.Core.Domain.Player
                 coinBalance,
                 _boosterCounts,
                 _seenBoosterGuides,
-                HeartState);
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds);
         }
 
         public PlayerProfile WithBoosterCount(
@@ -128,7 +148,9 @@ namespace FoodieMatch.Core.Domain.Player
                 CoinBalance,
                 boosterCounts,
                 _seenBoosterGuides,
-                HeartState);
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds);
         }
 
         public PlayerProfile WithSeenBoosterGuide(BoosterType boosterType)
@@ -150,7 +172,9 @@ namespace FoodieMatch.Core.Domain.Player
                 CoinBalance,
                 _boosterCounts,
                 seenBoosterGuides,
-                HeartState);
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds);
         }
 
         public PlayerProfile WithHeartState(HeartState heartState)
@@ -170,7 +194,26 @@ namespace FoodieMatch.Core.Domain.Player
                 CoinBalance,
                 _boosterCounts,
                 _seenBoosterGuides,
-                heartState);
+                heartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds);
+        }
+
+        public PlayerProfile WithShopState(
+            long coinBalance,
+            IReadOnlyDictionary<BoosterType, int> boosterCounts,
+            HeartState heartState,
+            bool adsRemoved,
+            long unlimitedHeartEndUnixSeconds)
+        {
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                coinBalance,
+                boosterCounts,
+                _seenBoosterGuides,
+                heartState,
+                adsRemoved,
+                unlimitedHeartEndUnixSeconds);
         }
 
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(

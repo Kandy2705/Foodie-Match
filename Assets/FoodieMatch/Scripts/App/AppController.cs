@@ -6,6 +6,7 @@ using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.UI;
@@ -20,6 +21,7 @@ namespace FoodieMatch.App
         private PlayerProfileService _playerProfileService;
         private BoosterManager _boosterManager;
         private IGameEconomyConfig _economyConfig;
+        private ShopPurchaseService _shopPurchaseService;
         private IRewardedAdService _rewardedAdService;
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
@@ -33,6 +35,7 @@ namespace FoodieMatch.App
             PlayerProfileService playerProfileService,
             BoosterManager boosterManager,
             IGameEconomyConfig economyConfig,
+            ShopPurchaseService shopPurchaseService,
             IRewardedAdService rewardedAdService,
             ILevelRepository levelRepository,
             IAudioService audioService)
@@ -42,6 +45,7 @@ namespace FoodieMatch.App
             _playerProfileService = playerProfileService;
             _boosterManager = boosterManager;
             _economyConfig = economyConfig;
+            _shopPurchaseService = shopPurchaseService;
             _rewardedAdService = rewardedAdService;
             _levelRepository = levelRepository;
             _audioService = audioService;
@@ -57,6 +61,7 @@ namespace FoodieMatch.App
             _uiManager.BoosterRewardedAdRequested += OnBoosterRewardedAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
+            _uiManager.ShopPurchaseHandler = OnShopPurchaseRequestedAsync;
         }
 
         public void EnterHome()
@@ -322,11 +327,29 @@ namespace FoodieMatch.App
         private void UpdateUiAfterBoosterGranted(BoosterType boosterType)
         {
             _uiManager.HideBoosterBuyPopup();
-            _uiManager.RefreshBoosterInventory();
-            _uiManager.RefreshOpenedResourceBars();
+            _uiManager.RefreshAllPlayerResources();
             Debug.Log(
                 $"Granted 1x {boosterType} booster. " +
                 $"Total: {_boosterManager.GetCount(boosterType)}");
+        }
+
+        private async Task<ShopPurchaseResult> OnShopPurchaseRequestedAsync(
+            string productId)
+        {
+            ShopPurchaseResult result =
+                await _shopPurchaseService.PurchaseAsync(productId);
+
+            if (result.IsSuccess)
+            {
+                _uiManager.RefreshAllPlayerResources();
+            }
+            else
+            {
+                Debug.LogError(
+                    $"Shop purchase {productId} failed: {result.ErrorMessage}");
+            }
+
+            return result;
         }
 
         private void OnLeaveGameRequested()

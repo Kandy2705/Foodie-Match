@@ -1,0 +1,214 @@
+{
+  "products": [
+    {
+      "id": "limited_pack",
+      "storeProductId": "com.foodiematch.shop.limited_pack",
+      "fallbackDisplayPrice": "$5.99",
+      "displayName": "Limited Pack",
+      "cardType": "Special",
+      "section": "Special",
+      "sortOrder": 0,
+      "rewards": {
+        "coins": 4000,
+        "unlimitedHeartSeconds": 7200,
+        "removeAds": true,
+        "boosters": [
+          { "type": "Plate", "amount": 2 },
+          { "type": "Storage", "amount": 2 },
+          { "type": "Swap", "amount": 2 },
+          { "type": "Fridge", "amount": 2 }
+        ]
+      }
+    },
+    {
+      "id": "big_bundle",
+      "storeProductId": "com.foodiematch.shop.big_bundle",
+      "fallbackDisplayPrice": "$4.99",
+      "displayName": "Big Bundle",
+      "cardType": "BigBundle",
+      "section": "Bundles",
+      "sortOrder": 0,
+      "rewards": {
+        "coins": 2500,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": [
+          { "type": "Plate", "amount": 2 },
+          { "type": "Storage", "amount": 2 },
+          { "type": "Swap", "amount": 2 },
+          { "type": "Fridge", "amount": 2 }
+        ]
+      }
+    },
+    {
+      "id": "great_bundle",
+      "storeProductId": "com.foodiematch.shop.great_bundle",
+      "fallbackDisplayPrice": "$9.99",
+      "displayName": "Great Bundle",
+      "cardType": "Bundle",
+      "section": "Bundles",
+      "sortOrder": 1,
+      "rewards": {
+        "coins": 5500,
+        "unlimitedHeartSeconds": 10800,
+        "removeAds": true,
+        "boosters": [
+          { "type": "Plate", "amount": 3 },
+          { "type": "Storage", "amount": 3 },
+          { "type": "Swap", "amount": 3 },
+          { "type": "Fridge", "amount": 3 }
+        ]
+      }
+    },
+    {
+      "id": "ultra_bundle",
+      "storeProductId": "com.foodiematch.shop.ultra_bundle",
+      "fallbackDisplayPrice": "$24.99",
+      "displayName": "Ultra Bundle",
+      "cardType": "Bundle",
+      "section": "Bundles",
+      "sortOrder": 2,
+      "rewards": {
+        "coins": 12000,
+        "unlimitedHeartSeconds": 21600,
+        "removeAds": true,
+        "boosters": [
+          { "type": "Plate", "amount": 6 },
+          { "type": "Storage", "amount": 6 },
+          { "type": "Swap", "amount": 6 },
+          { "type": "Fridge", "amount": 6 }
+        ]
+      }
+    },
+    {
+      "id": "superior_bundle",
+      "storeProductId": "com.foodiematch.shop.superior_bundle",
+      "fallbackDisplayPrice": "$49.99",
+      "displayName": "Superior Bundle",
+      "cardType": "Bundle",
+      "section": "Bundles",
+      "sortOrder": 3,
+      "rewards": {
+        "coins": 25000,
+        "unlimitedHeartSeconds": 43200,
+        "removeAds": true,
+        "boosters": [
+          { "type": "Plate", "amount": 12 },
+          { "type": "Storage", "amount": 12 },
+          { "type": "Swap", "amount": 12 },
+          { "type": "Fridge", "amount": 12 }
+        ]
+      }
+    },
+    {
+      "id": "legendary_bundle",
+      "storeProductId": "com.foodiematch.shop.legendary_bundle",
+      "fallbackDisplayPrice": "$99.99",
+      "displayName": "Legendary Bundle",
+      "cardType": "Bundle",
+      "section": "Bundles",
+      "sortOrder": 4,
+      "rewards": {
+        "coins": 50000,
+        "unlimitedHeartSeconds": 86400,
+        "removeAds": true,
+        "boosters": [
+          { "type": "Plate", "amount": 24 },
+          { "type": "Storage", "amount": 24 },
+          { "type": "Swap", "amount": 24 },
+          { "type": "Fridge", "amount": 24 }
+        ]
+      }
+    },
+    {
+      "id": "gold_pack_1000",
+      "storeProductId": "com.foodiematch.shop.gold_1000",
+      "fallbackDisplayPrice": "$1.99",
+      "displayName": "1,000 Coins",
+      "cardType": "Gold",
+      "section": "Gold",
+      "sortOrder": 0,
+      "rewards": {
+        "coins": 1000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": []
+      }
+    },
+    {
+      "id": "gold_pack_5000",
+      "storeProductId": "com.foodiematch.shop.gold_5000",
+      "fallbackDisplayPrice": "$7.99",
+      "displayName": "5,000 Coins",
+      "cardType": "Gold",
+      "section": "Gold",
+      "sortOrder": 1,
+      "rewards": {
+        "coins": 5000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": []
+      }
+    },
+    {
+      "id": "gold_pack_10000",
+      "storeProductId": "com.foodiematch.shop.gold_10000",
+      "fallbackDisplayPrice": "$15.99",
+      "displayName": "10,000 Coins",
+      "cardType": "Gold",
+      "section": "Gold",
+      "sortOrder": 2,
+      "rewards": {
+        "coins": 10000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": []
+      }
+    },
+    {
+      "id": "gold_pack_25000",
+      "storeProductId": "com.foodiematch.shop.gold_25000",
+      "fallbackDisplayPrice": "$30.99",
+      "displayName": "25,000 Coins",
+      "cardType": "Gold",
+      "section": "Gold",
+      "sortOrder": 3,
+      "rewards": {
+        "coins": 25000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": []
+      }
+    },
+    {
+      "id": "gold_pack_50000",
+      "storeProductId": "com.foodiematch.shop.gold_50000",
+      "fallbackDisplayPrice": "$59.99",
+      "displayName": "50,000 Coins",
+      "cardType": "Gold",
+      "section": "Gold",
+      "sortOrder": 4,
+      "rewards": {
+        "coins": 50000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": []
+      }
+    },
+    {
+      "id": "gold_pack_100000",
+      "storeProductId": "com.foodiematch.shop.gold_100000",
+      "fallbackDisplayPrice": "$95.99",
+      "displayName": "100,000 Coins",
+      "cardType": "Gold",
+      "section": "Gold",
+      "sortOrder": 5,
+      "rewards": {
+        "coins": 100000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": false,
+        "boosters": []
+      }
+    }
+  ]
+}
