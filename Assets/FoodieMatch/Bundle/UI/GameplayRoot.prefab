@@ -625,9 +625,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animator: {fileID: 3306768415498444374}
-  _startTrigger: Start
-  _continueTrigger: Continue
-  _breakTrigger: Break
   _startState: ComboBar_Start
   _continueState: ComboBar_Continue
   _breakState: ComboBar_Break
