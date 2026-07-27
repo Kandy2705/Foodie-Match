@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Gameplay.Booster;
 using PrimeTween;
 using TMPro;
@@ -37,9 +36,6 @@ namespace FoodieMatch.UI.Gameplay
 
         private void Awake()
         {
-            EnsureButtonReferences();
-            EnsureTextReferences();
-            EnsureComboReferences();
             BindButtons();
             ResetCombo();
         }
@@ -61,26 +57,22 @@ namespace FoodieMatch.UI.Gameplay
 
         public void SetLevelNumber(int levelNumber)
         {
-            EnsureTextReferences();
-            UiTmpText.SetText(_levelLabelText, levelNumber.ToString());
+            _levelLabelText.text = levelNumber.ToString();
         }
 
         public void SetProgress(int servedCount, int totalCount)
         {
-            EnsureTextReferences();
-            UiTmpText.SetText(_progressText, $"{servedCount}/{totalCount}");
+            _progressText.text = $"{servedCount}/{totalCount}";
         }
 
         public void SetCombo(int comboCount, float remainingSeconds)
         {
-            EnsureComboReferences();
-
             bool isBreaking = comboCount <= 0 && _lastComboCount > 0;
 
             if (comboCount > 0)
             {
                 StopBreakClearCoroutine();
-                UiTmpText.SetText(_comboMultiplierText, $"x{comboCount}");
+                _comboMultiplierText.text = $"x{comboCount}";
                 PlayComboCountdown(remainingSeconds);
                 ResetComboMultiplierVisual();
             }
@@ -100,7 +92,6 @@ namespace FoodieMatch.UI.Gameplay
 
         public void ResetCombo()
         {
-            EnsureComboReferences();
             StopComboCountdown();
             StopBreakClearCoroutine();
             _lastComboCount = 0;
@@ -109,12 +100,6 @@ namespace FoodieMatch.UI.Gameplay
 
         public void ShowComboFeedback(Vector3 worldPosition)
         {
-            if (_comboFeedbackRoot == null || _comboFeedbackPrefab == null)
-            {
-                Debug.LogError("Combo feedback root or prefab is missing.", this);
-                return;
-            }
-
             Camera worldCamera = Camera.main;
 
             if (worldCamera == null)
@@ -131,14 +116,7 @@ namespace FoodieMatch.UI.Gameplay
             }
 
             ComboFeedbackView feedback = Instantiate(_comboFeedbackPrefab, _comboFeedbackRoot);
-            RectTransform feedbackRect = feedback.transform as RectTransform;
-
-            if (feedbackRect == null)
-            {
-                Debug.LogError("Combo feedback prefab must use a RectTransform.", feedback);
-                Destroy(feedback.gameObject);
-                return;
-            }
+            RectTransform feedbackRect = (RectTransform)feedback.transform;
 
             feedbackRect.anchoredPosition = localPosition;
             feedback.gameObject.SetActive(true);
@@ -152,31 +130,24 @@ namespace FoodieMatch.UI.Gameplay
                 return;
             }
 
-            if (_comboBarAnimController != null)
+            if (comboCount > _lastComboCount)
             {
-                if (comboCount > _lastComboCount)
-                {
-                    StopBreakClearCoroutine();
+                StopBreakClearCoroutine();
 
-                    if (_lastComboCount <= 0)
-                    {
-                        _comboBarAnimController.PlayStart();
-                    }
-                    else
-                    {
-                        _comboBarAnimController.PlayContinue();
-                    }
-                }
-                else if (comboCount <= 0 && _lastComboCount > 0)
+                if (_lastComboCount <= 0)
                 {
-                    _comboBarAnimController.PlayBreak();
-                    StopBreakClearCoroutine();
-                    _breakClearCoroutine = StartCoroutine(ClearComboVisualAfterBreak());
+                    _comboBarAnimController.PlayStart();
+                }
+                else
+                {
+                    _comboBarAnimController.PlayContinue();
                 }
             }
-            else if (comboCount <= 0)
+            else if (comboCount <= 0 && _lastComboCount > 0)
             {
-                ClearComboVisualImmediate();
+                _comboBarAnimController.PlayBreak();
+                StopBreakClearCoroutine();
+                _breakClearCoroutine = StartCoroutine(ClearComboVisualAfterBreak());
             }
 
             _lastComboCount = comboCount;
@@ -201,7 +172,7 @@ namespace FoodieMatch.UI.Gameplay
         private void ClearComboVisualImmediate()
         {
             StopComboCountdown();
-            UiTmpText.SetText(_comboMultiplierText, string.Empty);
+            _comboMultiplierText.text = string.Empty;
             SetComboFill(0f);
             ResetComboMultiplierVisual();
         }
@@ -272,21 +243,15 @@ namespace FoodieMatch.UI.Gameplay
 
         public void SetBoosterCount(int boosterIndex, int count)
         {
-            EnsureTextReferences();
-
-            if (_boosterCountTexts == null ||
-                boosterIndex < 0 ||
+            if (boosterIndex < 0 ||
                 boosterIndex >= _boosterCountTexts.Length)
             {
                 return;
             }
 
-            UiTmpText.SetText(_boosterCountTexts[boosterIndex], count.ToString());
+            _boosterCountTexts[boosterIndex].text = count.ToString();
 
-            if (_boosterButtonViews != null &&
-                boosterIndex >= 0 &&
-                boosterIndex < _boosterButtonViews.Length &&
-                _boosterButtonViews[boosterIndex] != null)
+            if (boosterIndex < _boosterButtonViews.Length)
             {
                 _boosterButtonViews[boosterIndex].SetCount(count);
             }
@@ -294,10 +259,7 @@ namespace FoodieMatch.UI.Gameplay
 
         public void SetBoosterUnlocked(int boosterIndex, bool isUnlocked)
         {
-            if (_boosterButtonViews == null ||
-                boosterIndex < 0 ||
-                boosterIndex >= _boosterButtonViews.Length ||
-                _boosterButtonViews[boosterIndex] == null)
+            if (boosterIndex < 0 || boosterIndex >= _boosterButtonViews.Length)
             {
                 return;
             }
@@ -310,10 +272,7 @@ namespace FoodieMatch.UI.Gameplay
             Sprite lockedButtonSprite,
             Sprite lockedIconSprite)
         {
-            if (_boosterButtonViews == null ||
-                boosterIndex < 0 ||
-                boosterIndex >= _boosterButtonViews.Length ||
-                _boosterButtonViews[boosterIndex] == null)
+            if (boosterIndex < 0 || boosterIndex >= _boosterButtonViews.Length)
             {
                 return;
             }
@@ -325,10 +284,7 @@ namespace FoodieMatch.UI.Gameplay
 
         public void SetBoosterUnlockLevel(int boosterIndex, int unlockLevel)
         {
-            if (_boosterButtonViews == null ||
-                boosterIndex < 0 ||
-                boosterIndex >= _boosterButtonViews.Length ||
-                _boosterButtonViews[boosterIndex] == null)
+            if (boosterIndex < 0 || boosterIndex >= _boosterButtonViews.Length)
             {
                 return;
             }
@@ -338,20 +294,13 @@ namespace FoodieMatch.UI.Gameplay
 
         public void SetBoosterCounts(int[] counts)
         {
-            EnsureTextReferences();
-
-            if (counts == null || _boosterCountTexts == null)
-            {
-                return;
-            }
-
             int length = Mathf.Min(counts.Length, _boosterCountTexts.Length);
 
             for (int i = 0; i < length; i++)
             {
-                UiTmpText.SetText(_boosterCountTexts[i], counts[i].ToString());
+                _boosterCountTexts[i].text = counts[i].ToString();
 
-                if (_boosterButtonViews != null && i < _boosterButtonViews.Length && _boosterButtonViews[i] != null)
+                if (i < _boosterButtonViews.Length)
                 {
                     _boosterButtonViews[i].SetCount(counts[i]);
                 }
@@ -360,58 +309,29 @@ namespace FoodieMatch.UI.Gameplay
 
         public void SetBoosterUnlockedStates(bool[] unlockedStates)
         {
-            if (unlockedStates == null || _boosterButtonViews == null)
-            {
-                return;
-            }
-
             int length = Mathf.Min(unlockedStates.Length, _boosterButtonViews.Length);
 
             for (int i = 0; i < length; i++)
             {
-                if (_boosterButtonViews[i] != null)
-                {
-                    _boosterButtonViews[i].SetUnlocked(unlockedStates[i]);
-                }
+                _boosterButtonViews[i].SetUnlocked(unlockedStates[i]);
             }
         }
 
         private void BindButtons()
         {
-            if (_pauseButton != null)
-            {
-                _pauseButton.onClick.AddListener(OnPauseButtonClicked);
-            }
-            else
-            {
-                Debug.LogWarning($"{nameof(GameplayHudView)} on {name} has no pause button assigned.");
-            }
+            _pauseButton.onClick.AddListener(OnPauseButtonClicked);
         }
 
         private void UnbindButtons()
         {
-            if (_pauseButton != null)
-            {
-                _pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
-            }
+            _pauseButton.onClick.RemoveListener(OnPauseButtonClicked);
         }
 
         private void SetupBoosterButtonViews()
         {
-            if (_boosterButtonViews == null)
-            {
-                return;
-            }
-
             for (int i = 0; i < _boosterButtonViews.Length && i < BoosterButtonCount; i++)
             {
                 BoosterButtonView view = _boosterButtonViews[i];
-
-                if (view == null)
-                {
-                    continue;
-                }
-
                 int index = i;
                 view.SetActions(
                     useBoosterClicked: () => _boosterUseClicked?.Invoke(index),
@@ -424,217 +344,6 @@ namespace FoodieMatch.UI.Gameplay
             _pauseClicked?.Invoke();
         }
 
-        private void EnsureButtonReferences()
-        {
-            if (_pauseButton == null)
-            {
-                _pauseButton = FindChildButton("SettingsButton");
-            }
-
-            if (_pauseButton == null)
-            {
-                _pauseButton = FindChildButton("PauseButton");
-            }
-
-            if (_boosterButtonViews == null || _boosterButtonViews.Length == 0)
-            {
-                _boosterButtonViews = FindBoosterButtonViews();
-            }
-        }
-
-        private void EnsureTextReferences()
-        {
-            if (_levelLabelText == null)
-            {
-                _levelLabelText = UiTmpText.FindChild(transform, "Label");
-            }
-
-            if (_progressText == null)
-            {
-                _progressText = UiTmpText.FindChild(transform, "ProgressText");
-            }
-
-            if (_comboMultiplierText == null)
-            {
-                _comboMultiplierText = UiTmpText.FindChild(transform, "ComboMultiplierText");
-            }
-
-            if (_boosterCountTexts == null || _boosterCountTexts.Length == 0)
-            {
-                _boosterCountTexts = FindBoosterCountTexts();
-            }
-        }
-
-        private void EnsureComboReferences()
-        {
-            Transform comboRootTransform = null;
-
-            if (_comboProgressBarRoot != null)
-            {
-                if (_comboProgressBarRoot.name != "ComboProgressBarRoot")
-                {
-                    Transform nested = FindChildTransform(
-                        _comboProgressBarRoot.transform,
-                        "ComboProgressBarRoot");
-
-                    if (nested != null)
-                    {
-                        _comboProgressBarRoot = nested.gameObject;
-                    }
-                }
-
-                comboRootTransform = _comboProgressBarRoot.transform;
-            }
-
-            if (_comboProgressBarRoot == null)
-            {
-                comboRootTransform = FindChildTransform(transform, "ComboProgressBarRoot");
-
-                if (comboRootTransform != null)
-                {
-                    _comboProgressBarRoot = comboRootTransform.gameObject;
-                }
-            }
-
-            if (_comboMultiplierText == null)
-            {
-                Transform searchRoot = _comboProgressBarRoot != null
-                    ? _comboProgressBarRoot.transform
-                    : transform;
-                _comboMultiplierText = UiTmpText.FindChild(searchRoot, "ComboMultiplierText");
-            }
-
-            if (_comboBarFillImage == null)
-            {
-                Transform fillTransform = FindChildTransform(transform, "BarFillImage");
-
-                if (fillTransform != null)
-                {
-                    _comboBarFillImage = fillTransform.GetComponent<Image>();
-                }
-            }
-
-            if (_comboBarAnimController == null)
-            {
-                Transform comboButton = FindChildTransform(transform, "ComboProgressButton");
-
-                if (comboButton != null)
-                {
-                    _comboBarAnimController =
-                        comboButton.GetComponent<ComboBarAnimController>();
-                }
-
-                if (_comboBarAnimController == null && _comboProgressBarRoot != null)
-                {
-                    _comboBarAnimController =
-                        _comboProgressBarRoot.GetComponentInParent<ComboBarAnimController>();
-
-                    if (_comboBarAnimController == null)
-                    {
-                        _comboBarAnimController =
-                            _comboProgressBarRoot.GetComponent<ComboBarAnimController>();
-                    }
-                }
-
-                if (_comboBarAnimController == null)
-                {
-                    _comboBarAnimController =
-                        GetComponentInChildren<ComboBarAnimController>(true);
-                }
-            }
-        }
-
-        private BoosterButtonView[] FindBoosterButtonViews()
-        {
-            BoosterButtonView[] views = new BoosterButtonView[BoosterButtonCount];
-
-            for (int i = 0; i < BoosterButtonCount; i++)
-            {
-                string objectName = $"BoosterButton_0{i + 1}";
-
-                Transform child = FindChildTransform(objectName);
-                views[i] = child != null
-                    ? child.GetComponent<BoosterButtonView>()
-                    : null;
-            }
-
-            return views;
-        }
-
-        private TMP_Text[] FindBoosterCountTexts()
-        {
-            Transform boosterBar = FindChildTransform("BoosterBarRoot");
-
-            if (boosterBar == null)
-            {
-                boosterBar = transform;
-            }
-
-            System.Collections.Generic.List<TMP_Text> countTexts = new();
-            TMP_Text[] texts = boosterBar.GetComponentsInChildren<TMP_Text>(true);
-
-            for (int i = 0; i < texts.Length; i++)
-            {
-                TMP_Text text = texts[i];
-
-                if (text != null && text.gameObject.name == "CountText")
-                {
-                    countTexts.Add(text);
-                }
-            }
-
-            return countTexts.ToArray();
-        }
-
-        private Transform FindChildTransform(string objectName)
-        {
-            return FindChildTransform(transform, objectName);
-        }
-
-        private static Transform FindChildTransform(Transform root, string objectName)
-        {
-            if (root == null || string.IsNullOrEmpty(objectName))
-            {
-                return null;
-            }
-
-            if (root.name == objectName)
-            {
-                return root;
-            }
-
-            Transform[] transforms = root.GetComponentsInChildren<Transform>(true);
-
-            for (int i = 0; i < transforms.Length; i++)
-            {
-                Transform child = transforms[i];
-
-                if (child != null && child.name == objectName)
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
-        private Button FindChildButton(string objectName)
-        {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                Button button = buttons[i];
-
-                if (button != null && button.gameObject.name == objectName)
-                {
-                    return button;
-                }
-            }
-
-            return null;
-        }
-
         private static bool IsValidDuration(float duration)
         {
             return duration > 0f && !float.IsNaN(duration) && !float.IsInfinity(duration);
@@ -643,7 +352,7 @@ namespace FoodieMatch.UI.Gameplay
         private bool TryGetComboFeedbackPosition(Vector3 screenPosition, out Vector2 localPosition)
         {
             Canvas canvas = _comboFeedbackRoot.GetComponentInParent<Canvas>();
-            Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            Camera uiCamera = canvas.renderMode != RenderMode.ScreenSpaceOverlay
                 ? canvas.worldCamera
                 : null;
 

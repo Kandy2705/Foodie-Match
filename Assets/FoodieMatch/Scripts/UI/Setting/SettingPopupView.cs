@@ -20,43 +20,16 @@ namespace FoodieMatch.UI.Setting
 
         private void Awake()
         {
-            if (_popupAnimController == null)
-            {
-                _popupAnimController = GetComponent<PopupAnimController>();
-            }
-
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
-
-            if (_soundToggle != null)
-            {
-                _soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
-            }
-
-            if (_musicToggle != null)
-            {
-                _musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
-            }
+            _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
+            _musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
         }
 
         private void OnDestroy()
         {
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
-
-            if (_soundToggle != null)
-            {
-                _soundToggle.onValueChanged.RemoveListener(OnSoundToggleChanged);
-            }
-
-            if (_musicToggle != null)
-            {
-                _musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
-            }
+            _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+            _soundToggle.onValueChanged.RemoveListener(OnSoundToggleChanged);
+            _musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
         }
 
         public void SetActions(SettingPopupViewActions actions)
@@ -68,15 +41,8 @@ namespace FoodieMatch.UI.Setting
 
         public void SetToggleStates(bool isSoundOn, bool isMusicOn)
         {
-            if (_soundToggle != null)
-            {
-                _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
-            }
-
-            if (_musicToggle != null)
-            {
-                _musicToggle.SetIsOnWithoutNotify(!isMusicOn);
-            }
+            _soundToggle.SetIsOnWithoutNotify(!isSoundOn);
+            _musicToggle.SetIsOnWithoutNotify(!isMusicOn);
         }
 
         public override void Show()
@@ -84,10 +50,7 @@ namespace FoodieMatch.UI.Setting
             _isClosing = false;
             base.Show();
 
-            if (_popupAnimController != null)
-            {
-                _popupAnimController.Open();
-            }
+            _popupAnimController.Open();
         }
 
         public override void Hide()
@@ -97,7 +60,7 @@ namespace FoodieMatch.UI.Setting
                 return;
             }
 
-            if (_popupAnimController != null && gameObject.activeInHierarchy)
+            if (gameObject.activeInHierarchy)
             {
                 _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);

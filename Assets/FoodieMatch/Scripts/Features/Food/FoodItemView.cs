@@ -45,12 +45,19 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private float _landingRestoreDuration = 0.1f;
         [SerializeField] private Ease _landingRestoreEase = Ease.OutBack;
 
+        [Header("Reveal Motion")]
+        [SerializeField] private float _revealDuration = 0.18f;
+        [SerializeField] private Ease _revealEase = Ease.OutBack;
+
         private Tween _flightTween;
         private Tween _fadeTween;
+        private Tween _revealTween;
         private Sequence _landingSequence;
         private bool _isFlying;
         private bool _didFlightComplete;
         private bool _didFadeComplete;
+        private bool _isRevealPlaying;
+        private bool _didRevealComplete;
         private bool _isLandingFeedbackPlaying;
         private bool _didLandingFeedbackComplete;
         private Transform _flightTarget;
@@ -323,6 +330,42 @@ namespace FoodieMatch.Features.Food
             }
         }
 
+        public async Task<MotionResult> PlayRevealAsync()
+        {
+            if (IsEmpty || _isRevealPlaying || !IsValidTime(_revealDuration))
+            {
+                return MotionResult.Failed;
+            }
+
+            Vector3 targetScale = GetVisualScale(FoodItemVisualState.OnGrill);
+
+            if (!IsValidScale(targetScale))
+            {
+                return MotionResult.Failed;
+            }
+
+            _isRevealPlaying = true;
+            _didRevealComplete = false;
+            transform.localScale = Vector3.zero;
+
+            try
+            {
+                _revealTween = Tween.Scale(transform, targetScale, _revealDuration, _revealEase)
+                    .OnComplete(this, target => target.MarkRevealCompleted());
+
+                await _revealTween;
+
+                return _didRevealComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                _revealTween = default;
+                _isRevealPlaying = false;
+            }
+        }
+
         public void StopFlight()
         {
             if (_flightTween.isAlive)
@@ -336,6 +379,7 @@ namespace FoodieMatch.Features.Food
             StopFlight();
             StopLandingFeedback(resetScale: true);
             StopFade(resetAlpha: true);
+            StopReveal(resetScale: true);
             RestoreSortingLayerBeforeFlight();
         }
 
@@ -488,6 +532,11 @@ namespace FoodieMatch.Features.Food
             _didFadeComplete = true;
         }
 
+        private void MarkRevealCompleted()
+        {
+            _didRevealComplete = true;
+        }
+
         private void MarkLandingFeedbackCompleted()
         {
             _didLandingFeedbackComplete = true;
@@ -603,6 +652,23 @@ namespace FoodieMatch.Features.Food
             {
                 SetSpriteAlpha(1f);
             }
+        }
+
+        private void StopReveal(bool resetScale)
+        {
+            if (_revealTween.isAlive)
+            {
+                _revealTween.Stop();
+            }
+
+            _revealTween = default;
+
+            if (resetScale && _isRevealPlaying)
+            {
+                transform.localScale = GetVisualScale(FoodItemVisualState.OnGrill);
+            }
+
+            _isRevealPlaying = false;
         }
 
         private void SetSpriteAlpha(float alpha)

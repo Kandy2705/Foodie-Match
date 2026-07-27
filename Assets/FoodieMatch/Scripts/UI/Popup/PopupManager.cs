@@ -12,80 +12,10 @@ namespace FoodieMatch.UI.Popup
         private readonly Dictionary<Type, PopupPrefabEntry> _entryMap = new();
         private readonly Dictionary<Type, PopupBase> _openedPopups = new();
         private readonly Dictionary<Type, PopupBase> _cachedPopups = new();
-        private readonly Dictionary<Type, PopupBase> _scenePopups = new();
 
         private void Awake()
         {
             BuildEntryMap();
-        }
-
-        public void RegisterScenePopup<TPopup>(TPopup popup)
-            where TPopup : PopupBase
-        {
-            if (popup == null)
-            {
-                Debug.LogError(
-                    $"Cannot register scene popup " +
-                    $"{typeof(TPopup).Name} because it is null.");
-
-                return;
-            }
-
-            if (_popupRoot == null)
-            {
-                Debug.LogError(
-                    "Cannot register scene popup because " +
-                    "PopupRoot is missing.");
-
-                return;
-            }
-
-            Type popupType = typeof(TPopup);
-
-            if (_scenePopups.TryGetValue(
-                    popupType,
-                    out PopupBase registeredPopup))
-            {
-                if (registeredPopup == popup)
-                {
-                    return;
-                }
-
-                Debug.LogError(
-                    $"A different scene popup is already " +
-                    $"registered for type {popupType.Name}.",
-                    popup);
-
-                return;
-            }
-
-            _scenePopups.Add(popupType, popup);
-
-            popup.HideRequested -= OnPopupHideRequested;
-            popup.HideRequested += OnPopupHideRequested;
-        }
-
-        public void UnregisterScenePopup<TPopup>(TPopup popup)
-            where TPopup : PopupBase
-        {
-            Type popupType = typeof(TPopup);
-
-            if (!_scenePopups.TryGetValue(
-                    popupType,
-                    out PopupBase registeredPopup))
-            {
-                return;
-            }
-
-            if (registeredPopup != popup)
-            {
-                return;
-            }
-
-            popup.HideRequested -= OnPopupHideRequested;
-
-            _openedPopups.Remove(popupType);
-            _scenePopups.Remove(popupType);
         }
 
         public TPopup Show<TPopup>(IPopupData data = null)
@@ -100,40 +30,7 @@ namespace FoodieMatch.UI.Popup
                 return openedPopup as TPopup;
             }
 
-            if (_scenePopups.TryGetValue(popupType, out PopupBase scenePopup))
-            {
-                if (scenePopup == null)
-                {
-                    _scenePopups.Remove(popupType);
-
-                    Debug.LogError(
-                        $"Registered scene popup " +
-                        $"{popupType.Name} was destroyed.");
-
-                    return null;
-                }
-
-                scenePopup.transform.SetAsFirstSibling();
-
-                scenePopup.Setup(data);
-                scenePopup.Show();
-                _openedPopups.Add(popupType, scenePopup);
-                return scenePopup as TPopup;
-            }
-
-            if (_popupRoot == null)
-            {
-                Debug.LogError("Cannot show popup because PopupRoot is missing.");
-                return null;
-            }
-
             TPopup popup = GetOrCreatePopup<TPopup>();
-
-            if (popup == null)
-            {
-                return null;
-            }
-
             popup.Setup(data);
             popup.Show();
 
@@ -160,28 +57,6 @@ namespace FoodieMatch.UI.Popup
             _openedPopups.Clear();
         }
 
-        public void HideAllRuntimePopups()
-        {
-            List<Type> openedTypes =
-                new(_openedPopups.Keys);
-
-            for (int i = 0;
-                 i < openedTypes.Count;
-                 i++)
-            {
-                Type popupType =
-                    openedTypes[i];
-
-                if (_scenePopups.ContainsKey(
-                        popupType))
-                {
-                    continue;
-                }
-
-                Hide(popupType);
-            }
-        }
-
         public bool IsOpened<TPopup>()
             where TPopup : PopupBase
         {
@@ -193,8 +68,8 @@ namespace FoodieMatch.UI.Popup
         {
             if (_openedPopups.TryGetValue(typeof(TPopup), out PopupBase openedPopup))
             {
-                popup = openedPopup as TPopup;
-                return popup != null;
+                popup = (TPopup)openedPopup;
+                return true;
             }
 
             popup = null;
@@ -211,16 +86,7 @@ namespace FoodieMatch.UI.Popup
             popup.Hide();
             _openedPopups.Remove(popupType);
 
-            if (_scenePopups.ContainsKey(popupType))
-            {
-                return;
-            }
-
-            if (!_entryMap.TryGetValue(popupType, out PopupPrefabEntry entry))
-            {
-                DestroyPopup(popup);
-                return;
-            }
+            PopupPrefabEntry entry = _entryMap[popupType];
 
             if (entry.CacheAfterHide)
             {
@@ -244,17 +110,7 @@ namespace FoodieMatch.UI.Popup
                 return cachedPopup as TPopup;
             }
 
-            if (!_entryMap.TryGetValue(popupType, out PopupPrefabEntry entry))
-            {
-                Debug.LogError($"Popup prefab entry not found for type: {popupType.Name}");
-                return null;
-            }
-
-            if (entry.Prefab == null)
-            {
-                Debug.LogError($"Popup prefab is null for type: {popupType.Name}");
-                return null;
-            }
+            PopupPrefabEntry entry = _entryMap[popupType];
 
             PopupBase popup = Instantiate(entry.Prefab, _popupRoot);
             popup.transform.SetAsLastSibling();
@@ -266,11 +122,6 @@ namespace FoodieMatch.UI.Popup
 
         private void DestroyPopup(PopupBase popup)
         {
-            if (popup == null)
-            {
-                return;
-            }
-
             popup.HideRequested -= OnPopupHideRequested;
             popup.Dispose();
 
@@ -279,11 +130,6 @@ namespace FoodieMatch.UI.Popup
 
         private void OnPopupHideRequested(PopupBase popup)
         {
-            if (popup == null)
-            {
-                return;
-            }
-
             Hide(popup.GetType());
         }
 
@@ -295,19 +141,7 @@ namespace FoodieMatch.UI.Popup
             {
                 PopupPrefabEntry entry = _popupPrefabs[i];
 
-                if (entry == null || entry.Prefab == null)
-                {
-                    continue;
-                }
-
                 Type popupType = entry.Prefab.GetType();
-
-                if (_entryMap.ContainsKey(popupType))
-                {
-                    Debug.LogError($"Duplicated popup prefab type: {popupType.Name}");
-                    continue;
-                }
-
                 _entryMap.Add(popupType, entry);
             }
         }

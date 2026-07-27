@@ -20,11 +20,6 @@ namespace FoodieMatch.UI.Gameplay
 
         private TrackEntry _trackEntry;
 
-        private void Awake()
-        {
-            EnsureSkeletonGraphic();
-        }
-
         private void OnDestroy()
         {
             StopListeningForCompletion();
@@ -43,15 +38,6 @@ namespace FoodieMatch.UI.Gameplay
 
         public void PlayRandomAnimation()
         {
-            EnsureSkeletonGraphic();
-
-            if (_skeletonGraphic == null)
-            {
-                Debug.LogError("Combo feedback SkeletonGraphic is missing.", this);
-                Destroy(gameObject);
-                return;
-            }
-
             if (!_skeletonGraphic.IsValid)
             {
                 _skeletonGraphic.Initialize(overwrite: false);
@@ -104,14 +90,6 @@ namespace FoodieMatch.UI.Gameplay
 
             _trackEntry.Complete -= HandleAnimationCompleted;
             _trackEntry = null;
-        }
-
-        private void EnsureSkeletonGraphic()
-        {
-            if (_skeletonGraphic == null)
-            {
-                _skeletonGraphic = GetComponentInChildren<SkeletonGraphic>(includeInactive: true);
-            }
         }
     }
 }

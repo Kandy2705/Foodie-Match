@@ -10,22 +10,11 @@ namespace FoodieMatch.UI.Booster
     public sealed class BoosterSwapPopup : PopupBase
     {
         [SerializeField] private SkeletonGraphic _skeletonGraphic;
+        [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private float _fadeOutDuration = 0.2f;
 
         private TrackEntry _trackEntry;
         private TaskCompletionSource<bool> _animationTcs;
-        private CanvasGroup _canvasGroup;
-
-        private void Awake()
-        {
-            EnsureSkeletonGraphic();
-            _canvasGroup = GetComponent<CanvasGroup>();
-            if (_canvasGroup == null)
-            {
-                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
-            }
-        }
-
         private void OnDestroy()
         {
             StopListeningForCompletion();
@@ -44,9 +33,7 @@ namespace FoodieMatch.UI.Booster
 
         public Task StartSwapAnimationAsync()
         {
-            EnsureSkeletonGraphic();
-
-            if (_skeletonGraphic == null || _skeletonGraphic.AnimationState == null)
+            if (_skeletonGraphic.AnimationState == null)
             {
                 return Task.CompletedTask;
             }
@@ -105,12 +92,6 @@ namespace FoodieMatch.UI.Booster
 
         public async Task HideAsync()
         {
-            if (_canvasGroup == null)
-            {
-                gameObject.SetActive(false);
-                return;
-            }
-
             float elapsed = 0f;
 
             while (elapsed < _fadeOutDuration)
@@ -141,14 +122,6 @@ namespace FoodieMatch.UI.Booster
             {
                 _trackEntry.Complete -= HandleAnimationCompleted;
                 _trackEntry = null;
-            }
-        }
-
-        private void EnsureSkeletonGraphic()
-        {
-            if (_skeletonGraphic == null)
-            {
-                _skeletonGraphic = GetComponentInChildren<SkeletonGraphic>(includeInactive: true);
             }
         }
     }

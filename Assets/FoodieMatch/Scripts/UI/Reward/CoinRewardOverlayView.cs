@@ -38,11 +38,6 @@ namespace FoodieMatch.UI.Reward
         private int _remainingCoinImageCount;
         private bool _isRewardPlaying;
 
-        private void Awake()
-        {
-            EnsureCoinContainerReference();
-        }
-
         private void OnDisable()
         {
             CompleteRewardImmediately();
@@ -58,17 +53,8 @@ namespace FoodieMatch.UI.Reward
         {
             CompleteRewardImmediately();
 
-            if (coinCounter == null || targetCoinBalance <= startingCoinBalance || coinValuePerImage <= 0)
+            if (targetCoinBalance <= startingCoinBalance || coinValuePerImage <= 0)
             {
-                coinCounter?.SetCoinBalance(targetCoinBalance);
-                return;
-            }
-
-            EnsureCoinContainerReference();
-
-            if (_coinImagePrefab == null || _coinContainer == null || coinCounter.CoinTarget == null)
-            {
-                Debug.LogError("Coin reward overlay references are missing.", this);
                 coinCounter.SetCoinBalance(targetCoinBalance);
                 return;
             }
@@ -162,14 +148,6 @@ namespace FoodieMatch.UI.Reward
             return Random.Range(minimum, maximum);
         }
 
-        private void EnsureCoinContainerReference()
-        {
-            if (_coinContainer == null)
-            {
-                _coinContainer = transform as RectTransform;
-            }
-        }
-
         private void EnsureCoinImagePoolCapacity(int requiredCapacity)
         {
             while (_coinImagePool.Count < requiredCapacity)
@@ -184,11 +162,6 @@ namespace FoodieMatch.UI.Reward
 
         private Vector3 GetLocalPosition(RectTransform rectTransform)
         {
-            if (rectTransform == null || _coinContainer == null)
-            {
-                return Vector3.zero;
-            }
-
             return _coinContainer.InverseTransformPoint(rectTransform.position);
         }
 

@@ -68,6 +68,9 @@ TagManager:
   - name: Food
     uniqueID: 1922596459
     locked: 0
+  - name: UI1
+    uniqueID: 4254920883
+    locked: 0
   - name: Lid
     uniqueID: 128870067
     locked: 0

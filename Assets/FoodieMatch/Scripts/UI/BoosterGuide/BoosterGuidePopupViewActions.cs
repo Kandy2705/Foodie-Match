@@ -4,7 +4,7 @@ namespace FoodieMatch.UI.BoosterGuide
 {
     public sealed class BoosterGuidePopupViewActions
     {
-        public BoosterGuidePopupViewActions(Action closeClicked, Action confirmClicked)
+        public BoosterGuidePopupViewActions(Action confirmClicked)
         {
             ConfirmClicked = confirmClicked ?? throw new ArgumentNullException(nameof(confirmClicked));
         }

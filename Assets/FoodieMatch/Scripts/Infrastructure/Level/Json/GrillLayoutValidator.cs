@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Infrastructure.Level.Json
@@ -64,6 +65,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 return;
             }
 
+            GrillType? grillType = ValidateGrillType(grill.Type, grillPath, result);
             ValidatePosition(grill.Position, grillPath, positions, result);
             ValidateFoodIds(
                 grill.FoodIds,
@@ -81,6 +83,70 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 minimumFoodDepths,
                 maximumFoodDepths,
                 result);
+
+            if (grillType == GrillType.Single)
+            {
+                ValidateSingleGrill(grill, grillPath, result);
+            }
+        }
+
+        private static GrillType? ValidateGrillType(
+            string type,
+            string grillPath,
+            LevelValidationResult result)
+        {
+            string typePath = $"{grillPath}.type";
+
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                result.AddError($"{typePath} is required.");
+                return null;
+            }
+
+            if (string.Equals(type, "standard", StringComparison.OrdinalIgnoreCase))
+            {
+                return GrillType.Standard;
+            }
+
+            if (string.Equals(type, "single", StringComparison.OrdinalIgnoreCase))
+            {
+                return GrillType.Single;
+            }
+
+            result.AddError($"{typePath} must be standard or single.");
+            return null;
+        }
+
+        private static void ValidateSingleGrill(
+            GrillDto grill,
+            string grillPath,
+            LevelValidationResult result)
+        {
+            if (grill.FoodIds != null && grill.FoodIds.Count != 1)
+            {
+                result.AddError($"{grillPath}.foodIds must contain exactly one food id for a single grill.");
+            }
+
+            if (grill.Trays == null)
+            {
+                return;
+            }
+
+            if (grill.Trays.Count != 3)
+            {
+                result.AddError($"{grillPath}.trays must contain exactly three trays for a single grill.");
+            }
+
+            for (int i = 0; i < grill.Trays.Count; i++)
+            {
+                TrayDto tray = grill.Trays[i];
+
+                if (tray?.FoodIds != null && tray.FoodIds.Count != 1)
+                {
+                    result.AddError(
+                        $"{grillPath}.trays[{i}].foodIds must contain exactly one food id for a single grill.");
+                }
+            }
         }
 
         private static void ValidatePosition(

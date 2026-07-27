@@ -18,7 +18,7 @@ namespace FoodieMatch.Features.Board
             GrillMovementDirection direction,
             float movementSpeed,
             IReadOnlyList<GrillModel> grillModels,
-            IReadOnlyList<GrillView> grillViews)
+            IReadOnlyList<GrillViewBase> grillViews)
         {
             if (!Enum.IsDefined(typeof(GrillMovementDirection), direction))
             {
@@ -97,14 +97,14 @@ namespace FoodieMatch.Features.Board
 
         private List<MovingGrill> CreateMovingGrills(
             IReadOnlyList<GrillModel> grillModels,
-            IReadOnlyList<GrillView> grillViews)
+            IReadOnlyList<GrillViewBase> grillViews)
         {
             List<MovingGrill> grills = new(grillViews.Count);
 
             for (int i = 0; i < grillViews.Count; i++)
             {
                 GrillModel grillModel = grillModels[i];
-                GrillView grillView = grillViews[i];
+                GrillViewBase grillView = grillViews[i];
 
                 if (grillModel == null)
                 {
@@ -128,7 +128,7 @@ namespace FoodieMatch.Features.Board
 
         private MovingGrill CreateMovingGrill(
             GrillModel grillModel,
-            GrillView grillView)
+            GrillViewBase grillView)
         {
             Transform grillTransform = grillView.transform;
             float grillPosition = GetAxisPosition(grillTransform.position);
@@ -357,7 +357,7 @@ namespace FoodieMatch.Features.Board
         {
             public MovingGrill(
                 GrillModel model,
-                GrillView view,
+                GrillViewBase view,
                 float minimumVisualOffset,
                 float maximumVisualOffset)
             {
@@ -368,7 +368,7 @@ namespace FoodieMatch.Features.Board
             }
 
             public GrillModel Model { get; }
-            public GrillView View { get; }
+            public GrillViewBase View { get; }
             public float MinimumVisualOffset { get; }
             public float MaximumVisualOffset { get; }
             public bool IsHidden { get; set; }

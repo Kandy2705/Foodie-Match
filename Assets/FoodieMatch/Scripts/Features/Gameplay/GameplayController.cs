@@ -7,6 +7,7 @@ using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
@@ -21,9 +22,6 @@ namespace FoodieMatch.Features.Gameplay
 {
     public sealed class GameplayController : MonoBehaviour
     {
-        private const string WinReason = "Completed";
-        private const string LoseReason = "WaitingRackFull";
-
         [Header("Combo")]
         [SerializeField] private float _comboDurationSeconds = 8f;
 
@@ -47,6 +45,7 @@ namespace FoodieMatch.Features.Gameplay
         private WaitingRackPlacementCoordinator _waitingRackPlacementCoordinator;
         private WaitingRackAutoFillCoordinator _waitingRackAutoFillCoordinator;
         private TopTrayMoveCoordinator _topTrayMoveCoordinator;
+        private SingleGrillRevealCoordinator _singleGrillRevealCoordinator;
         private GrillCompletionCoordinator _grillCompletionCoordinator;
         private ComboCoordinator _comboCoordinator;
         private PlateBoosterCoordinator _plateBoosterCoordinator;
@@ -116,20 +115,11 @@ namespace FoodieMatch.Features.Gameplay
 
             CreateCoordinators();
             SubscribeCoordinatorEvents();
-
-            if (_boardLayoutView != null)
-            {
-                _boardLayoutView.FoodSelected += HandleFoodSelected;
-            }
+            _boardLayoutView.FoodSelected += HandleFoodSelected;
         }
 
         public void StartLevel(int levelNumber, GameplayNavigationActions navigationActions)
         {
-            if (!HasDependencies())
-            {
-                return;
-            }
-
             if (!IsValidComboDuration())
             {
                 Debug.LogError("Combo duration must be greater than zero.");
@@ -263,26 +253,22 @@ namespace FoodieMatch.Features.Gameplay
 
         private bool TryApplyPlateBooster()
         {
-            return _plateBoosterCoordinator != null &&
-                   _plateBoosterCoordinator.TryApply(_session);
+            return _plateBoosterCoordinator.TryApply(_session);
         }
 
         private bool TryApplyStorageBooster()
         {
-            return _storageBoosterCoordinator != null &&
-                   _storageBoosterCoordinator.TryApply(_session);
+            return _storageBoosterCoordinator.TryApply(_session);
         }
 
         private bool TryApplySwapBooster()
         {
-            return _swapBoosterCoordinator != null &&
-                   _swapBoosterCoordinator.TryApply(_session);
+            return _swapBoosterCoordinator.TryApply(_session);
         }
+
         private bool TryApplyFridgeBooster()
         {
-            return _fridgeBoosterCoordinator != null &&
-                   _fridgeBoosterCoordinator.TryApply(
-                       _session);
+            return _fridgeBoosterCoordinator.TryApply(_session);
         }
 
         private void SubscribeLockedPackages()
@@ -487,6 +473,8 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
             _topTrayMoveCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _boardLayoutView);
+            _singleGrillRevealCoordinator = new(
+                _sessionGuard, _gameplayAudioPresenter, _boardLayoutView);
             _grillCompletionCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _boardLayoutView);
             _comboCoordinator = new(_sessionGuard, _gameplayEvents, _gameplayAudioPresenter);
@@ -503,9 +491,7 @@ namespace FoodieMatch.Features.Gameplay
                 _uiManager);
             _fridgeBoosterCoordinator = new(
                 _sessionGuard,
-                _fridgeBoosterAnchors != null
-                    ? _fridgeBoosterAnchors.FridgeBoosterView
-                    : null,
+                _fridgeBoosterAnchors.FridgeBoosterView,
                 _waitingRackView,
                 _boardLayoutView,
                 _requiredPackageLifecycleUseCase,
@@ -520,6 +506,7 @@ namespace FoodieMatch.Features.Gameplay
             _packageDeliveryCoordinator.PackageDeliveryFailed += HandleGameplayFlowFailed;
             _waitingRackAutoFillCoordinator.AutoFillFinished += HandleAutoFillFinished;
             _waitingRackAutoFillCoordinator.AutoFillFailed += HandleGameplayFlowFailed;
+            _singleGrillRevealCoordinator.RevealFailed += HandleGameplayFlowFailed;
             _grillCompletionCoordinator.GrillCloseFinished += HandleGrillCloseFinished;
         }
 
@@ -538,109 +525,15 @@ namespace FoodieMatch.Features.Gameplay
                 _waitingRackAutoFillCoordinator.AutoFillFailed -= HandleGameplayFlowFailed;
             }
 
+            if (_singleGrillRevealCoordinator != null)
+            {
+                _singleGrillRevealCoordinator.RevealFailed -= HandleGameplayFlowFailed;
+            }
+
             if (_grillCompletionCoordinator != null)
             {
                 _grillCompletionCoordinator.GrillCloseFinished -= HandleGrillCloseFinished;
             }
-        }
-
-        private bool HasDependencies()
-        {
-            if (_uiManager == null)
-            {
-                Debug.LogError("UIManager has not been constructed.");
-                return false;
-            }
-
-            if (_gameplayEvents == null)
-            {
-                Debug.LogError("GameplayEvents has not been constructed.");
-                return false;
-            }
-
-            if (_boardLayoutView == null)
-            {
-                Debug.LogError("BoardLayoutView has not been constructed.");
-                return false;
-            }
-
-            if (_requiredPackageGroupView == null)
-            {
-                Debug.LogError("RequiredPackageGroupView has not been constructed.");
-                return false;
-            }
-
-            if (_waitingRackView == null)
-            {
-                Debug.LogError("WaitingRackView has not been constructed.");
-                return false;
-            }
-
-            if (_gameplayMotionPresenter == null)
-            {
-                Debug.LogError("GameplayMotionPresenter has not been constructed.");
-                return false;
-            }
-
-            if (_gameplayAudioPresenter == null)
-            {
-                Debug.LogError("GameplayAudioPresenter has not been constructed.");
-                return false;
-            }
-
-            if (_gameplayWorldClickSfx == null)
-            {
-                Debug.LogError("GameplayWorldClickSfx has not been constructed.");
-                return false;
-            }
-
-            if (_foodVisualResolver == null)
-            {
-                Debug.LogError("FoodVisualResolver has not been constructed.");
-                return false;
-            }
-
-            if (_requiredPackageLifecycleUseCase == null)
-            {
-                Debug.LogError("RequiredPackageLifecycleUseCase has not been constructed.");
-                return false;
-            }
-
-            if (_selectFoodUseCase == null)
-            {
-                Debug.LogError("SelectFoodUseCase has not been constructed.");
-                return false;
-            }
-
-            if (_levelRepository == null)
-            {
-                Debug.LogError("LevelRepository has not been constructed.");
-                return false;
-            }
-
-            if (_boardModelFactory == null)
-            {
-                Debug.LogError("BoardModelFactory has not been constructed.");
-                return false;
-            }
-
-            if (_fridgeBoosterAnchors == null)
-            {
-                Debug.LogError(
-                    "FridgeBoosterAnchors has not been constructed.");
-
-                return false;
-            }
-
-            if (_fridgeBoosterAnchors.FridgeBoosterView == null)
-            {
-                Debug.LogError(
-                    "FridgeBoosterView has not been assigned.");
-
-                return false;
-            }
-
-            return true;
         }
 
         private void HandleFoodSelected(FoodSelectionContext context)
@@ -697,7 +590,7 @@ namespace FoodieMatch.Features.Gameplay
             Task deliveryTask = _packageDeliveryCoordinator.DeliverSelectedFoodAsync(
                 context.FoodItemView, result.TargetIndex, session);
 
-            _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            RefillGrill(context.Address.GrillPositionIndex, session);
             _grillCompletionCoordinator.TryCloseCompletedGrill(context.Address.GrillPositionIndex, session);
             await deliveryTask;
             TryResolveWin(session);
@@ -712,7 +605,7 @@ namespace FoodieMatch.Features.Gameplay
             Task<WaitingRackPlacementResult> placementTask = _waitingRackPlacementCoordinator.PlaceFoodAsync(
                 context.FoodItemView, result.TargetIndex, session);
 
-            _topTrayMoveCoordinator.MoveFoodToGrill(context.Address.GrillPositionIndex, session);
+            RefillGrill(context.Address.GrillPositionIndex, session);
             _grillCompletionCoordinator.TryCloseCompletedGrill(context.Address.GrillPositionIndex, session);
             bool causedWaitingRackFull = session.WaitingRack.IsFull;
 
@@ -854,14 +747,13 @@ namespace FoodieMatch.Features.Gameplay
 
         private void ResolveWin(GameplaySession session)
         {
-            if (!HasDependencies() || !IsCurrentSession(session) || !session.TryMarkAsWon())
+            if (!IsCurrentSession(session) || !session.TryMarkAsWon())
             {
                 return;
             }
 
             _gameplayWorldClickSfx.StopListening();
             _boardLayoutView.StopGrillMovement();
-            _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, true, WinReason));
             _navigationActions?.LevelWon.Invoke(session.LevelNumber);
         }
 
@@ -920,7 +812,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _boardLayoutView.StopGrillMovement();
-            _gameplayEvents.OnLevelEnded(new LevelEndedEvent(session.LevelNumber, false, LoseReason));
             _navigationActions?.LevelLost.Invoke(session.LevelNumber);
         }
 
@@ -945,6 +836,22 @@ namespace FoodieMatch.Features.Gameplay
 
             int levelNumber = _session.LevelNumber;
             _navigationActions?.RetryRequested.Invoke(levelNumber);
+        }
+
+        private void RefillGrill(int grillPositionIndex, GameplaySession session)
+        {
+            if (!session.Board.TryGetGrill(grillPositionIndex, out GrillModel grillModel))
+            {
+                return;
+            }
+
+            if (grillModel.Type == GrillType.Single)
+            {
+                _singleGrillRevealCoordinator.RevealNextFood(grillPositionIndex, session);
+                return;
+            }
+
+            _topTrayMoveCoordinator.MoveFoodToGrill(grillPositionIndex, session);
         }
 
         private void OnHomeClicked()

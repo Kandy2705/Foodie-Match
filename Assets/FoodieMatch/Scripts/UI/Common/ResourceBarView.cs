@@ -22,17 +22,17 @@ namespace FoodieMatch.UI.Common
 
         public void SetCoinBalance(long coinBalance)
         {
-            _coinCounterView?.SetCoinBalance(coinBalance);
+            _coinCounterView.SetCoinBalance(coinBalance);
         }
 
         public void SetHeartStatus(HeartStatus heartStatus)
         {
-            _heartCounterView?.SetHeartStatus(heartStatus);
+            _heartCounterView.SetHeartStatus(heartStatus);
         }
 
         public void Clear()
         {
-            _heartCounterView?.Clear();
+            _heartCounterView.Clear();
         }
     }
 }

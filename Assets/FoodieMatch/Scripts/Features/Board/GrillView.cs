@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace FoodieMatch.Features.Board
 {
-    public sealed class GrillView : MonoBehaviour
+    public sealed class GrillView : GrillViewBase
     {
         [SerializeField] private Transform[] _foodAnchors;
         [SerializeField] private TrayStackView _trayStackView;
@@ -24,7 +24,7 @@ namespace FoodieMatch.Features.Board
         private bool _didLidMotionFinish;
         private bool _isLidClosed;
 
-        public int FoodAnchorCount => _foodAnchors != null ? _foodAnchors.Length : 0;
+        public override int FoodAnchorCount => _foodAnchors != null ? _foodAnchors.Length : 0;
 
         private void Awake()
         {
@@ -58,7 +58,7 @@ namespace FoodieMatch.Features.Board
             _trayStackView.Setup(trayCount);
         }
 
-        public Transform GetFoodAnchor(int index)
+        public override Transform GetFoodAnchor(int index)
         {
             if (_foodAnchors == null || index < 0 || index >= _foodAnchors.Length)
             {

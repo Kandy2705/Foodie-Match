@@ -27,27 +27,8 @@ namespace FoodieMatch.App
         private BoosterRewardedAdRequest _activeBoosterRewardedAdRequest;
         private bool _isTransitionRunning;
         private bool _isWinRewardProcessing;
-        private bool _isDestroyed;
         private int _activeLevelNumber;
         private int _levelAwaitingWinReward;
-
-        private void OnDestroy()
-        {
-            _isDestroyed = true;
-
-            if (_uiManager == null)
-            {
-                return;
-            }
-
-            _uiManager.PlayGameRequested -= OnPlayGameRequested;
-            _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
-            _uiManager.BoosterCoinPurchaseRequested -= OnBoosterCoinPurchaseRequested;
-            _uiManager.BoosterRewardedAdRequested -= OnBoosterRewardedAdRequested;
-            _uiManager.BoosterUseHandler = null;
-            _uiManager.RestartGameHandler = null;
-            _uiManager.HideLoading();
-        }
 
         public void Construct(
             UIManager uiManager,
@@ -73,13 +54,9 @@ namespace FoodieMatch.App
                 OnGameplayLevelLost,
                 OnGameplayLevelWon);
 
-            _uiManager.PlayGameRequested -= OnPlayGameRequested;
             _uiManager.PlayGameRequested += OnPlayGameRequested;
-            _uiManager.LeaveGameRequested -= OnLeaveGameRequested;
             _uiManager.LeaveGameRequested += OnLeaveGameRequested;
-            _uiManager.BoosterCoinPurchaseRequested -= OnBoosterCoinPurchaseRequested;
             _uiManager.BoosterCoinPurchaseRequested += OnBoosterCoinPurchaseRequested;
-            _uiManager.BoosterRewardedAdRequested -= OnBoosterRewardedAdRequested;
             _uiManager.BoosterRewardedAdRequested += OnBoosterRewardedAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
@@ -87,11 +64,6 @@ namespace FoodieMatch.App
 
         public void EnterHome()
         {
-            if (!HasDependencies())
-            {
-                return;
-            }
-
             int levelNumber = GetSavedPlayableLevelNumber();
             OpenHome(levelNumber, _playerProfileService.CoinBalance);
         }
@@ -108,11 +80,6 @@ namespace FoodieMatch.App
 
         public void BackToHome()
         {
-            if (!HasDependencies())
-            {
-                return;
-            }
-
             _ = EnterHomeWithLoadingSafelyAsync(GetSavedPlayableLevelNumber());
         }
 
@@ -127,12 +94,7 @@ namespace FoodieMatch.App
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
                 await Task.Yield();
-
-                if (!_isDestroyed)
-                {
-                    OpenLevel(levelNumber);
-                }
-
+                OpenLevel(levelNumber);
                 await loadingTask;
             }
             catch (Exception exception)
@@ -160,15 +122,11 @@ namespace FoodieMatch.App
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
                 await Task.Yield();
-
-                if (!_isDestroyed)
-                {
-                    long displayedCoinBalance = coinRewardPresentation == null
-                        ? _playerProfileService.CoinBalance
-                        : coinRewardPresentation.StartingCoinBalance;
-                    OpenHome(levelNumber, displayedCoinBalance);
-                    shouldPlayCoinReward = coinRewardPresentation != null;
-                }
+                long displayedCoinBalance = coinRewardPresentation == null
+                    ? _playerProfileService.CoinBalance
+                    : coinRewardPresentation.StartingCoinBalance;
+                OpenHome(levelNumber, displayedCoinBalance);
+                shouldPlayCoinReward = coinRewardPresentation != null;
 
                 await loadingTask;
             }
@@ -181,7 +139,7 @@ namespace FoodieMatch.App
                 FinishTransition();
             }
 
-            if (shouldPlayCoinReward && !_isDestroyed)
+            if (shouldPlayCoinReward)
             {
                 _uiManager.PlayHomeCoinReward(
                     coinRewardPresentation.StartingCoinBalance,
@@ -199,7 +157,7 @@ namespace FoodieMatch.App
             _uiManager.HideHome();
             _uiManager.SetCurrentLevelNumber(levelNumber);
             _uiManager.ShowGameplayHud();
-            _audioService?.PlayMusic(AudioKeys.MusicIngame);
+            _audioService.PlayMusic(AudioKeys.MusicIngame);
 
             _playerProfileService.SetCurrentLevelNumber(levelNumber);
             _activeLevelNumber = levelNumber;
@@ -217,13 +175,13 @@ namespace FoodieMatch.App
             _uiManager.HideGameplayHud();
             _uiManager.SetCurrentLevelNumber(levelNumber);
             _uiManager.ShowHome(displayedCoinBalance);
-            _audioService?.PlayMusic(AudioKeys.MusicMenu);
+            _audioService.PlayMusic(AudioKeys.MusicMenu);
             _activeLevelNumber = 0;
         }
 
         private bool TryBeginTransition()
         {
-            if (_isTransitionRunning || _isDestroyed)
+            if (_isTransitionRunning)
             {
                 return false;
             }
@@ -234,11 +192,7 @@ namespace FoodieMatch.App
 
         private void FinishTransition()
         {
-            if (!_isDestroyed)
-            {
-                _uiManager.HideLoading();
-            }
-
+            _uiManager.HideLoading();
             _isTransitionRunning = false;
         }
 
@@ -254,11 +208,6 @@ namespace FoodieMatch.App
 
         private bool CanLoadLevel(int levelNumber)
         {
-            if (!HasDependencies())
-            {
-                return false;
-            }
-
             if (_levelRepository.TryGetLevel(levelNumber, out _))
             {
                 return true;
@@ -266,53 +215,6 @@ namespace FoodieMatch.App
 
             Debug.LogError($"Level {levelNumber} could not be loaded.");
             return false;
-        }
-
-        private bool HasDependencies()
-        {
-            if (_uiManager == null)
-            {
-                Debug.LogError("UIManager has not been constructed.");
-                return false;
-            }
-
-            if (_gameplayController == null)
-            {
-                Debug.LogError("GameplayController has not been constructed.");
-                return false;
-            }
-
-            if (_playerProfileService == null)
-            {
-                Debug.LogError("PlayerProfileService has not been constructed.");
-                return false;
-            }
-
-            if (_boosterManager == null)
-            {
-                Debug.LogError("BoosterManager has not been constructed.");
-                return false;
-            }
-
-            if (_economyConfig == null)
-            {
-                Debug.LogError("GameEconomyConfig has not been constructed.");
-                return false;
-            }
-
-            if (_rewardedAdService == null)
-            {
-                Debug.LogError("RewardedAdService has not been constructed.");
-                return false;
-            }
-
-            if (_levelRepository == null)
-            {
-                Debug.LogError("LevelRepository has not been constructed.");
-                return false;
-            }
-
-            return true;
         }
 
         private int GetSavedPlayableLevelNumber()
@@ -345,11 +247,6 @@ namespace FoodieMatch.App
 
         private bool OnBoosterUseRequested(BoosterType boosterType)
         {
-            if (_gameplayController == null || _boosterManager == null)
-            {
-                return false;
-            }
-
             if (!_boosterManager.TryUse(boosterType))
             {
                 return false;
@@ -373,11 +270,6 @@ namespace FoodieMatch.App
 
         private void OnBoosterCoinPurchaseRequested(BoosterType boosterType)
         {
-            if (_isDestroyed)
-            {
-                return;
-            }
-
             try
             {
                 int coinPrice = _economyConfig.GetBoosterPrice(boosterType);
@@ -397,7 +289,7 @@ namespace FoodieMatch.App
 
         private void OnBoosterRewardedAdRequested(BoosterType boosterType)
         {
-            if (_isDestroyed || _activeBoosterRewardedAdRequest != null)
+            if (_activeBoosterRewardedAdRequest != null)
             {
                 return;
             }
@@ -428,7 +320,7 @@ namespace FoodieMatch.App
 
         private void OnBoosterAdRewarded(BoosterRewardedAdRequest request)
         {
-            if (_isDestroyed || request.HasGrantedReward)
+            if (request.HasGrantedReward)
             {
                 return;
             }
@@ -488,8 +380,7 @@ namespace FoodieMatch.App
 
         private bool OnRestartGameRequested()
         {
-            if (_isDestroyed ||
-                _isTransitionRunning ||
+            if (_isTransitionRunning ||
                 _activeLevelNumber <= 0 ||
                 !CanLoadLevel(_activeLevelNumber) ||
                 !_playerProfileService.TrySpendHeart())
@@ -513,7 +404,7 @@ namespace FoodieMatch.App
 
         private void OnGameplayLevelLost(int levelNumber)
         {
-            if (_isDestroyed || levelNumber != _activeLevelNumber)
+            if (levelNumber != _activeLevelNumber)
             {
                 return;
             }
@@ -523,8 +414,7 @@ namespace FoodieMatch.App
 
         private void OnGameplayLevelWon(int completedLevelNumber)
         {
-            if (_isDestroyed ||
-                completedLevelNumber != _activeLevelNumber ||
+            if (completedLevelNumber != _activeLevelNumber ||
                 _levelAwaitingWinReward > 0)
             {
                 return;
@@ -590,8 +480,7 @@ namespace FoodieMatch.App
 
         private void OnRewardedAdRewarded()
         {
-            if (_isDestroyed ||
-                _levelAwaitingWinReward <= 0 ||
+            if (_levelAwaitingWinReward <= 0 ||
                 _levelAwaitingWinReward != _activeLevelNumber)
             {
                 return;
@@ -612,7 +501,7 @@ namespace FoodieMatch.App
 
         private void OnRewardedAdClosed()
         {
-            if (!_isDestroyed && _levelAwaitingWinReward > 0)
+            if (_levelAwaitingWinReward > 0)
             {
                 CancelWinRewardSelection();
             }
@@ -620,10 +509,7 @@ namespace FoodieMatch.App
 
         private void OnRewardedAdDisplayFailed()
         {
-            if (!_isDestroyed)
-            {
-                CancelWinRewardSelection();
-            }
+            CancelWinRewardSelection();
         }
 
         private bool TryBeginWinReward()
