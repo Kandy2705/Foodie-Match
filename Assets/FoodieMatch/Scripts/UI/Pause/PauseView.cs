@@ -22,7 +22,6 @@ namespace FoodieMatch.UI.Pause
         private Action _closeClicked;
         private Action<bool> _soundChanged;
         private Action<bool> _musicChanged;
-        private bool _isClosing;
 
         private void Awake()
         {
@@ -62,7 +61,6 @@ namespace FoodieMatch.UI.Pause
 
         public override void Show()
         {
-            _isClosing = false;
             base.Show();
 
             _popupAnimController.Open();
@@ -70,14 +68,8 @@ namespace FoodieMatch.UI.Pause
 
         public override void Hide()
         {
-            if (_isClosing)
-            {
-                return;
-            }
-
             if (gameObject.activeInHierarchy)
             {
-                _isClosing = true;
                 _popupAnimController.Close(OnCloseAnimationFinished);
                 return;
             }
@@ -93,7 +85,6 @@ namespace FoodieMatch.UI.Pause
             _closeClicked = null;
             _soundChanged = null;
             _musicChanged = null;
-            _isClosing = false;
 
             base.Dispose();
         }
@@ -132,7 +123,6 @@ namespace FoodieMatch.UI.Pause
 
         private void OnCloseAnimationFinished()
         {
-            _isClosing = false;
             base.Hide();
         }
 
