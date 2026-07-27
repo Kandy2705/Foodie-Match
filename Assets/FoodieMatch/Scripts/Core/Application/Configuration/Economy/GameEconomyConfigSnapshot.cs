@@ -16,6 +16,7 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
             int levelCompleteCoinReward,
             int rewardedAdCoinMultiplier,
             int coinValuePerRewardImage,
+            int fullHeartCoinPrice,
             IReadOnlyDictionary<BoosterType, int> boosterPrices)
         {
             ValidatePositiveValue(
@@ -33,10 +34,14 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
             ValidatePositiveValue(
                 coinValuePerRewardImage,
                 nameof(coinValuePerRewardImage));
+            ValidatePositiveValue(
+                fullHeartCoinPrice,
+                nameof(fullHeartCoinPrice));
 
             LevelCompleteCoinReward = levelCompleteCoinReward;
             RewardedAdCoinMultiplier = rewardedAdCoinMultiplier;
             CoinValuePerRewardImage = coinValuePerRewardImage;
+            FullHeartCoinPrice = fullHeartCoinPrice;
             _boosterPrices = CopyBoosterPrices(boosterPrices);
         }
 
@@ -45,6 +50,8 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
         public int RewardedAdCoinMultiplier { get; }
 
         public int CoinValuePerRewardImage { get; }
+
+        public int FullHeartCoinPrice { get; }
 
         public int GetBoosterPrice(BoosterType boosterType)
         {

@@ -242,6 +242,81 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public bool TryFillHeartsWithCoins(long coinCost)
+        {
+            ValidatePositiveCoinAmount(coinCost, nameof(coinCost));
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                DateTimeOffset currentUtc = _clock.UtcNow;
+
+                if (HasUnlimitedHearts(currentProfile, currentUtc))
+                {
+                    return false;
+                }
+
+                HeartState refreshedHeartState = GetRefreshedHeartState(
+                    currentProfile,
+                    currentUtc);
+
+                if (refreshedHeartState.HeartCount >=
+                        _heartConfig.MaxHeartCount ||
+                    currentProfile.CoinBalance < coinCost)
+                {
+                    QueueProfileChange(
+                        currentProfile.WithHeartState(
+                            refreshedHeartState));
+                    return false;
+                }
+
+                HeartState fullHeartState = new(
+                    _heartConfig.MaxHeartCount,
+                    recoveryStartedAtUtc: null);
+                PlayerProfile updatedProfile = currentProfile
+                    .WithCoinBalance(currentProfile.CoinBalance - coinCost)
+                    .WithHeartState(fullHeartState);
+
+                QueueProfileChange(updatedProfile);
+                return true;
+            }
+        }
+
+        public bool TryAddHeart()
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                DateTimeOffset currentUtc = _clock.UtcNow;
+
+                if (HasUnlimitedHearts(currentProfile, currentUtc))
+                {
+                    return false;
+                }
+
+                HeartState refreshedHeartState = GetRefreshedHeartState(
+                    currentProfile,
+                    currentUtc);
+
+                if (!refreshedHeartState.TryAddHeart(
+                        _heartConfig.MaxHeartCount,
+                        currentUtc,
+                        out HeartState updatedHeartState))
+                {
+                    QueueProfileChange(
+                        currentProfile.WithHeartState(
+                            refreshedHeartState));
+                    return false;
+                }
+
+                QueueProfileChange(
+                    currentProfile.WithHeartState(updatedHeartState));
+                return true;
+            }
+        }
+
         public bool TryPurchaseBooster(
             BoosterType boosterType,
             long coinCost)

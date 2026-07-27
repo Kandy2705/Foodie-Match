@@ -10,6 +10,8 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
 
         int CoinValuePerRewardImage { get; }
 
+        int FullHeartCoinPrice { get; }
+
         int GetBoosterPrice(BoosterType boosterType);
     }
 }
