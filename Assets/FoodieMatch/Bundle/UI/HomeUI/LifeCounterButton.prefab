@@ -35,8 +35,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -56, y: -65}
-  m_SizeDelta: {x: 96.67635, y: 25.84475}
+  m_AnchoredPosition: {x: -77.17632, y: -65}
+  m_SizeDelta: {x: 139.029, y: 25.8447}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3041856320961381259
 CanvasRenderer:
@@ -321,8 +321,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 7.378, y: 0}
-  m_SizeDelta: {x: -14.7562, y: 0}
+  m_AnchoredPosition: {x: 6.2125, y: 0}
+  m_SizeDelta: {x: -33.8692, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6354101841233305557
 CanvasRenderer:
@@ -458,8 +458,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 169.72, y: 74.7574}
+  m_AnchoredPosition: {x: 22.023384, y: 0}
+  m_SizeDelta: {x: 213.7668, y: 74.7574}
   m_Pivot: {x: 0.49999994, y: 0.5}
 --- !u!1 &5717440009234736799
 GameObject:
@@ -496,8 +496,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -106.85593, y: -32.6}
-  m_SizeDelta: {x: 123.8623, y: 47.4775}
+  m_AnchoredPosition: {x: -136.08601, y: -32.6}
+  m_SizeDelta: {x: 157.7444, y: 47.4775}
   m_Pivot: {x: 0.13730054, y: 0.5}
 --- !u!222 &7179773608770847919
 CanvasRenderer:
@@ -550,6 +550,7 @@ GameObject:
   - component: {fileID: 4280991407610266619}
   - component: {fileID: 3940320440345643347}
   - component: {fileID: 5651838670357223080}
+  - component: {fileID: 2252284081702642591}
   m_Layer: 5
   m_Name: LifeCounterButton
   m_TagString: Untagged
@@ -564,7 +565,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5842925158735895847}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -681,6 +682,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &2252284081702642591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5842925158735895847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abacb6c082aeb1045b1a4f58e181c4e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _heartCountText: {fileID: 7610578585978550414}
+  _recoveryTimerRoot: {fileID: 648667047301678312}
+  _recoveryTimerText: {fileID: 938531386782213311}
+  _heartIconImage: {fileID: 1488399325860730155}
+  _addLifeButton: {fileID: 2402616398815027599}
+  _normalHeartIconSprite: {fileID: -4983534188921496033, guid: 3703623868f1646289fa80a0faaf2cd4, type: 3}
+  _unlimitedHeartIconSprite: {fileID: -1569679998611747871, guid: 0485652d5de6c48c4a213b829877d3b9, type: 3}
 --- !u!1 &8358496363227402723
 GameObject:
   m_ObjectHideFlags: 0
@@ -747,7 +767,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -4983534188921496033, guid: f21ccfa5bf6c849e1a275e34eec4e583, type: 3}
+  m_Sprite: {fileID: -4983534188921496033, guid: 3703623868f1646289fa80a0faaf2cd4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
