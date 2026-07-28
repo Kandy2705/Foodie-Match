@@ -541,11 +541,19 @@ namespace FoodieMatch.UI.Navigation
 
             if (_selectionIcon != null)
             {
-                _selectionIcon.sprite =
+                Sprite selectedIcon =
                     binding.SelectedIcon;
 
+                _selectionIcon.sprite =
+                    selectedIcon;
+
                 _selectionIcon.enabled =
-                    binding.SelectedIcon != null;
+                    selectedIcon != null;
+
+                if (selectedIcon != null)
+                {
+                    _selectionIcon.SetNativeSize();
+                }
             }
 
             if (_selectionLabel != null)
