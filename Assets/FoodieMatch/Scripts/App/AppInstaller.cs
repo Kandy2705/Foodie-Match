@@ -1,6 +1,8 @@
+using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Heart;
@@ -36,8 +38,6 @@ namespace FoodieMatch.App
         public GameplayEvents GameplayEvents { get; private set; }
 
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
-
-        public IInterstitialAdService InterstitialAdService { get; private set; }
 
         public bool Install(AppRoot appRoot)
         {
@@ -102,6 +102,7 @@ namespace FoodieMatch.App
                 GameBoosterDefaults.CreateSnapshot();
             IGameEconomyConfig economyConfig =
                 GameEconomyDefaults.CreateSnapshot();
+            IGameAdsConfig adsConfig = GameAdsDefaults.CreateSnapshot();
             ShopPurchaseService shopPurchaseService = new(
                 shopConfig,
                 new DebugFreeShopPaymentGateway(),
@@ -121,9 +122,17 @@ namespace FoodieMatch.App
             IRewardedAdService rewardedAdService = new LevelPlayRewardedAdService(
                 adsInitializer,
                 adSettings.RewardedAdUnitId);
-            InterstitialAdService = new LevelPlayInterstitialAdService(
+            IInterstitialAdService interstitialAdService =
+                new LevelPlayInterstitialAdService(
                 adsInitializer,
                 adSettings.InterstitialAdUnitId);
+            PostLevelAdCooldown postLevelAdCooldown = new(
+                saveService,
+                clock);
+            PostLevelAdCoordinator postLevelAdCoordinator = new(
+                interstitialAdService,
+                adsConfig,
+                postLevelAdCooldown);
             adsInitializer.Initialize();
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
@@ -154,6 +163,7 @@ namespace FoodieMatch.App
                 economyConfig,
                 shopPurchaseService,
                 rewardedAdService,
+                postLevelAdCoordinator,
                 levelRepository,
                 audioService);
 

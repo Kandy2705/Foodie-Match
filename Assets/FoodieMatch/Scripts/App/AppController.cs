@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
@@ -24,6 +25,7 @@ namespace FoodieMatch.App
         private IGameEconomyConfig _economyConfig;
         private ShopPurchaseService _shopPurchaseService;
         private IRewardedAdService _rewardedAdService;
+        private PostLevelAdCoordinator _postLevelAdCoordinator;
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
@@ -38,6 +40,7 @@ namespace FoodieMatch.App
             IGameEconomyConfig economyConfig,
             ShopPurchaseService shopPurchaseService,
             IRewardedAdService rewardedAdService,
+            PostLevelAdCoordinator postLevelAdCoordinator,
             ILevelRepository levelRepository,
             IAudioService audioService)
         {
@@ -48,6 +51,7 @@ namespace FoodieMatch.App
             _economyConfig = economyConfig;
             _shopPurchaseService = shopPurchaseService;
             _rewardedAdService = rewardedAdService;
+            _postLevelAdCoordinator = postLevelAdCoordinator;
             _levelRepository = levelRepository;
             _audioService = audioService;
             _gameplayNavigationActions = new(
@@ -471,12 +475,13 @@ namespace FoodieMatch.App
 
         private void OnGameplayHomeRequested()
         {
-            BackToHome();
+            _postLevelAdCoordinator.RunAfterPostLevelAd(BackToHome);
         }
 
         private void OnGameplayRetryRequested(int levelNumber)
         {
-            StartLevel(levelNumber);
+            _postLevelAdCoordinator.RunAfterPostLevelAd(
+                () => StartLevel(levelNumber));
         }
 
         private void OnGameplayLevelLost(int levelNumber)
@@ -509,7 +514,9 @@ namespace FoodieMatch.App
 
         private void OnRegularWinRewardSelected()
         {
-            CompleteWinReward(_economyConfig.LevelCompleteCoinReward);
+            _postLevelAdCoordinator.RunAfterPostLevelAd(
+                () => CompleteWinReward(
+                    _economyConfig.LevelCompleteCoinReward));
         }
 
         private void OnRewardedAdWinRewardSelected()
@@ -525,7 +532,7 @@ namespace FoodieMatch.App
         {
             RewardedAdCallbacks callbacks = new(
                 rewarded,
-                displayed: null,
+                displayed: _postLevelAdCoordinator.RecordAdDisplayed,
                 closed: null,
                 displayFailed: ShowAdNotReadyFeedback);
 
