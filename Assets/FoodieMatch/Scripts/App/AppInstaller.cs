@@ -15,6 +15,7 @@ using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Features.Gameplay;
+using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
@@ -22,16 +23,21 @@ using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
-using FoodieMatch.UI.Advertising;
 using UnityEngine;
 
 namespace FoodieMatch.App
 {
     public sealed class AppInstaller : MonoBehaviour
     {
+        [Header("Advertising")]
+        [SerializeField] private string _rewardedAdUnitId;
+        [SerializeField] private string _interstitialAdUnitId;
+
         public GameplayEvents GameplayEvents { get; private set; }
 
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
+
+        public IInterstitialAdService InterstitialAdService { get; private set; }
 
         public bool Install(AppRoot appRoot)
         {
@@ -110,8 +116,15 @@ namespace FoodieMatch.App
                 playerProfileService,
                 levelRepository,
                 shopConfig);
-            IRewardedAdService rewardedAdService =
-                new FakeRewardedAdService(appRoot.UIManager);
+            LevelPlayAdSettings adSettings = CreateLevelPlayAdSettings();
+            LevelPlayAdsInitializer adsInitializer = new(adSettings.AppKey);
+            IRewardedAdService rewardedAdService = new LevelPlayRewardedAdService(
+                adsInitializer,
+                adSettings.RewardedAdUnitId);
+            InterstitialAdService = new LevelPlayInterstitialAdService(
+                adsInitializer,
+                adSettings.InterstitialAdUnitId);
+            adsInitializer.Initialize();
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
                 worldCamera);
@@ -145,6 +158,18 @@ namespace FoodieMatch.App
                 audioService);
 
             return true;
+        }
+
+        private LevelPlayAdSettings CreateLevelPlayAdSettings()
+        {
+            LevelPlayMediationSettings mediationSettings =
+                Resources.Load<LevelPlayMediationSettings>(
+                    "LevelPlayMediationSettings");
+
+            return new LevelPlayAdSettings(
+                mediationSettings.AndroidAppKey,
+                _rewardedAdUnitId,
+                _interstitialAdUnitId);
         }
 
         private static bool TryCreateShopConfig(out IGameShopConfig shopConfig)
