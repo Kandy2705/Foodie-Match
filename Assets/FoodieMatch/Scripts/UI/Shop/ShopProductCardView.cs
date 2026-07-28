@@ -29,6 +29,8 @@ namespace FoodieMatch.UI.Shop
         [SerializeField] private ShopBoosterRewardSlotView[] _boosterRewardSlots;
 
         private ShopProductDefinition _boundProduct;
+        private bool _isBusy;
+        private bool _isRevealComplete = true;
 
         public event Action<string> PurchaseRequested;
 
@@ -82,10 +84,14 @@ namespace FoodieMatch.UI.Shop
 
         public void SetBusy(bool isBusy)
         {
-            if (_buyButton != null)
-            {
-                _buyButton.interactable = !isBusy;
-            }
+            _isBusy = isBusy;
+            RefreshBuyButtonInteractable();
+        }
+
+        public void SetRevealComplete(bool isRevealComplete)
+        {
+            _isRevealComplete = isRevealComplete;
+            RefreshBuyButtonInteractable();
         }
 
         public void Clear()
@@ -211,6 +217,16 @@ namespace FoodieMatch.UI.Shop
             if (!string.IsNullOrWhiteSpace(_productId))
             {
                 PurchaseRequested?.Invoke(_productId);
+            }
+        }
+
+        private void RefreshBuyButtonInteractable()
+        {
+            if (_buyButton != null)
+            {
+                _buyButton.interactable =
+                    !_isBusy &&
+                    _isRevealComplete;
             }
         }
 
