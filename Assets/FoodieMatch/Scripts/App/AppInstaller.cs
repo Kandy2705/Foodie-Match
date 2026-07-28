@@ -176,24 +176,27 @@ namespace FoodieMatch.App
             out IRewardedAdService rewardedAdService,
             out IInterstitialAdService interstitialAdService)
         {
-            if (!runtimeSettings.UseLevelPlayAds)
+#if UNITY_ANDROID || UNITY_EDITOR
+            if (runtimeSettings.UseLevelPlayAds)
             {
-                rewardedAdService =
-                    new FakeRewardedAdService(appRoot.UIManager);
-                interstitialAdService =
-                    new FakeInterstitialAdService(appRoot.UIManager);
+                LevelPlayAdSettings adSettings = CreateLevelPlayAdSettings();
+                LevelPlayAdsInitializer adsInitializer =
+                    new(adSettings.AppKey);
+                rewardedAdService = new LevelPlayRewardedAdService(
+                    adsInitializer,
+                    adSettings.RewardedAdUnitId);
+                interstitialAdService = new LevelPlayInterstitialAdService(
+                    adsInitializer,
+                    adSettings.InterstitialAdUnitId);
+                adsInitializer.Initialize();
                 return;
             }
+#endif
 
-            LevelPlayAdSettings adSettings = CreateLevelPlayAdSettings();
-            LevelPlayAdsInitializer adsInitializer = new(adSettings.AppKey);
-            rewardedAdService = new LevelPlayRewardedAdService(
-                adsInitializer,
-                adSettings.RewardedAdUnitId);
-            interstitialAdService = new LevelPlayInterstitialAdService(
-                adsInitializer,
-                adSettings.InterstitialAdUnitId);
-            adsInitializer.Initialize();
+            rewardedAdService =
+                new FakeRewardedAdService(appRoot.UIManager);
+            interstitialAdService =
+                new FakeInterstitialAdService(appRoot.UIManager);
         }
 
         private LevelPlayAdSettings CreateLevelPlayAdSettings()
