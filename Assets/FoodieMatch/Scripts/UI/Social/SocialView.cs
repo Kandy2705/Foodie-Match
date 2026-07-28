@@ -1,11 +1,16 @@
 using System;
+using FoodieMatch.UI.MainMenu;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Social
 {
-    public sealed class SocialView : MonoBehaviour
+    public sealed class SocialView : MonoBehaviour, IMainMenuTabSelectionHandler
     {
+        private const float ButtonOvershootScale = 1.1f;
+        private const float ButtonStaggerFraction = 0.5f;
+
         [Header("Buttons")]
         [SerializeField] private Button _playWithFriendsButton;
         [SerializeField] private Button _joinGroupButton;
@@ -31,22 +36,159 @@ namespace FoodieMatch.UI.Social
 
         [SerializeField] private string _storeUrl = "https://play.google.com/store/games";
 
+        [Header("Button Reveal")]
+        [SerializeField, Min(0f)] private float _buttonRevealDelay = 0.2f;
+        [SerializeField, Min(0f)] private float _buttonScaleUpDuration = 0.18f;
+        [SerializeField, Min(0f)] private float _buttonSettleDuration = 0.12f;
+
+        private Button[] _revealButtons;
+        private Animator[] _buttonAnimators;
+        private Graphic[][] _buttonGraphics;
+        private Sequence _buttonRevealSequence;
+
         private void Awake()
         {
+            _revealButtons =
+                new[]
+                {
+                    _shareButton,
+                    _joinGroupButton,
+                    _followPageButton,
+                    _inviteFriendsButton,
+                    _playWithFriendsButton
+                };
+
+            _buttonAnimators =
+                new Animator[_revealButtons.Length];
+            _buttonGraphics =
+                new Graphic[_revealButtons.Length][];
+
+            for (int i = 0; i < _revealButtons.Length; i++)
+            {
+                _buttonAnimators[i] =
+                    _revealButtons[i].GetComponent<Animator>();
+                _buttonGraphics[i] =
+                    _revealButtons[i].GetComponentsInChildren<Graphic>(true);
+            }
+
             _playWithFriendsButton.onClick.AddListener(OnPlayWithFriendsClicked);
             _joinGroupButton.onClick.AddListener(OnJoinGroupClicked);
             _shareButton.onClick.AddListener(OnShareClicked);
             _followPageButton.onClick.AddListener(OnFollowPageClicked);
             _inviteFriendsButton.onClick.AddListener(OnInviteFriendsClicked);
+            PrepareButtonsForReveal();
         }
 
         private void OnDestroy()
         {
+            StopButtonRevealAnimation();
             _playWithFriendsButton.onClick.RemoveListener(OnPlayWithFriendsClicked);
             _joinGroupButton.onClick.RemoveListener(OnJoinGroupClicked);
             _shareButton.onClick.RemoveListener(OnShareClicked);
             _followPageButton.onClick.RemoveListener(OnFollowPageClicked);
             _inviteFriendsButton.onClick.RemoveListener(OnInviteFriendsClicked);
+        }
+
+        public void OnTabSelected()
+        {
+            PlayButtonRevealAnimation();
+        }
+
+        private void PlayButtonRevealAnimation()
+        {
+            StopButtonRevealAnimation();
+            PrepareButtonsForReveal();
+
+            float revealDelay = Mathf.Max(0f, _buttonRevealDelay);
+            float scaleUpDuration = Mathf.Max(0f, _buttonScaleUpDuration);
+            float settleDuration = Mathf.Max(0f, _buttonSettleDuration);
+            Vector3 overshootScale = Vector3.one * ButtonOvershootScale;
+            float buttonDuration = scaleUpDuration + settleDuration;
+            float buttonStagger = buttonDuration * ButtonStaggerFraction;
+
+            Sequence sequence =
+                Sequence.Create(useUnscaledTime: true);
+
+            for (int i = 0; i < _revealButtons.Length; i++)
+            {
+                Button button = _revealButtons[i];
+                int buttonIndex = i;
+                float startTime = revealDelay + buttonStagger * i;
+
+                sequence = sequence
+                    .Insert(startTime, Tween.Scale(
+                        button.transform,
+                        overshootScale,
+                        scaleUpDuration,
+                        Ease.OutQuad))
+                    .Insert(startTime + scaleUpDuration, Tween.Scale(
+                        button.transform,
+                        Vector3.one,
+                        settleDuration,
+                        Ease.OutBack))
+                    .InsertCallback(
+                        startTime + buttonDuration,
+                        this,
+                        view => view.EnableButton(buttonIndex));
+
+                Graphic[] graphics = _buttonGraphics[i];
+
+                for (int graphicIndex = 0;
+                     graphicIndex < graphics.Length;
+                     graphicIndex++)
+                {
+                    sequence = sequence.Insert(
+                        startTime,
+                        Tween.Alpha(
+                            graphics[graphicIndex],
+                            0f,
+                            1f,
+                            buttonDuration,
+                            Ease.Linear));
+                }
+            }
+
+            _buttonRevealSequence = sequence;
+        }
+
+        private void PrepareButtonsForReveal()
+        {
+            for (int i = 0; i < _revealButtons.Length; i++)
+            {
+                _buttonAnimators[i].enabled = false;
+                _revealButtons[i].interactable = false;
+                _revealButtons[i].transform.localScale = Vector3.zero;
+                SetButtonAlpha(i, 0f);
+            }
+        }
+
+        private void EnableButton(int buttonIndex)
+        {
+            SetButtonAlpha(buttonIndex, 1f);
+            _revealButtons[buttonIndex].interactable = true;
+            _buttonAnimators[buttonIndex].enabled = true;
+        }
+
+        private void SetButtonAlpha(int buttonIndex, float alpha)
+        {
+            Graphic[] graphics = _buttonGraphics[buttonIndex];
+
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                Color color = graphics[i].color;
+                color.a = alpha;
+                graphics[i].color = color;
+            }
+        }
+
+        private void StopButtonRevealAnimation()
+        {
+            if (_buttonRevealSequence.isAlive)
+            {
+                _buttonRevealSequence.Stop();
+            }
+
+            _buttonRevealSequence = default;
         }
 
         private void OnPlayWithFriendsClicked()

@@ -4,4 +4,9 @@ namespace FoodieMatch.UI.MainMenu
     {
         void Clear();
     }
+
+    public interface IMainMenuTabSelectionHandler
+    {
+        void OnTabSelected();
+    }
 }

@@ -38,6 +38,12 @@ namespace FoodieMatch.UI.MainMenu
         private void Awake()
         {
             EnsureInitialized();
+            _bottomNavigationBarView.TabSelected += OnTabSelected;
+        }
+
+        private void OnDestroy()
+        {
+            _bottomNavigationBarView.TabSelected -= OnTabSelected;
         }
 
         public override void Show()
@@ -146,6 +152,15 @@ namespace FoodieMatch.UI.MainMenu
                 MonoBehaviour view = _views[i].View;
                 if (view is IMainMenuViewLifecycle lifecycle)
                     lifecycle.Clear();
+            }
+        }
+
+        private void OnTabSelected(BottomNavigationTab tab)
+        {
+            if (_viewsByTab.TryGetValue(tab, out MonoBehaviour view) &&
+                view is IMainMenuTabSelectionHandler selectionHandler)
+            {
+                selectionHandler.OnTabSelected();
             }
         }
     }

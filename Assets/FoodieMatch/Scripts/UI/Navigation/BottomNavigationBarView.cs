@@ -93,6 +93,8 @@ namespace FoodieMatch.UI.Navigation
         private bool _isInitialized;
         private bool _isTransitioning;
 
+        public event Action<BottomNavigationTab> TabSelected;
+
         private void Start()
         {
             _ = InitializeNavigationSafelyAsync();
@@ -250,6 +252,9 @@ namespace FoodieMatch.UI.Navigation
             _selectionAnimator.SetBool(
                 IsSelectedHash,
                 true);
+
+            TabSelected?.Invoke(
+                initialBinding.Tab);
         }
 
         private void HandleTabClicked(
@@ -323,6 +328,9 @@ namespace FoodieMatch.UI.Navigation
 
             BringScreenToFront(
                 selectedBinding);
+
+            TabSelected?.Invoke(
+                selectedBinding.Tab);
 
             await SwitchScreenAsync(
                 previousBinding,
@@ -658,6 +666,9 @@ namespace FoodieMatch.UI.Navigation
             _selectionAnimator.SetBool(
                 IsSelectedHash,
                 true);
+
+            TabSelected?.Invoke(
+                binding.Tab);
         }
 
         public void SelectTab(
