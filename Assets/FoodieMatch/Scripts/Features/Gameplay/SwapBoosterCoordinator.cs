@@ -39,7 +39,7 @@ namespace FoodieMatch.Features.Gameplay
                 return false;
             }
 
-            int foodCount = CountAllBoardFood(session.Board);
+            int foodCount = CountSwappableFood(session.Board);
 
             if (foodCount < MinFoodCountToSwap)
             {
@@ -91,7 +91,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             session.DisableInput();
 
-            List<FoodItemView> oldFoodViews = CollectAllVisibleFoodViews();
+            List<FoodItemView> oldFoodViews = CollectAllVisibleFoodViews(session);
 
             await _boardLayoutView.AnimateHideFoodAsync(
                 oldFoodViews);
@@ -111,7 +111,7 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            if (!TryRearrangeAllBoardFood(session))
+            if (!TryRearrangeVisibleFood(session))
             {
                 await popupAnimationTask;
                 return;
@@ -134,15 +134,26 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private List<FoodItemView> CollectAllVisibleFoodViews()
+        private List<FoodItemView> CollectAllVisibleFoodViews(GameplaySession session)
         {
             List<FoodItemView> views = new List<FoodItemView>();
-            views.AddRange(_boardLayoutView.GetAllActiveFoodViews());
+            List<FoodBoardEntry> entries = _boardLayoutView.GetActiveFoodEntries();
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                FoodBoardEntry entry = entries[i];
+
+                if (session.Board.IsGrillVisible(entry.Address.GrillPositionIndex))
+                {
+                    views.Add(entry.FoodItemView);
+                }
+            }
+
             views.AddRange(_boardLayoutView.GetAllTopTrayFoodViews());
             return views;
         }
 
-        private static int CountAllBoardFood(BoardModel board)
+        private static int CountSwappableFood(BoardModel board)
         {
             int count = 0;
 
@@ -151,6 +162,11 @@ namespace FoodieMatch.Features.Gameplay
                 GrillModel grill = board.GetGrillAt(g);
 
                 if (grill == null)
+                {
+                    continue;
+                }
+
+                if (!board.IsGrillVisible(grill.PositionIndex))
                 {
                     continue;
                 }
@@ -180,7 +196,7 @@ namespace FoodieMatch.Features.Gameplay
             return count;
         }
 
-        private static bool TryRearrangeAllBoardFood(GameplaySession session)
+        private static bool TryRearrangeVisibleFood(GameplaySession session)
         {
             BoardModel board = session.Board;
 
@@ -194,6 +210,11 @@ namespace FoodieMatch.Features.Gameplay
             {
                 GrillModel grill = board.GetGrillAt(g);
                 if (grill == null) continue;
+
+                if (!board.IsGrillVisible(grill.PositionIndex))
+                {
+                    continue;
+                }
 
                 for (int s = 0; s < grill.ActiveFoodSlotCount; s++)
                 {

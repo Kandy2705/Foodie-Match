@@ -135,26 +135,6 @@ namespace FoodieMatch.Features.Board
             _grillMovementController = null;
         }
 
-        public bool TryCollectActiveFoodByTokenId(
-            int foodTokenId,
-            out List<FoodItemView> items,
-            out List<FoodBoardAddress> addresses)
-        {
-            items = new List<FoodItemView>();
-            addresses = new List<FoodBoardAddress>();
-
-            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> kvp in _foodAddresses)
-            {
-                if (kvp.Key != null && kvp.Key.FoodTokenId == foodTokenId)
-                {
-                    items.Add(kvp.Key);
-                    addresses.Add(kvp.Value);
-                }
-            }
-
-            return items.Count > 0;
-        }
-
         public bool TryCollectActiveFoodFromTopTrays(
             int foodTokenId,
             out List<FoodItemView> items,
@@ -224,21 +204,6 @@ namespace FoodieMatch.Features.Board
                 targetScale,
                 _topTrayReleaseScaleDuration,
                 Ease.OutCubic);
-        }
-
-        public List<FoodItemView> GetAllActiveFoodViews()
-        {
-            List<FoodItemView> views = new List<FoodItemView>();
-
-            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> kvp in _foodAddresses)
-            {
-                if (kvp.Key != null)
-                {
-                    views.Add(kvp.Key);
-                }
-            }
-
-            return views;
         }
 
         public void SetRegisteredFoodInteractable(bool isInteractable)
