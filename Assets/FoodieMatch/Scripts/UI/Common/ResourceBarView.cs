@@ -3,6 +3,7 @@ using FoodieMatch.Core.Application.Player;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.Reward;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Common
 {
@@ -10,8 +11,24 @@ namespace FoodieMatch.UI.Common
     {
         [SerializeField] private CoinCounterView _coinCounterView;
         [SerializeField] private HeartCounterView _heartCounterView;
+        [SerializeField] private Button _coinCounterButton;
+        [SerializeField] private GameObject _addCoinButton;
+
+        private Action _coinClicked;
 
         public CoinCounterView CoinCounterView => _coinCounterView;
+
+        private void Awake()
+        {
+            _coinCounterButton.onClick.AddListener(OnCoinClicked);
+            _coinCounterButton.enabled = false;
+            _addCoinButton.SetActive(false);
+        }
+
+        private void OnDestroy()
+        {
+            _coinCounterButton.onClick.RemoveListener(OnCoinClicked);
+        }
 
         public void SetPlayerResources(
             long coinBalance,
@@ -31,14 +48,25 @@ namespace FoodieMatch.UI.Common
             _heartCounterView.SetHeartStatus(heartStatus);
         }
 
-        public void SetHeartClickAction(Action clicked)
+        public void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked)
         {
-            _heartCounterView.SetClickAction(clicked);
+            _coinClicked = coinClicked;
+            _coinCounterButton.enabled = coinClicked != null;
+            _addCoinButton.SetActive(coinClicked != null);
+            _heartCounterView.SetClickAction(heartClicked);
         }
 
         public void Clear()
         {
+            SetResourceClickActions(null, null);
             _heartCounterView.Clear();
+        }
+
+        private void OnCoinClicked()
+        {
+            _coinClicked();
         }
     }
 }

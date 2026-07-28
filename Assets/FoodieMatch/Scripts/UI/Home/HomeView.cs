@@ -43,7 +43,9 @@ namespace FoodieMatch.UI.Home
         {
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
-            _resourceBarView.SetHeartClickAction(actions.HeartClicked);
+            _resourceBarView.SetResourceClickActions(
+                actions.CoinClicked,
+                actions.HeartClicked);
         }
 
         public void SetPlayLevel(int levelNumber, LevelDifficulty difficulty)
@@ -73,6 +75,15 @@ namespace FoodieMatch.UI.Home
             HeartStatus heartStatus)
         {
             _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
+        }
+
+        public void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked)
+        {
+            _resourceBarView.SetResourceClickActions(
+                coinClicked,
+                heartClicked);
         }
 
         public CoinCounterView GetCoinCounter()

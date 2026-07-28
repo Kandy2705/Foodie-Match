@@ -103,6 +103,11 @@ namespace FoodieMatch.UI.MainMenu
             return GetView(tab) as TView;
         }
 
+        public void SelectTab(BottomNavigationTab tab)
+        {
+            _bottomNavigationBarView.SelectTab(tab);
+        }
+
         public override void Dispose()
         {
             ClearRegisteredViews();

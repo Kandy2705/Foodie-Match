@@ -660,6 +660,24 @@ namespace FoodieMatch.UI.Navigation
                 true);
         }
 
+        public void SelectTab(
+            BottomNavigationTab tab)
+        {
+            TabBinding binding =
+                FindBinding(tab);
+
+            if (binding == null)
+            {
+                Debug.LogError(
+                    $"Bottom navigation tab {tab} is missing.",
+                    this);
+
+                return;
+            }
+
+            HandleTabClicked(binding);
+        }
+
         private static void BringScreenToFront(
             TabBinding binding)
         {

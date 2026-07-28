@@ -53,10 +53,20 @@ namespace FoodieMatch.UI.Result
             _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
         }
 
+        public void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked)
+        {
+            _resourceBarView.SetResourceClickActions(
+                coinClicked,
+                heartClicked);
+        }
+
         public override void Dispose()
         {
             _tryAgainClicked = null;
             _homeClicked = null;
+            _resourceBarView.Clear();
 
             base.Dispose();
         }

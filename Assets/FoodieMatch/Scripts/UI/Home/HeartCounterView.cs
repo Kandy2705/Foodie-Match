@@ -102,6 +102,7 @@ namespace FoodieMatch.UI.Home
         {
             _clicked = clicked;
             _lifeCounterButton.enabled = clicked != null;
+            UpdateAddLifeButtonVisibility();
         }
 
         public void Clear()
@@ -193,6 +194,7 @@ namespace FoodieMatch.UI.Home
         private void UpdateAddLifeButtonVisibility()
         {
             _addLifeButton.SetActive(
+                _clicked != null &&
                 !_isUnlimited &&
                 _heartCount < _maxHeartCount);
         }

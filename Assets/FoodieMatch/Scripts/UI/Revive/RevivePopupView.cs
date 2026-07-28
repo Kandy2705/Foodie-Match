@@ -49,6 +49,15 @@ namespace FoodieMatch.UI.Revive
             _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
         }
 
+        public void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked)
+        {
+            _resourceBarView.SetResourceClickActions(
+                coinClicked,
+                heartClicked);
+        }
+
         public void SetCost(string costText)
         {
             _costText.text = costText;
@@ -77,6 +86,7 @@ namespace FoodieMatch.UI.Revive
             _closeClicked = null;
             _freeAdsClicked = null;
             _playOnClicked = null;
+            _resourceBarView.Clear();
 
             base.Dispose();
         }
