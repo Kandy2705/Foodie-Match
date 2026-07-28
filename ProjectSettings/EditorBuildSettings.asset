@@ -9,5 +9,6 @@ EditorBuildSettings:
     path: Assets/FoodieMatch/Scenes/Main.unity
     guid: 9c43922a8741b9b4684a0db224569ec5
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: a0bcb5a1bd7de47809a62280233e825e, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

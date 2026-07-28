@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using FoodieMatch.UI.AddressableAssets;
 using UnityEngine;
 
 namespace FoodieMatch.UI.Popup
@@ -12,30 +15,96 @@ namespace FoodieMatch.UI.Popup
         private readonly Dictionary<Type, PopupPrefabEntry> _entryMap = new();
         private readonly Dictionary<Type, PopupBase> _openedPopups = new();
         private readonly Dictionary<Type, PopupBase> _cachedPopups = new();
+        private readonly Dictionary<Type, int> _requestVersions = new();
+
+        private IAddressableUiFactory _addressableUiFactory;
+        private bool _isShutdown;
 
         private void Awake()
         {
             BuildEntryMap();
         }
 
-        public TPopup Show<TPopup>(IPopupData data = null)
+        private void OnDestroy()
+        {
+            Shutdown();
+        }
+
+        public void Construct(IAddressableUiFactory addressableUiFactory)
+        {
+            _addressableUiFactory = addressableUiFactory ??
+                throw new ArgumentNullException(nameof(addressableUiFactory));
+        }
+
+        public async Task<TPopup> ShowAsync<TPopup>(
+            IPopupData data = null,
+            CancellationToken cancellationToken = default)
             where TPopup : PopupBase
         {
-            Type popupType = typeof(TPopup);
+            EnsureReady();
 
-            if (_openedPopups.TryGetValue(popupType, out PopupBase openedPopup))
+            Type popupType = typeof(TPopup);
+            int requestVersion = NextRequestVersion(popupType);
+
+            if (_openedPopups.TryGetValue(
+                    popupType,
+                    out PopupBase openedPopup) &&
+                openedPopup != null)
             {
                 openedPopup.Setup(data);
                 openedPopup.Show();
-                return openedPopup as TPopup;
+                return (TPopup)openedPopup;
             }
 
-            TPopup popup = GetOrCreatePopup<TPopup>();
+            PopupBase popup = await GetOrCreatePopupAsync(
+                popupType,
+                cancellationToken);
+
+            if (!IsCurrentRequest(popupType, requestVersion))
+            {
+                popup.Hide();
+                return (TPopup)popup;
+            }
+
             popup.Setup(data);
             popup.Show();
+            _cachedPopups.Remove(popupType);
+            _openedPopups[popupType] = popup;
 
-            _openedPopups.Add(popupType, popup);
+            return (TPopup)popup;
+        }
 
+        // ShopScreen is not in the current Addressables catalog, so its
+        // existing popup path remains serialized until it receives an address.
+        public TPopup Show<TPopup>(IPopupData data = null)
+            where TPopup : PopupBase
+        {
+            EnsureReady();
+
+            Type popupType = typeof(TPopup);
+
+            if (UiAddressCatalog.TryGetAddress(popupType, out _))
+            {
+                throw new InvalidOperationException(
+                    $"{popupType.FullName} is Addressable and must be shown asynchronously.");
+            }
+
+            NextRequestVersion(popupType);
+
+            if (_openedPopups.TryGetValue(
+                    popupType,
+                    out PopupBase openedPopup) &&
+                openedPopup != null)
+            {
+                openedPopup.Setup(data);
+                openedPopup.Show();
+                return (TPopup)openedPopup;
+            }
+
+            TPopup popup = GetOrCreateLegacyPopup<TPopup>();
+            popup.Setup(data);
+            popup.Show();
+            _openedPopups[popupType] = popup;
             return popup;
         }
 
@@ -47,11 +116,16 @@ namespace FoodieMatch.UI.Popup
 
         public void HideAll()
         {
-            List<Type> openedTypes = new(_openedPopups.Keys);
+            HashSet<Type> requestedTypes = new(_requestVersions.Keys);
 
-            for (int i = 0; i < openedTypes.Count; i++)
+            foreach (Type popupType in _openedPopups.Keys)
             {
-                Hide(openedTypes[i]);
+                requestedTypes.Add(popupType);
+            }
+
+            foreach (Type popupType in requestedTypes)
+            {
+                Hide(popupType);
             }
 
             _openedPopups.Clear();
@@ -60,13 +134,19 @@ namespace FoodieMatch.UI.Popup
         public bool IsOpened<TPopup>()
             where TPopup : PopupBase
         {
-            return _openedPopups.ContainsKey(typeof(TPopup));
+            return _openedPopups.TryGetValue(
+                typeof(TPopup),
+                out PopupBase popup) &&
+                popup != null;
         }
 
         public bool TryGetOpened<TPopup>(out TPopup popup)
             where TPopup : PopupBase
         {
-            if (_openedPopups.TryGetValue(typeof(TPopup), out PopupBase openedPopup))
+            if (_openedPopups.TryGetValue(
+                    typeof(TPopup),
+                    out PopupBase openedPopup) &&
+                openedPopup != null)
             {
                 popup = (TPopup)openedPopup;
                 return true;
@@ -76,54 +156,191 @@ namespace FoodieMatch.UI.Popup
             return false;
         }
 
+        public void Shutdown()
+        {
+            if (_isShutdown)
+            {
+                return;
+            }
+
+            _isShutdown = true;
+
+            HashSet<Type> popupTypes = new(_openedPopups.Keys);
+
+            foreach (Type popupType in _cachedPopups.Keys)
+            {
+                popupTypes.Add(popupType);
+            }
+
+            Type[] requestedTypes = new Type[_requestVersions.Count];
+            _requestVersions.Keys.CopyTo(requestedTypes, 0);
+
+            for (int i = 0; i < requestedTypes.Length; i++)
+            {
+                NextRequestVersion(requestedTypes[i]);
+            }
+
+            foreach (Type popupType in popupTypes)
+            {
+                PopupBase popup = null;
+
+                if (!_openedPopups.TryGetValue(popupType, out popup))
+                {
+                    _cachedPopups.TryGetValue(popupType, out popup);
+                }
+
+                if (popup != null)
+                {
+                    ReleasePopup(popupType, popup);
+                }
+                else if (UiAddressCatalog.TryGetAddress(
+                             popupType,
+                             out string address))
+                {
+                    _addressableUiFactory?.Release(address);
+                }
+            }
+
+            _openedPopups.Clear();
+            _cachedPopups.Clear();
+            _requestVersions.Clear();
+        }
+
         private void Hide(Type popupType)
         {
-            if (!_openedPopups.TryGetValue(popupType, out PopupBase popup))
+            NextRequestVersion(popupType);
+
+            if (!_openedPopups.TryGetValue(
+                    popupType,
+                    out PopupBase popup) ||
+                popup == null)
             {
+                if (!ShouldCacheAfterHide(popupType) &&
+                    UiAddressCatalog.TryGetAddress(
+                        popupType,
+                        out string pendingAddress))
+                {
+                    _addressableUiFactory.Release(pendingAddress);
+                }
+
+                _openedPopups.Remove(popupType);
                 return;
             }
 
             popup.Hide();
             _openedPopups.Remove(popupType);
 
-            PopupPrefabEntry entry = _entryMap[popupType];
-
-            if (entry.CacheAfterHide)
+            if (ShouldCacheAfterHide(popupType))
             {
                 _cachedPopups[popupType] = popup;
                 return;
             }
 
-            DestroyPopup(popup);
+            ReleasePopup(popupType, popup);
         }
 
-        private TPopup GetOrCreatePopup<TPopup>()
+        private async Task<PopupBase> GetOrCreatePopupAsync(
+            Type popupType,
+            CancellationToken cancellationToken)
+        {
+            if (_cachedPopups.TryGetValue(
+                    popupType,
+                    out PopupBase cachedPopup) &&
+                cachedPopup != null)
+            {
+                _cachedPopups.Remove(popupType);
+                PreparePopupForShow(cachedPopup);
+                return cachedPopup;
+            }
+
+            _cachedPopups.Remove(popupType);
+
+            if (!UiAddressCatalog.TryGetAddress(
+                    popupType,
+                    out string address))
+            {
+                throw new InvalidOperationException(
+                    $"No Addressables address is registered for {popupType.FullName}.");
+            }
+
+            PopupBase popup;
+
+            try
+            {
+                popup = await _addressableUiFactory.GetOrCreateAsync<PopupBase>(
+                    address,
+                    _popupRoot,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(
+                    $"[Addressables UI] Failed: {address} | " +
+                    $"Type: {popupType.FullName} | Parent: {_popupRoot.name} | " +
+                    $"Exception: {exception}");
+                throw;
+            }
+
+            if (!popupType.IsInstanceOfType(popup))
+            {
+                _addressableUiFactory.Release(address);
+                throw new InvalidOperationException(
+                    $"Address {address} contains {popup.GetType().FullName}, " +
+                    $"not {popupType.FullName}.");
+            }
+
+            PreparePopupForShow(popup);
+            return popup;
+        }
+
+        private TPopup GetOrCreateLegacyPopup<TPopup>()
             where TPopup : PopupBase
         {
             Type popupType = typeof(TPopup);
 
-            if (_cachedPopups.TryGetValue(popupType, out PopupBase cachedPopup))
+            if (_cachedPopups.TryGetValue(
+                    popupType,
+                    out PopupBase cachedPopup) &&
+                cachedPopup != null)
             {
                 _cachedPopups.Remove(popupType);
-                cachedPopup.transform.SetParent(_popupRoot, false);
-                cachedPopup.transform.SetAsLastSibling();
-                return cachedPopup as TPopup;
+                PreparePopupForShow(cachedPopup);
+                return (TPopup)cachedPopup;
             }
 
-            PopupPrefabEntry entry = _entryMap[popupType];
-
+            _cachedPopups.Remove(popupType);
+            PopupPrefabEntry entry = GetEntry(popupType);
             PopupBase popup = Instantiate(entry.Prefab, _popupRoot);
-            popup.transform.SetAsLastSibling();
             popup.gameObject.name = entry.Prefab.gameObject.name;
-            popup.HideRequested += OnPopupHideRequested;
-
-            return popup as TPopup;
+            PreparePopupForShow(popup);
+            return (TPopup)popup;
         }
 
-        private void DestroyPopup(PopupBase popup)
+        private void PreparePopupForShow(PopupBase popup)
+        {
+            popup.transform.SetParent(_popupRoot, false);
+            popup.transform.SetAsLastSibling();
+            popup.HideRequested -= OnPopupHideRequested;
+            popup.HideRequested += OnPopupHideRequested;
+        }
+
+        private void ReleasePopup(Type popupType, PopupBase popup)
         {
             popup.HideRequested -= OnPopupHideRequested;
             popup.Dispose();
+
+            if (UiAddressCatalog.TryGetAddress(
+                    popupType,
+                    out string address))
+            {
+                _addressableUiFactory?.Release(address);
+                return;
+            }
 
             Destroy(popup.gameObject);
         }
@@ -141,8 +358,72 @@ namespace FoodieMatch.UI.Popup
             {
                 PopupPrefabEntry entry = _popupPrefabs[i];
 
+                if (entry?.Prefab == null)
+                {
+                    continue;
+                }
+
                 Type popupType = entry.Prefab.GetType();
                 _entryMap.Add(popupType, entry);
+            }
+        }
+
+        private PopupPrefabEntry GetEntry(Type popupType)
+        {
+            if (TryGetEntry(popupType, out PopupPrefabEntry entry))
+            {
+                return entry;
+            }
+
+            throw new KeyNotFoundException(
+                $"Popup {popupType.FullName} is not registered in PopupManager.");
+        }
+
+        private bool TryGetEntry(
+            Type popupType,
+            out PopupPrefabEntry entry)
+        {
+            return _entryMap.TryGetValue(popupType, out entry);
+        }
+
+        private bool ShouldCacheAfterHide(Type popupType)
+        {
+            if (UiAddressCatalog.TryGetAddress(popupType, out _))
+            {
+                return true;
+            }
+
+            return GetEntry(popupType).CacheAfterHide;
+        }
+
+        private int NextRequestVersion(Type popupType)
+        {
+            _requestVersions.TryGetValue(popupType, out int version);
+            version++;
+            _requestVersions[popupType] = version;
+            return version;
+        }
+
+        private bool IsCurrentRequest(Type popupType, int requestVersion)
+        {
+            return !_isShutdown &&
+                _requestVersions.TryGetValue(
+                    popupType,
+                    out int currentVersion) &&
+                currentVersion == requestVersion;
+        }
+
+        private void EnsureReady()
+        {
+            if (_isShutdown)
+            {
+                throw new ObjectDisposedException(nameof(PopupManager));
+            }
+
+            if (_addressableUiFactory == null)
+            {
+                throw new InvalidOperationException(
+                    "PopupManager must be constructed before showing UI.");
             }
         }
     }
