@@ -1,6 +1,8 @@
+using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Heart;
@@ -15,6 +17,7 @@ using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Features.Gameplay;
+using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
@@ -29,6 +32,10 @@ namespace FoodieMatch.App
 {
     public sealed class AppInstaller : MonoBehaviour
     {
+        [Header("Advertising")]
+        [SerializeField] private string _rewardedAdUnitId;
+        [SerializeField] private string _interstitialAdUnitId;
+
         public GameplayEvents GameplayEvents { get; private set; }
 
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
@@ -48,6 +55,8 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            IAdvertisingRuntimeSettings advertisingRuntimeSettings =
+                new PlayerPrefsAdvertisingRuntimeSettings(saveService);
             IGameHeartConfig heartConfig =
                 GameHeartDefaults.CreateSnapshot();
             IClock clock = new SystemClock();
@@ -96,6 +105,7 @@ namespace FoodieMatch.App
                 GameBoosterDefaults.CreateSnapshot();
             IGameEconomyConfig economyConfig =
                 GameEconomyDefaults.CreateSnapshot();
+            IGameAdsConfig adsConfig = GameAdsDefaults.CreateSnapshot();
             ShopPurchaseService shopPurchaseService = new(
                 shopConfig,
                 new DebugFreeShopPaymentGateway(),
@@ -107,11 +117,23 @@ namespace FoodieMatch.App
                 boosterManager,
                 boosterConfig,
                 economyConfig,
+                advertisingRuntimeSettings,
                 playerProfileService,
                 levelRepository,
                 shopConfig);
-            IRewardedAdService rewardedAdService =
-                new FakeRewardedAdService(appRoot.UIManager);
+            CreateAdServices(
+                appRoot,
+                advertisingRuntimeSettings,
+                out IRewardedAdService rewardedAdService,
+                out IInterstitialAdService interstitialAdService);
+            PostLevelAdCooldown postLevelAdCooldown = new(
+                saveService,
+                clock);
+            PostLevelAdCoordinator postLevelAdCoordinator = new(
+                interstitialAdService,
+                adsConfig,
+                advertisingRuntimeSettings,
+                postLevelAdCooldown);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
                 worldCamera);
@@ -141,10 +163,52 @@ namespace FoodieMatch.App
                 economyConfig,
                 shopPurchaseService,
                 rewardedAdService,
+                postLevelAdCoordinator,
                 levelRepository,
                 audioService);
 
             return true;
+        }
+
+        private void CreateAdServices(
+            AppRoot appRoot,
+            IAdvertisingRuntimeSettings runtimeSettings,
+            out IRewardedAdService rewardedAdService,
+            out IInterstitialAdService interstitialAdService)
+        {
+#if UNITY_ANDROID || UNITY_EDITOR
+            if (runtimeSettings.UseLevelPlayAds)
+            {
+                LevelPlayAdSettings adSettings = CreateLevelPlayAdSettings();
+                LevelPlayAdsInitializer adsInitializer =
+                    new(adSettings.AppKey);
+                rewardedAdService = new LevelPlayRewardedAdService(
+                    adsInitializer,
+                    adSettings.RewardedAdUnitId);
+                interstitialAdService = new LevelPlayInterstitialAdService(
+                    adsInitializer,
+                    adSettings.InterstitialAdUnitId);
+                adsInitializer.Initialize();
+                return;
+            }
+#endif
+
+            rewardedAdService =
+                new FakeRewardedAdService(appRoot.UIManager);
+            interstitialAdService =
+                new FakeInterstitialAdService(appRoot.UIManager);
+        }
+
+        private LevelPlayAdSettings CreateLevelPlayAdSettings()
+        {
+            LevelPlayMediationSettings mediationSettings =
+                Resources.Load<LevelPlayMediationSettings>(
+                    "LevelPlayMediationSettings");
+
+            return new LevelPlayAdSettings(
+                mediationSettings.AndroidAppKey,
+                _rewardedAdUnitId,
+                _interstitialAdUnitId);
         }
 
         private static bool TryCreateShopConfig(out IGameShopConfig shopConfig)

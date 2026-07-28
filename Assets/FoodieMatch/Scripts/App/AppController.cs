@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
@@ -24,6 +25,7 @@ namespace FoodieMatch.App
         private IGameEconomyConfig _economyConfig;
         private ShopPurchaseService _shopPurchaseService;
         private IRewardedAdService _rewardedAdService;
+        private PostLevelAdCoordinator _postLevelAdCoordinator;
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
@@ -38,6 +40,7 @@ namespace FoodieMatch.App
             IGameEconomyConfig economyConfig,
             ShopPurchaseService shopPurchaseService,
             IRewardedAdService rewardedAdService,
+            PostLevelAdCoordinator postLevelAdCoordinator,
             ILevelRepository levelRepository,
             IAudioService audioService)
         {
@@ -48,6 +51,7 @@ namespace FoodieMatch.App
             _economyConfig = economyConfig;
             _shopPurchaseService = shopPurchaseService;
             _rewardedAdService = rewardedAdService;
+            _postLevelAdCoordinator = postLevelAdCoordinator;
             _levelRepository = levelRepository;
             _audioService = audioService;
             _gameplayNavigationActions = new(
@@ -329,19 +333,9 @@ namespace FoodieMatch.App
 
         private void OnBoosterRewardedAdRequested(BoosterType boosterType)
         {
-            try
-            {
-                _rewardedAdService.TryShow(
-                    RewardedAdPlacement.BoosterReward,
-                    new RewardedAdCallbacks(
-                        () => OnBoosterAdRewarded(boosterType),
-                        closed: null,
-                        displayFailed: null));
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            TryShowRewardedAd(
+                GetBoosterAdPlacement(boosterType),
+                () => OnBoosterAdRewarded(boosterType));
         }
 
         private void OnBoosterAdRewarded(BoosterType boosterType)
@@ -379,19 +373,9 @@ namespace FoodieMatch.App
 
         private void OnAddBoxRewardedAdRequested()
         {
-            try
-            {
-                _rewardedAdService.TryShow(
-                    RewardedAdPlacement.BoosterReward,
-                    new RewardedAdCallbacks(
-                        OnAddBoxAdRewarded,
-                        closed: null,
-                        displayFailed: null));
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            TryShowRewardedAd(
+                GetBoosterAdPlacement(BoosterType.Box),
+                OnAddBoxAdRewarded);
         }
 
         private void OnAddBoxAdRewarded()
@@ -414,12 +398,9 @@ namespace FoodieMatch.App
 
         private void OnFillHeartRewardedAdRequested()
         {
-            _rewardedAdService.TryShow(
-                RewardedAdPlacement.BoosterReward,
-                new RewardedAdCallbacks(
-                    OnFillHeartAdRewarded,
-                    closed: null,
-                    displayFailed: null));
+            TryShowRewardedAd(
+                RewardedAdPlacement.AddHeart,
+                OnFillHeartAdRewarded);
         }
 
         private void OnFillHeartAdRewarded()
@@ -494,12 +475,13 @@ namespace FoodieMatch.App
 
         private void OnGameplayHomeRequested()
         {
-            BackToHome();
+            _postLevelAdCoordinator.RunAfterPostLevelAd(BackToHome);
         }
 
         private void OnGameplayRetryRequested(int levelNumber)
         {
-            StartLevel(levelNumber);
+            _postLevelAdCoordinator.RunAfterPostLevelAd(
+                () => StartLevel(levelNumber));
         }
 
         private void OnGameplayLevelLost(int levelNumber)
@@ -532,24 +514,55 @@ namespace FoodieMatch.App
 
         private void OnRegularWinRewardSelected()
         {
-            CompleteWinReward(_economyConfig.LevelCompleteCoinReward);
+            _postLevelAdCoordinator.RunAfterPostLevelAd(
+                () => CompleteWinReward(
+                    _economyConfig.LevelCompleteCoinReward));
         }
 
         private void OnRewardedAdWinRewardSelected()
         {
-            try
+            TryShowRewardedAd(
+                RewardedAdPlacement.DoubleCoin,
+                OnRewardedAdRewarded);
+        }
+
+        private void TryShowRewardedAd(
+            RewardedAdPlacement placement,
+            Action rewarded)
+        {
+            RewardedAdCallbacks callbacks = new(
+                rewarded,
+                displayed: _postLevelAdCoordinator.RecordAdDisplayed,
+                closed: null,
+                displayFailed: ShowAdNotReadyFeedback);
+
+            if (!_rewardedAdService.TryShow(placement, callbacks))
             {
-                _rewardedAdService.TryShow(
-                    RewardedAdPlacement.LevelCompleteCoinReward,
-                    new RewardedAdCallbacks(
-                        OnRewardedAdRewarded,
-                        closed: null,
-                        displayFailed: null));
+                ShowAdNotReadyFeedback();
             }
-            catch (Exception exception)
+        }
+
+        private void ShowAdNotReadyFeedback()
+        {
+            _uiManager.ShowActionFeedback(
+                "Ad is not ready. Please try again.");
+        }
+
+        private static RewardedAdPlacement GetBoosterAdPlacement(
+            BoosterType boosterType)
+        {
+            return boosterType switch
             {
-                Debug.LogException(exception);
-            }
+                BoosterType.Plate => RewardedAdPlacement.BoosterPlate,
+                BoosterType.Storage => RewardedAdPlacement.BoosterStorage,
+                BoosterType.Swap => RewardedAdPlacement.BoosterSwap,
+                BoosterType.Fridge => RewardedAdPlacement.BoosterFridge,
+                BoosterType.Box => RewardedAdPlacement.BoosterBox,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(boosterType),
+                    boosterType,
+                    null)
+            };
         }
 
         private void OnRewardedAdRewarded()

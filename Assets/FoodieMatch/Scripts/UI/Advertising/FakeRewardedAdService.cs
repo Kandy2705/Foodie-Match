@@ -38,6 +38,7 @@ namespace FoodieMatch.UI.Advertising
                 return false;
             }
 
+            callbacks.Displayed?.Invoke();
             return true;
         }
 
