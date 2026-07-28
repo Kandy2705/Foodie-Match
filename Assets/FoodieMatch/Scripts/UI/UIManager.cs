@@ -25,6 +25,7 @@ using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
 using FoodieMatch.UI.Loading;
 using FoodieMatch.UI.MainMenu;
+using FoodieMatch.UI.Navigation;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Reward;
@@ -161,6 +162,7 @@ namespace FoodieMatch.UI
                     new HomeViewActions(
                         OnHomePlayRequested,
                         OnHomeSettingRequested,
+                        OnHomeCoinClicked,
                         OnHomeHeartClicked));
 
                 SetHomePlayLevel(homeView);
@@ -525,6 +527,9 @@ namespace FoodieMatch.UI
             popup.SetPlayerResources(
                 _playerProfileService.CoinBalance,
                 heartStatus);
+            popup.SetResourceClickActions(
+                ShowShopPopup,
+                ShowShopPopup);
         }
 
         public void CompleteHeartRefill()
@@ -616,6 +621,11 @@ namespace FoodieMatch.UI
                 mainMenuView.TryGetView<ShopView>(out ShopView shopView))
             {
                 shopView.SetPlayerResources(coinBalance, heartStatus);
+            }
+
+            if (_popupManager.TryGetOpened(out ShopView popupShopView))
+            {
+                popupShopView.SetPlayerResources(coinBalance, heartStatus);
             }
 
             if (_popupManager.TryGetOpened(out BoosterBuyPopupView boosterBuyPopup))
@@ -760,11 +770,17 @@ namespace FoodieMatch.UI
                 return;
             }
 
+            BindShopView(shopView);
+        }
+
+        private void BindShopView(ShopView shopView)
+        {
             shopView.SetPurchaseHandler(ShopPurchaseHandler);
             shopView.Bind(_shopConfig);
             shopView.SetPlayerResources(
                 _playerProfileService.CoinBalance,
                 _playerProfileService.GetHeartStatus());
+            shopView.SetResourceClickActions(null, null);
         }
 
         private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
@@ -831,9 +847,24 @@ namespace FoodieMatch.UI
             ShowSettingPopup();
         }
 
+        private void OnHomeCoinClicked()
+        {
+            if (_popupManager.TryGetOpened(out MainMenuView mainMenuView))
+            {
+                mainMenuView.SelectTab(BottomNavigationTab.Shop);
+            }
+        }
+
         private void OnHomeHeartClicked()
         {
             ShowFillHeartPopup();
+        }
+
+        private void ShowShopPopup()
+        {
+            ShopView shopView =
+                _popupManager.Show<ShopView>(ShopPopupData.Instance);
+            BindShopView(shopView);
         }
 
         private void OnFillHeartCloseClicked()
@@ -866,7 +897,12 @@ namespace FoodieMatch.UI
         private void SetCurrentPlayerResources(
             IPlayerResourceView resourceView)
         {
-            resourceView.SetPlayerResources(_playerProfileService.CoinBalance, _playerProfileService.GetHeartStatus());
+            resourceView.SetPlayerResources(
+                _playerProfileService.CoinBalance,
+                _playerProfileService.GetHeartStatus());
+            resourceView.SetResourceClickActions(
+                ShowShopPopup,
+                ShowShopPopup);
         }
 
         private void OnHomeCoinArrived()

@@ -76,6 +76,15 @@ namespace FoodieMatch.UI.Heart
             SetHeartStatus(heartStatus);
         }
 
+        public void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked)
+        {
+            _resourceBarView.SetResourceClickActions(
+                coinClicked,
+                heartClicked);
+        }
+
         public override void Show()
         {
             base.Show();

@@ -93,6 +93,8 @@ namespace FoodieMatch.UI.Navigation
         private bool _isInitialized;
         private bool _isTransitioning;
 
+        public event Action<BottomNavigationTab> TabSelected;
+
         private void Start()
         {
             _ = InitializeNavigationSafelyAsync();
@@ -250,6 +252,9 @@ namespace FoodieMatch.UI.Navigation
             _selectionAnimator.SetBool(
                 IsSelectedHash,
                 true);
+
+            TabSelected?.Invoke(
+                initialBinding.Tab);
         }
 
         private void HandleTabClicked(
@@ -323,6 +328,9 @@ namespace FoodieMatch.UI.Navigation
 
             BringScreenToFront(
                 selectedBinding);
+
+            TabSelected?.Invoke(
+                selectedBinding.Tab);
 
             await SwitchScreenAsync(
                 previousBinding,
@@ -541,11 +549,19 @@ namespace FoodieMatch.UI.Navigation
 
             if (_selectionIcon != null)
             {
-                _selectionIcon.sprite =
+                Sprite selectedIcon =
                     binding.SelectedIcon;
 
+                _selectionIcon.sprite =
+                    selectedIcon;
+
                 _selectionIcon.enabled =
-                    binding.SelectedIcon != null;
+                    selectedIcon != null;
+
+                if (selectedIcon != null)
+                {
+                    _selectionIcon.SetNativeSize();
+                }
             }
 
             if (_selectionLabel != null)
@@ -650,6 +666,27 @@ namespace FoodieMatch.UI.Navigation
             _selectionAnimator.SetBool(
                 IsSelectedHash,
                 true);
+
+            TabSelected?.Invoke(
+                binding.Tab);
+        }
+
+        public void SelectTab(
+            BottomNavigationTab tab)
+        {
+            TabBinding binding =
+                FindBinding(tab);
+
+            if (binding == null)
+            {
+                Debug.LogError(
+                    $"Bottom navigation tab {tab} is missing.",
+                    this);
+
+                return;
+            }
+
+            HandleTabClicked(binding);
         }
 
         private static void BringScreenToFront(

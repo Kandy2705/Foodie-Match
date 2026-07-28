@@ -1,3 +1,4 @@
+using System;
 using FoodieMatch.Core.Application.Player;
 
 namespace FoodieMatch.UI.Common
@@ -7,5 +8,9 @@ namespace FoodieMatch.UI.Common
         void SetPlayerResources(
             long coinBalance,
             HeartStatus heartStatus);
+
+        void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked);
     }
 }

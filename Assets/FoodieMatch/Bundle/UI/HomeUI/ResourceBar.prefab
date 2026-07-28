@@ -49,8 +49,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Padding:
     m_Left: 0
     m_Right: 0
@@ -79,6 +79,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _coinCounterView: {fileID: 5373342136003834891}
   _heartCounterView: {fileID: 6356246357200524862}
+  _coinCounterButton: {fileID: 771111000000000001}
+  _addCoinButton: {fileID: 771111000000000002}
 --- !u!1001 &4207615645074827350
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -558,5 +560,21 @@ RectTransform:
 --- !u!224 &5084301047158110194 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+  m_PrefabInstance: {fileID: 8315713305402346225}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &771111000000000001 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2480259624863009111, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+  m_PrefabInstance: {fileID: 8315713305402346225}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935865320185675315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+--- !u!1 &771111000000000002 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1142355363630778474, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
   m_PrefabInstance: {fileID: 8315713305402346225}
   m_PrefabAsset: {fileID: 0}

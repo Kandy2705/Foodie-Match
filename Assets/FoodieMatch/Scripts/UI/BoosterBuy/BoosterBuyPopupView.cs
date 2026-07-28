@@ -55,6 +55,15 @@ namespace FoodieMatch.UI.BoosterBuy
             _resourceBarView.SetPlayerResources(coinBalance, heartStatus);
         }
 
+        public void SetResourceClickActions(
+            Action coinClicked,
+            Action heartClicked)
+        {
+            _resourceBarView.SetResourceClickActions(
+                coinClicked,
+                heartClicked);
+        }
+
         public override void Setup(IPopupData data)
         {
             if (data is not BoosterBuyPopupData popupData)
@@ -120,6 +129,7 @@ namespace FoodieMatch.UI.BoosterBuy
             _closeClicked = null;
             _freeAdsClicked = null;
             _buyClicked = null;
+            _resourceBarView.Clear();
 
             base.Dispose();
         }

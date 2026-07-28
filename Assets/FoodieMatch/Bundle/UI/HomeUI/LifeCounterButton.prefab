@@ -697,6 +697,7 @@ MonoBehaviour:
   _heartCountText: {fileID: 7610578585978550414}
   _recoveryTimerRoot: {fileID: 648667047301678312}
   _recoveryTimerText: {fileID: 938531386782213311}
+  _lifeCounterButton: {fileID: 929463602927657138}
   _heartIconImage: {fileID: 1488399325860730155}
   _addLifeButton: {fileID: 2402616398815027599}
   _normalHeartIconSprite: {fileID: -4983534188921496033, guid: 3703623868f1646289fa80a0faaf2cd4, type: 3}
