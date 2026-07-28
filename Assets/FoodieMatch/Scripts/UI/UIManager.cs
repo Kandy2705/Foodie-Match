@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Booster;
@@ -69,6 +70,7 @@ namespace FoodieMatch.UI
         private BoosterManager _boosterManager;
         private IGameBoosterConfig _boosterConfig;
         private IGameEconomyConfig _economyConfig;
+        private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
         private ILevelRepository _levelRepository;
         private IGameShopConfig _shopConfig;
@@ -129,6 +131,7 @@ namespace FoodieMatch.UI
             BoosterManager boosterManager,
             IGameBoosterConfig boosterConfig,
             IGameEconomyConfig economyConfig,
+            IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
             ILevelRepository levelRepository,
             IGameShopConfig shopConfig)
@@ -140,6 +143,7 @@ namespace FoodieMatch.UI
             _boosterManager = boosterManager;
             _boosterConfig = boosterConfig;
             _economyConfig = economyConfig;
+            _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
             _levelRepository = levelRepository;
             _shopConfig = shopConfig;
@@ -329,7 +333,7 @@ namespace FoodieMatch.UI
             HeartStatus heartStatus =
                 _playerProfileService.GetHeartStatus();
 
-            PlayerProfileDebugUpdate values = new(
+            PlayerProfileDebugUpdate playerProfile = new(
                 _playerProfileService.CurrentLevelNumber,
                 _playerProfileService.CoinBalance,
                 heartStatus.HeartCount,
@@ -337,6 +341,10 @@ namespace FoodieMatch.UI
                 _boosterManager.GetCount(BoosterType.Storage),
                 _boosterManager.GetCount(BoosterType.Swap),
                 _boosterManager.GetCount(BoosterType.Fridge));
+            DebugMenuValues values = new(
+                playerProfile,
+                _advertisingRuntimeSettings.PostLevelAdsEnabled,
+                _advertisingRuntimeSettings.UseLevelPlayAds);
 
             PlayerDebugPopupView popup =
                 _popupManager.Show<PlayerDebugPopupView>();
@@ -985,22 +993,33 @@ namespace FoodieMatch.UI
         }
 
         private void OnPlayerDebugApplyClicked(
-            PlayerProfileDebugUpdate values)
+            DebugMenuValues values)
         {
+            PlayerProfileDebugUpdate playerProfile = values.PlayerProfile;
+
             if (!_levelRepository.TryGetLevel(
-                    values.CurrentLevelNumber,
+                    playerProfile.CurrentLevelNumber,
                     out _))
             {
                 ShowPlayerDebugStatus(
-                    $"Level {values.CurrentLevelNumber} does not exist.");
+                    $"Level {playerProfile.CurrentLevelNumber} does not exist.");
                 return;
             }
 
+            bool adServiceChanged =
+                _advertisingRuntimeSettings.UseLevelPlayAds !=
+                values.UseLevelPlayAds;
             CompleteCoinRewardImmediately();
-            _playerProfileService.ApplyDebugUpdate(values);
-            SetCurrentLevelNumber(values.CurrentLevelNumber);
+            _playerProfileService.ApplyDebugUpdate(playerProfile);
+            _advertisingRuntimeSettings.Update(
+                values.PostLevelAdsEnabled,
+                values.UseLevelPlayAds);
+            SetCurrentLevelNumber(playerProfile.CurrentLevelNumber);
             RefreshHomePlayerData();
-            ShowPlayerDebugStatus("Applied");
+            ShowPlayerDebugStatus(
+                adServiceChanged
+                    ? "Applied. Restart to change ad service."
+                    : "Applied");
         }
 
         private void RefreshHomePlayerData()

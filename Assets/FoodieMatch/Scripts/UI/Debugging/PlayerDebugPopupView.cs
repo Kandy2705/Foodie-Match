@@ -17,13 +17,15 @@ namespace FoodieMatch.UI.Debugging
         [SerializeField] private TMP_InputField _storageBoosterCountInput;
         [SerializeField] private TMP_InputField _swapBoosterCountInput;
         [SerializeField] private TMP_InputField _fridgeBoosterCountInput;
+        [SerializeField] private Toggle _postLevelAdsToggle;
+        [SerializeField] private Toggle _useLevelPlayAdsToggle;
         [SerializeField] private TMP_Text _statusText;
         [SerializeField] private Button _applyButton;
         [SerializeField] private Button _closeButton;
         [SerializeField] private PopupAnimController _popupAnimController;
 
         private Action _closeClicked;
-        private Action<PlayerProfileDebugUpdate> _applyClicked;
+        private Action<DebugMenuValues> _applyClicked;
         private int _maxHeartCount;
 
         private void Awake()
@@ -61,16 +63,21 @@ namespace FoodieMatch.UI.Debugging
             base.Hide();
         }
 
-        public void SetValues(PlayerProfileDebugUpdate values, int maxHeartCount)
+        public void SetValues(DebugMenuValues values, int maxHeartCount)
         {
+            PlayerProfileDebugUpdate playerProfile = values.PlayerProfile;
             _maxHeartCount = maxHeartCount;
-            _currentLevelInput.SetTextWithoutNotify(values.CurrentLevelNumber.ToString());
-            _coinBalanceInput.SetTextWithoutNotify(values.CoinBalance.ToString());
-            _heartCountInput.SetTextWithoutNotify(values.HeartCount.ToString());
-            _plateBoosterCountInput.SetTextWithoutNotify(values.PlateBoosterCount.ToString());
-            _storageBoosterCountInput.SetTextWithoutNotify(values.StorageBoosterCount.ToString());
-            _swapBoosterCountInput.SetTextWithoutNotify(values.SwapBoosterCount.ToString());
-            _fridgeBoosterCountInput.SetTextWithoutNotify(values.FridgeBoosterCount.ToString());
+            _currentLevelInput.SetTextWithoutNotify(playerProfile.CurrentLevelNumber.ToString());
+            _coinBalanceInput.SetTextWithoutNotify(playerProfile.CoinBalance.ToString());
+            _heartCountInput.SetTextWithoutNotify(playerProfile.HeartCount.ToString());
+            _plateBoosterCountInput.SetTextWithoutNotify(playerProfile.PlateBoosterCount.ToString());
+            _storageBoosterCountInput.SetTextWithoutNotify(playerProfile.StorageBoosterCount.ToString());
+            _swapBoosterCountInput.SetTextWithoutNotify(playerProfile.SwapBoosterCount.ToString());
+            _fridgeBoosterCountInput.SetTextWithoutNotify(playerProfile.FridgeBoosterCount.ToString());
+            _postLevelAdsToggle.SetIsOnWithoutNotify(
+                values.PostLevelAdsEnabled);
+            _useLevelPlayAdsToggle.SetIsOnWithoutNotify(
+                values.UseLevelPlayAds);
             ShowStatus(string.Empty);
         }
 
@@ -89,7 +96,7 @@ namespace FoodieMatch.UI.Debugging
 
         private void OnApplyButtonClicked()
         {
-            if (!TryGetValues(out PlayerProfileDebugUpdate values))
+            if (!TryGetValues(out DebugMenuValues values))
             {
                 return;
             }
@@ -107,7 +114,7 @@ namespace FoodieMatch.UI.Debugging
             base.Hide();
         }
 
-        private bool TryGetValues(out PlayerProfileDebugUpdate values)
+        private bool TryGetValues(out DebugMenuValues values)
         {
             values = default;
 
@@ -134,7 +141,7 @@ namespace FoodieMatch.UI.Debugging
                 return false;
             }
 
-            values = new PlayerProfileDebugUpdate(
+            PlayerProfileDebugUpdate playerProfile = new(
                 currentLevelNumber,
                 coinBalance,
                 heartCount,
@@ -142,6 +149,10 @@ namespace FoodieMatch.UI.Debugging
                 storageBoosterCount,
                 swapBoosterCount,
                 fridgeBoosterCount);
+            values = new DebugMenuValues(
+                playerProfile,
+                _postLevelAdsToggle.isOn,
+                _useLevelPlayAdsToggle.isOn);
 
             return true;
         }
