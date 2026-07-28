@@ -1,5 +1,4 @@
 using System;
-using FoodieMatch.Core.Application.Player;
 
 namespace FoodieMatch.UI.Debugging
 {
@@ -7,7 +6,7 @@ namespace FoodieMatch.UI.Debugging
     {
         public PlayerDebugPopupViewActions(
             Action closeClicked,
-            Action<PlayerProfileDebugUpdate> applyClicked)
+            Action<DebugMenuValues> applyClicked)
         {
             CloseClicked = closeClicked ??
                 throw new ArgumentNullException(nameof(closeClicked));
@@ -17,6 +16,6 @@ namespace FoodieMatch.UI.Debugging
 
         public Action CloseClicked { get; }
 
-        public Action<PlayerProfileDebugUpdate> ApplyClicked { get; }
+        public Action<DebugMenuValues> ApplyClicked { get; }
     }
 }

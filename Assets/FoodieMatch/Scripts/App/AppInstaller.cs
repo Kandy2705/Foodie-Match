@@ -25,6 +25,7 @@ using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
+using FoodieMatch.UI.Advertising;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -54,6 +55,8 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            IAdvertisingRuntimeSettings advertisingRuntimeSettings =
+                new PlayerPrefsAdvertisingRuntimeSettings(saveService);
             IGameHeartConfig heartConfig =
                 GameHeartDefaults.CreateSnapshot();
             IClock clock = new SystemClock();
@@ -114,26 +117,23 @@ namespace FoodieMatch.App
                 boosterManager,
                 boosterConfig,
                 economyConfig,
+                advertisingRuntimeSettings,
                 playerProfileService,
                 levelRepository,
                 shopConfig);
-            LevelPlayAdSettings adSettings = CreateLevelPlayAdSettings();
-            LevelPlayAdsInitializer adsInitializer = new(adSettings.AppKey);
-            IRewardedAdService rewardedAdService = new LevelPlayRewardedAdService(
-                adsInitializer,
-                adSettings.RewardedAdUnitId);
-            IInterstitialAdService interstitialAdService =
-                new LevelPlayInterstitialAdService(
-                adsInitializer,
-                adSettings.InterstitialAdUnitId);
+            CreateAdServices(
+                appRoot,
+                advertisingRuntimeSettings,
+                out IRewardedAdService rewardedAdService,
+                out IInterstitialAdService interstitialAdService);
             PostLevelAdCooldown postLevelAdCooldown = new(
                 saveService,
                 clock);
             PostLevelAdCoordinator postLevelAdCoordinator = new(
                 interstitialAdService,
                 adsConfig,
+                advertisingRuntimeSettings,
                 postLevelAdCooldown);
-            adsInitializer.Initialize();
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
                 worldCamera);
@@ -168,6 +168,32 @@ namespace FoodieMatch.App
                 audioService);
 
             return true;
+        }
+
+        private void CreateAdServices(
+            AppRoot appRoot,
+            IAdvertisingRuntimeSettings runtimeSettings,
+            out IRewardedAdService rewardedAdService,
+            out IInterstitialAdService interstitialAdService)
+        {
+            if (!runtimeSettings.UseLevelPlayAds)
+            {
+                rewardedAdService =
+                    new FakeRewardedAdService(appRoot.UIManager);
+                interstitialAdService =
+                    new FakeInterstitialAdService(appRoot.UIManager);
+                return;
+            }
+
+            LevelPlayAdSettings adSettings = CreateLevelPlayAdSettings();
+            LevelPlayAdsInitializer adsInitializer = new(adSettings.AppKey);
+            rewardedAdService = new LevelPlayRewardedAdService(
+                adsInitializer,
+                adSettings.RewardedAdUnitId);
+            interstitialAdService = new LevelPlayInterstitialAdService(
+                adsInitializer,
+                adSettings.InterstitialAdUnitId);
+            adsInitializer.Initialize();
         }
 
         private LevelPlayAdSettings CreateLevelPlayAdSettings()
