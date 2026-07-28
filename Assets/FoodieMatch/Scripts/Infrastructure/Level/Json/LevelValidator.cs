@@ -41,6 +41,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             ValidateIdentity(level, levelPath, result);
+            ValidateGrillLayoutSchema(level, levelPath, result);
             _randomSettingsValidator.Validate(level.RandomSettings, levelPath, result);
             _packageSelectionValidator.Validate(
                 level.PackageSelectionSettings,
@@ -73,6 +74,24 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 !Enum.IsDefined(typeof(LevelDifficulty), difficulty))
             {
                 result.AddError($"{levelPath}.difficulty is invalid.");
+            }
+        }
+
+        private static void ValidateGrillLayoutSchema(
+            LevelDto level,
+            string levelPath,
+            LevelValidationResult result)
+        {
+            if (string.IsNullOrWhiteSpace(level.GrillLayoutType) ||
+                !Enum.TryParse(level.GrillLayoutType, true, out GrillLayoutType layoutType) ||
+                !Enum.IsDefined(typeof(GrillLayoutType), layoutType))
+            {
+                result.AddError($"{levelPath}.grillLayoutType is invalid.");
+            }
+
+            if (level.StackedGrillColumns == null)
+            {
+                result.AddError($"{levelPath}.grillColumns is required.");
             }
         }
     }

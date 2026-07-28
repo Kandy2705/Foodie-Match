@@ -11,6 +11,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
         [JsonProperty("difficulty")]
         public string Difficulty { get; set; }
 
+        [JsonProperty("grillLayoutType")]
+        public string GrillLayoutType { get; set; }
+
         [JsonProperty("randomization")]
         public LevelRandomSettingsDto RandomSettings { get; set; }
 
@@ -19,6 +22,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
 
         [JsonProperty("movingGrillGroups")]
         public List<GrillMovementGroupDto> MovingGrillGroups { get; set; }
+
+        [JsonProperty("grillColumns")]
+        public List<StackedGrillColumnDto> StackedGrillColumns { get; set; }
 
         [JsonProperty("grills")]
         public List<GrillDto> Grills { get; set; }

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "levelOrder": [
     1,
     2,
@@ -18,6 +18,8 @@
     {
       "id": 1,
       "difficulty": "normal",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           1001
@@ -94,6 +96,8 @@
     {
       "id": 2,
       "difficulty": "normal",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           1002
@@ -171,6 +175,8 @@
     {
       "id": 3,
       "difficulty": "hard",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           30001,
@@ -614,6 +620,8 @@
     {
       "id": 4,
       "difficulty": "superHard",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           40001,
@@ -1101,6 +1109,8 @@
     {
       "id": 5,
       "difficulty": "normal",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           50001,
@@ -1388,6 +1398,8 @@
     {
       "id": 6,
       "difficulty": "normal",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           60001,
@@ -1698,6 +1710,8 @@
     {
       "id": 7,
       "difficulty": "hard",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           70002,
@@ -2119,6 +2133,8 @@
     {
       "id": 8,
       "difficulty": "superHard",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           80001,
@@ -2694,6 +2710,8 @@
     {
       "id": 9,
       "difficulty": "normal",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           90001,
@@ -3010,6 +3028,8 @@
     {
       "id": 10,
       "difficulty": "normal",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           100001,
@@ -3365,6 +3385,8 @@
     {
       "id": 11,
       "difficulty": "hard",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           110001,
@@ -3910,6 +3932,8 @@
     {
       "id": 12,
       "difficulty": "superHard",
+      "grillLayoutType": "standard",
+      "grillColumns": [],
       "randomization": {
         "packageSeeds": [
           120001,

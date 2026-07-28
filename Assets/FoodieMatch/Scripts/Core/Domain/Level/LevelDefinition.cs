@@ -11,13 +11,17 @@ namespace FoodieMatch.Core.Domain.Level
         private readonly ReadOnlyCollection<GrillDefinition> _grills;
         private readonly ReadOnlyCollection<GrillMovementGroupDefinition>
             _movingGrillGroups;
+        private readonly ReadOnlyCollection<StackedGrillColumnDefinition>
+            _stackedGrillColumns;
 
         public LevelDefinition(
             int id,
             LevelDifficulty difficulty,
+            GrillLayoutType grillLayoutType,
             LevelRandomSettings randomSettings,
             PackageSelectionSettings packageSelectionSettings,
             IReadOnlyList<GrillMovementGroupDefinition> movingGrillGroups,
+            IReadOnlyList<StackedGrillColumnDefinition> stackedGrillColumns,
             IReadOnlyList<GrillDefinition> grills)
         {
             if (id <= 0)
@@ -30,6 +34,11 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentOutOfRangeException(nameof(difficulty));
             }
 
+            if (!Enum.IsDefined(typeof(GrillLayoutType), grillLayoutType))
+            {
+                throw new ArgumentOutOfRangeException(nameof(grillLayoutType));
+            }
+
             if (grills == null)
             {
                 throw new ArgumentNullException(nameof(grills));
@@ -40,20 +49,28 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentNullException(nameof(movingGrillGroups));
             }
 
+            if (stackedGrillColumns == null)
+            {
+                throw new ArgumentNullException(nameof(stackedGrillColumns));
+            }
+
             ValidateGrills(grills);
             ValidateMovingGrillGroups(grills, movingGrillGroups);
+            ValidateStackedGrillColumns(stackedGrillColumns);
 
             Id = id;
             Difficulty = difficulty;
+            GrillLayoutType = grillLayoutType;
             RandomSettings = randomSettings ?? throw new ArgumentNullException(nameof(randomSettings));
             PackageSelectionSettings = packageSelectionSettings ??
                                        throw new ArgumentNullException(nameof(packageSelectionSettings));
 
             List<GrillDefinition> copiedGrills = new(grills);
-            List<GrillMovementGroupDefinition> copiedMovementGroups =
-                new(movingGrillGroups);
+            List<GrillMovementGroupDefinition> copiedMovementGroups = new(movingGrillGroups);
+            List<StackedGrillColumnDefinition> copiedGrillColumns = new(stackedGrillColumns);
             _grills = copiedGrills.AsReadOnly();
             _movingGrillGroups = copiedMovementGroups.AsReadOnly();
+            _stackedGrillColumns = copiedGrillColumns.AsReadOnly();
 
             CountAndValidateFoodTokens(out int totalFoodCount, out int uniqueFoodCount);
             TotalFoodCount = totalFoodCount;
@@ -62,10 +79,13 @@ namespace FoodieMatch.Core.Domain.Level
 
         public int Id { get; }
         public LevelDifficulty Difficulty { get; }
+        public GrillLayoutType GrillLayoutType { get; }
         public LevelRandomSettings RandomSettings { get; }
         public PackageSelectionSettings PackageSelectionSettings { get; }
         public IReadOnlyList<GrillMovementGroupDefinition> MovingGrillGroups =>
             _movingGrillGroups;
+        public IReadOnlyList<StackedGrillColumnDefinition> StackedGrillColumns =>
+            _stackedGrillColumns;
         public IReadOnlyList<GrillDefinition> Grills => _grills;
         public int TotalFoodCount { get; }
         public int UniqueFoodCount { get; }
@@ -228,6 +248,20 @@ namespace FoodieMatch.Core.Domain.Level
                 }
 
                 ValidateEqualSpacing(movementPositions, i, movementGroups);
+            }
+        }
+
+        private static void ValidateStackedGrillColumns(
+            IReadOnlyList<StackedGrillColumnDefinition> stackedGrillColumns)
+        {
+            for (int i = 0; i < stackedGrillColumns.Count; i++)
+            {
+                if (stackedGrillColumns[i] == null)
+                {
+                    throw new ArgumentException(
+                        "Stacked grill column collection cannot contain null.",
+                        nameof(stackedGrillColumns));
+                }
             }
         }
 
