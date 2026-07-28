@@ -329,19 +329,9 @@ namespace FoodieMatch.App
 
         private void OnBoosterRewardedAdRequested(BoosterType boosterType)
         {
-            try
-            {
-                _rewardedAdService.TryShow(
-                    RewardedAdPlacement.BoosterReward,
-                    new RewardedAdCallbacks(
-                        () => OnBoosterAdRewarded(boosterType),
-                        closed: null,
-                        displayFailed: null));
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            TryShowRewardedAd(
+                GetBoosterAdPlacement(boosterType),
+                () => OnBoosterAdRewarded(boosterType));
         }
 
         private void OnBoosterAdRewarded(BoosterType boosterType)
@@ -379,19 +369,9 @@ namespace FoodieMatch.App
 
         private void OnAddBoxRewardedAdRequested()
         {
-            try
-            {
-                _rewardedAdService.TryShow(
-                    RewardedAdPlacement.BoosterReward,
-                    new RewardedAdCallbacks(
-                        OnAddBoxAdRewarded,
-                        closed: null,
-                        displayFailed: null));
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            TryShowRewardedAd(
+                GetBoosterAdPlacement(BoosterType.Box),
+                OnAddBoxAdRewarded);
         }
 
         private void OnAddBoxAdRewarded()
@@ -414,12 +394,9 @@ namespace FoodieMatch.App
 
         private void OnFillHeartRewardedAdRequested()
         {
-            _rewardedAdService.TryShow(
-                RewardedAdPlacement.BoosterReward,
-                new RewardedAdCallbacks(
-                    OnFillHeartAdRewarded,
-                    closed: null,
-                    displayFailed: null));
+            TryShowRewardedAd(
+                RewardedAdPlacement.AddHeart,
+                OnFillHeartAdRewarded);
         }
 
         private void OnFillHeartAdRewarded()
@@ -537,19 +514,48 @@ namespace FoodieMatch.App
 
         private void OnRewardedAdWinRewardSelected()
         {
-            try
+            TryShowRewardedAd(
+                RewardedAdPlacement.DoubleCoin,
+                OnRewardedAdRewarded);
+        }
+
+        private void TryShowRewardedAd(
+            RewardedAdPlacement placement,
+            Action rewarded)
+        {
+            RewardedAdCallbacks callbacks = new(
+                rewarded,
+                displayed: null,
+                closed: null,
+                displayFailed: ShowAdNotReadyFeedback);
+
+            if (!_rewardedAdService.TryShow(placement, callbacks))
             {
-                _rewardedAdService.TryShow(
-                    RewardedAdPlacement.LevelCompleteCoinReward,
-                    new RewardedAdCallbacks(
-                        OnRewardedAdRewarded,
-                        closed: null,
-                        displayFailed: null));
+                ShowAdNotReadyFeedback();
             }
-            catch (Exception exception)
+        }
+
+        private void ShowAdNotReadyFeedback()
+        {
+            _uiManager.ShowActionFeedback(
+                "Ad is not ready. Please try again.");
+        }
+
+        private static RewardedAdPlacement GetBoosterAdPlacement(
+            BoosterType boosterType)
+        {
+            return boosterType switch
             {
-                Debug.LogException(exception);
-            }
+                BoosterType.Plate => RewardedAdPlacement.BoosterPlate,
+                BoosterType.Storage => RewardedAdPlacement.BoosterStorage,
+                BoosterType.Swap => RewardedAdPlacement.BoosterSwap,
+                BoosterType.Fridge => RewardedAdPlacement.BoosterFridge,
+                BoosterType.Box => RewardedAdPlacement.BoosterBox,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(boosterType),
+                    boosterType,
+                    null)
+            };
         }
 
         private void OnRewardedAdRewarded()
