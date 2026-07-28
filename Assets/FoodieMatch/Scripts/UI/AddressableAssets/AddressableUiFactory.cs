@@ -36,7 +36,10 @@ namespace FoodieMatch.UI.AddressableAssets
         private readonly HashSet<string> _releaseWhenLoaded =
             new(StringComparer.Ordinal);
 
+        private int _activeLoadCount;
         private bool _isShutdown;
+
+        public event Action<bool> LoadingStateChanged;
 
         public async Task<T> GetOrCreateAsync<T>(
             string address,
@@ -180,69 +183,100 @@ namespace FoodieMatch.UI.AddressableAssets
             string address,
             Transform parent)
         {
-            Debug.Log($"[Addressables UI] Loading: {address}");
-
-            AsyncOperationHandle<GameObject> handle =
-                Addressables.InstantiateAsync(
-                    address,
-                    parent,
-                    instantiateInWorldSpace: false,
-                    trackHandle: true);
-            bool released = false;
+            BeginLoading();
 
             try
             {
-                GameObject instance = await handle.Task;
+                Debug.Log($"[Addressables UI] Loading: {address}");
 
-                if (handle.Status != AsyncOperationStatus.Succeeded ||
-                    instance == null)
+                AsyncOperationHandle<GameObject> handle =
+                    Addressables.InstantiateAsync(
+                        address,
+                        parent,
+                        instantiateInWorldSpace: false,
+                        trackHandle: true);
+                bool released = false;
+
+                try
                 {
-                    throw handle.OperationException ??
-                        new InvalidOperationException(
-                            "Addressables returned no UI instance.");
-                }
+                    GameObject instance = await handle.Task;
 
-                if (_isShutdown || _releaseWhenLoaded.Remove(address))
-                {
-                    Addressables.ReleaseInstance(handle);
-                    released = true;
-                    Debug.Log($"[Addressables UI] Released: {address}");
-                    throw new ObjectDisposedException(
-                        nameof(AddressableUiFactory),
-                        "The UI request completed after its owner was released.");
-                }
+                    if (handle.Status != AsyncOperationStatus.Succeeded ||
+                        instance == null)
+                    {
+                        throw handle.OperationException ??
+                            new InvalidOperationException(
+                                "Addressables returned no UI instance.");
+                    }
 
-                if (_instances.TryGetValue(address, out InstanceRecord existing))
-                {
-                    Addressables.ReleaseInstance(handle);
-                    released = true;
-                    return existing.Instance;
-                }
-
-                _instances.Add(
-                    address,
-                    new InstanceRecord(instance, parent, handle));
-                Debug.Log($"[Addressables UI] Loaded: {address}");
-                return instance;
-            }
-            catch
-            {
-                _releaseWhenLoaded.Remove(address);
-
-                if (!released && handle.IsValid())
-                {
-                    if (handle.Status == AsyncOperationStatus.Succeeded &&
-                        handle.Result != null)
+                    if (_isShutdown || _releaseWhenLoaded.Remove(address))
                     {
                         Addressables.ReleaseInstance(handle);
+                        released = true;
+                        Debug.Log($"[Addressables UI] Released: {address}");
+                        throw new ObjectDisposedException(
+                            nameof(AddressableUiFactory),
+                            "The UI request completed after its owner was released.");
                     }
-                    else
-                    {
-                        Addressables.Release(handle);
-                    }
-                }
 
-                throw;
+                    if (_instances.TryGetValue(
+                            address,
+                            out InstanceRecord existing))
+                    {
+                        Addressables.ReleaseInstance(handle);
+                        released = true;
+                        return existing.Instance;
+                    }
+
+                    _instances.Add(
+                        address,
+                        new InstanceRecord(instance, parent, handle));
+                    Debug.Log($"[Addressables UI] Loaded: {address}");
+                    return instance;
+                }
+                catch
+                {
+                    _releaseWhenLoaded.Remove(address);
+
+                    if (!released && handle.IsValid())
+                    {
+                        if (handle.Status == AsyncOperationStatus.Succeeded &&
+                            handle.Result != null)
+                        {
+                            Addressables.ReleaseInstance(handle);
+                        }
+                        else
+                        {
+                            Addressables.Release(handle);
+                        }
+                    }
+
+                    throw;
+                }
+            }
+            finally
+            {
+                EndLoading();
+            }
+        }
+
+        private void BeginLoading()
+        {
+            _activeLoadCount++;
+
+            if (_activeLoadCount == 1)
+            {
+                LoadingStateChanged?.Invoke(true);
+            }
+        }
+
+        private void EndLoading()
+        {
+            _activeLoadCount = Math.Max(0, _activeLoadCount - 1);
+
+            if (_activeLoadCount == 0)
+            {
+                LoadingStateChanged?.Invoke(false);
             }
         }
 

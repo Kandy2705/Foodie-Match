@@ -52,6 +52,7 @@ namespace FoodieMatch.UI
         [Header("Loading")]
         [SerializeField] private LoadingScreenView _loadingScreenPrefab;
         [SerializeField] private Transform _loadingRoot;
+        [SerializeField] private Texture2D _addressableLoadingTexture;
 
         [Header("Level Warning")]
         [SerializeField] private WarningLevelView _levelWarningPrefab;
@@ -80,6 +81,7 @@ namespace FoodieMatch.UI
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
+        private AddressableLoadingOverlayView _addressableLoadingOverlay;
         private WarningLevelView _levelWarningView;
         private CoinRewardOverlayView _coinRewardOverlayView;
         private readonly List<ActionFeedbackView> _actionFeedbackViews = new();
@@ -126,6 +128,13 @@ namespace FoodieMatch.UI
         {
             CompleteCoinRewardImmediately();
             _loadingScreenView?.Hide();
+
+            if (_addressableUiFactory != null)
+            {
+                _addressableUiFactory.LoadingStateChanged -=
+                    OnAddressableUiLoadingStateChanged;
+            }
+
             _popupManager.Shutdown();
             _addressableUiFactory?.ReleaseAll();
             UnsubscribeEvents();
@@ -145,6 +154,12 @@ namespace FoodieMatch.UI
         {
             _addressableUiFactory = addressableUiFactory ??
                 throw new ArgumentNullException(nameof(addressableUiFactory));
+            _addressableLoadingOverlay =
+                AddressableLoadingOverlayView.Create(
+                    _loadingRoot,
+                    _addressableLoadingTexture);
+            _addressableUiFactory.LoadingStateChanged +=
+                OnAddressableUiLoadingStateChanged;
             _popupManager.Construct(addressableUiFactory);
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
@@ -158,6 +173,16 @@ namespace FoodieMatch.UI
             _levelRepository = levelRepository;
             _shopConfig = shopConfig;
             SubscribeEvents();
+        }
+
+        private void OnAddressableUiLoadingStateChanged(bool isLoading)
+        {
+            if (isLoading)
+            {
+                _loadingRoot.SetAsLastSibling();
+            }
+
+            _addressableLoadingOverlay.SetVisible(isLoading);
         }
 
         public void ShowHome(long displayedCoinBalance)

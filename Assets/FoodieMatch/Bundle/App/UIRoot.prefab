@@ -53,6 +53,7 @@ MonoBehaviour:
   _hudRoot: {fileID: 3452430392946768677}
   _loadingScreenPrefab: {fileID: 7440178564741621615, guid: 4292533880ee24a5e83a102feeda0aa8, type: 3}
   _loadingRoot: {fileID: 6758003521176904712}
+  _addressableLoadingTexture: {fileID: 2800000, guid: 8adfa78f64ea542c2b7f446fdb7c2c4b, type: 3}
   _levelWarningPrefab: {fileID: 918528150111377311, guid: b5723d20ac5db4e2fb1098fcc97a593b, type: 3}
   _coinRewardOverlayPrefab: {fileID: 796654897352748538, guid: 682972031a027134a9375906f5c06ab3, type: 3}
   _rewardEffectRoot: {fileID: 6443555530003102396}

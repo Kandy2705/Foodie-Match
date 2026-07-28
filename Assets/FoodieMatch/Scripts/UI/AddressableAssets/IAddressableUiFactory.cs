@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -6,6 +7,8 @@ namespace FoodieMatch.UI.AddressableAssets
 {
     public interface IAddressableUiFactory
     {
+        event Action<bool> LoadingStateChanged;
+
         Task<T> GetOrCreateAsync<T>(
             string address,
             Transform parent,
