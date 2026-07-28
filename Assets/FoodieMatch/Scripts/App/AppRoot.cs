@@ -101,7 +101,7 @@ namespace FoodieMatch.App
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                _appController.EnterHome();
+                await _appController.EnterHomeAsync();
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -123,4 +123,3 @@ namespace FoodieMatch.App
         }
     }
 }
-

@@ -14,6 +14,7 @@ using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.UI.Advertising;
+using FoodieMatch.UI.AddressableAssets;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
@@ -75,6 +76,7 @@ namespace FoodieMatch.UI
         private ILevelRepository _levelRepository;
         private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
+        private IAddressableUiFactory _addressableUiFactory;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
@@ -95,6 +97,8 @@ namespace FoodieMatch.UI
         private int _pendingUnlockSlotIndex = -1;
         private Action<int> _pendingUnlockCallback;
         private Action _heartRefillCompleted;
+        private int _gameplayHudRequestVersion;
+        private int _loadingRequestVersion;
 
         public event Action PlayGameRequested;
 
@@ -121,7 +125,9 @@ namespace FoodieMatch.UI
         private void OnDestroy()
         {
             CompleteCoinRewardImmediately();
-            HideLoading();
+            _loadingScreenView?.Hide();
+            _popupManager.Shutdown();
+            _addressableUiFactory?.ReleaseAll();
             UnsubscribeEvents();
         }
 
@@ -134,8 +140,12 @@ namespace FoodieMatch.UI
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
             ILevelRepository levelRepository,
-            IGameShopConfig shopConfig)
+            IGameShopConfig shopConfig,
+            IAddressableUiFactory addressableUiFactory)
         {
+            _addressableUiFactory = addressableUiFactory ??
+                throw new ArgumentNullException(nameof(addressableUiFactory));
+            _popupManager.Construct(addressableUiFactory);
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
 
@@ -152,9 +162,22 @@ namespace FoodieMatch.UI
 
         public void ShowHome(long displayedCoinBalance)
         {
+            RunUiTask(
+                ShowHomeAsync(displayedCoinBalance),
+                nameof(ShowHome));
+        }
+
+        public async Task ShowHomeAsync(long displayedCoinBalance)
+        {
             CompleteCoinRewardImmediately();
 
-            MainMenuView mainMenuView = _popupManager.Show<MainMenuView>();
+            MainMenuView mainMenuView =
+                await _popupManager.ShowAsync<MainMenuView>();
+
+            if (this == null)
+            {
+                return;
+            }
 
             if (mainMenuView.TryGetView<HomeView>(out HomeView homeView))
             {
@@ -240,6 +263,15 @@ namespace FoodieMatch.UI
 
         public void ShowGameplayHud()
         {
+            RunUiTask(
+                ShowGameplayHudAsync(),
+                nameof(ShowGameplayHud));
+        }
+
+        public async Task ShowGameplayHudAsync()
+        {
+            int requestVersion = ++_gameplayHudRequestVersion;
+
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.gameObject.SetActive(true);
@@ -247,13 +279,32 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            _gameplayHudView = Instantiate(_gameplayHudPrefab, _hudRoot);
-            _gameplayHudView.gameObject.name = _gameplayHudPrefab.gameObject.name;
+            GameplayHudView gameplayHudView =
+                await _addressableUiFactory.GetOrCreateAsync<GameplayHudView>(
+                    UiAddressKeys.GameplayRoot,
+                    _hudRoot);
+
+            if (this == null)
+            {
+                return;
+            }
+
+            _gameplayHudView = gameplayHudView;
+
+            if (requestVersion != _gameplayHudRequestVersion)
+            {
+                _gameplayHudView.gameObject.SetActive(false);
+                return;
+            }
+
+            _gameplayHudView.gameObject.SetActive(true);
             BindGameplayHudActions();
         }
 
         public void HideGameplayHud()
         {
+            _gameplayHudRequestVersion++;
+
             if (_gameplayHudView == null)
             {
                 return;
@@ -278,9 +329,24 @@ namespace FoodieMatch.UI
             RefreshActionFeedbackPositions();
         }
 
-        public Task PlayLoadingAsync()
+        public async Task PlayLoadingAsync()
         {
-            return GetOrCreateLoadingScreen().PlayAsync();
+            int requestVersion = ++_loadingRequestVersion;
+            LoadingScreenView loadingScreen =
+                await GetOrCreateLoadingScreenAsync();
+
+            if (this == null)
+            {
+                return;
+            }
+
+            if (requestVersion != _loadingRequestVersion)
+            {
+                loadingScreen.Hide();
+                return;
+            }
+
+            await loadingScreen.PlayAsync();
         }
 
         public Task PlayLevelWarningAsync(LevelDifficulty difficulty)
@@ -304,23 +370,29 @@ namespace FoodieMatch.UI
 
         public void HideLoading()
         {
+            _loadingRequestVersion++;
             _loadingScreenView?.Hide();
             TryShowNextBoosterGuide();
         }
 
         public void ShowSettingPopup()
         {
-            SettingPopupView settingPopup = _popupManager.Show<SettingPopupView>();
-            settingPopup.SetActions(
-                new SettingPopupViewActions(
-                    OnSettingCloseClicked,
-                    OnSettingSoundChanged,
-                    OnSettingMusicChanged,
-                    OnSettingDebugMenuRequested));
-
-            settingPopup.SetToggleStates(
-                _audioService.IsSfxEnabled,
-                _audioService.IsMusicEnabled);
+            RunUiTask(
+                ShowPopupAsync<SettingPopupView>(
+                    data: null,
+                    settingPopup =>
+                    {
+                        settingPopup.SetActions(
+                            new SettingPopupViewActions(
+                                OnSettingCloseClicked,
+                                OnSettingSoundChanged,
+                                OnSettingMusicChanged,
+                                OnSettingDebugMenuRequested));
+                        settingPopup.SetToggleStates(
+                            _audioService.IsSfxEnabled,
+                            _audioService.IsMusicEnabled);
+                    }),
+                nameof(ShowSettingPopup));
         }
 
         public void HideSettingPopup()
@@ -346,13 +418,18 @@ namespace FoodieMatch.UI
                 _advertisingRuntimeSettings.PostLevelAdsEnabled,
                 _advertisingRuntimeSettings.UseLevelPlayAds);
 
-            PlayerDebugPopupView popup =
-                _popupManager.Show<PlayerDebugPopupView>();
-            popup.SetActions(
-                new PlayerDebugPopupViewActions(
-                    HidePlayerDebugPopup,
-                    OnPlayerDebugApplyClicked));
-            popup.SetValues(values, heartStatus.MaxHeartCount);
+            RunUiTask(
+                ShowPopupAsync<PlayerDebugPopupView>(
+                    data: null,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new PlayerDebugPopupViewActions(
+                                HidePlayerDebugPopup,
+                                OnPlayerDebugApplyClicked));
+                        popup.SetValues(values, heartStatus.MaxHeartCount);
+                    }),
+                nameof(ShowPlayerDebugPopup));
         }
 
         private void HidePlayerDebugPopup()
@@ -362,19 +439,24 @@ namespace FoodieMatch.UI
 
         public void ShowPausePopup()
         {
-            PauseView pauseView = _popupManager.Show<PauseView>();
-            pauseView.SetActions(
-                new PauseViewActions(
-                    OnPauseResumeClicked,
-                    OnPauseRestartClicked,
-                    OnPauseHomeClicked,
-                    OnPauseCloseClicked,
-                    OnSettingSoundChanged,
-                    OnSettingMusicChanged));
-
-            pauseView.SetToggleStates(
-                _audioService.IsSfxEnabled,
-                _audioService.IsMusicEnabled);
+            RunUiTask(
+                ShowPopupAsync<PauseView>(
+                    data: null,
+                    pauseView =>
+                    {
+                        pauseView.SetActions(
+                            new PauseViewActions(
+                                OnPauseResumeClicked,
+                                OnPauseRestartClicked,
+                                OnPauseHomeClicked,
+                                OnPauseCloseClicked,
+                                OnSettingSoundChanged,
+                                OnSettingMusicChanged));
+                        pauseView.SetToggleStates(
+                            _audioService.IsSfxEnabled,
+                            _audioService.IsMusicEnabled);
+                    }),
+                nameof(ShowPausePopup));
         }
 
         public void HidePausePopup()
@@ -384,11 +466,15 @@ namespace FoodieMatch.UI
 
         public void ShowLeaveGamePopup()
         {
-            LeaveGamePopupView leaveGamePopup = _popupManager.Show<LeaveGamePopupView>();
-            leaveGamePopup.SetActions(
-                new LeaveGamePopupViewActions(
-                    OnLeaveGameCloseClicked,
-                    OnLeaveGameLeaveClicked));
+            RunUiTask(
+                ShowPopupAsync<LeaveGamePopupView>(
+                    data: null,
+                    leaveGamePopup =>
+                        leaveGamePopup.SetActions(
+                            new LeaveGamePopupViewActions(
+                                OnLeaveGameCloseClicked,
+                                OnLeaveGameLeaveClicked))),
+                nameof(ShowLeaveGamePopup));
         }
 
         public void HideLeaveGamePopup()
@@ -398,11 +484,15 @@ namespace FoodieMatch.UI
 
         public void ShowRetryGamePopup()
         {
-            RetryGamePopupView retryGamePopup = _popupManager.Show<RetryGamePopupView>();
-            retryGamePopup.SetActions(
-                new RetryGamePopupViewActions(
-                    OnRetryGameCloseClicked,
-                    OnRetryGameRetryClicked));
+            RunUiTask(
+                ShowPopupAsync<RetryGamePopupView>(
+                    data: null,
+                    retryGamePopup =>
+                        retryGamePopup.SetActions(
+                            new RetryGamePopupViewActions(
+                                OnRetryGameCloseClicked,
+                                OnRetryGameRetryClicked))),
+                nameof(ShowRetryGamePopup));
         }
 
         public void HideRetryGamePopup()
@@ -428,16 +518,24 @@ namespace FoodieMatch.UI
 
         private void OpenRevivePopup()
         {
-            RevivePopupView revivePopup = _popupManager.Show<RevivePopupView>();
             _addBoxFlowSource = AddBoxFlowSource.Revive;
-            revivePopup.SetActions(
-                new RevivePopupViewActions(
-                    OnReviveCloseClicked,
-                    OnReviveFreeAdsClicked,
-                    OnRevivePlayOnClicked));
-            revivePopup.SetCost(
-                _economyConfig.GetBoosterPrice(BoosterType.Box).ToString());
-            SetCurrentPlayerResources(revivePopup);
+            RunUiTask(
+                ShowPopupAsync<RevivePopupView>(
+                    data: null,
+                    revivePopup =>
+                    {
+                        revivePopup.SetActions(
+                            new RevivePopupViewActions(
+                                OnReviveCloseClicked,
+                                OnReviveFreeAdsClicked,
+                                OnRevivePlayOnClicked));
+                        revivePopup.SetCost(
+                            _economyConfig
+                                .GetBoosterPrice(BoosterType.Box)
+                                .ToString());
+                        SetCurrentPlayerResources(revivePopup);
+                    }),
+                nameof(OpenRevivePopup));
         }
 
         public void HideRevivePopup()
@@ -451,14 +549,21 @@ namespace FoodieMatch.UI
             long regularRewardAmount,
             long doubleRewardAmount)
         {
-            WinView winView = _popupManager.Show<WinView>();
-            _audioService.PlaySfx(AudioKeys.SfxWinGame);
-
-            winView.SetActions(
-                new WinViewActions(
-                    claimCoinRewardClicked,
-                    doubleCoinRewardClicked));
-            winView.SetRewardAmounts(regularRewardAmount, doubleRewardAmount);
+            RunUiTask(
+                ShowPopupAsync<WinView>(
+                    data: null,
+                    winView =>
+                    {
+                        _audioService.PlaySfx(AudioKeys.SfxWinGame);
+                        winView.SetActions(
+                            new WinViewActions(
+                                claimCoinRewardClicked,
+                                doubleCoinRewardClicked));
+                        winView.SetRewardAmounts(
+                            regularRewardAmount,
+                            doubleRewardAmount);
+                    }),
+                nameof(ShowWinPopup));
         }
 
         public void HideWinPopup()
@@ -470,12 +575,16 @@ namespace FoodieMatch.UI
             Action completed,
             Action cancelled)
         {
-            FakeRewardedAdPopupView popup =
-                _popupManager.Show<FakeRewardedAdPopupView>();
-            popup.SetActions(
-                new FakeRewardedAdPopupViewActions(
-                    completed,
-                    cancelled));
+            RunUiTask(
+                ShowPopupAsync<FakeRewardedAdPopupView>(
+                    data: null,
+                    popup =>
+                        popup.SetActions(
+                            new FakeRewardedAdPopupViewActions(
+                                completed,
+                                cancelled))),
+                nameof(ShowFakeRewardedAdPopup),
+                cancelled);
             return true;
         }
 
@@ -488,14 +597,19 @@ namespace FoodieMatch.UI
             Action tryAgainClicked,
             Action homeClicked)
         {
-            LoseView loseView = _popupManager.Show<LoseView>();
-            _audioService.PlaySfx(AudioKeys.SfxLoseGame);
-
-            loseView.SetActions(
-                new LoseViewActions(
-                    tryAgainClicked,
-                    homeClicked));
-            SetCurrentPlayerResources(loseView);
+            RunUiTask(
+                ShowPopupAsync<LoseView>(
+                    data: null,
+                    loseView =>
+                    {
+                        _audioService.PlaySfx(AudioKeys.SfxLoseGame);
+                        loseView.SetActions(
+                            new LoseViewActions(
+                                tryAgainClicked,
+                                homeClicked));
+                        SetCurrentPlayerResources(loseView);
+                    }),
+                nameof(ShowLosePopup));
         }
 
         public void HideLosePopup()
@@ -514,22 +628,27 @@ namespace FoodieMatch.UI
 
             _heartRefillCompleted = heartRefillCompleted;
 
-            FillHeartPopupView popup =
-                _popupManager.Show<FillHeartPopupView>();
-            popup.SetActions(
-                new FillHeartPopupViewActions(
-                    OnFillHeartCloseClicked,
-                    OnFillHeartFreeAdsClicked,
-                    OnFillHeartBuyClicked,
-                    OnHeartRecoveredToFull));
-            popup.SetFullHeartCoinPrice(
-                _economyConfig.FullHeartCoinPrice);
-            popup.SetPlayerResources(
-                _playerProfileService.CoinBalance,
-                heartStatus);
-            popup.SetResourceClickActions(
-                ShowShopPopup,
-                ShowShopPopup);
+            RunUiTask(
+                ShowPopupAsync<FillHeartPopupView>(
+                    data: null,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new FillHeartPopupViewActions(
+                                OnFillHeartCloseClicked,
+                                OnFillHeartFreeAdsClicked,
+                                OnFillHeartBuyClicked,
+                                OnHeartRecoveredToFull));
+                        popup.SetFullHeartCoinPrice(
+                            _economyConfig.FullHeartCoinPrice);
+                        popup.SetPlayerResources(
+                            _playerProfileService.CoinBalance,
+                            heartStatus);
+                        popup.SetResourceClickActions(
+                            ShowShopPopup,
+                            ShowShopPopup);
+                    }),
+                nameof(ShowFillHeartPopup));
         }
 
         public void CompleteHeartRefill()
@@ -543,7 +662,19 @@ namespace FoodieMatch.UI
 
         public BoosterSwapPopup ShowSwapPopup()
         {
-            return _popupManager.Show<BoosterSwapPopup>();
+            if (_popupManager.TryGetOpened(out BoosterSwapPopup popup))
+            {
+                return popup;
+            }
+
+            throw new InvalidOperationException(
+                "BoosterSwapPopup is loaded asynchronously. " +
+                "Use ShowSwapPopupAsync for the first show.");
+        }
+
+        public Task<BoosterSwapPopup> ShowSwapPopupAsync()
+        {
+            return _popupManager.ShowAsync<BoosterSwapPopup>();
         }
 
         public void HideSwapPopup()
@@ -579,14 +710,20 @@ namespace FoodieMatch.UI
                     entry,
                     coinPrice.ToString());
 
-            BoosterBuyPopupView popup = _popupManager.Show<BoosterBuyPopupView>(popupData);
             _currentBoosterBuyType = boosterType;
-            popup.SetActions(
-                new BoosterBuyPopupViewActions(
-                    OnBoosterBuyCloseClicked,
-                    OnBoosterBuyFreeAdsClicked,
-                    OnBoosterBuyBuyClicked));
-            SetCurrentPlayerResources(popup);
+            RunUiTask(
+                ShowPopupAsync<BoosterBuyPopupView>(
+                    popupData,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new BoosterBuyPopupViewActions(
+                                OnBoosterBuyCloseClicked,
+                                OnBoosterBuyFreeAdsClicked,
+                                OnBoosterBuyBuyClicked));
+                        SetCurrentPlayerResources(popup);
+                    }),
+                nameof(ShowBoosterBuyPopup));
         }
 
         public void HideBoosterBuyPopup()
@@ -662,17 +799,23 @@ namespace FoodieMatch.UI
             int coinPrice = _economyConfig.GetBoosterPrice(BoosterType.Box);
             BoosterBuyPopupData popupData =
                 BoosterBuyPopupData.FromCatalogEntry(entry, coinPrice.ToString());
-            BoosterBuyPopupView popup = _popupManager.Show<BoosterBuyPopupView>(popupData);
             _addBoxFlowSource = AddBoxFlowSource.LockedPackage;
             _pendingUnlockSlotIndex = slotIndex;
             _pendingUnlockCallback = onUnlockConfirmed;
 
-            popup.SetActions(
-                new BoosterBuyPopupViewActions(
-                    OnUnlockPopupCloseClicked,
-                    OnUnlockPopupFreeAdsClicked,
-                    OnUnlockPopupBuyClicked));
-            SetCurrentPlayerResources(popup);
+            RunUiTask(
+                ShowPopupAsync<BoosterBuyPopupView>(
+                    popupData,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new BoosterBuyPopupViewActions(
+                                OnUnlockPopupCloseClicked,
+                                OnUnlockPopupFreeAdsClicked,
+                                OnUnlockPopupBuyClicked));
+                        SetCurrentPlayerResources(popup);
+                    }),
+                nameof(ShowUnlockLockedPackagePopup));
         }
 
         private void OnUnlockPopupCloseClicked()
@@ -735,12 +878,17 @@ namespace FoodieMatch.UI
             }
 
             BoosterGuidePopupData popupData = BoosterGuidePopupData.FromCatalogEntry(entry);
-            BoosterGuidePopupView popup = _popupManager.Show<BoosterGuidePopupView>(popupData);
             _currentBoosterGuideType = boosterType;
             _isBoosterGuideShowing = true;
-            popup.SetActions(
-                new BoosterGuidePopupViewActions(
-                    OnBoosterGuideClosed));
+            RunUiTask(
+                ShowPopupAsync<BoosterGuidePopupView>(
+                    popupData,
+                    popup =>
+                        popup.SetActions(
+                            new BoosterGuidePopupViewActions(
+                                OnBoosterGuideClosed))),
+                nameof(ShowBoosterGuidePopup),
+                () => _isBoosterGuideShowing = false);
         }
 
         public void HideBoosterGuidePopup()
@@ -809,7 +957,7 @@ namespace FoodieMatch.UI
             }
         }
 
-        private LoadingScreenView GetOrCreateLoadingScreen()
+        private async Task<LoadingScreenView> GetOrCreateLoadingScreenAsync()
         {
             if (_loadingScreenView != null)
             {
@@ -817,8 +965,10 @@ namespace FoodieMatch.UI
             }
 
             _loadingRoot.SetAsLastSibling();
-            _loadingScreenView = Instantiate(_loadingScreenPrefab, _loadingRoot);
-            _loadingScreenView.gameObject.name = _loadingScreenPrefab.gameObject.name;
+            _loadingScreenView =
+                await _addressableUiFactory.GetOrCreateAsync<LoadingScreenView>(
+                    UiAddressKeys.LoadingScreenRoot,
+                    _loadingRoot);
             return _loadingScreenView;
         }
 
@@ -1318,6 +1468,50 @@ namespace FoodieMatch.UI
         private int GetBoosterUnlockLevel(BoosterType boosterType)
         {
             return _boosterConfig.GetUnlockLevel(boosterType);
+        }
+
+        private async Task ShowPopupAsync<TPopup>(
+            IPopupData data,
+            Action<TPopup> configure)
+            where TPopup : PopupBase
+        {
+            TPopup popup =
+                await _popupManager.ShowAsync<TPopup>(data);
+
+            if (this == null)
+            {
+                return;
+            }
+
+            configure(popup);
+        }
+
+        private void RunUiTask(
+            Task task,
+            string operationName,
+            Action failed = null)
+        {
+            _ = ObserveUiTaskAsync(task, operationName, failed);
+        }
+
+        private static async Task ObserveUiTaskAsync(
+            Task task,
+            string operationName,
+            Action failed)
+        {
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(
+                    $"UI operation {operationName} failed: {exception}");
+                failed?.Invoke();
+            }
         }
 
         private enum LeavePopupSource

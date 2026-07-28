@@ -77,8 +77,15 @@ namespace FoodieMatch.App
 
         public void EnterHome()
         {
+            _ = EnterHomeAsync();
+        }
+
+        public Task EnterHomeAsync()
+        {
             int levelNumber = GetSavedPlayableLevelNumber();
-            OpenHome(levelNumber, _playerProfileService.CoinBalance);
+            return OpenHomeAsync(
+                levelNumber,
+                _playerProfileService.CoinBalance);
         }
 
         public void StartLevel(int levelNumber)
@@ -126,7 +133,7 @@ namespace FoodieMatch.App
 
                 bool shouldShowLevelWarning =
                     levelDefinition.Difficulty != LevelDifficulty.Normal;
-                OpenLevel(
+                await OpenLevelAsync(
                     levelNumber,
                     enableGameplayInput: !shouldShowLevelWarning);
 
@@ -180,7 +187,7 @@ namespace FoodieMatch.App
                 long displayedCoinBalance = coinRewardPresentation == null
                     ? _playerProfileService.CoinBalance
                     : coinRewardPresentation.StartingCoinBalance;
-                OpenHome(levelNumber, displayedCoinBalance);
+                await OpenHomeAsync(levelNumber, displayedCoinBalance);
                 shouldPlayCoinReward = coinRewardPresentation != null;
 
                 await loadingTask;
@@ -203,13 +210,15 @@ namespace FoodieMatch.App
             }
         }
 
-        private void OpenLevel(int levelNumber, bool enableGameplayInput)
+        private async Task OpenLevelAsync(
+            int levelNumber,
+            bool enableGameplayInput)
         {
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
             _uiManager.HideHome();
             _uiManager.SetCurrentLevelNumber(levelNumber);
-            _uiManager.ShowGameplayHud();
+            await _uiManager.ShowGameplayHudAsync();
             _audioService.PlayMusic(AudioKeys.MusicIngame);
 
             _playerProfileService.SetCurrentLevelNumber(levelNumber);
@@ -220,7 +229,7 @@ namespace FoodieMatch.App
                 enableGameplayInput);
         }
 
-        private void OpenHome(
+        private async Task OpenHomeAsync(
             int levelNumber,
             long displayedCoinBalance)
         {
@@ -228,7 +237,7 @@ namespace FoodieMatch.App
             _uiManager.HideAllPopups();
             _uiManager.HideGameplayHud();
             _uiManager.SetCurrentLevelNumber(levelNumber);
-            _uiManager.ShowHome(displayedCoinBalance);
+            await _uiManager.ShowHomeAsync(displayedCoinBalance);
             _audioService.PlayMusic(AudioKeys.MusicMenu);
             _activeLevelNumber = 0;
         }

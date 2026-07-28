@@ -101,7 +101,8 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
-            BoosterSwapPopup swapPopup = _uiManager.ShowSwapPopup();
+            BoosterSwapPopup swapPopup =
+                await _uiManager.ShowSwapPopupAsync();
             Task popupAnimationTask = swapPopup.StartSwapAnimationAsync();
             await swapPopup.WaitForAnimationProgressAsync(0.9f);
 
