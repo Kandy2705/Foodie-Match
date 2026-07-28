@@ -469,8 +469,8 @@ MonoBehaviour:
   _joinGroupUrl: https://www.facebook.com/share/g/18yATH4fNX/
   _followPageUrl: https://www.facebook.com/profile.php?id=61583418554636
   _shareDialogTitle: Foodie-Match
-  _playWithFriendsMessage: Play Foodie-Match with me!
-  _shareMessage: Check out Foodie-Match!
+  _playWithFriendsMessage: 'Play Foodie-Match with me! '
+  _shareMessage: Check out Foodie-Match! https://play.google.com/store/games
   _inviteFriendsMessage: Join me in Foodie-Match!
 --- !u!1 &4745949102262712882
 GameObject:

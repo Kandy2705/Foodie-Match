@@ -178,6 +178,7 @@ namespace FoodieMatch.UI.Home
         private void UpdateHeartCountText()
         {
             _heartCountText.text = _heartCount.ToString();
+            UpdateAddLifeButtonVisibility();
         }
 
         private void SetUnlimitedPresentation(bool isUnlimited)
@@ -186,7 +187,14 @@ namespace FoodieMatch.UI.Home
             _heartIconImage.sprite = isUnlimited
                 ? _unlimitedHeartIconSprite
                 : _normalHeartIconSprite;
-            _addLifeButton.SetActive(!isUnlimited);
+            UpdateAddLifeButtonVisibility();
+        }
+
+        private void UpdateAddLifeButtonVisibility()
+        {
+            _addLifeButton.SetActive(
+                !_isUnlimited &&
+                _heartCount < _maxHeartCount);
         }
 
         private void UpdateRecoveryTimerText(TimeSpan remainingTime)
