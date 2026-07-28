@@ -19,12 +19,17 @@ namespace FoodieMatch.UI.Social
 
         [Header("Sharing")]
         [SerializeField] private string _shareDialogTitle = "Foodie-Match";
-        [SerializeField] private string _playWithFriendsMessage =
+        [SerializeField]
+        private string _playWithFriendsMessage =
             "Play Foodie-Match with me!";
-        [SerializeField] private string _shareMessage =
+        [SerializeField]
+        private string _shareMessage =
             "Check out Foodie-Match!";
-        [SerializeField] private string _inviteFriendsMessage =
+        [SerializeField]
+        private string _inviteFriendsMessage =
             "Join me in Foodie-Match!";
+
+        [SerializeField] private string _storeUrl = "https://play.google.com/store/games";
 
         private void Awake()
         {
@@ -79,7 +84,14 @@ namespace FoodieMatch.UI.Social
                 return;
             }
 
-            SocialShareService.Share(_shareDialogTitle, message);
+            string content = message;
+
+            if (!string.IsNullOrWhiteSpace(_storeUrl))
+            {
+                content += "\n" + _storeUrl;
+            }
+
+            SocialShareService.Share(_shareDialogTitle, content);
         }
 
         private void OpenExternalUrl(string url, string actionName)
