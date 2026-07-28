@@ -772,6 +772,7 @@ PlayerSettings:
   webWasm2023: 0
   scriptingDefineSymbols:
     Android: LEVELPLAY_DEPENDENCIES_INSTALLED
+    iPhone: LEVELPLAY_DEPENDENCIES_INSTALLED
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
