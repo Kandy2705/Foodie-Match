@@ -26,6 +26,7 @@ using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
+using FoodieMatch.UI.AddressableAssets;
 using UnityEngine;
 
 namespace FoodieMatch.App
@@ -110,6 +111,8 @@ namespace FoodieMatch.App
                 shopConfig,
                 new DebugFreeShopPaymentGateway(),
                 playerProfileService);
+            IAddressableUiFactory addressableUiFactory =
+                new AddressableUiFactory();
 
             appRoot.UIManager.Construct(
                 GameplayEvents,
@@ -120,7 +123,8 @@ namespace FoodieMatch.App
                 advertisingRuntimeSettings,
                 playerProfileService,
                 levelRepository,
-                shopConfig);
+                shopConfig,
+                addressableUiFactory);
             CreateAdServices(
                 appRoot,
                 advertisingRuntimeSettings,
