@@ -15,11 +15,6 @@ namespace FoodieMatch.Features.WaitingRack
         private bool IsPlacementComplete =>
             _state == WaitingRackSlotState.Occupied;
 
-        private void OnDestroy()
-        {
-            Clear();
-        }
-
         public bool RestoreFood(FoodItemView foodItemView)
         {
             if (!TryReserveFood(foodItemView, out _))
@@ -115,18 +110,11 @@ namespace FoodieMatch.Features.WaitingRack
             return foodItemView;
         }
 
-        public void Clear()
+        public FoodItemView RemoveFoodForReset()
         {
             FoodItemView foodItemView = _foodItemView;
             ResetSlot();
-
-            if (foodItemView == null)
-            {
-                return;
-            }
-
-            foodItemView.Clear();
-            Destroy(foodItemView.gameObject);
+            return foodItemView;
         }
 
         private void ResetSlot()

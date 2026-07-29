@@ -20,6 +20,7 @@ namespace FoodieMatch.Features.Gameplay
         private readonly RequiredPackageLifecycleUseCase _packageLifecycleUseCase;
         private readonly RequiredPackageGroupView _packageGroupView;
         private readonly FoodVisualResolver _foodVisualResolver;
+        private readonly FoodItemViewPool _foodItemViewPool;
         private readonly GameplayEvents _gameplayEvents;
 
         private GameplaySession _session;
@@ -36,6 +37,7 @@ namespace FoodieMatch.Features.Gameplay
             RequiredPackageLifecycleUseCase packageLifecycleUseCase,
             RequiredPackageGroupView packageGroupView,
             FoodVisualResolver foodVisualResolver,
+            FoodItemViewPool foodItemViewPool,
             GameplayEvents gameplayEvents)
         {
             _sessionGuard = sessionGuard;
@@ -44,6 +46,7 @@ namespace FoodieMatch.Features.Gameplay
             _packageLifecycleUseCase = packageLifecycleUseCase;
             _packageGroupView = packageGroupView;
             _foodVisualResolver = foodVisualResolver;
+            _foodItemViewPool = foodItemViewPool;
             _gameplayEvents = gameplayEvents;
         }
 
@@ -86,6 +89,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (!CanContinue(session))
             {
+                _foodItemViewPool.Release(foodItemView);
                 return;
             }
 
@@ -95,7 +99,7 @@ namespace FoodieMatch.Features.Gameplay
                     foodItemView, packageIndex, session, out PackageFlight flight))
             {
                 Debug.LogError("Required package flight could not be created.");
-                foodItemView?.Clear();
+                _foodItemViewPool.Release(foodItemView);
                 RefreshPackageViewIfValid(packageIndex, session);
                 IncreaseDisplayedServedFoodCount(session);
                 OnPackageDeliveryFailed(session);
@@ -105,6 +109,7 @@ namespace FoodieMatch.Features.Gameplay
             if (!TryRegisterFlight(flight, out _))
             {
                 Debug.LogError($"Required package {flight.PackageIndex} could not register an incoming flight.");
+                ReleaseFlightFood(flight);
                 ReconcileFailedFlight(flight);
                 IncreaseDisplayedServedFoodCount(session);
                 OnPackageDeliveryFailed(session);
@@ -204,8 +209,14 @@ namespace FoodieMatch.Features.Gameplay
 
         public async Task<bool> DeliverBatchAsync(IReadOnlyList<PackageFlight> flights, GameplaySession session)
         {
-            if (!CanContinue(session) || flights == null)
+            if (flights == null)
             {
+                return false;
+            }
+
+            if (!CanContinue(session))
+            {
+                ReleaseFlightFood(flights);
                 return false;
             }
 
@@ -391,34 +402,44 @@ namespace FoodieMatch.Features.Gameplay
             GameplaySession session,
             float startDelay)
         {
-            if (!TryGetMotionState(flight.PackageIndex, flight.ExpectedPackage, out PackageMotionState motionState))
-            {
-                return;
-            }
-
-            MotionResult motionResult;
+            PackageMotionState motionState = null;
+            MotionResult motionResult = MotionResult.Failed;
 
             try
             {
-                motionResult = await _motionPresenter.MoveFoodToRequiredPackageAsync(
-                    flight.FoodItemView,
-                    flight.PackageIndex,
-                    flight.RequiredAmount,
-                    flight.FilledSlotIndex,
-                    startDelay);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                motionResult = MotionResult.Failed;
+                if (!TryGetMotionState(
+                        flight.PackageIndex,
+                        flight.ExpectedPackage,
+                        out motionState))
+                {
+                    return;
+                }
+
+                try
+                {
+                    motionResult = await _motionPresenter.MoveFoodToRequiredPackageAsync(
+                        flight.FoodItemView,
+                        flight.PackageIndex,
+                        flight.RequiredAmount,
+                        flight.FilledSlotIndex,
+                        startDelay);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
             }
             finally
             {
-                if (!motionState.TryCompleteIncomingFlight(flight.ExpectedPackage))
+                if (motionState != null &&
+                    !motionState.TryCompleteIncomingFlight(
+                        flight.ExpectedPackage))
                 {
                     Debug.LogError(
                         $"Required package {flight.PackageIndex} could not complete an incoming flight.");
                 }
+
+                ReleaseFlightFood(flight);
             }
 
             if (!CanContinue(session) || !IsExpectedPackage(flight))
@@ -510,6 +531,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             for (int i = 0; i < flights.Count; i++)
             {
+                ReleaseFlightFood(flights[i]);
                 ReconcileFailedFlight(flights[i]);
                 IncreaseDisplayedServedFoodCount(session);
             }
@@ -517,8 +539,21 @@ namespace FoodieMatch.Features.Gameplay
 
         private void ReconcileFailedFlight(PackageFlight flight)
         {
-            flight.FoodItemView.Clear();
             RefreshPackageViewAt(flight.PackageIndex);
+        }
+
+        private void ReleaseFlightFood(PackageFlight flight)
+        {
+            _foodItemViewPool.Release(flight.FoodItemView);
+        }
+
+        private void ReleaseFlightFood(
+            IReadOnlyList<PackageFlight> flights)
+        {
+            for (int i = 0; i < flights.Count; i++)
+            {
+                ReleaseFlightFood(flights[i]);
+            }
         }
 
         private void IncreaseDisplayedServedFoodCount(GameplaySession session)

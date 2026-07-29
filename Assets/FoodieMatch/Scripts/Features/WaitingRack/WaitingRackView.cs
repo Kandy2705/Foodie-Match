@@ -25,6 +25,7 @@ namespace FoodieMatch.Features.WaitingRack
 
         private readonly List<WaitingRackSlotView> _slots = new();
         private readonly HashSet<WaitingRackSlotView> _runtimeSlots = new();
+        private FoodItemViewPool _foodItemViewPool;
         private Sequence _addSlotSequence;
         private bool _isAddSlotAnimating;
 
@@ -41,7 +42,11 @@ namespace FoodieMatch.Features.WaitingRack
         private void OnDestroy()
         {
             StopAddSlotMotion();
-            Clear();
+        }
+
+        public void Construct(FoodItemViewPool foodItemViewPool)
+        {
+            _foodItemViewPool = foodItemViewPool;
         }
 
         public void ResetToCapacity(int capacity)
@@ -92,7 +97,6 @@ namespace FoodieMatch.Features.WaitingRack
 
             WaitingRackSlotView newSlot = Instantiate(_slotPrefab, _slotRoot);
             newSlot.gameObject.name = $"{_slotPrefab.name}_{_slots.Count}";
-            newSlot.Clear();
             _runtimeSlots.Add(newSlot);
             _slots.Add(newSlot);
 
@@ -254,7 +258,13 @@ namespace FoodieMatch.Features.WaitingRack
             {
                 if (_slots[i] != null)
                 {
-                    _slots[i].Clear();
+                    FoodItemView foodItemView =
+                        _slots[i].RemoveFoodForReset();
+
+                    if (foodItemView != null)
+                    {
+                        _foodItemViewPool.Release(foodItemView);
+                    }
                 }
             }
         }

@@ -141,7 +141,10 @@ namespace FoodieMatch.App
                 postLevelAdCooldown);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
+                appRoot.GameplayPoolRoot.FoodItems,
                 worldCamera);
+            appRoot.WaitingRackView.Construct(
+                appRoot.GameplayPoolRoot.FoodItems);
             appRoot.GameplayMotionPresenter.Construct(
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView);
@@ -156,6 +159,7 @@ namespace FoodieMatch.App
                 gameplayAudioPresenter,
                 gameplayWorldClickSfx,
                 appRoot.FoodVisualResolver,
+                appRoot.GameplayPoolRoot.FoodItems,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
                 levelRepository,

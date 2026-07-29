@@ -37,6 +37,7 @@ namespace FoodieMatch.Features.Gameplay
         private GameplayAudioPresenter _gameplayAudioPresenter;
         private GameplayWorldClickSfx _gameplayWorldClickSfx;
         private FoodVisualResolver _foodVisualResolver;
+        private FoodItemViewPool _foodItemViewPool;
         private RequiredPackageLifecycleUseCase _requiredPackageLifecycleUseCase;
         private SelectFoodUseCase _selectFoodUseCase;
         private ILevelRepository _levelRepository;
@@ -95,6 +96,7 @@ namespace FoodieMatch.Features.Gameplay
             GameplayAudioPresenter gameplayAudioPresenter,
             GameplayWorldClickSfx gameplayWorldClickSfx,
             FoodVisualResolver foodVisualResolver,
+            FoodItemViewPool foodItemViewPool,
             RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase,
             SelectFoodUseCase selectFoodUseCase,
             ILevelRepository levelRepository,
@@ -110,6 +112,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayAudioPresenter = gameplayAudioPresenter;
             _gameplayWorldClickSfx = gameplayWorldClickSfx;
             _foodVisualResolver = foodVisualResolver;
+            _foodItemViewPool = foodItemViewPool;
             _requiredPackageLifecycleUseCase = requiredPackageLifecycleUseCase;
             _selectFoodUseCase = selectFoodUseCase;
             _levelRepository = levelRepository;
@@ -496,7 +499,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _packageDeliveryCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _requiredPackageLifecycleUseCase,
-                _requiredPackageGroupView, _foodVisualResolver, _gameplayEvents);
+                _requiredPackageGroupView, _foodVisualResolver, _foodItemViewPool, _gameplayEvents);
             _waitingRackPlacementCoordinator = new(_sessionGuard, _gameplayMotionPresenter, _waitingRackView);
             _waitingRackAutoFillCoordinator = new(
                 _sessionGuard, _requiredPackageLifecycleUseCase, _waitingRackView, _packageDeliveryCoordinator);
@@ -522,7 +525,7 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard,
                 _fridgeBoosterAnchors.FridgeBoosterView,
                 _waitingRackView,
-                _boardLayoutView,
+                _foodItemViewPool,
                 _requiredPackageLifecycleUseCase,
                 _packageDeliveryCoordinator,
                 _foodVisualResolver);

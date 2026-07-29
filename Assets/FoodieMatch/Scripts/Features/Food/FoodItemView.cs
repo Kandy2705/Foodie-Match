@@ -53,6 +53,7 @@ namespace FoodieMatch.Features.Food
         private Tween _fadeTween;
         private Tween _revealTween;
         private Sequence _landingSequence;
+        private Sequence _scaleSequence;
         private bool _isFlying;
         private bool _didFlightComplete;
         private bool _didFadeComplete;
@@ -60,6 +61,7 @@ namespace FoodieMatch.Features.Food
         private bool _didRevealComplete;
         private bool _isLandingFeedbackPlaying;
         private bool _didLandingFeedbackComplete;
+        private bool _didScaleComplete;
         private Transform _flightTarget;
         private Transform _landingTarget;
         private Vector3 _flightStartPosition;
@@ -73,6 +75,7 @@ namespace FoodieMatch.Features.Food
         private int _sortingLayerBeforeFlightId;
         private bool _hasFlyingSortingLayer;
         private bool _hasSortingLayerBeforeFlight;
+        private int _reuseVersion;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -141,14 +144,17 @@ namespace FoodieMatch.Features.Food
 
         public void Clear()
         {
-            CancelMotion();
-            FoodTokenId = 0;
+            ResetForPool();
+        }
 
-            _spriteRenderer.sprite = null;
-            _spriteRenderer.enabled = false;
+        public void ResetForUse()
+        {
+            ResetViewState();
+        }
 
-            ApplyColliderState();
-            ApplyVisualState();
+        public void ResetForPool()
+        {
+            ResetViewState();
         }
 
         public Task<MotionResult> PlayFlightAsync(
@@ -206,6 +212,7 @@ namespace FoodieMatch.Features.Food
                 return MotionResult.Failed;
             }
 
+            int reuseVersion = _reuseVersion;
             _flightTarget = target;
             _flightStartPosition = transform.position;
             _latestFlightTargetPosition = targetPosition;
@@ -232,6 +239,11 @@ namespace FoodieMatch.Features.Food
 
                 await _flightTween;
 
+                if (!IsCurrentReuse(reuseVersion))
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 if (_didFlightComplete && _flightTargetVisualState.HasValue)
                 {
                     SetVisualState(_flightTargetVisualState.Value);
@@ -243,15 +255,18 @@ namespace FoodieMatch.Features.Food
             }
             finally
             {
-                if (!_didFlightComplete)
+                if (IsCurrentReuse(reuseVersion))
                 {
-                    RestoreSortingLayerBeforeFlight();
-                }
+                    if (!_didFlightComplete)
+                    {
+                        RestoreSortingLayerBeforeFlight();
+                    }
 
-                _flightTween = default;
-                _flightTarget = null;
-                _flightTargetVisualState = null;
-                _isFlying = false;
+                    _flightTween = default;
+                    _flightTarget = null;
+                    _flightTargetVisualState = null;
+                    _isFlying = false;
+                }
             }
         }
 
@@ -265,6 +280,7 @@ namespace FoodieMatch.Features.Food
             }
 
             SetSpriteAlpha(0f);
+            int reuseVersion = _reuseVersion;
             _didFadeComplete = false;
 
             try
@@ -274,13 +290,21 @@ namespace FoodieMatch.Features.Food
 
                 await _fadeTween;
 
+                if (!IsCurrentReuse(reuseVersion))
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 return _didFadeComplete
                     ? MotionResult.Completed
                     : MotionResult.Cancelled;
             }
             finally
             {
-                _fadeTween = default;
+                if (IsCurrentReuse(reuseVersion))
+                {
+                    _fadeTween = default;
+                }
             }
         }
 
@@ -293,6 +317,7 @@ namespace FoodieMatch.Features.Food
                 return MotionResult.Failed;
             }
 
+            int reuseVersion = _reuseVersion;
             _didFadeComplete = false;
 
             try
@@ -302,13 +327,21 @@ namespace FoodieMatch.Features.Food
 
                 await _fadeTween;
 
+                if (!IsCurrentReuse(reuseVersion))
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 return _didFadeComplete
                     ? MotionResult.Completed
                     : MotionResult.Cancelled;
             }
             finally
             {
-                _fadeTween = default;
+                if (IsCurrentReuse(reuseVersion))
+                {
+                    _fadeTween = default;
+                }
             }
         }
 
@@ -319,6 +352,7 @@ namespace FoodieMatch.Features.Food
                 return MotionResult.Failed;
             }
 
+            int reuseVersion = _reuseVersion;
             Vector3 targetScale = GetVisualScale(FoodItemVisualState.OnGrill);
 
             if (!IsValidScale(targetScale))
@@ -337,14 +371,99 @@ namespace FoodieMatch.Features.Food
 
                 await _revealTween;
 
+                if (!IsCurrentReuse(reuseVersion))
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 return _didRevealComplete
                     ? MotionResult.Completed
                     : MotionResult.Cancelled;
             }
             finally
             {
-                _revealTween = default;
-                _isRevealPlaying = false;
+                if (IsCurrentReuse(reuseVersion))
+                {
+                    _revealTween = default;
+                    _isRevealPlaying = false;
+                }
+            }
+        }
+
+        public Task<MotionResult> PlayScaleAsync(
+            Vector3 targetScale,
+            float duration,
+            Ease ease)
+        {
+            return PlayScaleAsync(
+                targetScale,
+                duration,
+                ease,
+                targetScale,
+                0f,
+                ease);
+        }
+
+        public async Task<MotionResult> PlayScaleAsync(
+            Vector3 firstTargetScale,
+            float firstDuration,
+            Ease firstEase,
+            Vector3 finalTargetScale,
+            float finalDuration,
+            Ease finalEase)
+        {
+            if (_scaleSequence.isAlive ||
+                !IsValidScaleTarget(firstTargetScale) ||
+                !IsValidScaleTarget(finalTargetScale) ||
+                !IsValidTime(firstDuration) ||
+                !IsValidTime(finalDuration))
+            {
+                return MotionResult.Failed;
+            }
+
+            int reuseVersion = _reuseVersion;
+            _didScaleComplete = false;
+
+            try
+            {
+                _scaleSequence = Sequence.Create()
+                    .Chain(Tween.Scale(
+                        transform,
+                        firstTargetScale,
+                        firstDuration,
+                        firstEase));
+
+                if (finalDuration > 0f)
+                {
+                    _scaleSequence = _scaleSequence.Chain(
+                        Tween.Scale(
+                            transform,
+                            finalTargetScale,
+                            finalDuration,
+                            finalEase));
+                }
+
+                _scaleSequence = _scaleSequence.ChainCallback(
+                    this,
+                    target => target.MarkScaleCompleted());
+
+                await _scaleSequence;
+
+                if (!IsCurrentReuse(reuseVersion))
+                {
+                    return MotionResult.Cancelled;
+                }
+
+                return _didScaleComplete
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                if (IsCurrentReuse(reuseVersion))
+                {
+                    _scaleSequence = default;
+                }
             }
         }
 
@@ -362,6 +481,7 @@ namespace FoodieMatch.Features.Food
             StopLandingFeedback(resetScale: true);
             StopFade(resetAlpha: true);
             StopReveal(resetScale: true);
+            StopScale();
             RestoreSortingLayerBeforeFlight();
         }
 
@@ -393,6 +513,7 @@ namespace FoodieMatch.Features.Food
                 return MotionResult.Completed;
             }
 
+            int reuseVersion = _reuseVersion;
             _scaleBeforeLanding = transform.localScale;
             Vector3 squashScale = Vector3.Scale(_scaleBeforeLanding, _landingSquashScaleMultiplier);
             _landingTarget = target;
@@ -416,6 +537,11 @@ namespace FoodieMatch.Features.Food
 
                 await _landingSequence;
 
+                if (!IsCurrentReuse(reuseVersion))
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 if (_didLandingFeedbackComplete)
                 {
                     UpdateLandingPosition();
@@ -427,9 +553,12 @@ namespace FoodieMatch.Features.Food
             }
             finally
             {
-                _landingSequence = default;
-                _landingTarget = null;
-                _isLandingFeedbackPlaying = false;
+                if (IsCurrentReuse(reuseVersion))
+                {
+                    _landingSequence = default;
+                    _landingTarget = null;
+                    _isLandingFeedbackPlaying = false;
+                }
             }
         }
 
@@ -514,6 +643,11 @@ namespace FoodieMatch.Features.Food
             _didLandingFeedbackComplete = true;
         }
 
+        private void MarkScaleCompleted()
+        {
+            _didScaleComplete = true;
+        }
+
         private void UpdateFlightPosition(float progress)
         {
             if (_flightTarget != null)
@@ -595,6 +729,42 @@ namespace FoodieMatch.Features.Food
             return value > 0f && value < 1f && !float.IsNaN(value);
         }
 
+        private bool IsCurrentReuse(int reuseVersion)
+        {
+            return reuseVersion == _reuseVersion;
+        }
+
+        private void ResetViewState()
+        {
+            _reuseVersion++;
+            CancelMotion();
+
+            FoodTokenId = 0;
+            IsInteractable = false;
+            VisualState = FoodItemVisualState.Empty;
+            Selected = null;
+
+            _isFlying = false;
+            _didFlightComplete = false;
+            _didFadeComplete = false;
+            _isRevealPlaying = false;
+            _didRevealComplete = false;
+            _isLandingFeedbackPlaying = false;
+            _didLandingFeedbackComplete = false;
+            _didScaleComplete = false;
+            _flightTarget = null;
+            _landingTarget = null;
+            _flightTargetVisualState = null;
+
+            _spriteRenderer.sprite = null;
+            _spriteRenderer.enabled = false;
+            SetSpriteAlpha(1f);
+            transform.localScale = Vector3.one;
+            transform.localRotation = Quaternion.identity;
+
+            ApplyColliderState();
+        }
+
         private void StopLandingFeedback(bool resetScale)
         {
             if (_landingSequence.isAlive)
@@ -641,6 +811,16 @@ namespace FoodieMatch.Features.Food
             }
 
             _isRevealPlaying = false;
+        }
+
+        private void StopScale()
+        {
+            if (_scaleSequence.isAlive)
+            {
+                _scaleSequence.Stop();
+            }
+
+            _scaleSequence = default;
         }
 
         private void SetSpriteAlpha(float alpha)
@@ -700,9 +880,21 @@ namespace FoodieMatch.Features.Food
                    IsValidScaleValue(value.z);
         }
 
+        private static bool IsValidScaleTarget(Vector3 value)
+        {
+            return IsValidScaleTargetValue(value.x) &&
+                   IsValidScaleTargetValue(value.y) &&
+                   IsValidScaleTargetValue(value.z);
+        }
+
         private static bool IsValidScaleValue(float value)
         {
             return value > 0f && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static bool IsValidScaleTargetValue(float value)
+        {
+            return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
         }
 
         private void ApplyColliderState()

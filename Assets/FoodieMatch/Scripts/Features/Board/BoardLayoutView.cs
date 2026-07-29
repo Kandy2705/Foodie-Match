@@ -15,7 +15,6 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private GrillView _grillPrefab;
         [SerializeField] private SingleGrillView _singleGrillPrefab;
         [SerializeField] private StackedGrillView _stackedGrillPrefab;
-        [SerializeField] private FoodItemView _foodItemPrefab;
         [SerializeField] private Transform _foodItemRoot;
 
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
@@ -39,6 +38,7 @@ namespace FoodieMatch.Features.Board
         private float _topTrayReleaseScaleDuration = 0.18f;
 
         private FoodVisualResolver _foodVisualResolver;
+        private FoodItemViewPool _foodItemViewPool;
         private Camera _worldCamera;
         private GrillMovementController _grillMovementController;
         private StackedGrillLayoutController _stackedGrillLayoutController;
@@ -52,9 +52,11 @@ namespace FoodieMatch.Features.Board
 
         public void Construct(
             FoodVisualResolver foodVisualResolver,
+            FoodItemViewPool foodItemViewPool,
             Camera worldCamera)
         {
             _foodVisualResolver = foodVisualResolver;
+            _foodItemViewPool = foodItemViewPool;
             _worldCamera = worldCamera;
         }
 
@@ -235,8 +237,7 @@ namespace FoodieMatch.Features.Board
 
             items[traySlotIndex] = null;
 
-            _ = Tween.Scale(
-                foodView.transform,
+            _ = foodView.PlayScaleAsync(
                 targetScale,
                 _topTrayReleaseScaleDuration,
                 Ease.OutCubic);
@@ -382,20 +383,15 @@ namespace FoodieMatch.Features.Board
 
             Task fadeTask = view.PlayFadeOutAsync(totalDuration);
 
-            Sequence sequence = Sequence.Create()
-                .Chain(Tween.Scale(
-                    view.transform,
-                    punchScale,
-                    HidePunchDuration,
-                    Ease.OutQuad))
-                .Chain(Tween.Scale(
-                    view.transform,
-                    Vector3.zero,
-                    HideShrinkDuration,
-                    Ease.InBack));
+            Task scaleTask = view.PlayScaleAsync(
+                punchScale,
+                HidePunchDuration,
+                Ease.OutQuad,
+                Vector3.zero,
+                HideShrinkDuration,
+                Ease.InBack);
 
-            await sequence;
-            await fadeTask;
+            await Task.WhenAll(scaleTask, fadeTask);
         }
 
         public async Task AnimateRevealFoodAsync(
@@ -439,20 +435,15 @@ namespace FoodieMatch.Features.Board
             view.transform.localScale = Vector3.zero;
             Task fadeTask = view.PlayFadeInAsync(RevealGrowDuration);
 
-            Sequence sequence = Sequence.Create()
-                .Chain(Tween.Scale(
-                    view.transform,
-                    overshootScale,
-                    RevealGrowDuration,
-                    Ease.OutCubic))
-                .Chain(Tween.Scale(
-                    view.transform,
-                    targetScale,
-                    RevealSettleDuration,
-                    Ease.OutQuad));
+            Task scaleTask = view.PlayScaleAsync(
+                overshootScale,
+                RevealGrowDuration,
+                Ease.OutCubic,
+                targetScale,
+                RevealSettleDuration,
+                Ease.OutQuad);
 
-            await sequence;
-            await fadeTask;
+            await Task.WhenAll(scaleTask, fadeTask);
         }
 
         public void UpdateFoodSprite(FoodItemView view, int newTokenId, Sprite sprite)
@@ -476,7 +467,7 @@ namespace FoodieMatch.Features.Board
                 return allViews;
             }
 
-            DestroyFoodVisualsKeepGrills();
+            ReleaseFoodVisualsKeepGrills();
 
             for (int i = 0; i < board.GrillCount; i++)
             {
@@ -522,9 +513,9 @@ namespace FoodieMatch.Features.Board
             return allViews;
         }
 
-        private void DestroyFoodVisualsKeepGrills()
+        private void ReleaseFoodVisualsKeepGrills()
         {
-            DestroyTrackedFoodItems();
+            ReleaseTrackedFoodItems();
         }
 
         private static void AppendNonNullViews(
@@ -589,37 +580,9 @@ namespace FoodieMatch.Features.Board
             foodItemView.Selected -= HandleFoodSelected;
             foodItemView.SetInteractable(false);
             _foodAddresses.Remove(foodItemView);
-            MoveFoodToFlightRoot(foodItemView);
-        }
-
-        public FoodItemView CreateTransientFoodItemView(
-            Sprite sprite,
-            Vector3 worldPosition,
-            int foodTokenId)
-        {
-            FoodItemView foodItemView =
-                Instantiate(
-                    _foodItemPrefab,
-                    _foodItemRoot);
-
-            foodItemView.transform
-                .SetPositionAndRotation(
-                    worldPosition,
-                    Quaternion.identity);
-
-            foodItemView.Setup(foodTokenId, sprite);
-            foodItemView.SetInteractable(false);
-
-            return foodItemView;
-        }
-
-        public void DestroyTransientFoodItemView(
-            FoodItemView foodItemView)
-        {
-            if (foodItemView != null)
-            {
-                Destroy(foodItemView.gameObject);
-            }
+            foodItemView.transform.SetParent(
+                null,
+                worldPositionStays: true);
         }
 
         public bool TryGetStandardGrillView(int grillPositionIndex, out GrillView grillView)
@@ -970,11 +933,10 @@ namespace FoodieMatch.Features.Board
                 Transform foodAnchor = resolveAnchor.Invoke(i);
                 GrillViewBase grillView = _grillViews[grillPositionIndex];
 
-                FoodItemView foodItemView =
-                    Instantiate(
-                        _foodItemPrefab,
-                        grillView.transform);
-                foodItemView.transform.SetPositionAndRotation(foodAnchor.position, foodAnchor.rotation);
+                FoodItemView foodItemView = _foodItemViewPool.Get(
+                    grillView.transform,
+                    foodAnchor.position,
+                    foodAnchor.rotation);
                 foodItemView.Setup(foodTokenId, ResolveFoodSprite(foodTokenId));
                 foodItemView.SetVisualState(visualState);
                 foodItemView.SetInteractable(isInteractable);
@@ -998,7 +960,7 @@ namespace FoodieMatch.Features.Board
 
         private void ClearFoodItems()
         {
-            DestroyTrackedFoodItems();
+            ReleaseTrackedFoodItems();
         }
 
         private void HandleFoodSelected(FoodItemView foodItemView)
@@ -1136,7 +1098,7 @@ namespace FoodieMatch.Features.Board
                 worldPositionStays: true);
         }
 
-        private void DestroyTrackedFoodItems()
+        private void ReleaseTrackedFoodItems()
         {
             HashSet<FoodItemView> foodItemViews = new();
 
@@ -1182,25 +1144,26 @@ namespace FoodieMatch.Features.Board
                 }
             }
 
-            foreach (FoodItemView foodItemView in foodItemViews)
-            {
-                Destroy(foodItemView.gameObject);
-            }
-
-            _foodAddresses.Clear();
-            _topTrayFoodItems.Clear();
-            _revealingSingleGrillFoodItems.Clear();
-
             for (int childIndex =
                      _foodItemRoot.childCount - 1;
                  childIndex >= 0;
                  childIndex--)
             {
-                Destroy(
-                    _foodItemRoot
-                        .GetChild(childIndex)
-                        .gameObject);
+                FoodItemView foodItemView = _foodItemRoot
+                    .GetChild(childIndex)
+                    .GetComponent<FoodItemView>();
+                foodItemViews.Add(foodItemView);
             }
+
+            foreach (FoodItemView foodItemView in foodItemViews)
+            {
+                foodItemView.Selected -= HandleFoodSelected;
+                _foodItemViewPool.Release(foodItemView);
+            }
+
+            _foodAddresses.Clear();
+            _topTrayFoodItems.Clear();
+            _revealingSingleGrillFoodItems.Clear();
         }
 
         private static void SetGrillPosition(Transform grillTransform, GrillPosition position)

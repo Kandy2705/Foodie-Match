@@ -18,6 +18,7 @@ namespace FoodieMatch.Features.Food
                 transform,
                 _prewarmCount,
                 _maxRetainedCount,
+                prepareForUse: PrepareForUse,
                 prepareForPool: PrepareForPool);
         }
 
@@ -49,7 +50,12 @@ namespace FoodieMatch.Features.Food
 
         private static void PrepareForPool(FoodItemView foodItemView)
         {
-            foodItemView.Clear();
+            foodItemView.ResetForPool();
+        }
+
+        private static void PrepareForUse(FoodItemView foodItemView)
+        {
+            foodItemView.ResetForUse();
         }
     }
 }

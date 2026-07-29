@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.UseCases;
-using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
 using FoodieMatch.Features.WaitingRack;
 using UnityEngine;
@@ -14,7 +13,7 @@ namespace FoodieMatch.Features.Gameplay
         private readonly GameplaySessionGuard _sessionGuard;
         private readonly FridgeBoosterView _view;
         private readonly WaitingRackView _waitingRackView;
-        private readonly BoardLayoutView _boardLayoutView;
+        private readonly FoodItemViewPool _foodItemViewPool;
         private readonly RequiredPackageLifecycleUseCase
             _packageLifecycleUseCase;
         private readonly PackageDeliveryCoordinator
@@ -30,7 +29,7 @@ namespace FoodieMatch.Features.Gameplay
             GameplaySessionGuard sessionGuard,
             FridgeBoosterView view,
             WaitingRackView waitingRackView,
-            BoardLayoutView boardLayoutView,
+            FoodItemViewPool foodItemViewPool,
             RequiredPackageLifecycleUseCase
                 packageLifecycleUseCase,
             PackageDeliveryCoordinator
@@ -40,7 +39,7 @@ namespace FoodieMatch.Features.Gameplay
             _sessionGuard = sessionGuard;
             _view = view;
             _waitingRackView = waitingRackView;
-            _boardLayoutView = boardLayoutView;
+            _foodItemViewPool = foodItemViewPool;
             _packageLifecycleUseCase =
                 packageLifecycleUseCase;
             _packageDeliveryCoordinator =
@@ -377,21 +376,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             Sprite foodSprite = _foodVisualResolver.ResolveIcon(transfer.FoodTokenId);
 
-            FoodItemView foodItemView =
-                _boardLayoutView
-                    .CreateTransientFoodItemView(
-                        foodSprite,
-                        _view.GetFridgeEntryWorldPosition(),
-                        transfer.FoodTokenId);
-
-            if (foodItemView == null)
-            {
-                Debug.LogError(
-                    "Fridge transient food view " +
-                    "could not be created.");
-
-                return false;
-            }
+            FoodItemView foodItemView = _foodItemViewPool.Get(
+                null,
+                _view.GetFridgeEntryWorldPosition(),
+                Quaternion.identity);
+            foodItemView.Setup(transfer.FoodTokenId, foodSprite);
+            foodItemView.SetInteractable(false);
 
             if (!_packageDeliveryCoordinator
                 .TryCreateFridgeFlight(
@@ -400,7 +390,7 @@ namespace FoodieMatch.Features.Gameplay
                     session,
                     out _))
             {
-                DestroyTransientFood(foodItemView);
+                ReleaseFood(foodItemView);
 
                 Debug.LogError(
                     "Fridge package flight could not " +
@@ -417,7 +407,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!CanContinue(session))
             {
-                DestroyTransientFood(foodItemView);
+                ReleaseFood(foodItemView);
                 return false;
             }
 
@@ -428,7 +418,7 @@ namespace FoodieMatch.Features.Gameplay
                     session,
                     out PackageFlight flight))
             {
-                DestroyTransientFood(foodItemView);
+                ReleaseFood(foodItemView);
                 return false;
             }
 
@@ -438,7 +428,7 @@ namespace FoodieMatch.Features.Gameplay
                     session.FridgeInventory,
                     session.RequiredPackages))
             {
-                DestroyTransientFood(foodItemView);
+                ReleaseFood(foodItemView);
 
                 if (session.FridgeInventory != null &&
                     !session.FridgeInventory.IsEmpty)
@@ -480,8 +470,6 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!delivered)
             {
-                DestroyTransientFood(foodItemView);
-
                 Debug.LogError(
                     "Fridge food delivery failed.");
 
@@ -673,10 +661,7 @@ namespace FoodieMatch.Features.Gameplay
 
                 if (foodItemView != null)
                 {
-                    foodItemView.Clear();
-
-                    UnityEngine.Object.Destroy(
-                        foodItemView.gameObject);
+                    _foodItemViewPool.Release(foodItemView);
                 }
 
                 return true;
@@ -813,14 +798,11 @@ namespace FoodieMatch.Features.Gameplay
             await _view.PlayDisappearAsync();
         }
 
-        private void DestroyTransientFood(
-            FoodItemView foodItemView)
+        private void ReleaseFood(FoodItemView foodItemView)
         {
             if (foodItemView != null)
             {
-                _boardLayoutView
-                    .DestroyTransientFoodItemView(
-                        foodItemView);
+                _foodItemViewPool.Release(foodItemView);
             }
         }
 

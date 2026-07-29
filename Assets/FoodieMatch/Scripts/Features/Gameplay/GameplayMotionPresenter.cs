@@ -197,8 +197,6 @@ namespace FoodieMatch.Features.Gameplay
                 return result == MotionResult.Completed ? MotionResult.Failed : result;
             }
 
-            foodItemView.Clear();
-            Destroy(foodItemView.gameObject);
             targetSlot.SetFilled();
 
             return MotionResult.Completed;
