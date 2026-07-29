@@ -33,17 +33,22 @@ namespace FoodieMatch.Features.Board
                 transform,
                 _standardPrewarmCount,
                 _standardMaxRetainedCount,
-                prepareForPool: PrepareStandardForPool);
+                prepareForUse: PrepareForUse,
+                prepareForPool: PrepareForPool);
             _singlePool = new ComponentPool<SingleGrillView>(
                 _singlePrefab,
                 transform,
                 _singlePrewarmCount,
-                _singleMaxRetainedCount);
+                _singleMaxRetainedCount,
+                prepareForUse: PrepareForUse,
+                prepareForPool: PrepareForPool);
             _stackedPool = new ComponentPool<StackedGrillView>(
                 _stackedPrefab,
                 transform,
                 _stackedPrewarmCount,
-                _stackedMaxRetainedCount);
+                _stackedMaxRetainedCount,
+                prepareForUse: PrepareForUse,
+                prepareForPool: PrepareForPool);
         }
 
         public GrillViewBase Get(
@@ -86,9 +91,14 @@ namespace FoodieMatch.Features.Board
             _stackedPool.Clear();
         }
 
-        private static void PrepareStandardForPool(GrillView grillView)
+        private static void PrepareForUse(GrillViewBase grillView)
         {
-            grillView.CancelMotion();
+            grillView.ResetForUse();
+        }
+
+        private static void PrepareForPool(GrillViewBase grillView)
+        {
+            grillView.ResetForPool();
         }
     }
 }

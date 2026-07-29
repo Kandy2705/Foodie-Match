@@ -18,6 +18,7 @@ namespace FoodieMatch.Features.Board
                 transform,
                 _prewarmCount,
                 _maxRetainedCount,
+                prepareForUse: PrepareForUse,
                 prepareForPool: PrepareForPool);
         }
 
@@ -38,7 +39,12 @@ namespace FoodieMatch.Features.Board
 
         private static void PrepareForPool(TrayView trayView)
         {
-            trayView.CancelMotion();
+            trayView.ResetForPool();
+        }
+
+        private static void PrepareForUse(TrayView trayView)
+        {
+            trayView.ResetForUse();
         }
     }
 }

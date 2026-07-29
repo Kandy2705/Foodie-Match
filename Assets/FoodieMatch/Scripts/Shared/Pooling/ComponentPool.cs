@@ -29,7 +29,7 @@ namespace FoodieMatch.Shared.Pooling
             _pool = new ObjectPool<T>(
                 createFunc: CreateInstance,
                 actionOnGet: null,
-                actionOnRelease: PrepareForRelease,
+                actionOnRelease: null,
                 actionOnDestroy: DestroyInstance,
                 collectionCheck: Debug.isDebugBuild,
                 defaultCapacity: prewarmCount,
@@ -64,6 +64,7 @@ namespace FoodieMatch.Shared.Pooling
 
         public void Release(T instance)
         {
+            PrepareForRelease(instance);
             _pool.Release(instance);
         }
 
@@ -105,7 +106,7 @@ namespace FoodieMatch.Shared.Pooling
 
             for (int i = 0; i < instances.Count; i++)
             {
-                _pool.Release(instances[i]);
+                Release(instances[i]);
             }
         }
     }

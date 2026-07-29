@@ -12,9 +12,6 @@ namespace FoodieMatch.Features.Board
 {
     public sealed class BoardLayoutView : MonoBehaviour
     {
-        [SerializeField] private GrillView _grillPrefab;
-        [SerializeField] private SingleGrillView _singleGrillPrefab;
-        [SerializeField] private StackedGrillView _stackedGrillPrefab;
         [SerializeField] private Transform _foodItemRoot;
 
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
@@ -39,6 +36,8 @@ namespace FoodieMatch.Features.Board
 
         private FoodVisualResolver _foodVisualResolver;
         private FoodItemViewPool _foodItemViewPool;
+        private GrillViewPool _grillViewPool;
+        private TrayViewPool _trayViewPool;
         private Camera _worldCamera;
         private GrillMovementController _grillMovementController;
         private StackedGrillLayoutController _stackedGrillLayoutController;
@@ -53,10 +52,14 @@ namespace FoodieMatch.Features.Board
         public void Construct(
             FoodVisualResolver foodVisualResolver,
             FoodItemViewPool foodItemViewPool,
+            GrillViewPool grillViewPool,
+            TrayViewPool trayViewPool,
             Camera worldCamera)
         {
             _foodVisualResolver = foodVisualResolver;
             _foodItemViewPool = foodItemViewPool;
+            _grillViewPool = grillViewPool;
+            _trayViewPool = trayViewPool;
             _worldCamera = worldCamera;
         }
 
@@ -76,10 +79,10 @@ namespace FoodieMatch.Features.Board
             for (int i = 0; i < board.GrillCount; i++)
             {
                 GrillModel grillModel = board.GetGrillAt(i);
-                GrillViewBase grillPrefab = GetGrillPrefab(
+                GrillViewBase grillView = _grillViewPool.Get(
                     board.LayoutType,
-                    grillModel.Type);
-                GrillViewBase grillView = Instantiate(grillPrefab, transform);
+                    grillModel.Type,
+                    transform);
                 SetGrillPosition(grillView.transform, grillModel.Position);
                 _grillViews.Add(grillModel.PositionIndex, grillView);
 
@@ -103,18 +106,6 @@ namespace FoodieMatch.Features.Board
             StartGrillMovement(
                 board,
                 movementGroups);
-        }
-
-        private GrillViewBase GetGrillPrefab(
-            GrillLayoutType layoutType,
-            GrillType type)
-        {
-            if (layoutType == GrillLayoutType.StackedColumns)
-            {
-                return _stackedGrillPrefab;
-            }
-
-            return type == GrillType.Single ? _singleGrillPrefab : _grillPrefab;
         }
 
         private bool SetupGrillView(
@@ -142,7 +133,9 @@ namespace FoodieMatch.Features.Board
                 return false;
             }
 
-            standardGrillView.SetupTrayStack(grillModel.TrayCount);
+            standardGrillView.SetupTrayStack(
+                _trayViewPool,
+                grillModel.TrayCount);
             SpawnTopTrayFoodItems(grillModel, standardGrillView, useNextTray: false);
             return true;
         }
@@ -984,7 +977,7 @@ namespace FoodieMatch.Features.Board
             {
                 if (entry.Value != null)
                 {
-                    Destroy(entry.Value.gameObject);
+                    _grillViewPool.Release(entry.Value);
                 }
             }
 

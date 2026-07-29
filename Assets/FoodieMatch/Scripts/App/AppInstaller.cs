@@ -142,6 +142,8 @@ namespace FoodieMatch.App
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
                 appRoot.GameplayPoolRoot.FoodItems,
+                appRoot.GameplayPoolRoot.Grills,
+                appRoot.GameplayPoolRoot.Trays,
                 worldCamera);
             appRoot.WaitingRackView.Construct(
                 appRoot.GameplayPoolRoot.FoodItems);
