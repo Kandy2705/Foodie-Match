@@ -74,8 +74,6 @@ namespace FoodieMatch.UI.Popup
             return (TPopup)popup;
         }
 
-        // ShopScreen is not in the current Addressables catalog, so its
-        // existing popup path remains serialized until it receives an address.
         public TPopup Show<TPopup>(IPopupData data = null)
             where TPopup : PopupBase
         {
