@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!612988286 &1
+SpriteAtlasAsset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_MasterAtlas: {fileID: 0}
+  m_ImporterData:
+    packables:
+    - {fileID: 7158726796229424830, guid: 4f4c6305170cf4f2db6ea4496ba431ee, type: 3}
+    - {fileID: 5815313891412978213, guid: 881b3a9fd349e4be0a6ea67a07a69334, type: 3}
+    - {fileID: -4062067429185871711, guid: 9f907c4b01cdf4d34a03852e742e099b, type: 3}
+    - {fileID: 5595879377603543814, guid: c357595d72fe241b0ab664ffe07a3ab7, type: 3}
+    - {fileID: 7630898690703335857, guid: 83707819ab9ee45c8b128f385e42c1f3, type: 3}
+    - {fileID: 7471925082854978643, guid: d91124763f2d3476c9fe7ca098950c2a, type: 3}
+    - {fileID: 2618121901450247229, guid: dad64f2cda9444e1a97fe2b413e2fe08, type: 3}
+    - {fileID: 3518720516325624012, guid: bd264dd034c374350aabb40ba6fe0afe, type: 3}
+    - {fileID: -8016903876691646792, guid: 8b4993b5edced48be92dc2e3d8822e6b, type: 3}
+    - {fileID: -4571828015118065507, guid: 2f2079f04a6594d7ba1d3a47b11e3ed5, type: 3}
+    - {fileID: 6629812147117271838, guid: 774bab4d53fe64f82a1e815e58298486, type: 3}
+    - {fileID: 3426499950019351718, guid: 2627334620ab44985b4afae9b04be5a9, type: 3}
+    - {fileID: -630870439084159680, guid: 645cbd49b722342bbb44d92ceab18763, type: 3}
+    - {fileID: 5262976385124228862, guid: 80cd64c70afad46d694b02cf0d350be5, type: 3}
+    - {fileID: 7439405211855049821, guid: d2923a0104b7840e8ab72d4301c281f3, type: 3}
+    - {fileID: -1787376641466856317, guid: 53af2eb720fc84868936311432400710, type: 3}
+    - {fileID: 3759651808825425010, guid: e7db163a682be49efa87ae69ada068e7, type: 3}
+    - {fileID: 3617900015340881849, guid: a17f497358e50466b86cc842fe1219b7, type: 3}
+    - {fileID: 638616013765597873, guid: 1042096c3f83548818c595dfd6a100a1, type: 3}
+    - {fileID: -2095757056214977719, guid: 019c5a50fdffe4fb696dfe4de1013e37, type: 3}
+    - {fileID: 8885651733604698893, guid: 3fec23c2131794799a6dc97850f533d0, type: 3}
+  m_IsVariant: 0
+  m_ScriptablePacker: {fileID: 0}

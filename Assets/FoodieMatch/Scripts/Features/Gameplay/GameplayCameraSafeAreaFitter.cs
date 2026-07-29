@@ -13,6 +13,7 @@ namespace FoodieMatch.Features.Gameplay
         private int _lastScreenHeight;
         private Rect _lastSafeArea;
         private bool _hasReferenceCameraState;
+        private bool _isWaitingForValidScreen;
 
         private void Awake()
         {
@@ -26,20 +27,21 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (TryCaptureReferenceCameraState())
             {
-                RefreshCamera(force: true);
+                _isWaitingForValidScreen = !TryRefreshCamera(force: true);
             }
         }
 
         private void Update()
         {
-            if (_updateWhenScreenChanges)
+            if (_isWaitingForValidScreen || _updateWhenScreenChanges)
             {
-                RefreshCamera(force: false);
+                _isWaitingForValidScreen = !TryRefreshCamera(force: false);
             }
         }
 
         private void OnDisable()
         {
+            _isWaitingForValidScreen = false;
             RestoreReferenceCameraState();
         }
 
@@ -67,25 +69,26 @@ namespace FoodieMatch.Features.Gameplay
             return true;
         }
 
-        private void RefreshCamera(bool force)
+        private bool TryRefreshCamera(bool force)
         {
             int screenHeight = Screen.height;
             Rect safeArea = Screen.safeArea;
 
-            if (!force && screenHeight == _lastScreenHeight && safeArea == _lastSafeArea)
+            if (screenHeight <= 0 || !IsValidSafeArea(safeArea, screenHeight))
             {
-                return;
+                RestoreReferenceCameraState();
+                return false;
+            }
+
+            if (!force &&
+                screenHeight == _lastScreenHeight &&
+                safeArea == _lastSafeArea)
+            {
+                return true;
             }
 
             _lastScreenHeight = screenHeight;
             _lastSafeArea = safeArea;
-
-            if (screenHeight <= 0 || !IsValidSafeArea(safeArea, screenHeight))
-            {
-                Debug.LogError("Vertical screen safe area is invalid.", this);
-                RestoreReferenceCameraState();
-                return;
-            }
 
             float adjustedOrthographicSize = _referenceOrthographicSize * screenHeight / safeArea.height;
             float worldUnitsPerPixel = adjustedOrthographicSize * 2f / screenHeight;
@@ -96,6 +99,7 @@ namespace FoodieMatch.Features.Gameplay
 
             _worldCamera.orthographicSize = adjustedOrthographicSize;
             _worldCamera.transform.position = cameraPosition;
+            return true;
         }
 
         private void RestoreReferenceCameraState()

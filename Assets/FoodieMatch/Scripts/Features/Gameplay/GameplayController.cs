@@ -228,6 +228,11 @@ namespace FoodieMatch.Features.Gameplay
             ResumeGameplayInput(_session);
         }
 
+        public void SetPresentationActive(bool active)
+        {
+            gameObject.SetActive(active);
+        }
+
         public void ClearLevel()
         {
             _gameplayWorldClickSfx?.StopListening();

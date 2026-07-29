@@ -1,4 +1,5 @@
 using UnityEngine;
+using PrimeTween;
 
 namespace FoodieMatch.App
 {
@@ -8,6 +9,7 @@ namespace FoodieMatch.App
 
         private void Awake()
         {
+            PrimeTweenConfig.SetTweensCapacity(800);
             CreateAppRoot();
         }
 

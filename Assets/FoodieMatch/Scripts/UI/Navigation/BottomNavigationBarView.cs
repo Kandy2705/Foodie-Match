@@ -35,13 +35,10 @@ namespace FoodieMatch.UI.Navigation
             [SerializeField]
             private string _label;
 
-            [SerializeField]
             private RectTransform _screenRoot;
 
-            [SerializeField]
             private CanvasGroup _screenCanvasGroup;
 
-            [NonSerialized]
             public UnityAction ClickAction;
 
             public BottomNavigationTab Tab => _tab;
@@ -56,7 +53,6 @@ namespace FoodieMatch.UI.Navigation
             public RectTransform ScreenRect =>
                 _screenRoot;
 
-            [NonSerialized]
             public Vector2 InitialAnchoredPosition;
 
             public void SetScreen(

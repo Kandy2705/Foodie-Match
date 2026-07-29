@@ -214,6 +214,7 @@ namespace FoodieMatch.App
             _uiManager.HideHome();
             _uiManager.SetCurrentLevelNumber(levelNumber);
             await _uiManager.ShowGameplayHudAsync();
+            _gameplayController.SetPresentationActive(true);
             _audioService.PlayMusic(AudioKeys.MusicIngame);
 
             _playerProfileService.SetCurrentLevelNumber(levelNumber);
@@ -229,6 +230,7 @@ namespace FoodieMatch.App
             long displayedCoinBalance)
         {
             _gameplayController.ClearLevel();
+            _gameplayController.SetPresentationActive(false);
             _uiManager.HideAllPopups();
             _uiManager.HideGameplayHud();
             _uiManager.SetCurrentLevelNumber(levelNumber);
