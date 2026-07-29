@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FoodieMatch.Core.Application.Randomization;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Fridge;
+using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
@@ -40,7 +41,11 @@ namespace FoodieMatch.Core.Application.UseCases
                     weights,
                     random,
                     out FoodAvailability selected) &&
-                !TrySelectFoodByDepth(board, availabilityByFoodId, random, out selected))
+                !TrySelectMostCommonGrillFood(
+                    board,
+                    availabilityByFoodId,
+                    random,
+                    out selected))
             {
                 return false;
             }
@@ -88,6 +93,23 @@ namespace FoodieMatch.Core.Application.UseCases
                     availabilityByFoodId);
             }
 
+            if (board.LayoutType == GrillLayoutType.StackedColumns)
+            {
+                AddStackedGrillFood(board, reservedFoodIds, availabilityByFoodId);
+            }
+            else
+            {
+                AddStandardGrillFood(board, reservedFoodIds, availabilityByFoodId);
+            }
+
+            return availabilityByFoodId;
+        }
+
+        private static void AddStandardGrillFood(
+            BoardModel board,
+            ISet<int> reservedFoodIds,
+            IDictionary<int, FoodAvailability> availabilityByFoodId)
+        {
             for (int depth = 0; depth < board.FoodDepthCount; depth++)
             {
                 FoodLocation location = depth switch
@@ -103,8 +125,45 @@ namespace FoodieMatch.Core.Application.UseCases
                     reservedFoodIds,
                     availabilityByFoodId);
             }
+        }
 
-            return availabilityByFoodId;
+        private static void AddStackedGrillFood(
+            BoardModel board,
+            ISet<int> reservedFoodIds,
+            IDictionary<int, FoodAvailability> availabilityByFoodId)
+        {
+            for (int grillIndex = 0; grillIndex < board.GrillCount; grillIndex++)
+            {
+                GrillModel grill = board.GetGrillAt(grillIndex);
+                List<int> foodIds = new(grill.ActiveFoodSlotCount);
+
+                for (int slotIndex = 0;
+                     slotIndex < grill.ActiveFoodSlotCount;
+                     slotIndex++)
+                {
+                    foodIds.Add(grill.GetFoodTokenIdAt(slotIndex));
+                }
+
+                AddFoodIds(
+                    foodIds,
+                    GetStackedGrillLocation(board, grill.PositionIndex),
+                    reservedFoodIds,
+                    availabilityByFoodId);
+            }
+        }
+
+        private static FoodLocation GetStackedGrillLocation(
+            BoardModel board,
+            int grillPositionIndex)
+        {
+            if (board.IsGrillAccessible(grillPositionIndex))
+            {
+                return FoodLocation.Grill;
+            }
+
+            return board.IsGrillVisible(grillPositionIndex)
+                ? FoodLocation.TopTray
+                : FoodLocation.DeepTray;
         }
 
         private static void AddFoodIds(
@@ -153,13 +212,16 @@ namespace FoodieMatch.Core.Application.UseCases
                 {
                     rackRescue.Add(availability);
                 }
-                else if (availability.TopTrayCount > 0)
+                else if (
+                    availability.GrillCount > 0 &&
+                    availability.TopTrayCount > 0)
                 {
                     topTray.Add(availability);
                 }
                 else if (
-                    availability.GrillCount > 0 ||
-                    availability.FridgeCount > 0)
+                    availability.TopTrayCount == 0 &&
+                    (availability.GrillCount > 0 ||
+                     availability.FridgeCount > 0))
                 {
                     readyNow.Add(availability);
                 }
@@ -232,54 +294,80 @@ namespace FoodieMatch.Core.Application.UseCases
             return true;
         }
 
-        private static bool TrySelectFoodByDepth(
+        private static bool TrySelectMostCommonGrillFood(
             BoardModel board,
             IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId,
             PackageRandom random,
             out FoodAvailability selected)
         {
             selected = null;
+            IReadOnlyList<int> foodIds = board.LayoutType == GrillLayoutType.StackedColumns
+                ? GetAccessibleFoodTokenIds(board)
+                : board.GetActiveFoodTokenIds();
+            Dictionary<int, int> foodCounts =
+                CountAvailableFood(foodIds, availabilityByFoodId);
 
-            for (int depth = 0; depth < board.FoodDepthCount; depth++)
+            if (foodCounts.Count == 0)
             {
-                Dictionary<int, int> foodCounts = CountAvailableFoodAtDepth(
-                    board.GetFoodTokenIdsAtDepth(depth),
-                    availabilityByFoodId);
+                return false;
+            }
 
-                if (foodCounts.Count == 0)
+            int highestCount = 0;
+            List<int> mostCommonFoodIds = new();
+
+            foreach (KeyValuePair<int, int> foodCount in foodCounts)
+            {
+                if (foodCount.Value < highestCount)
                 {
                     continue;
                 }
 
-                int highestCount = 0;
-                List<int> mostCommonFoodIds = new();
-
-                foreach (KeyValuePair<int, int> foodCount in foodCounts)
+                if (foodCount.Value > highestCount)
                 {
-                    if (foodCount.Value < highestCount)
-                    {
-                        continue;
-                    }
-
-                    if (foodCount.Value > highestCount)
-                    {
-                        highestCount = foodCount.Value;
-                        mostCommonFoodIds.Clear();
-                    }
-
-                    mostCommonFoodIds.Add(foodCount.Key);
+                    highestCount = foodCount.Value;
+                    mostCommonFoodIds.Clear();
                 }
 
-                mostCommonFoodIds.Sort();
-                int selectedFoodId = mostCommonFoodIds[random.NextIndex(mostCommonFoodIds.Count)];
-                selected = availabilityByFoodId[selectedFoodId];
-                return true;
+                mostCommonFoodIds.Add(foodCount.Key);
             }
 
-            return false;
+            mostCommonFoodIds.Sort();
+            int selectedFoodId =
+                mostCommonFoodIds[random.NextIndex(mostCommonFoodIds.Count)];
+            selected = availabilityByFoodId[selectedFoodId];
+            return true;
         }
 
-        private static Dictionary<int, int> CountAvailableFoodAtDepth(
+        private static IReadOnlyList<int> GetAccessibleFoodTokenIds(BoardModel board)
+        {
+            List<int> foodIds = new();
+
+            for (int grillIndex = 0; grillIndex < board.GrillCount; grillIndex++)
+            {
+                GrillModel grill = board.GetGrillAt(grillIndex);
+
+                if (!board.IsGrillAccessible(grill.PositionIndex))
+                {
+                    continue;
+                }
+
+                for (int slotIndex = 0;
+                     slotIndex < grill.ActiveFoodSlotCount;
+                     slotIndex++)
+                {
+                    int foodId = grill.GetFoodTokenIdAt(slotIndex);
+
+                    if (foodId > BoardRules.EmptyFoodTokenId)
+                    {
+                        foodIds.Add(foodId);
+                    }
+                }
+            }
+
+            return foodIds;
+        }
+
+        private static Dictionary<int, int> CountAvailableFood(
             IReadOnlyList<int> foodIds,
             IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId)
         {
@@ -310,6 +398,7 @@ namespace FoodieMatch.Core.Application.UseCases
         }
 
         public bool TryCreateWaitingRackRescuePackage(
+            BoardModel board,
             WaitingRackModel waitingRack,
             IReadOnlyList<RequiredPackageModel> packageReservations,
             PackageRandom random,
@@ -317,7 +406,8 @@ namespace FoodieMatch.Core.Application.UseCases
         {
             package = null;
 
-            if (waitingRack == null ||
+            if (board == null ||
+                waitingRack == null ||
                 packageReservations == null ||
                 random == null)
             {
@@ -334,7 +424,8 @@ namespace FoodieMatch.Core.Application.UseCases
                 int foodId = waitingRack.GetFoodTokenIdAt(i);
 
                 if (foodId <= BoardRules.EmptyFoodTokenId ||
-                    reservedFoodIds.Contains(foodId))
+                    reservedFoodIds.Contains(foodId) ||
+                    HasBlockedStackedGrillFood(board, foodId))
                 {
                     continue;
                 }
@@ -377,6 +468,38 @@ namespace FoodieMatch.Core.Application.UseCases
                 filledAmount: 0);
 
             return true;
+        }
+
+        private static bool HasBlockedStackedGrillFood(
+            BoardModel board,
+            int foodId)
+        {
+            if (board.LayoutType != GrillLayoutType.StackedColumns)
+            {
+                return false;
+            }
+
+            for (int grillIndex = 0; grillIndex < board.GrillCount; grillIndex++)
+            {
+                GrillModel grill = board.GetGrillAt(grillIndex);
+
+                if (board.IsGrillVisible(grill.PositionIndex))
+                {
+                    continue;
+                }
+
+                for (int slotIndex = 0;
+                     slotIndex < grill.ActiveFoodSlotCount;
+                     slotIndex++)
+                {
+                    if (grill.GetFoodTokenIdAt(slotIndex) == foodId)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private enum FoodLocation

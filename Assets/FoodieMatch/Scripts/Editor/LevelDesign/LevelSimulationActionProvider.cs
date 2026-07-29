@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Grill;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 
 namespace FoodieMatch.Editor.LevelDesign
@@ -14,6 +15,11 @@ namespace FoodieMatch.Editor.LevelDesign
             for (int grillIndex = 0; grillIndex < simulation.Board.GrillCount; grillIndex++)
             {
                 GrillModel grill = simulation.Board.GetGrillAt(grillIndex);
+
+                if (!simulation.Board.IsGrillAccessible(grill.PositionIndex))
+                {
+                    continue;
+                }
 
                 for (int slotIndex = 0; slotIndex < grill.ActiveFoodSlotCount; slotIndex++)
                 {
@@ -54,7 +60,10 @@ namespace FoodieMatch.Editor.LevelDesign
             int foodId = grill?.GetFoodTokenIdAt(address.FoodSlotIndex) ?? 0;
             int score = CanMatchPackage(simulation.RequiredPackages, foodId) ? 1000 : 0;
 
-            if (grill != null && grill.ActiveFoodCount == 1 && grill.HasTrays)
+            if (grill != null &&
+                grill.ActiveFoodCount == 1 &&
+                (grill.HasTrays ||
+                 simulation.Board.LayoutType == GrillLayoutType.StackedColumns))
             {
                 score += 100;
             }

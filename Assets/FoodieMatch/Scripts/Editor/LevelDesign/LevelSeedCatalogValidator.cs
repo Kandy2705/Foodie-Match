@@ -198,7 +198,9 @@ namespace FoodieMatch.Editor.LevelDesign
 
             StringBuilder signatureBuilder = new();
 
-            for (int packageIndex = 0; packageIndex < packages.Length; packageIndex++)
+            for (int packageIndex = 0;
+                 packageIndex < LevelRules.ActivePackageCount;
+                 packageIndex++)
             {
                 if (packageIndex > 0)
                 {

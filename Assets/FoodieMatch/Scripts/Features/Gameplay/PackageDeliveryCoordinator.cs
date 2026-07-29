@@ -317,6 +317,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!_packageLifecycleUseCase.TryPrepareWaitingRackRescuePackage(
                     slotIndex,
+                    session.Board,
                     session.WaitingRack,
                     session.RequiredPackages,
                     packageReservations,

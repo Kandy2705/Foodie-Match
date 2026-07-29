@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
 
 namespace FoodieMatch.Core.Domain.Level
 {
@@ -11,13 +13,17 @@ namespace FoodieMatch.Core.Domain.Level
         private readonly ReadOnlyCollection<GrillDefinition> _grills;
         private readonly ReadOnlyCollection<GrillMovementGroupDefinition>
             _movingGrillGroups;
+        private readonly ReadOnlyCollection<StackedGrillColumnDefinition>
+            _stackedGrillColumns;
 
         public LevelDefinition(
             int id,
             LevelDifficulty difficulty,
+            GrillLayoutType grillLayoutType,
             LevelRandomSettings randomSettings,
             PackageSelectionSettings packageSelectionSettings,
             IReadOnlyList<GrillMovementGroupDefinition> movingGrillGroups,
+            IReadOnlyList<StackedGrillColumnDefinition> stackedGrillColumns,
             IReadOnlyList<GrillDefinition> grills)
         {
             if (id <= 0)
@@ -30,6 +36,11 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentOutOfRangeException(nameof(difficulty));
             }
 
+            if (!Enum.IsDefined(typeof(GrillLayoutType), grillLayoutType))
+            {
+                throw new ArgumentOutOfRangeException(nameof(grillLayoutType));
+            }
+
             if (grills == null)
             {
                 throw new ArgumentNullException(nameof(grills));
@@ -40,20 +51,32 @@ namespace FoodieMatch.Core.Domain.Level
                 throw new ArgumentNullException(nameof(movingGrillGroups));
             }
 
+            if (stackedGrillColumns == null)
+            {
+                throw new ArgumentNullException(nameof(stackedGrillColumns));
+            }
+
             ValidateGrills(grills);
             ValidateMovingGrillGroups(grills, movingGrillGroups);
+            ValidateStackedGrillColumns(
+                grills,
+                movingGrillGroups,
+                grillLayoutType,
+                stackedGrillColumns);
 
             Id = id;
             Difficulty = difficulty;
+            GrillLayoutType = grillLayoutType;
             RandomSettings = randomSettings ?? throw new ArgumentNullException(nameof(randomSettings));
             PackageSelectionSettings = packageSelectionSettings ??
                                        throw new ArgumentNullException(nameof(packageSelectionSettings));
 
             List<GrillDefinition> copiedGrills = new(grills);
-            List<GrillMovementGroupDefinition> copiedMovementGroups =
-                new(movingGrillGroups);
+            List<GrillMovementGroupDefinition> copiedMovementGroups = new(movingGrillGroups);
+            List<StackedGrillColumnDefinition> copiedGrillColumns = new(stackedGrillColumns);
             _grills = copiedGrills.AsReadOnly();
             _movingGrillGroups = copiedMovementGroups.AsReadOnly();
+            _stackedGrillColumns = copiedGrillColumns.AsReadOnly();
 
             CountAndValidateFoodTokens(out int totalFoodCount, out int uniqueFoodCount);
             TotalFoodCount = totalFoodCount;
@@ -62,10 +85,13 @@ namespace FoodieMatch.Core.Domain.Level
 
         public int Id { get; }
         public LevelDifficulty Difficulty { get; }
+        public GrillLayoutType GrillLayoutType { get; }
         public LevelRandomSettings RandomSettings { get; }
         public PackageSelectionSettings PackageSelectionSettings { get; }
         public IReadOnlyList<GrillMovementGroupDefinition> MovingGrillGroups =>
             _movingGrillGroups;
+        public IReadOnlyList<StackedGrillColumnDefinition> StackedGrillColumns =>
+            _stackedGrillColumns;
         public IReadOnlyList<GrillDefinition> Grills => _grills;
         public int TotalFoodCount { get; }
         public int UniqueFoodCount { get; }
@@ -228,6 +254,95 @@ namespace FoodieMatch.Core.Domain.Level
                 }
 
                 ValidateEqualSpacing(movementPositions, i, movementGroups);
+            }
+        }
+
+        private static void ValidateStackedGrillColumns(
+            IReadOnlyList<GrillDefinition> grills,
+            IReadOnlyList<GrillMovementGroupDefinition> movementGroups,
+            GrillLayoutType layoutType,
+            IReadOnlyList<StackedGrillColumnDefinition> stackedGrillColumns)
+        {
+            if (layoutType == GrillLayoutType.Standard)
+            {
+                if (stackedGrillColumns.Count > 0)
+                {
+                    throw new ArgumentException(
+                        "Standard layout cannot contain stacked grill columns.",
+                        nameof(stackedGrillColumns));
+                }
+
+                return;
+            }
+
+            if (stackedGrillColumns.Count != StackedGrillRules.ColumnCount)
+            {
+                throw new ArgumentException(
+                    $"Stacked layout must contain exactly {StackedGrillRules.ColumnCount} columns.",
+                    nameof(stackedGrillColumns));
+            }
+
+            if (movementGroups.Count > 0)
+            {
+                throw new ArgumentException(
+                    "Stacked layout cannot contain moving grill groups.",
+                    nameof(movementGroups));
+            }
+
+            Dictionary<int, GrillDefinition> grillsById = new();
+
+            for (int i = 0; i < grills.Count; i++)
+            {
+                GrillDefinition grill = grills[i];
+
+                if (grill.Type != GrillType.Standard || grill.Trays.Count > 0)
+                {
+                    throw new ArgumentException(
+                        "Stacked layout can only contain standard grills without trays.",
+                        nameof(grills));
+                }
+
+                grillsById.Add(grill.Id, grill);
+            }
+
+            HashSet<int> assignedGrillIds = new();
+
+            for (int i = 0; i < stackedGrillColumns.Count; i++)
+            {
+                StackedGrillColumnDefinition column = stackedGrillColumns[i];
+
+                if (column == null)
+                {
+                    throw new ArgumentException(
+                        "Stacked grill column collection cannot contain null.",
+                        nameof(stackedGrillColumns));
+                }
+
+                for (int grillIndex = 0; grillIndex < column.GrillIds.Count; grillIndex++)
+                {
+                    int grillId = column.GrillIds[grillIndex];
+
+                    if (!grillsById.ContainsKey(grillId))
+                    {
+                        throw new ArgumentException(
+                            $"Stacked grill column references missing grill id {grillId}.",
+                            nameof(stackedGrillColumns));
+                    }
+
+                    if (!assignedGrillIds.Add(grillId))
+                    {
+                        throw new ArgumentException(
+                            $"Grill id {grillId} belongs to multiple stacked grill columns.",
+                            nameof(stackedGrillColumns));
+                    }
+                }
+            }
+
+            if (assignedGrillIds.Count != grills.Count)
+            {
+                throw new ArgumentException(
+                    "Every grill must belong to one stacked grill column.",
+                    nameof(stackedGrillColumns));
             }
         }
 

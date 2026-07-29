@@ -16,7 +16,24 @@ namespace FoodieMatch.Editor.LevelDesign
                 grills.Add(CloneGrill(source.GetGrillAt(grillIndex)));
             }
 
-            return new BoardModel(grills);
+            return new BoardModel(
+                grills,
+                source.LayoutType,
+                CloneStackedGrillColumns(source));
+        }
+
+        private static IReadOnlyList<StackedGrillColumnState> CloneStackedGrillColumns(
+            BoardModel source)
+        {
+            List<StackedGrillColumnState> columns = new();
+
+            for (int i = 0; i < source.StackedGrillColumnCount; i++)
+            {
+                StackedGrillColumnState column = source.GetStackedGrillColumnAt(i);
+                columns.Add(new StackedGrillColumnState(column.GrillPositionIndices));
+            }
+
+            return columns;
         }
 
         private static GrillModel CloneGrill(GrillModel source)

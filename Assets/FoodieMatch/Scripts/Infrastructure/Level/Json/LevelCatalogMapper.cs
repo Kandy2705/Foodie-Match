@@ -43,10 +43,27 @@ namespace FoodieMatch.Infrastructure.Level.Json
             return new LevelDefinition(
                 levelDto.Id.Value,
                 difficulty,
+                MapGrillLayoutType(levelDto.GrillLayoutType),
                 MapRandomSettings(levelDto.RandomSettings),
                 MapPackageSelectionSettings(levelDto.PackageSelectionSettings),
                 MapMovementGroups(levelDto.MovingGrillGroups),
+                MapStackedGrillColumns(levelDto.StackedGrillColumns),
                 MapGrills(levelDto.Grills));
+        }
+
+        private static GrillLayoutType MapGrillLayoutType(string type)
+        {
+            if (string.Equals(type, "standard", StringComparison.OrdinalIgnoreCase))
+            {
+                return GrillLayoutType.Standard;
+            }
+
+            if (string.Equals(type, "stackedColumns", StringComparison.OrdinalIgnoreCase))
+            {
+                return GrillLayoutType.StackedColumns;
+            }
+
+            throw new ArgumentException($"Unsupported grill layout type: {type}.", nameof(type));
         }
 
         private static LevelRandomSettings MapRandomSettings(
@@ -98,6 +115,19 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             return grills;
+        }
+
+        private static IReadOnlyList<StackedGrillColumnDefinition> MapStackedGrillColumns(
+            IReadOnlyList<StackedGrillColumnDto> columnDtos)
+        {
+            List<StackedGrillColumnDefinition> columns = new();
+
+            for (int i = 0; i < columnDtos.Count; i++)
+            {
+                columns.Add(new StackedGrillColumnDefinition(columnDtos[i].GrillIds));
+            }
+
+            return columns;
         }
 
         private static GrillType MapGrillType(string type)

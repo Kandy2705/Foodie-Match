@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Grill;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Core.Domain.Board
 {
     public sealed class BoardModel
     {
         private readonly List<GrillModel> _grills;
+        private readonly List<StackedGrillColumnState> _stackedGrillColumns;
 
-        public BoardModel(IReadOnlyList<GrillModel> grills)
+        public BoardModel(
+            IReadOnlyList<GrillModel> grills,
+            GrillLayoutType grillLayoutType,
+            IReadOnlyList<StackedGrillColumnState> stackedGrillColumns)
         {
             if (grills == null)
             {
@@ -22,10 +27,24 @@ namespace FoodieMatch.Core.Domain.Board
                     nameof(grills));
             }
 
+            if (!Enum.IsDefined(typeof(GrillLayoutType), grillLayoutType))
+            {
+                throw new ArgumentOutOfRangeException(nameof(grillLayoutType));
+            }
+
+            if (stackedGrillColumns == null)
+            {
+                throw new ArgumentNullException(nameof(stackedGrillColumns));
+            }
+
             _grills = CopyGrills(grills);
+            _stackedGrillColumns = CopyStackedGrillColumns(stackedGrillColumns);
+            LayoutType = grillLayoutType;
         }
 
         public int GrillCount => _grills.Count;
+        public int StackedGrillColumnCount => _stackedGrillColumns.Count;
+        public GrillLayoutType LayoutType { get; }
 
         public int FoodDepthCount
         {
@@ -85,6 +104,7 @@ namespace FoodieMatch.Core.Domain.Board
             int expectedFoodTokenId)
         {
             return address.IsValid &&
+                   IsGrillAccessible(address.GrillPositionIndex) &&
                    TryGetGrill(
                        address.GrillPositionIndex,
                        out GrillModel grill) &&
@@ -98,6 +118,7 @@ namespace FoodieMatch.Core.Domain.Board
             int expectedFoodTokenId)
         {
             if (!address.IsValid ||
+                !IsGrillAccessible(address.GrillPositionIndex) ||
                 !TryGetGrill(
                     address.GrillPositionIndex,
                     out GrillModel grill))
@@ -138,6 +159,88 @@ namespace FoodieMatch.Core.Domain.Board
             return grill.TryRestoreFood(
                 address.FoodSlotIndex,
                 foodTokenId);
+        }
+
+        public bool IsGrillAccessible(int grillPositionIndex)
+        {
+            if (!TryGetGrill(grillPositionIndex, out _))
+            {
+                return false;
+            }
+
+            if (LayoutType == GrillLayoutType.Standard)
+            {
+                return true;
+            }
+
+            return TryGetStackedGrillIndex(
+                       grillPositionIndex,
+                       out _,
+                       out int rowIndex) &&
+                   rowIndex < StackedGrillRules.AccessibleGrillCount;
+        }
+
+        public bool IsGrillVisible(int grillPositionIndex)
+        {
+            if (!TryGetGrill(grillPositionIndex, out _))
+            {
+                return false;
+            }
+
+            if (LayoutType == GrillLayoutType.Standard)
+            {
+                return true;
+            }
+
+            return TryGetStackedGrillIndex(
+                       grillPositionIndex,
+                       out _,
+                       out int rowIndex) &&
+                   rowIndex < StackedGrillRules.VisibleGrillCount;
+        }
+
+        public bool TryGetStackedGrillIndex(
+            int grillPositionIndex,
+            out int columnIndex,
+            out int rowIndex)
+        {
+            columnIndex = -1;
+            rowIndex = -1;
+
+            for (int i = 0; i < _stackedGrillColumns.Count; i++)
+            {
+                if (!_stackedGrillColumns[i].TryGetRowIndex(
+                        grillPositionIndex,
+                        out rowIndex))
+                {
+                    continue;
+                }
+
+                columnIndex = i;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryRemoveEmptyGrillFromColumn(int grillPositionIndex)
+        {
+            if (LayoutType != GrillLayoutType.StackedColumns ||
+                !TryGetGrill(grillPositionIndex, out GrillModel grill) ||
+                !grill.IsEmpty ||
+                !TryGetStackedGrillIndex(grillPositionIndex, out int columnIndex, out _))
+            {
+                return false;
+            }
+
+            return _stackedGrillColumns[columnIndex].Remove(grillPositionIndex);
+        }
+
+        public StackedGrillColumnState GetStackedGrillColumnAt(int columnIndex)
+        {
+            return columnIndex >= 0 && columnIndex < _stackedGrillColumns.Count
+                ? _stackedGrillColumns[columnIndex]
+                : null;
         }
 
         public bool TryMoveTopTrayToGrill(
@@ -337,6 +440,28 @@ namespace FoodieMatch.Core.Domain.Board
             }
 
             return grillModels;
+        }
+
+        private static List<StackedGrillColumnState> CopyStackedGrillColumns(
+            IReadOnlyList<StackedGrillColumnState> columns)
+        {
+            List<StackedGrillColumnState> copiedColumns = new(columns.Count);
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                StackedGrillColumnState column = columns[i];
+
+                if (column == null)
+                {
+                    throw new ArgumentException(
+                        "Stacked grill column collection cannot contain null.",
+                        nameof(columns));
+                }
+
+                copiedColumns.Add(column);
+            }
+
+            return copiedColumns;
         }
     }
 }
