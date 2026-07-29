@@ -182,6 +182,10 @@ MonoBehaviour:
   - {fileID: 5590539011933219216}
   - {fileID: 3559022086368937256}
   - {fileID: 6456585175415227267}
+  _exitDuration: 0.5
+  _exitEase: 26
+  _slideDuration: 0.6
+  _slideEase: 9
 --- !u!1 &8076179819582664186
 GameObject:
   m_ObjectHideFlags: 0
