@@ -14,6 +14,7 @@ namespace FoodieMatch.Features.Board
     {
         [SerializeField] private GrillView _grillPrefab;
         [SerializeField] private SingleGrillView _singleGrillPrefab;
+        [SerializeField] private StackedGrillView _stackedGrillPrefab;
         [SerializeField] private FoodItemView _foodItemPrefab;
         [SerializeField] private Transform _foodItemRoot;
 
@@ -40,8 +41,14 @@ namespace FoodieMatch.Features.Board
         private FoodVisualResolver _foodVisualResolver;
         private Camera _worldCamera;
         private GrillMovementController _grillMovementController;
+        private StackedGrillLayoutController _stackedGrillLayoutController;
+        private bool _registeredFoodInputEnabled = true;
 
         public event Action<FoodSelectionContext> FoodSelected;
+        public event Action StackedGrillMotionFinished;
+
+        public bool HasActiveStackedGrillMotion =>
+            _stackedGrillLayoutController?.HasActiveMotion == true;
 
         public void Construct(
             FoodVisualResolver foodVisualResolver,
@@ -62,39 +69,62 @@ namespace FoodieMatch.Features.Board
             movementGroups)
         {
             Clear();
+            _registeredFoodInputEnabled = true;
 
             for (int i = 0; i < board.GrillCount; i++)
             {
                 GrillModel grillModel = board.GetGrillAt(i);
-                GrillViewBase grillPrefab = GetGrillPrefab(grillModel.Type);
+                GrillViewBase grillPrefab = GetGrillPrefab(
+                    board.LayoutType,
+                    grillModel.Type);
                 GrillViewBase grillView = Instantiate(grillPrefab, transform);
                 SetGrillPosition(grillView.transform, grillModel.Position);
                 _grillViews.Add(grillModel.PositionIndex, grillView);
 
-                if (!SetupGrillView(grillModel, grillView))
+                if (!SetupGrillView(
+                        board.LayoutType,
+                        grillModel,
+                        grillView))
                 {
                     Debug.LogError($"Grill view {grillModel.PositionIndex} could not be set up.", this);
                     Clear();
                     return;
                 }
 
-                SpawnInitialFoodItems(grillModel, grillView);
+                SpawnInitialFoodItems(
+                    board,
+                    grillModel,
+                    grillView);
             }
 
+            StartStackedGrillLayout(board);
             StartGrillMovement(
                 board,
                 movementGroups);
         }
 
-        private GrillViewBase GetGrillPrefab(GrillType type)
+        private GrillViewBase GetGrillPrefab(
+            GrillLayoutType layoutType,
+            GrillType type)
         {
+            if (layoutType == GrillLayoutType.StackedColumns)
+            {
+                return _stackedGrillPrefab;
+            }
+
             return type == GrillType.Single ? _singleGrillPrefab : _grillPrefab;
         }
 
         private bool SetupGrillView(
+            GrillLayoutType layoutType,
             GrillModel grillModel,
             GrillViewBase grillView)
         {
+            if (layoutType == GrillLayoutType.StackedColumns)
+            {
+                return grillView is StackedGrillView;
+            }
+
             if (grillModel.Type == GrillType.Single)
             {
                 if (grillView is not SingleGrillView singleGrillView)
@@ -124,9 +154,15 @@ namespace FoodieMatch.Features.Board
 
         public void Clear()
         {
-            StopGrillMovement();
+            StopMotions();
             ClearFoodItems();
             ClearGrills();
+        }
+
+        public void StopMotions()
+        {
+            StopGrillMovement();
+            StopStackedGrillMotion();
         }
 
         public void StopGrillMovement()
@@ -208,6 +244,8 @@ namespace FoodieMatch.Features.Board
 
         public void SetRegisteredFoodInteractable(bool isInteractable)
         {
+            _registeredFoodInputEnabled = isInteractable;
+
             foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
             {
                 FoodItemView foodItemView = entry.Key;
@@ -219,8 +257,21 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                foodItemView.SetInteractable(isInteractable);
+                foodItemView.SetInteractable(
+                    isInteractable &&
+                    IsGrillAccessible(
+                        entry.Value.GrillPositionIndex));
             }
+        }
+
+        public void RefreshStackedGrillLayout()
+        {
+            if (_stackedGrillLayoutController == null)
+            {
+                return;
+            }
+
+            _stackedGrillLayoutController.RefreshLayout();
         }
 
         public bool TryGetFoodAddress(
@@ -440,7 +491,10 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                List<FoodItemView> trayViews = SetupGrillView(grillModel, grillView)
+                List<FoodItemView> trayViews = SetupGrillView(
+                        board.LayoutType,
+                        grillModel,
+                        grillView)
                     ? GetTrackedTopTrayFoodItems(grillModel.PositionIndex)
                     : new List<FoodItemView>();
                 List<FoodItemView> grillViews = SpawnFoodItems(
@@ -449,7 +503,9 @@ namespace FoodieMatch.Features.Board
                     grillModel.GetFoodTokenIdAt,
                     grillView.GetFoodAnchor,
                     FoodItemVisualState.OnGrill,
-                    true);
+                    registerSelection: true,
+                    isInteractable: board.IsGrillAccessible(
+                        grillModel.PositionIndex));
 
                 AppendNonNullViews(allViews, grillViews);
                 AppendNonNullViews(allViews, trayViews);
@@ -605,7 +661,8 @@ namespace FoodieMatch.Features.Board
                 grillModel.GetFoodTokenIdAt,
                 singleGrillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
-                false);
+                registerSelection: false,
+                isInteractable: false);
 
             if (foodItems.Count != 1 || foodItems[0] == null)
             {
@@ -654,7 +711,10 @@ namespace FoodieMatch.Features.Board
             _foodAddresses.Add(foodItemView, address);
             foodItemView.Selected -= HandleFoodSelected;
             foodItemView.Selected += HandleFoodSelected;
-            foodItemView.SetInteractable(makeInteractable);
+            foodItemView.SetInteractable(
+                makeInteractable &&
+                IsGrillAccessible(
+                    grillModel.PositionIndex));
             return true;
         }
 
@@ -688,7 +748,10 @@ namespace FoodieMatch.Features.Board
                 foodAnchor);
             _foodAddresses.Add(foodItemView, address);
             foodItemView.Selected += HandleFoodSelected;
-            foodItemView.SetInteractable(true);
+            foodItemView.SetInteractable(
+                _registeredFoodInputEnabled &&
+                IsGrillAccessible(
+                    address.GrillPositionIndex));
         }
 
         public bool TryPrepareTopTrayFoodMove(
@@ -854,13 +917,15 @@ namespace FoodieMatch.Features.Board
                 topTray.GetFoodTokenIdAt,
                 resolveAnchor,
                 FoodItemVisualState.OnTray,
-                false);
+                registerSelection: false,
+                isInteractable: false);
 
             _topTrayFoodItems[grillModel.PositionIndex] = foodItemViews;
             return foodItemViews;
         }
 
         private void SpawnInitialFoodItems(
+            BoardModel board,
             GrillModel grillModel,
             GrillViewBase grillView)
         {
@@ -870,7 +935,9 @@ namespace FoodieMatch.Features.Board
                 grillModel.GetFoodTokenIdAt,
                 grillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
-                true);
+                registerSelection: true,
+                isInteractable: board.IsGrillAccessible(
+                    grillModel.PositionIndex));
         }
 
         private Sprite ResolveFoodSprite(int foodTokenId)
@@ -884,6 +951,7 @@ namespace FoodieMatch.Features.Board
             Func<int, int> resolveFoodTokenId,
             Func<int, Transform> resolveAnchor,
             FoodItemVisualState visualState,
+            bool registerSelection,
             bool isInteractable)
         {
             List<FoodItemView> foodItemViews =
@@ -912,7 +980,7 @@ namespace FoodieMatch.Features.Board
                 foodItemView.SetInteractable(isInteractable);
                 foodItemViews.Add(foodItemView);
 
-                if (!isInteractable)
+                if (!registerSelection)
                 {
                     continue;
                 }
@@ -988,6 +1056,58 @@ namespace FoodieMatch.Features.Board
                 Debug.LogException(exception, this);
                 _grillMovementController = null;
             }
+        }
+
+        private void StartStackedGrillLayout(BoardModel board)
+        {
+            StopStackedGrillMotion();
+
+            if (board.LayoutType != GrillLayoutType.StackedColumns)
+            {
+                return;
+            }
+
+            _stackedGrillLayoutController =
+                new StackedGrillLayoutController(
+                    board,
+                    _grillViews);
+            _stackedGrillLayoutController.MotionFinished +=
+                HandleStackedGrillMotionFinished;
+            _stackedGrillLayoutController.SlideStarted +=
+                HandleStackedGrillSlideStarted;
+        }
+
+        private void StopStackedGrillMotion()
+        {
+            if (_stackedGrillLayoutController == null)
+            {
+                return;
+            }
+
+            _stackedGrillLayoutController.MotionFinished -=
+                HandleStackedGrillMotionFinished;
+            _stackedGrillLayoutController.SlideStarted -=
+                HandleStackedGrillSlideStarted;
+            _stackedGrillLayoutController.Stop();
+            _stackedGrillLayoutController = null;
+        }
+
+        private void HandleStackedGrillMotionFinished()
+        {
+            StackedGrillMotionFinished?.Invoke();
+        }
+
+        private void HandleStackedGrillSlideStarted()
+        {
+            SetRegisteredFoodInteractable(
+                _registeredFoodInputEnabled);
+        }
+
+        private bool IsGrillAccessible(int grillPositionIndex)
+        {
+            return _stackedGrillLayoutController?
+                       .IsGrillAccessible(grillPositionIndex) ??
+                   true;
         }
 
         private void MoveFoodToFlightRoot(
