@@ -2,8 +2,6 @@ namespace FoodieMatch.UI.AddressableAssets
 {
     public static class UiAddressKeys
     {
-        public const string LoadingScreenRoot =
-            "Assets/FoodieMatch/Bundle/UI/LoadingScreenRoot.prefab";
         public const string LevelLosePopup =
             "Assets/FoodieMatch/Bundle/UI/LevelLosePopupRoot.prefab";
         public const string LevelCompletePopup =
@@ -26,6 +24,12 @@ namespace FoodieMatch.UI.AddressableAssets
             "Assets/FoodieMatch/Bundle/UI/BoosterBuyPopup.prefab";
         public const string MainMenuRoot =
             "Assets/FoodieMatch/Bundle/UI/MainMenuRoot.prefab";
+        public const string HomeScreen =
+            "Assets/FoodieMatch/Bundle/UI/HomeUI/HomeScreen.prefab";
+        public const string ShopScreen =
+            "Assets/FoodieMatch/Bundle/UI/ShopUI/ShopScreen.prefab";
+        public const string SocialScreen =
+            "Assets/FoodieMatch/Bundle/UI/SocialUI/SocialScreen.prefab";
         public const string PausePopup =
             "Assets/FoodieMatch/Bundle/UI/PausePopup.prefab";
         public const string RetryGamePopup =
