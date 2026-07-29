@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using FoodieMatch.Core.Domain.Board;
+using FoodieMatch.Core.Domain.Grill;
 
 namespace FoodieMatch.Core.Domain.Level
 {
@@ -56,7 +58,11 @@ namespace FoodieMatch.Core.Domain.Level
 
             ValidateGrills(grills);
             ValidateMovingGrillGroups(grills, movingGrillGroups);
-            ValidateStackedGrillColumns(stackedGrillColumns);
+            ValidateStackedGrillColumns(
+                grills,
+                movingGrillGroups,
+                grillLayoutType,
+                stackedGrillColumns);
 
             Id = id;
             Difficulty = difficulty;
@@ -252,16 +258,91 @@ namespace FoodieMatch.Core.Domain.Level
         }
 
         private static void ValidateStackedGrillColumns(
+            IReadOnlyList<GrillDefinition> grills,
+            IReadOnlyList<GrillMovementGroupDefinition> movementGroups,
+            GrillLayoutType layoutType,
             IReadOnlyList<StackedGrillColumnDefinition> stackedGrillColumns)
         {
+            if (layoutType == GrillLayoutType.Standard)
+            {
+                if (stackedGrillColumns.Count > 0)
+                {
+                    throw new ArgumentException(
+                        "Standard layout cannot contain stacked grill columns.",
+                        nameof(stackedGrillColumns));
+                }
+
+                return;
+            }
+
+            if (stackedGrillColumns.Count != StackedGrillRules.ColumnCount)
+            {
+                throw new ArgumentException(
+                    $"Stacked layout must contain exactly {StackedGrillRules.ColumnCount} columns.",
+                    nameof(stackedGrillColumns));
+            }
+
+            if (movementGroups.Count > 0)
+            {
+                throw new ArgumentException(
+                    "Stacked layout cannot contain moving grill groups.",
+                    nameof(movementGroups));
+            }
+
+            Dictionary<int, GrillDefinition> grillsById = new();
+
+            for (int i = 0; i < grills.Count; i++)
+            {
+                GrillDefinition grill = grills[i];
+
+                if (grill.Type != GrillType.Standard || grill.Trays.Count > 0)
+                {
+                    throw new ArgumentException(
+                        "Stacked layout can only contain standard grills without trays.",
+                        nameof(grills));
+                }
+
+                grillsById.Add(grill.Id, grill);
+            }
+
+            HashSet<int> assignedGrillIds = new();
+
             for (int i = 0; i < stackedGrillColumns.Count; i++)
             {
-                if (stackedGrillColumns[i] == null)
+                StackedGrillColumnDefinition column = stackedGrillColumns[i];
+
+                if (column == null)
                 {
                     throw new ArgumentException(
                         "Stacked grill column collection cannot contain null.",
                         nameof(stackedGrillColumns));
                 }
+
+                for (int grillIndex = 0; grillIndex < column.GrillIds.Count; grillIndex++)
+                {
+                    int grillId = column.GrillIds[grillIndex];
+
+                    if (!grillsById.ContainsKey(grillId))
+                    {
+                        throw new ArgumentException(
+                            $"Stacked grill column references missing grill id {grillId}.",
+                            nameof(stackedGrillColumns));
+                    }
+
+                    if (!assignedGrillIds.Add(grillId))
+                    {
+                        throw new ArgumentException(
+                            $"Grill id {grillId} belongs to multiple stacked grill columns.",
+                            nameof(stackedGrillColumns));
+                    }
+                }
+            }
+
+            if (assignedGrillIds.Count != grills.Count)
+            {
+                throw new ArgumentException(
+                    "Every grill must belong to one stacked grill column.",
+                    nameof(stackedGrillColumns));
             }
         }
 

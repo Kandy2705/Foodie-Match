@@ -1,6 +1,8 @@
 using System.Text;
 using FoodieMatch.Core.Application.Randomization;
+using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Grill;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 
 namespace FoodieMatch.Editor.LevelDesign
@@ -16,6 +18,7 @@ namespace FoodieMatch.Editor.LevelDesign
             AppendPackages(key, simulation.RequiredPackages);
             AppendWaitingRack(key, simulation);
             AppendBoard(key, simulation);
+            AppendStackedGrillColumns(key, simulation.Board);
             return key.ToString();
         }
 
@@ -75,6 +78,36 @@ namespace FoodieMatch.Editor.LevelDesign
                 }
 
                 key.Append(';');
+            }
+        }
+
+        private static void AppendStackedGrillColumns(
+            StringBuilder key,
+            BoardModel board)
+        {
+            if (board.LayoutType != GrillLayoutType.StackedColumns)
+            {
+                return;
+            }
+
+            key.Append("|C");
+
+            for (int columnIndex = 0;
+                 columnIndex < board.StackedGrillColumnCount;
+                 columnIndex++)
+            {
+                StackedGrillColumnState column =
+                    board.GetStackedGrillColumnAt(columnIndex);
+                key.Append('[');
+
+                for (int rowIndex = 0;
+                     rowIndex < column.GrillPositionIndices.Count;
+                     rowIndex++)
+                {
+                    key.Append(column.GrillPositionIndices[rowIndex]).Append(',');
+                }
+
+                key.Append(']');
             }
         }
 
