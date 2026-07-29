@@ -62,10 +62,17 @@ namespace FoodieMatch.UI.Loading
             return overlay;
         }
 
-        public void SetVisible(bool visible)
+        public void SetVisible(
+            bool visible,
+            Transform parent)
         {
             if (visible)
             {
+                if (transform.parent != parent)
+                {
+                    transform.SetParent(parent, false);
+                }
+
                 transform.SetAsLastSibling();
             }
 
