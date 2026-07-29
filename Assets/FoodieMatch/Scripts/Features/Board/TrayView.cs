@@ -12,6 +12,7 @@ namespace FoodieMatch.Features.Board
 
         private Tween _fadeTween;
         private bool _didFadeComplete;
+        private int _reuseVersion;
 
         private void OnDestroy()
         {
@@ -40,6 +41,7 @@ namespace FoodieMatch.Features.Board
                 return MotionResult.Failed;
             }
 
+            int reuseVersion = _reuseVersion;
             _didFadeComplete = false;
 
             try
@@ -49,14 +51,34 @@ namespace FoodieMatch.Features.Board
 
                 await _fadeTween;
 
+                if (reuseVersion != _reuseVersion)
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 return _didFadeComplete
                     ? MotionResult.Completed
                     : MotionResult.Cancelled;
             }
             finally
             {
-                _fadeTween = default;
+                if (reuseVersion == _reuseVersion)
+                {
+                    _fadeTween = default;
+                }
             }
+        }
+
+        public void ResetForUse()
+        {
+            _reuseVersion++;
+            CancelMotion();
+        }
+
+        public void ResetForPool()
+        {
+            _reuseVersion++;
+            CancelMotion();
         }
 
         public void CancelMotion()

@@ -5,13 +5,13 @@ namespace FoodieMatch.Features.Board
 {
     public sealed class TrayStackView : MonoBehaviour
     {
-        [SerializeField] private TrayView _trayPrefab;
         [SerializeField] private Transform _trayRoot;
         [SerializeField] private Vector3 _trayOffset;
         [SerializeField] private int _baseSortingOrder;
         [SerializeField] private int _sortingOrderStep = 1;
 
         private readonly List<TrayView> _trays = new();
+        private TrayViewPool _trayViewPool;
 
         public int VisibleTrayCount
         {
@@ -31,6 +31,11 @@ namespace FoodieMatch.Features.Board
             }
         }
 
+        public void Construct(TrayViewPool trayViewPool)
+        {
+            _trayViewPool = trayViewPool;
+        }
+
         public void Setup(int trayCount)
         {
             Clear();
@@ -42,7 +47,7 @@ namespace FoodieMatch.Features.Board
 
             for (var i = 0; i < trayCount; i++)
             {
-                var tray = Instantiate(_trayPrefab, _trayRoot);
+                TrayView tray = _trayViewPool.Get(_trayRoot);
                 tray.transform.localPosition = _trayOffset * i;
                 tray.transform.localRotation = Quaternion.identity;
                 tray.transform.localScale = Vector3.one;
@@ -61,7 +66,8 @@ namespace FoodieMatch.Features.Board
                 return false;
             }
 
-            topTray.gameObject.SetActive(false);
+            _trays.Remove(topTray);
+            _trayViewPool.Release(topTray);
             return true;
         }
 
@@ -71,7 +77,7 @@ namespace FoodieMatch.Features.Board
             {
                 if (_trays[i] != null)
                 {
-                    Destroy(_trays[i].gameObject);
+                    _trayViewPool.Release(_trays[i]);
                 }
             }
 

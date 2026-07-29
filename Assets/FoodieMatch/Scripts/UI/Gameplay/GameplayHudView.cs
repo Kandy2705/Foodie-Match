@@ -23,10 +23,10 @@ namespace FoodieMatch.UI.Gameplay
 
         [Header("Combo Feedback")]
         [SerializeField] private RectTransform _comboFeedbackRoot;
-        [SerializeField] private ComboFeedbackView _comboFeedbackPrefab;
 
         [SerializeField] private TMP_Text[] _boosterCountTexts;
 
+        private ComboFeedbackViewPool _comboFeedbackPool;
         private Action _pauseClicked;
         private Action<int> _boosterUseClicked;
         private Action<int> _boosterAddClicked;
@@ -45,6 +45,17 @@ namespace FoodieMatch.UI.Gameplay
             StopComboCountdown();
             StopBreakClearCoroutine();
             UnbindButtons();
+        }
+
+        private void OnDisable()
+        {
+            _comboFeedbackPool?.ReleaseAll();
+        }
+
+        public void Construct(
+            ComboFeedbackViewPool comboFeedbackPool)
+        {
+            _comboFeedbackPool = comboFeedbackPool;
         }
 
         public void SetActions(GameplayHudViewActions actions)
@@ -115,12 +126,9 @@ namespace FoodieMatch.UI.Gameplay
                 return;
             }
 
-            ComboFeedbackView feedback = Instantiate(_comboFeedbackPrefab, _comboFeedbackRoot);
-            RectTransform feedbackRect = (RectTransform)feedback.transform;
-
-            feedbackRect.anchoredPosition = localPosition;
-            feedback.gameObject.SetActive(true);
-            feedback.PlayRandomAnimation();
+            _comboFeedbackPool.Play(
+                _comboFeedbackRoot,
+                localPosition);
         }
 
         private void PlayComboAnimIfNeeded(int comboCount)

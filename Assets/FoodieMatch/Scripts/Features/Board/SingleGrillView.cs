@@ -18,5 +18,15 @@ namespace FoodieMatch.Features.Board
         {
             return _counterView.TrySetHiddenFoodCount(hiddenFoodCount);
         }
+
+        public override void ResetForUse()
+        {
+            _counterView.TrySetHiddenFoodCount(0);
+        }
+
+        public override void ResetForPool()
+        {
+            _counterView.TrySetHiddenFoodCount(0);
+        }
     }
 }

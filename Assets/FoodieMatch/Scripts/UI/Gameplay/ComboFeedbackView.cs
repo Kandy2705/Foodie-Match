@@ -19,25 +19,28 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField] private SkeletonGraphic _skeletonGraphic;
 
         private TrackEntry _trackEntry;
+        private Action<ComboFeedbackView> _completed;
 
         private void OnDestroy()
         {
             StopListeningForCompletion();
         }
 
-        private void OnDisable()
+        public void ResetForUse()
         {
-            if (_trackEntry == null)
-            {
-                return;
-            }
-
-            StopListeningForCompletion();
-            Destroy(gameObject);
+            ResetAnimation();
         }
 
-        public void PlayRandomAnimation()
+        public void ResetForPool()
         {
+            ResetAnimation();
+        }
+
+        public void PlayRandomAnimation(
+            Action<ComboFeedbackView> completed)
+        {
+            _completed = completed;
+
             if (!_skeletonGraphic.IsValid)
             {
                 _skeletonGraphic.Initialize(overwrite: false);
@@ -46,7 +49,7 @@ namespace FoodieMatch.UI.Gameplay
             if (_skeletonGraphic.AnimationState == null)
             {
                 Debug.LogError("Combo feedback AnimationState is missing.", this);
-                Destroy(gameObject);
+                CompletePlayback();
                 return;
             }
 
@@ -65,8 +68,7 @@ namespace FoodieMatch.UI.Gameplay
             catch (Exception exception)
             {
                 Debug.LogException(exception, this);
-                StopListeningForCompletion();
-                Destroy(gameObject);
+                CompletePlayback();
             }
         }
 
@@ -77,8 +79,29 @@ namespace FoodieMatch.UI.Gameplay
                 return;
             }
 
+            CompletePlayback();
+        }
+
+        private void CompletePlayback()
+        {
             StopListeningForCompletion();
-            Destroy(gameObject);
+
+            Action<ComboFeedbackView> completed = _completed;
+            _completed = null;
+            completed?.Invoke(this);
+        }
+
+        private void ResetAnimation()
+        {
+            StopListeningForCompletion();
+            _completed = null;
+
+            if (_skeletonGraphic.AnimationState != null)
+            {
+                _skeletonGraphic.AnimationState.ClearTracks();
+            }
+
+            _skeletonGraphic.Skeleton?.SetToSetupPose();
         }
 
         private void StopListeningForCompletion()

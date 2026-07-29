@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Domain.RequiredPackage;
+using FoodieMatch.Features.Effects;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
@@ -41,6 +42,15 @@ namespace FoodieMatch.Features.RequiredPackage
         private void OnDestroy()
         {
             CancelLayoutMotion();
+        }
+
+        public void Construct(
+            ParticleEffectPool completeBurstPool)
+        {
+            for (int i = 0; i < _packages.Length; i++)
+            {
+                _packages[i].Construct(completeBurstPool);
+            }
         }
 
         public RequiredPackageSlotView GetTargetSlot(

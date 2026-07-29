@@ -478,19 +478,13 @@ namespace FoodieMatch.Features.Gameplay
                 targetScale *
                 _releaseOvershootMultiplier;
 
-            Sequence sequence = Sequence.Create()
-                .Chain(Tween.Scale(
-                    foodItemView.transform,
-                    overshootScale,
-                    _releaseGrowDuration,
-                    Ease.OutCubic))
-                .Chain(Tween.Scale(
-                    foodItemView.transform,
-                    targetScale,
-                    _releaseSettleDuration,
-                    Ease.OutQuad));
-
-            await sequence;
+            await foodItemView.PlayScaleAsync(
+                overshootScale,
+                _releaseGrowDuration,
+                Ease.OutCubic,
+                targetScale,
+                _releaseSettleDuration,
+                Ease.OutQuad);
         }
 
         public async Task PlaySpoonExitLeftAsync()

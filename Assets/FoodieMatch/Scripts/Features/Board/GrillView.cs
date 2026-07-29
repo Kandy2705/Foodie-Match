@@ -23,6 +23,7 @@ namespace FoodieMatch.Features.Board
         private bool _hasInitialLidVisual;
         private bool _didLidMotionFinish;
         private bool _isLidClosed;
+        private int _reuseVersion;
 
         public override int FoodAnchorCount => _foodAnchors.Length;
 
@@ -37,8 +38,11 @@ namespace FoodieMatch.Features.Board
             CancelMotion();
         }
 
-        public void SetupTrayStack(int trayCount)
+        public void SetupTrayStack(
+            TrayViewPool trayViewPool,
+            int trayCount)
         {
+            _trayStackView.Construct(trayViewPool);
             _trayStackView.Setup(trayCount);
         }
 
@@ -95,6 +99,7 @@ namespace FoodieMatch.Features.Board
             }
 
             PrepareLidForDrop();
+            int reuseVersion = _reuseVersion;
             _didLidMotionFinish = false;
 
             try
@@ -118,6 +123,11 @@ namespace FoodieMatch.Features.Board
                 _lidSequence = sequence;
                 await _lidSequence;
 
+                if (reuseVersion != _reuseVersion)
+                {
+                    return MotionResult.Cancelled;
+                }
+
                 if (!_didLidMotionFinish)
                 {
                     return MotionResult.Cancelled;
@@ -128,8 +138,24 @@ namespace FoodieMatch.Features.Board
             }
             finally
             {
-                _lidSequence = default;
+                if (reuseVersion == _reuseVersion)
+                {
+                    _lidSequence = default;
+                }
             }
+        }
+
+        public override void ResetForUse()
+        {
+            _reuseVersion++;
+            CancelMotion();
+        }
+
+        public override void ResetForPool()
+        {
+            _reuseVersion++;
+            CancelMotion();
+            _trayStackView.Clear();
         }
 
         public void CancelMotion()

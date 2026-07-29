@@ -90,6 +90,7 @@ namespace FoodieMatch.App
                 return false;
             }
 
+            appRoot.GameplayPoolRoot.Initialize();
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
             RequiredPackageGenerator requiredPackageGenerator = new();
@@ -124,7 +125,8 @@ namespace FoodieMatch.App
                 playerProfileService,
                 levelRepository,
                 shopConfig,
-                addressableUiFactory);
+                addressableUiFactory,
+                appRoot.GameplayPoolRoot.ComboFeedback);
             CreateAdServices(
                 appRoot,
                 advertisingRuntimeSettings,
@@ -140,7 +142,14 @@ namespace FoodieMatch.App
                 postLevelAdCooldown);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
+                appRoot.GameplayPoolRoot.FoodItems,
+                appRoot.GameplayPoolRoot.Grills,
+                appRoot.GameplayPoolRoot.Trays,
                 worldCamera);
+            appRoot.WaitingRackView.Construct(
+                appRoot.GameplayPoolRoot.FoodItems);
+            appRoot.RequiredPackageGroupView.Construct(
+                appRoot.GameplayPoolRoot.PackageCompleteBursts);
             appRoot.GameplayMotionPresenter.Construct(
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView);
@@ -155,6 +164,7 @@ namespace FoodieMatch.App
                 gameplayAudioPresenter,
                 gameplayWorldClickSfx,
                 appRoot.FoodVisualResolver,
+                appRoot.GameplayPoolRoot.FoodItems,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
                 levelRepository,
