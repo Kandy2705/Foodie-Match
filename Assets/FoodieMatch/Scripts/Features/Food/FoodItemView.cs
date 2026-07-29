@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.Features.Effects;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
@@ -19,7 +20,6 @@ namespace FoodieMatch.Features.Food
         [SerializeField] private Vector3 _grillScale = Vector3.one;
 
         [Header("Grill Smoke")]
-        [SerializeField] private ParticleSystem _grillSmokePrefab;
         [SerializeField] private Vector3 _grillSmokeOffset = new(0f, -0.1f, 0f);
 
         [Header("Tray")]
@@ -76,6 +76,7 @@ namespace FoodieMatch.Features.Food
         private bool _hasFlyingSortingLayer;
         private bool _hasSortingLayerBeforeFlight;
         private int _reuseVersion;
+        private ParticleEffectPool _grillSmokePool;
 
         public int FoodTokenId { get; private set; }
         public bool IsEmpty => FoodTokenId == 0;
@@ -85,6 +86,11 @@ namespace FoodieMatch.Features.Food
         public FoodItemVisualState VisualState { get; private set; }
 
         public event Action<FoodItemView> Selected;
+
+        public void Construct(ParticleEffectPool grillSmokePool)
+        {
+            _grillSmokePool = grillSmokePool;
+        }
 
         private void Awake()
         {
@@ -488,13 +494,7 @@ namespace FoodieMatch.Features.Food
         public void PlayGrillSmoke()
         {
             Vector3 spawnPosition = transform.position + _grillSmokeOffset;
-            ParticleSystem smoke = Instantiate(
-                _grillSmokePrefab,
-                spawnPosition,
-                _grillSmokePrefab.transform.rotation);
-
-            smoke.Play();
-            Destroy(smoke.gameObject, GetParticleLifetime(smoke));
+            _grillSmokePool.Play(spawnPosition);
         }
 
         public async Task<MotionResult> PlayLandingFeedbackAsync(Transform target = null)
@@ -711,12 +711,6 @@ namespace FoodieMatch.Features.Food
             return value >= 0f &&
                    !float.IsNaN(value) &&
                    !float.IsInfinity(value);
-        }
-
-        private static float GetParticleLifetime(ParticleSystem particle)
-        {
-            ParticleSystem.MainModule main = particle.main;
-            return main.startDelay.constantMax + main.duration + main.startLifetime.constantMax;
         }
 
         private static bool IsValidPositiveNumber(float value)

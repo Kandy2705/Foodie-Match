@@ -1,3 +1,4 @@
+using FoodieMatch.Features.Effects;
 using FoodieMatch.Shared.Pooling;
 using UnityEngine;
 
@@ -10,6 +11,12 @@ namespace FoodieMatch.Features.Food
         [SerializeField, Min(1)] private int _maxRetainedCount = 140;
 
         private ComponentPool<FoodItemView> _pool;
+        private ParticleEffectPool _grillSmokePool;
+
+        public void Construct(ParticleEffectPool grillSmokePool)
+        {
+            _grillSmokePool = grillSmokePool;
+        }
 
         public void Initialize()
         {
@@ -53,9 +60,10 @@ namespace FoodieMatch.Features.Food
             foodItemView.ResetForPool();
         }
 
-        private static void PrepareForUse(FoodItemView foodItemView)
+        private void PrepareForUse(FoodItemView foodItemView)
         {
             foodItemView.ResetForUse();
+            foodItemView.Construct(_grillSmokePool);
         }
     }
 }

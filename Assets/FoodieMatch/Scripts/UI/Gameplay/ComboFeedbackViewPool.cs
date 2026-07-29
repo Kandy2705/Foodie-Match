@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FoodieMatch.Shared.Pooling;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField, Min(0)] private int _prewarmCount = 4;
         [SerializeField, Min(1)] private int _maxRetainedCount = 8;
 
+        private readonly List<ComboFeedbackView> _activeViews = new();
         private ComponentPool<ComboFeedbackView> _pool;
 
         public void Initialize()
@@ -17,10 +19,12 @@ namespace FoodieMatch.UI.Gameplay
                 _prefab,
                 transform,
                 _prewarmCount,
-                _maxRetainedCount);
+                _maxRetainedCount,
+                prepareForUse: PrepareForUse,
+                prepareForPool: PrepareForPool);
         }
 
-        public ComboFeedbackView Get(
+        public void Play(
             RectTransform parent,
             Vector2 anchoredPosition)
         {
@@ -32,17 +36,39 @@ namespace FoodieMatch.UI.Gameplay
             feedbackTransform.localRotation = Quaternion.identity;
             feedbackTransform.localScale = Vector3.one;
             feedbackTransform.SetAsLastSibling();
-            return feedbackView;
+            _activeViews.Add(feedbackView);
+            feedbackView.PlayRandomAnimation(Release);
         }
 
-        public void Release(ComboFeedbackView feedbackView)
+        public void ReleaseAll()
         {
-            _pool.Release(feedbackView);
+            while (_activeViews.Count > 0)
+            {
+                Release(_activeViews[_activeViews.Count - 1]);
+            }
         }
 
         public void Clear()
         {
             _pool.Clear();
+        }
+
+        private void Release(ComboFeedbackView feedbackView)
+        {
+            _activeViews.Remove(feedbackView);
+            _pool.Release(feedbackView);
+        }
+
+        private static void PrepareForUse(
+            ComboFeedbackView feedbackView)
+        {
+            feedbackView.ResetForUse();
+        }
+
+        private static void PrepareForPool(
+            ComboFeedbackView feedbackView)
+        {
+            feedbackView.ResetForPool();
         }
     }
 }

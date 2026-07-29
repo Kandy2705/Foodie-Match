@@ -32,6 +32,8 @@ namespace FoodieMatch.App
 
         public void Initialize()
         {
+            _foodItems.Construct(_smokeParticles);
+
             _poolLifecycles = new IPoolLifecycle[]
             {
                 _foodItems,

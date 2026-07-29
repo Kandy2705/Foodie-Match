@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FoodieMatch.Shared.Pooling;
 using UnityEngine;
 
@@ -9,7 +10,23 @@ namespace FoodieMatch.Features.Effects
         [SerializeField, Min(0)] private int _prewarmCount = 4;
         [SerializeField, Min(1)] private int _maxRetainedCount = 8;
 
+        private readonly List<ParticleSystem> _activeEffects = new();
         private ComponentPool<ParticleSystem> _pool;
+
+        private void Update()
+        {
+            for (int i = _activeEffects.Count - 1; i >= 0; i--)
+            {
+                if (_activeEffects[i].IsAlive(withChildren: true))
+                {
+                    continue;
+                }
+
+                ParticleSystem particleSystem = _activeEffects[i];
+                _activeEffects.RemoveAt(i);
+                _pool.Release(particleSystem);
+            }
+        }
 
         public void Initialize()
         {
@@ -22,21 +39,14 @@ namespace FoodieMatch.Features.Effects
                 prepareForPool: PrepareForPool);
         }
 
-        public ParticleSystem Get(
-            Vector3 worldPosition,
-            Quaternion worldRotation)
+        public void Play(Vector3 worldPosition)
         {
             ParticleSystem particleSystem = _pool.Get(
                 null,
                 worldPosition,
-                worldRotation);
-            particleSystem.Play();
-            return particleSystem;
-        }
-
-        public void Release(ParticleSystem particleSystem)
-        {
-            _pool.Release(particleSystem);
+                _prefab.transform.rotation);
+            _activeEffects.Add(particleSystem);
+            particleSystem.Play(withChildren: true);
         }
 
         public void Clear()

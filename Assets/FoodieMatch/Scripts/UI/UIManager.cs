@@ -86,6 +86,7 @@ namespace FoodieMatch.UI
         private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
         private IAddressableUiFactory _addressableUiFactory;
+        private ComboFeedbackViewPool _comboFeedbackViewPool;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
@@ -162,7 +163,8 @@ namespace FoodieMatch.UI
             PlayerProfileService playerProfileService,
             ILevelRepository levelRepository,
             IGameShopConfig shopConfig,
-            IAddressableUiFactory addressableUiFactory)
+            IAddressableUiFactory addressableUiFactory,
+            ComboFeedbackViewPool comboFeedbackViewPool)
         {
             _addressableUiFactory = addressableUiFactory ??
                 throw new ArgumentNullException(nameof(addressableUiFactory));
@@ -186,6 +188,7 @@ namespace FoodieMatch.UI
             _playerProfileService = playerProfileService;
             _levelRepository = levelRepository;
             _shopConfig = shopConfig;
+            _comboFeedbackViewPool = comboFeedbackViewPool;
             SubscribeEvents();
         }
 
@@ -363,6 +366,8 @@ namespace FoodieMatch.UI
             }
 
             _gameplayHudView = gameplayHudView;
+            _gameplayHudView.Construct(
+                _comboFeedbackViewPool);
 
             if (requestVersion != _gameplayHudRequestVersion)
             {

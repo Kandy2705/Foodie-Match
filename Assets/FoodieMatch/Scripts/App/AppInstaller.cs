@@ -125,7 +125,8 @@ namespace FoodieMatch.App
                 playerProfileService,
                 levelRepository,
                 shopConfig,
-                addressableUiFactory);
+                addressableUiFactory,
+                appRoot.GameplayPoolRoot.ComboFeedback);
             CreateAdServices(
                 appRoot,
                 advertisingRuntimeSettings,
@@ -147,6 +148,8 @@ namespace FoodieMatch.App
                 worldCamera);
             appRoot.WaitingRackView.Construct(
                 appRoot.GameplayPoolRoot.FoodItems);
+            appRoot.RequiredPackageGroupView.Construct(
+                appRoot.GameplayPoolRoot.PackageCompleteBursts);
             appRoot.GameplayMotionPresenter.Construct(
                 appRoot.RequiredPackageGroupView,
                 appRoot.WaitingRackView);

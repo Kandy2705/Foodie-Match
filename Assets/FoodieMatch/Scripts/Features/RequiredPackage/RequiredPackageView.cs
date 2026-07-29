@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using FoodieMatch.Features.Effects;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
@@ -42,7 +43,6 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private Ease _lidDropEase = Ease.OutCubic;
 
         [Header("Match Particle")]
-        [SerializeField] private ParticleSystem _completeBurstPrefab;
         [SerializeField] private Vector3 _completeBurstOffset = new(0f, 0.5f, 0f);
 
         [Header("Match Scale Motion")]
@@ -71,6 +71,7 @@ namespace FoodieMatch.Features.RequiredPackage
         private Vector3 _initialLidLocalPosition;
         private Color _lidVisibleColor;
         private Action _lidClosed;
+        private ParticleEffectPool _completeBurstPool;
 
         public int FoodTokenId { get; private set; }
         public int RequiredAmount { get; private set; }
@@ -88,6 +89,12 @@ namespace FoodieMatch.Features.RequiredPackage
         private void OnDestroy()
         {
             StopMotion(resetTransform: false, hideLid: false);
+        }
+
+        public void Construct(
+            ParticleEffectPool completeBurstPool)
+        {
+            _completeBurstPool = completeBurstPool;
         }
 
         public RequiredPackageSlotView GetTargetSlot(
@@ -350,13 +357,7 @@ namespace FoodieMatch.Features.RequiredPackage
         private void PlayCompleteBurst()
         {
             Vector3 spawnPosition = transform.position + _completeBurstOffset;
-            ParticleSystem burst = Instantiate(
-                _completeBurstPrefab,
-                spawnPosition,
-                _completeBurstPrefab.transform.rotation);
-
-            burst.Play();
-            Destroy(burst.gameObject, GetParticleLifetime(burst));
+            _completeBurstPool.Play(spawnPosition);
         }
 
         private static void InvokeMotionCallback(Action callback)
@@ -474,12 +475,6 @@ namespace FoodieMatch.Features.RequiredPackage
         private static bool IsValidTime(float value)
         {
             return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
-        }
-
-        private static float GetParticleLifetime(ParticleSystem particle)
-        {
-            ParticleSystem.MainModule main = particle.main;
-            return main.startDelay.constantMax + main.duration + main.startLifetime.constantMax;
         }
 
         private static bool IsValidVector(Vector3 value)
