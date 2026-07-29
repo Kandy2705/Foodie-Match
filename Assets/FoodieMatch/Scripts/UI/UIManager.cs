@@ -209,12 +209,24 @@ namespace FoodieMatch.UI
                 _isAddressableUiLoading &&
                 !_isTransitionLoadingVisible;
 
-            if (showOverlay)
+            Transform overlayParent = _loadingRoot;
+
+            if (_popupManager.TryGetOpened(
+                    out MainMenuView mainMenuView) &&
+                mainMenuView.IsVisible)
+            {
+                overlayParent = mainMenuView.ViewContainer;
+            }
+
+            if (showOverlay &&
+                overlayParent == _loadingRoot)
             {
                 _loadingRoot.SetAsLastSibling();
             }
 
-            _addressableLoadingOverlay.SetVisible(showOverlay);
+            _addressableLoadingOverlay.SetVisible(
+                showOverlay,
+                overlayParent);
         }
 
         public void ShowHome(long displayedCoinBalance)
