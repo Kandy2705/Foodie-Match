@@ -58,6 +58,15 @@ namespace FoodieMatch.UI.Navigation
 
             [NonSerialized]
             public Vector2 InitialAnchoredPosition;
+
+            public void SetScreen(
+                RectTransform screenRoot,
+                CanvasGroup screenCanvasGroup)
+            {
+                _screenRoot = screenRoot;
+                _screenCanvasGroup = screenCanvasGroup;
+                InitialAnchoredPosition = screenRoot.anchoredPosition;
+            }
         }
 
         [Header("Selection Indicator")]
@@ -92,8 +101,40 @@ namespace FoodieMatch.UI.Navigation
         private TabBinding _currentTab;
         private bool _isInitialized;
         private bool _isTransitioning;
+        private Func<BottomNavigationTab, Task> _tabLoadHandler;
 
         public event Action<BottomNavigationTab> TabSelected;
+
+        public void SetTabLoadHandler(
+            Func<BottomNavigationTab, Task> tabLoadHandler)
+        {
+            _tabLoadHandler = tabLoadHandler;
+        }
+
+        public void RegisterScreen(
+            BottomNavigationTab tab,
+            RectTransform screenRoot,
+            CanvasGroup screenCanvasGroup)
+        {
+            TabBinding binding = FindBinding(tab);
+
+            if (binding == null)
+            {
+                throw new InvalidOperationException(
+                    $"Bottom navigation tab {tab} is missing.");
+            }
+
+            binding.SetScreen(screenRoot, screenCanvasGroup);
+
+            if (!_isInitialized)
+            {
+                return;
+            }
+
+            SetScreenImmediately(
+                binding,
+                ReferenceEquals(binding, _currentTab));
+        }
 
         private void Start()
         {
@@ -298,6 +339,11 @@ namespace FoodieMatch.UI.Navigation
             TabBinding selectedBinding)
         {
             _isTransitioning = true;
+
+            if (selectedBinding.ScreenRect == null)
+            {
+                await _tabLoadHandler(selectedBinding.Tab);
+            }
 
             TabBinding previousBinding =
                 _currentTab;

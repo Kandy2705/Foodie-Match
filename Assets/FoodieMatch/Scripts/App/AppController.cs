@@ -131,11 +131,9 @@ namespace FoodieMatch.App
                         $"Level {levelNumber} disappeared during transition.");
                 }
 
-                bool shouldShowLevelWarning =
-                    levelDefinition.Difficulty != LevelDifficulty.Normal;
                 await OpenLevelAsync(
                     levelNumber,
-                    enableGameplayInput: !shouldShowLevelWarning);
+                    enableGameplayInput: false);
 
                 try
                 {
@@ -144,10 +142,7 @@ namespace FoodieMatch.App
                 }
                 finally
                 {
-                    if (shouldShowLevelWarning)
-                    {
-                        _gameplayController.EnableGameplayInput();
-                    }
+                    _gameplayController.EnableGameplayInput();
                 }
             }
             catch (Exception exception)
@@ -156,7 +151,7 @@ namespace FoodieMatch.App
             }
             finally
             {
-                FinishTransition();
+                await FinishTransitionAsync();
             }
         }
 
@@ -198,7 +193,7 @@ namespace FoodieMatch.App
             }
             finally
             {
-                FinishTransition();
+                await FinishTransitionAsync();
             }
 
             if (shouldPlayCoinReward)
@@ -253,9 +248,9 @@ namespace FoodieMatch.App
             return true;
         }
 
-        private void FinishTransition()
+        private async Task FinishTransitionAsync()
         {
-            _uiManager.HideLoading();
+            await _uiManager.HideLoadingAsync();
             _isTransitionRunning = false;
         }
 
@@ -613,7 +608,7 @@ namespace FoodieMatch.App
             catch (Exception exception)
             {
                 Debug.LogException(exception);
-                FinishTransition();
+                _ = FinishTransitionAsync();
             }
         }
 

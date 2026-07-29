@@ -114,7 +114,7 @@ namespace FoodieMatch.App
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    _uiManager.HideLoading();
+                    await _uiManager.HideLoadingAsync();
                 }
 
                 _initializationCancellation?.Dispose();

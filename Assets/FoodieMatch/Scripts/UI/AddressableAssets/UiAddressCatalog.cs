@@ -8,13 +8,13 @@ using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.LeaveGame;
-using FoodieMatch.UI.Loading;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
 using FoodieMatch.UI.Setting;
+using FoodieMatch.UI.Shop;
 
 namespace FoodieMatch.UI.AddressableAssets
 {
@@ -23,7 +23,6 @@ namespace FoodieMatch.UI.AddressableAssets
         private static readonly IReadOnlyDictionary<Type, string> Addresses =
             new Dictionary<Type, string>
             {
-                [typeof(LoadingScreenView)] = UiAddressKeys.LoadingScreenRoot,
                 [typeof(LoseView)] = UiAddressKeys.LevelLosePopup,
                 [typeof(WinView)] = UiAddressKeys.LevelCompletePopup,
                 [typeof(LeaveGamePopupView)] = UiAddressKeys.LeaveGamePopup,
@@ -38,7 +37,8 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(PauseView)] = UiAddressKeys.PausePopup,
                 [typeof(RetryGamePopupView)] = UiAddressKeys.RetryGamePopup,
                 [typeof(RevivePopupView)] = UiAddressKeys.RevivePopup,
-                [typeof(SettingPopupView)] = UiAddressKeys.SettingsPopup
+                [typeof(SettingPopupView)] = UiAddressKeys.SettingsPopup,
+                [typeof(ShopView)] = UiAddressKeys.ShopScreen
             };
 
         public static bool TryGetAddress(Type uiType, out string address)
