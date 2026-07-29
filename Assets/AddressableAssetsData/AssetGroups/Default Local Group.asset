@@ -38,7 +38,8 @@ MonoBehaviour:
   - m_GUID: 2ef2879969b9d48839cbc8c052824003
     m_Address: Assets/FoodieMatch/Bundle/UI/BoosterBuyPopup.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ui_gameplay_critical
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 31e068ef4a0244ed485f9d417920543d
     m_Address: Assets/FoodieMatch/Bundle/UI/RevivePopup.prefab
@@ -50,18 +51,25 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3dc1dd59a96b7471caef08e797e884a6
+    m_Address: Assets/FoodieMatch/Bundle/UI/HomeUI/HomeScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ui_bootstrap_critical
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4145a9f26e87944388702bdb7387eb66
     m_Address: Assets/FoodieMatch/Bundle/UI/GameplayRoot.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4292533880ee24a5e83a102feeda0aa8
-    m_Address: Assets/FoodieMatch/Bundle/UI/LoadingScreenRoot.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ui_gameplay_critical
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4cd6b6f6773a943c7a6476e325843c4f
     m_Address: Assets/FoodieMatch/Bundle/UI/SettingsPopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e09274a3d53c42f59a787b3ba6c54db
+    m_Address: Assets/FoodieMatch/Bundle/UI/SocialUI/SocialScreen.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -73,10 +81,17 @@ MonoBehaviour:
   - m_GUID: 7ed6da27fd94d4af0a5692fd2b4a1394
     m_Address: Assets/FoodieMatch/Bundle/UI/BoosterGuidePopup.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - ui_gameplay_critical
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a41b9b59eb1e740c3bb0df4c77316dd8
     m_Address: Assets/FoodieMatch/Bundle/UI/PausePopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ui_gameplay_critical
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a7b7bb13549a3469cb486efacba92cb4
+    m_Address: Assets/FoodieMatch/Bundle/UI/ShopUI/ShopScreen.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -89,7 +104,7 @@ MonoBehaviour:
     m_Address: Assets/FoodieMatch/Bundle/UI/MainMenuRoot.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - default
+    - ui_bootstrap_critical
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f1535187c95cc469ea341dd93a48bb61
     m_Address: Assets/FoodieMatch/Bundle/UI/RetryGamePopup.prefab
