@@ -34,6 +34,8 @@ namespace FoodieMatch.App
         [SerializeField] private UnityAudioService _audioService;
 
         [Header("Gameplay Roots")]
+        [SerializeField] private GameplayPoolRoot _gameplayPoolRoot;
+
         [SerializeField] private BoardLayoutView _boardLayoutView;
 
         [SerializeField] private RequiredPackageGroupView _requiredPackageGroupView;
@@ -53,6 +55,7 @@ namespace FoodieMatch.App
         public GameplayMotionPresenter GameplayMotionPresenter =>
             _gameplayMotionPresenter;
         public UnityAudioService AudioService => _audioService;
+        public GameplayPoolRoot GameplayPoolRoot => _gameplayPoolRoot;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;

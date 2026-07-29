@@ -90,6 +90,7 @@ namespace FoodieMatch.App
                 return false;
             }
 
+            appRoot.GameplayPoolRoot.Initialize();
             RequiredPackageMatcher requiredPackageMatcher =
                 new RequiredPackageMatcher();
             RequiredPackageGenerator requiredPackageGenerator = new();
