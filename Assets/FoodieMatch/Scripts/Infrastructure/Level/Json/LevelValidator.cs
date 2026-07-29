@@ -41,12 +41,21 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             ValidateIdentity(level, levelPath, result);
+            GrillLayoutType? layoutType =
+                ValidateGrillLayoutSchema(level, levelPath, result);
             _randomSettingsValidator.Validate(level.RandomSettings, levelPath, result);
             _packageSelectionValidator.Validate(
                 level.PackageSelectionSettings,
                 levelPath,
                 result);
             _grillLayoutValidator.Validate(level.Grills, levelPath, result);
+            StackedGrillLayoutValidator.Validate(
+                layoutType,
+                level.Grills,
+                level.StackedGrillColumns,
+                level.MovingGrillGroups,
+                levelPath,
+                result);
             _grillMovementGroupValidator.Validate(
                 level.Grills,
                 level.MovingGrillGroups,
@@ -74,6 +83,27 @@ namespace FoodieMatch.Infrastructure.Level.Json
             {
                 result.AddError($"{levelPath}.difficulty is invalid.");
             }
+        }
+
+        private static GrillLayoutType? ValidateGrillLayoutSchema(
+            LevelDto level,
+            string levelPath,
+            LevelValidationResult result)
+        {
+            if (string.IsNullOrWhiteSpace(level.GrillLayoutType) ||
+                !Enum.TryParse(level.GrillLayoutType, true, out GrillLayoutType layoutType) ||
+                !Enum.IsDefined(typeof(GrillLayoutType), layoutType))
+            {
+                result.AddError($"{levelPath}.grillLayoutType is invalid.");
+                return null;
+            }
+
+            if (level.StackedGrillColumns == null)
+            {
+                result.AddError($"{levelPath}.grillColumns is required.");
+            }
+
+            return layoutType;
         }
     }
 }

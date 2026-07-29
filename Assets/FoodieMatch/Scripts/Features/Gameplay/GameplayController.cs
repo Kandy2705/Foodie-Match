@@ -66,7 +66,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
-            _boardLayoutView?.StopGrillMovement();
+            _boardLayoutView?.StopMotions();
             UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
@@ -77,6 +77,8 @@ namespace FoodieMatch.Features.Gameplay
             if (_boardLayoutView != null)
             {
                 _boardLayoutView.FoodSelected -= HandleFoodSelected;
+                _boardLayoutView.StackedGrillMotionFinished -=
+                    HandleStackedGrillMotionFinished;
             }
 
             UnsubscribeCoordinatorEvents();
@@ -116,6 +118,8 @@ namespace FoodieMatch.Features.Gameplay
             CreateCoordinators();
             SubscribeCoordinatorEvents();
             _boardLayoutView.FoodSelected += HandleFoodSelected;
+            _boardLayoutView.StackedGrillMotionFinished +=
+                HandleStackedGrillMotionFinished;
         }
 
         public void StartLevel(
@@ -229,7 +233,7 @@ namespace FoodieMatch.Features.Gameplay
             _gameplayWorldClickSfx?.StopListening();
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
-            _boardLayoutView?.StopGrillMovement();
+            _boardLayoutView?.StopMotions();
             _waitingRackFullResolutionPending = false;
             UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
@@ -707,6 +711,11 @@ namespace FoodieMatch.Features.Gameplay
             TryResolveWin(session);
         }
 
+        private void HandleStackedGrillMotionFinished()
+        {
+            TryResolveWin(_session);
+        }
+
         private void HandleGameplayFlowFailed(GameplaySession session)
         {
             if (IsCurrentSession(session))
@@ -763,6 +772,7 @@ namespace FoodieMatch.Features.Gameplay
                 !session.IsDisplayedProgressUpToDate ||
                 _waitingRackAutoFillCoordinator.IsRunning(session) ||
                 _grillCompletionCoordinator.HasActiveMotion(session) ||
+                _boardLayoutView.HasActiveStackedGrillMotion ||
                 _packageDeliveryCoordinator.HasActiveMotion(session))
             {
                 return;
@@ -779,7 +789,7 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _gameplayWorldClickSfx.StopListening();
-            _boardLayoutView.StopGrillMovement();
+            _boardLayoutView.StopMotions();
             _navigationActions?.LevelWon.Invoke(session.LevelNumber);
         }
 
@@ -868,6 +878,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             if (!session.Board.TryGetGrill(grillPositionIndex, out GrillModel grillModel))
             {
+                return;
+            }
+
+            if (session.Board.LayoutType == GrillLayoutType.StackedColumns)
+            {
+                _boardLayoutView.RefreshStackedGrillLayout();
                 return;
             }
 

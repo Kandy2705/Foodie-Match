@@ -65,7 +65,8 @@ namespace FoodieMatch.Features.Gameplay
                 return false;
             }
 
-            _boardLayoutView.TryCollectActiveFoodByTokenId(
+            CollectAccessibleGrillFood(
+                session,
                 targetPackage.FoodTokenId,
                 out List<FoodItemView> grillFoodViews,
                 out List<FoodBoardAddress> grillFoodAddresses);
@@ -91,6 +92,32 @@ namespace FoodieMatch.Features.Gameplay
                 trayGrillPositions,
                 traySlotIndices);
             return true;
+        }
+
+        private void CollectAccessibleGrillFood(
+            GameplaySession session,
+            int foodTokenId,
+            out List<FoodItemView> foodViews,
+            out List<FoodBoardAddress> foodAddresses)
+        {
+            foodViews = new();
+            foodAddresses = new();
+            List<FoodBoardEntry> entries = _boardLayoutView.GetActiveFoodEntries();
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                FoodBoardEntry entry = entries[i];
+
+                if (entry.FoodItemView.FoodTokenId != foodTokenId ||
+                    !session.Board.IsGrillAccessible(
+                        entry.Address.GrillPositionIndex))
+                {
+                    continue;
+                }
+
+                foodViews.Add(entry.FoodItemView);
+                foodAddresses.Add(entry.Address);
+            }
         }
 
         private bool TryFindTargetPackage(
@@ -154,6 +181,12 @@ namespace FoodieMatch.Features.Gameplay
             for (int grillIndex = 0; grillIndex < session.Board.GrillCount; grillIndex++)
             {
                 GrillModel grill = session.Board.GetGrillAt(grillIndex);
+
+                if (!session.Board.IsGrillAccessible(grill.PositionIndex))
+                {
+                    continue;
+                }
+
                 count += CountMatchingFood(
                     grill.ActiveFoodSlotCount,
                     grill.GetFoodTokenIdAt,
@@ -264,6 +297,8 @@ namespace FoodieMatch.Features.Gameplay
 
                     if (session.Board.TryRemoveFood(address, foodView.FoodTokenId))
                     {
+                        session.Board.TryRemoveEmptyGrillFromColumn(
+                            address.GrillPositionIndex);
                         grillRefillCandidates.Add(address.GrillPositionIndex);
                     }
                 }

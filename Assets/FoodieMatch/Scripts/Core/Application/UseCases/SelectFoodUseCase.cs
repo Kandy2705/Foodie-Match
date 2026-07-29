@@ -47,6 +47,8 @@ namespace FoodieMatch.Core.Application.UseCases
                 if (board.TryRemoveFood(address, foodTokenId) &&
                     requiredPackage.TryPlaceFood(foodTokenId))
                 {
+                    board.TryRemoveEmptyGrillFromColumn(address.GrillPositionIndex);
+
                     return SelectFoodResult.PlacedInRequiredPackage(
                         foodTokenId,
                         requiredPackageIndex);
@@ -66,6 +68,8 @@ namespace FoodieMatch.Core.Application.UseCases
                     foodTokenId,
                     out int waitingRackSlotIndex))
             {
+                board.TryRemoveEmptyGrillFromColumn(address.GrillPositionIndex);
+
                 return SelectFoodResult.PlacedInWaitingRack(
                     foodTokenId,
                     waitingRackSlotIndex);

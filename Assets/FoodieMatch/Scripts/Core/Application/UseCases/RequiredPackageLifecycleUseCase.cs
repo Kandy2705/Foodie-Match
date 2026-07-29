@@ -160,6 +160,7 @@ namespace FoodieMatch.Core.Application.UseCases
 
         public bool TryPrepareWaitingRackRescuePackage(
             int slotIndex,
+            BoardModel board,
             WaitingRackModel waitingRack,
             RequiredPackageModel[] packages,
             IReadOnlyList<RequiredPackageModel> packageReservations,
@@ -168,7 +169,8 @@ namespace FoodieMatch.Core.Application.UseCases
         {
             rescuePackage = null;
 
-            if (waitingRack == null ||
+            if (board == null ||
+                waitingRack == null ||
                 packages == null ||
                 packageReservations == null ||
                 packageReservations.Count != packages.Length ||
@@ -181,6 +183,7 @@ namespace FoodieMatch.Core.Application.UseCases
             }
 
             if (!_generator.TryCreateWaitingRackRescuePackage(
+                    board,
                     waitingRack,
                     packageReservations,
                     random,

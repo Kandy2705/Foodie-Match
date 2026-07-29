@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Domain.Grill;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Motion;
 using UnityEngine;
@@ -49,6 +50,7 @@ namespace FoodieMatch.Features.Gameplay
         public void TryCloseCompletedGrill(int grillPositionIndex, GameplaySession session)
         {
             if (!CanContinue(session) ||
+                session.Board.LayoutType == GrillLayoutType.StackedColumns ||
                 !session.Board.TryGetGrill(grillPositionIndex, out GrillModel grillModel) ||
                 grillModel.Type == GrillType.Single ||
                 grillModel.HasRemainingFood ||
