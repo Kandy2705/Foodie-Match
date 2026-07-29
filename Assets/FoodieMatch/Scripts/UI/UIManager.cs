@@ -35,12 +35,20 @@ using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
 using FoodieMatch.UI.Setting;
 using FoodieMatch.UI.Shop;
+using FoodieMatch.UI.Social;
 using UnityEngine;
 
 namespace FoodieMatch.UI
 {
     public sealed class UIManager : MonoBehaviour
     {
+        private const string MainMenuHomeInstanceKey =
+            "main-menu/home";
+        private const string MainMenuShopInstanceKey =
+            "main-menu/shop";
+        private const string MainMenuSocialInstanceKey =
+            "main-menu/social";
+
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
         [SerializeField] private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
@@ -100,7 +108,8 @@ namespace FoodieMatch.UI
         private Action<int> _pendingUnlockCallback;
         private Action _heartRefillCompleted;
         private int _gameplayHudRequestVersion;
-        private int _loadingRequestVersion;
+        private bool _isAddressableUiLoading;
+        private bool _isTransitionLoadingVisible;
 
         public event Action PlayGameRequested;
 
@@ -127,14 +136,17 @@ namespace FoodieMatch.UI
         private void OnDestroy()
         {
             CompleteCoinRewardImmediately();
-            _loadingScreenView?.Hide();
+            _loadingScreenView?.HideImmediately();
 
             if (_addressableUiFactory != null)
             {
                 _addressableUiFactory.LoadingStateChanged -=
                     OnAddressableUiLoadingStateChanged;
+                _addressableUiFactory.LoadingProgressChanged -=
+                    OnAddressableUiLoadingProgressChanged;
             }
 
+            ReleaseMainMenuViews();
             _popupManager.Shutdown();
             _addressableUiFactory?.ReleaseAll();
             UnsubscribeEvents();
@@ -160,6 +172,8 @@ namespace FoodieMatch.UI
                     _addressableLoadingTexture);
             _addressableUiFactory.LoadingStateChanged +=
                 OnAddressableUiLoadingStateChanged;
+            _addressableUiFactory.LoadingProgressChanged +=
+                OnAddressableUiLoadingProgressChanged;
             _popupManager.Construct(addressableUiFactory);
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
@@ -177,12 +191,30 @@ namespace FoodieMatch.UI
 
         private void OnAddressableUiLoadingStateChanged(bool isLoading)
         {
-            if (isLoading)
+            _isAddressableUiLoading = isLoading;
+            RefreshAddressableLoadingOverlay();
+        }
+
+        private void OnAddressableUiLoadingProgressChanged(float progress)
+        {
+            if (_isTransitionLoadingVisible)
+            {
+                _loadingScreenView.SetProgress(progress);
+            }
+        }
+
+        private void RefreshAddressableLoadingOverlay()
+        {
+            bool showOverlay =
+                _isAddressableUiLoading &&
+                !_isTransitionLoadingVisible;
+
+            if (showOverlay)
             {
                 _loadingRoot.SetAsLastSibling();
             }
 
-            _addressableLoadingOverlay.SetVisible(isLoading);
+            _addressableLoadingOverlay.SetVisible(showOverlay);
         }
 
         public void ShowHome(long displayedCoinBalance)
@@ -196,6 +228,9 @@ namespace FoodieMatch.UI
         {
             CompleteCoinRewardImmediately();
 
+            await _addressableUiFactory.PreloadLabelAsync(
+                UiAddressLabels.BootstrapCritical);
+
             MainMenuView mainMenuView =
                 await _popupManager.ShowAsync<MainMenuView>();
 
@@ -204,22 +239,20 @@ namespace FoodieMatch.UI
                 return;
             }
 
-            if (mainMenuView.TryGetView<HomeView>(out HomeView homeView))
-            {
-                homeView.SetActions(
-                    new HomeViewActions(
-                        OnHomePlayRequested,
-                        OnHomeSettingRequested,
-                        OnHomeCoinClicked,
-                        OnHomeHeartClicked));
+            mainMenuView.SetViewLoader(
+                tab => LoadMainMenuViewAsync(mainMenuView, tab));
 
-                SetHomePlayLevel(homeView);
-                homeView.SetPlayerResources(
-                    displayedCoinBalance,
-                    _playerProfileService.GetHeartStatus());
-            }
+            HomeView homeView =
+                (HomeView)await LoadMainMenuViewAsync(
+                    mainMenuView,
+                    BottomNavigationTab.Home);
+            mainMenuView.RegisterView(
+                BottomNavigationTab.Home,
+                homeView);
+            ConfigureHomeView(homeView, displayedCoinBalance);
 
-            BindShopView(mainMenuView);
+            _addressableUiFactory.ReleaseLabel(
+                UiAddressLabels.GameplayCritical);
         }
 
         public void PlayHomeCoinReward(
@@ -297,10 +330,25 @@ namespace FoodieMatch.UI
         {
             int requestVersion = ++_gameplayHudRequestVersion;
 
+            await _addressableUiFactory.PreloadLabelAsync(
+                UiAddressLabels.GameplayCritical);
+
+            if (this == null)
+            {
+                return;
+            }
+
+            if (requestVersion != _gameplayHudRequestVersion)
+            {
+                return;
+            }
+
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.gameObject.SetActive(true);
                 BindGameplayHudActions();
+                _addressableUiFactory.ReleaseLabel(
+                    UiAddressLabels.BootstrapCritical);
                 return;
             }
 
@@ -324,6 +372,8 @@ namespace FoodieMatch.UI
 
             _gameplayHudView.gameObject.SetActive(true);
             BindGameplayHudActions();
+            _addressableUiFactory.ReleaseLabel(
+                UiAddressLabels.BootstrapCritical);
         }
 
         public void HideGameplayHud()
@@ -354,31 +404,22 @@ namespace FoodieMatch.UI
             RefreshActionFeedbackPositions();
         }
 
-        public async Task PlayLoadingAsync()
+        public Task PlayLoadingAsync()
         {
-            int requestVersion = ++_loadingRequestVersion;
-            LoadingScreenView loadingScreen =
-                await GetOrCreateLoadingScreenAsync();
-
-            if (this == null)
-            {
-                return;
-            }
-
-            if (requestVersion != _loadingRequestVersion)
-            {
-                loadingScreen.Hide();
-                return;
-            }
-
-            await loadingScreen.PlayAsync();
+            _isTransitionLoadingVisible = true;
+            RefreshAddressableLoadingOverlay();
+            LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
+            loadingScreen.Show();
+            return Task.CompletedTask;
         }
 
-        public Task PlayLevelWarningAsync(LevelDifficulty difficulty)
+        public async Task PlayLevelWarningAsync(LevelDifficulty difficulty)
         {
+            await HideTransitionLoadingScreenAsync();
+
             if (difficulty == LevelDifficulty.Normal)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             if (_levelWarningView == null)
@@ -389,15 +430,36 @@ namespace FoodieMatch.UI
                 _levelWarningView.gameObject.name = _levelWarningPrefab.gameObject.name;
             }
 
-            _loadingScreenView?.Hide();
-            return _levelWarningView.PlayAsync(difficulty);
+            await _levelWarningView.PlayAsync(difficulty);
         }
 
         public void HideLoading()
         {
-            _loadingRequestVersion++;
-            _loadingScreenView?.Hide();
+            RunUiTask(
+                HideLoadingAsync(),
+                nameof(HideLoading));
+        }
+
+        public async Task HideLoadingAsync()
+        {
+            await HideTransitionLoadingScreenAsync();
             TryShowNextBoosterGuide();
+        }
+
+        private async Task HideTransitionLoadingScreenAsync()
+        {
+            if (_loadingScreenView != null)
+            {
+                await _loadingScreenView.HideAsync();
+            }
+
+            if (this == null)
+            {
+                return;
+            }
+
+            _isTransitionLoadingVisible = false;
+            RefreshAddressableLoadingOverlay();
         }
 
         public void ShowSettingPopup()
@@ -575,7 +637,7 @@ namespace FoodieMatch.UI
             long doubleRewardAmount)
         {
             RunUiTask(
-                ShowPopupAsync<WinView>(
+                ShowResultPopupAsync<WinView>(
                     data: null,
                     winView =>
                     {
@@ -623,7 +685,7 @@ namespace FoodieMatch.UI
             Action homeClicked)
         {
             RunUiTask(
-                ShowPopupAsync<LoseView>(
+                ShowResultPopupAsync<LoseView>(
                     data: null,
                     loseView =>
                     {
@@ -935,17 +997,6 @@ namespace FoodieMatch.UI
             RefreshBoosterHud();
         }
 
-        private void BindShopView(MainMenuView mainMenuView)
-        {
-            if (!mainMenuView.TryGetView<ShopView>(out ShopView shopView))
-            {
-                Debug.LogError("ShopView is not registered in MainMenuView.", mainMenuView);
-                return;
-            }
-
-            BindShopView(shopView);
-        }
-
         private void BindShopView(ShopView shopView)
         {
             shopView.SetPurchaseHandler(ShopPurchaseHandler);
@@ -954,6 +1005,69 @@ namespace FoodieMatch.UI
                 _playerProfileService.CoinBalance,
                 _playerProfileService.GetHeartStatus());
             shopView.SetResourceClickActions(null, null);
+        }
+
+        private async Task<MonoBehaviour> LoadMainMenuViewAsync(
+            MainMenuView mainMenuView,
+            BottomNavigationTab tab)
+        {
+            switch (tab)
+            {
+                case BottomNavigationTab.Home:
+                    return await _addressableUiFactory
+                        .GetOrCreateAsync<HomeView>(
+                            UiAddressKeys.HomeScreen,
+                            MainMenuHomeInstanceKey,
+                            mainMenuView.ViewContainer);
+
+                case BottomNavigationTab.Shop:
+                    ShopView shopView = await _addressableUiFactory
+                        .GetOrCreateAsync<ShopView>(
+                            UiAddressKeys.ShopScreen,
+                            MainMenuShopInstanceKey,
+                            mainMenuView.ViewContainer);
+                    BindShopView(shopView);
+                    return shopView;
+
+                case BottomNavigationTab.Social:
+                    return await _addressableUiFactory
+                        .GetOrCreateAsync<SocialView>(
+                            UiAddressKeys.SocialScreen,
+                            MainMenuSocialInstanceKey,
+                            mainMenuView.ViewContainer);
+
+                default:
+                    throw new InvalidOperationException(
+                        $"Main menu tab {tab} does not have an Addressable view.");
+            }
+        }
+
+        private void ConfigureHomeView(
+            HomeView homeView,
+            long displayedCoinBalance)
+        {
+            homeView.SetActions(
+                new HomeViewActions(
+                    OnHomePlayRequested,
+                    OnHomeSettingRequested,
+                    OnHomeCoinClicked,
+                    OnHomeHeartClicked));
+            SetHomePlayLevel(homeView);
+            homeView.SetPlayerResources(
+                displayedCoinBalance,
+                _playerProfileService.GetHeartStatus());
+        }
+
+        private void ReleaseMainMenuViews()
+        {
+            if (_addressableUiFactory == null)
+            {
+                return;
+            }
+
+            _addressableUiFactory.Release(MainMenuHomeInstanceKey);
+            _addressableUiFactory.Release(MainMenuShopInstanceKey);
+            _addressableUiFactory.Release(MainMenuSocialInstanceKey);
         }
 
         private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
@@ -982,7 +1096,7 @@ namespace FoodieMatch.UI
             }
         }
 
-        private async Task<LoadingScreenView> GetOrCreateLoadingScreenAsync()
+        private LoadingScreenView GetOrCreateLoadingScreen()
         {
             if (_loadingScreenView != null)
             {
@@ -990,10 +1104,11 @@ namespace FoodieMatch.UI
             }
 
             _loadingRoot.SetAsLastSibling();
-            _loadingScreenView =
-                await _addressableUiFactory.GetOrCreateAsync<LoadingScreenView>(
-                    UiAddressKeys.LoadingScreenRoot,
-                    _loadingRoot);
+            _loadingScreenView = Instantiate(
+                _loadingScreenPrefab,
+                _loadingRoot);
+            _loadingScreenView.gameObject.name =
+                _loadingScreenPrefab.gameObject.name;
             return _loadingScreenView;
         }
 
@@ -1037,8 +1152,22 @@ namespace FoodieMatch.UI
 
         private void ShowShopPopup()
         {
+            RunUiTask(
+                ShowShopPopupAsync(),
+                nameof(ShowShopPopup));
+        }
+
+        private async Task ShowShopPopupAsync()
+        {
             ShopView shopView =
-                _popupManager.Show<ShopView>(ShopPopupData.Instance);
+                await _popupManager.ShowAsync<ShopView>(
+                    ShopPopupData.Instance);
+
+            if (this == null)
+            {
+                return;
+            }
+
             BindShopView(shopView);
         }
 
@@ -1509,6 +1638,14 @@ namespace FoodieMatch.UI
             }
 
             configure(popup);
+        }
+
+        private Task ShowResultPopupAsync<TPopup>(
+            IPopupData data,
+            Action<TPopup> configure)
+            where TPopup : PopupBase
+        {
+            return ShowPopupAsync(data, configure);
         }
 
         private void RunUiTask(
