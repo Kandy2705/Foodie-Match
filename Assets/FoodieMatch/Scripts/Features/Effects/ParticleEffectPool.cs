@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using FoodieMatch.Shared.Pooling;
 using UnityEngine;
 
@@ -6,31 +5,15 @@ namespace FoodieMatch.Features.Effects
 {
     public sealed class ParticleEffectPool : MonoBehaviour, IPoolLifecycle
     {
-        [SerializeField] private ParticleSystem _prefab;
+        [SerializeField] private ParticleEffectView _prefab;
         [SerializeField, Min(0)] private int _prewarmCount = 4;
         [SerializeField, Min(1)] private int _maxRetainedCount = 8;
 
-        private readonly List<ParticleSystem> _activeEffects = new();
-        private ComponentPool<ParticleSystem> _pool;
-
-        private void Update()
-        {
-            for (int i = _activeEffects.Count - 1; i >= 0; i--)
-            {
-                if (_activeEffects[i].IsAlive(withChildren: true))
-                {
-                    continue;
-                }
-
-                ParticleSystem particleSystem = _activeEffects[i];
-                _activeEffects.RemoveAt(i);
-                _pool.Release(particleSystem);
-            }
-        }
+        private ComponentPool<ParticleEffectView> _pool;
 
         public void Initialize()
         {
-            _pool = new ComponentPool<ParticleSystem>(
+            _pool = new ComponentPool<ParticleEffectView>(
                 _prefab,
                 transform,
                 _prewarmCount,
@@ -41,12 +24,11 @@ namespace FoodieMatch.Features.Effects
 
         public void Play(Vector3 worldPosition)
         {
-            ParticleSystem particleSystem = _pool.Get(
+            ParticleEffectView effectView = _pool.Get(
                 null,
                 worldPosition,
                 _prefab.transform.rotation);
-            _activeEffects.Add(particleSystem);
-            particleSystem.Play(withChildren: true);
+            effectView.Play(Release);
         }
 
         public void Clear()
@@ -55,18 +37,20 @@ namespace FoodieMatch.Features.Effects
         }
 
         private static void PrepareForUse(
-            ParticleSystem particleSystem)
+            ParticleEffectView effectView)
         {
-            particleSystem.Clear(
-                withChildren: true);
+            effectView.ResetForUse();
         }
 
         private static void PrepareForPool(
-            ParticleSystem particleSystem)
+            ParticleEffectView effectView)
         {
-            particleSystem.Stop(
-                withChildren: true,
-                ParticleSystemStopBehavior.StopEmittingAndClear);
+            effectView.ResetForPool();
+        }
+
+        private void Release(ParticleEffectView effectView)
+        {
+            _pool.Release(effectView);
         }
     }
 }
