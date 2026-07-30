@@ -49,7 +49,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _popupManager: {fileID: 1080891133631342676}
   _uiGlobalButtonClickSfx: {fileID: 2571854868624730069}
-  _gameplayHudPrefab: {fileID: 5073921577126544324, guid: 4145a9f26e87944388702bdb7387eb66, type: 3}
   _hudRoot: {fileID: 3452430392946768677}
   _loadingScreenPrefab: {fileID: 7440178564741621615, guid: 4292533880ee24a5e83a102feeda0aa8, type: 3}
   _loadingRoot: {fileID: 6758003521176904712}
@@ -151,37 +150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _popupRoot: {fileID: 6580915268149829251}
-  _popupPrefabs:
-  - _prefab: {fileID: 4761375427008058043, guid: f0650f64b95e148d7a30d2e64a051082, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 7240000822685251824, guid: 09e42893c3ab04430a77e9e4f35d4e7b, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 918528150111377311, guid: 110cb2d7cb9044fc0b196bcf7fc25f76, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 2425758460981329203, guid: a41b9b59eb1e740c3bb0df4c77316dd8, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: -6148076247100687793, guid: 4cd6b6f6773a943c7a6476e325843c4f, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 544498732315584796, guid: be57f452adaa64c3eba300085f19bf2c, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 8745216390123456781, guid: f1535187c95cc469ea341dd93a48bb61, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 5140699695291097497, guid: 31e068ef4a0244ed485f9d417920543d, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 5140699695291097497, guid: 2ef2879969b9d48839cbc8c052824003, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 8123456789012345701, guid: 7ed6da27fd94d4af0a5692fd2b4a1394, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 1111150378419549563, guid: 3337fb597956d453ca86a30deacd1d65, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 8483208802978512984, guid: 12c038bb33c2a0042948c4eb62b1bd83, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 8267067768933717303, guid: 6d3861de6cf708d4f82c9af89a1eeac3, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 6600928880084009889, guid: 05e41bb18918301438f9de19b55f2acd, type: 3}
-    _cacheAfterHide: 1
-  - _prefab: {fileID: 6282366507674538793, guid: a7b7bb13549a3469cb486efacba92cb4, type: 3}
-    _cacheAfterHide: 1
+  _popupPrefabs: []
 --- !u!1 &5414341360215047437
 GameObject:
   m_ObjectHideFlags: 0

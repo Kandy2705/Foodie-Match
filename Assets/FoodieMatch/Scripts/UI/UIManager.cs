@@ -54,7 +54,6 @@ namespace FoodieMatch.UI
         [SerializeField] private UiGlobalButtonClickSfx _uiGlobalButtonClickSfx;
 
         [Header("HUD")]
-        [SerializeField] private GameplayHudView _gameplayHudPrefab;
         [SerializeField] private Transform _hudRoot;
 
         [Header("Loading")]
