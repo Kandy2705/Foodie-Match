@@ -82,7 +82,7 @@ namespace FoodieMatch.UI
         private IGameEconomyConfig _economyConfig;
         private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
-        private ILevelRepository _levelRepository;
+        private ILevelCatalogRepository _levelCatalogRepository;
         private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
         private IAddressableUiFactory _addressableUiFactory;
@@ -161,7 +161,7 @@ namespace FoodieMatch.UI
             IGameEconomyConfig economyConfig,
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
-            ILevelRepository levelRepository,
+            ILevelCatalogRepository levelCatalogRepository,
             IGameShopConfig shopConfig,
             IAddressableUiFactory addressableUiFactory,
             ComboFeedbackViewPool comboFeedbackViewPool)
@@ -186,7 +186,7 @@ namespace FoodieMatch.UI
             _economyConfig = economyConfig;
             _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
-            _levelRepository = levelRepository;
+            _levelCatalogRepository = levelCatalogRepository;
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
             SubscribeEvents();
@@ -1326,7 +1326,7 @@ namespace FoodieMatch.UI
         {
             PlayerProfileDebugUpdate playerProfile = values.PlayerProfile;
 
-            if (!_levelRepository.TryGetLevel(
+            if (!_levelCatalogRepository.TryGetLevelSummary(
                     playerProfile.CurrentLevelNumber,
                     out _))
             {
@@ -1378,15 +1378,15 @@ namespace FoodieMatch.UI
 
         private void SetHomePlayLevel(HomeView homeView)
         {
-            if (!_levelRepository.TryGetLevel(
+            if (!_levelCatalogRepository.TryGetLevelSummary(
                     _currentLevelNumber,
-                    out LevelDefinition level))
+                    out LevelSummary level))
             {
                 Debug.LogError($"Level {_currentLevelNumber} could not be loaded.");
                 return;
             }
 
-            homeView.SetPlayLevel(level.Id, level.Difficulty);
+            homeView.SetPlayLevel(level.LevelNumber, level.Difficulty);
         }
 
         private void OnPauseResumeClicked()

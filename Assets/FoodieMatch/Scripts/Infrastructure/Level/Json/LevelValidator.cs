@@ -29,11 +29,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
 
         public void Validate(
             LevelDto level,
-            int levelIndex,
+            string levelPath,
             LevelValidationResult result)
         {
-            string levelPath = $"levels[{levelIndex}]";
-
             if (level == null)
             {
                 result.AddError($"{levelPath} cannot be null.");

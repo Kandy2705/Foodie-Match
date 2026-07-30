@@ -26,6 +26,7 @@ namespace FoodieMatch.App
         private ShopPurchaseService _shopPurchaseService;
         private IRewardedAdService _rewardedAdService;
         private PostLevelAdCoordinator _postLevelAdCoordinator;
+        private ILevelCatalogRepository _levelCatalogRepository;
         private ILevelRepository _levelRepository;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
@@ -41,6 +42,7 @@ namespace FoodieMatch.App
             ShopPurchaseService shopPurchaseService,
             IRewardedAdService rewardedAdService,
             PostLevelAdCoordinator postLevelAdCoordinator,
+            ILevelCatalogRepository levelCatalogRepository,
             ILevelRepository levelRepository,
             IAudioService audioService)
         {
@@ -52,6 +54,7 @@ namespace FoodieMatch.App
             _shopPurchaseService = shopPurchaseService;
             _rewardedAdService = rewardedAdService;
             _postLevelAdCoordinator = postLevelAdCoordinator;
+            _levelCatalogRepository = levelCatalogRepository;
             _levelRepository = levelRepository;
             _audioService = audioService;
             _gameplayNavigationActions = new(
@@ -120,25 +123,19 @@ namespace FoodieMatch.App
             try
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
-                await Task.Yield();
-                await loadingTask;
-
-                if (!_levelRepository.TryGetLevel(
-                        levelNumber,
-                        out LevelDefinition levelDefinition))
-                {
-                    throw new InvalidOperationException(
-                        $"Level {levelNumber} disappeared during transition.");
-                }
+                Task<LevelDefinition> levelTask =
+                    _levelRepository.LoadLevelAsync(levelNumber);
+                await Task.WhenAll(loadingTask, levelTask);
+                LevelDefinition level = await levelTask;
 
                 await OpenLevelAsync(
-                    levelNumber,
+                    level,
                     enableGameplayInput: false);
 
                 try
                 {
                     await _uiManager.PlayLevelWarningAsync(
-                        levelDefinition.Difficulty);
+                        level.Difficulty);
                 }
                 finally
                 {
@@ -206,9 +203,10 @@ namespace FoodieMatch.App
         }
 
         private async Task OpenLevelAsync(
-            int levelNumber,
+            LevelDefinition level,
             bool enableGameplayInput)
         {
+            int levelNumber = level.Id;
             _gameplayController.ClearLevel();
             _uiManager.HideAllPopups();
             _uiManager.HideHome();
@@ -220,7 +218,7 @@ namespace FoodieMatch.App
             _playerProfileService.SetCurrentLevelNumber(levelNumber);
             _activeLevelNumber = levelNumber;
             _gameplayController.StartLevel(
-                levelNumber,
+                level,
                 _gameplayNavigationActions,
                 enableGameplayInput);
         }
@@ -258,7 +256,7 @@ namespace FoodieMatch.App
 
         private bool CanLoadLevel(int levelNumber)
         {
-            if (_levelRepository.TryGetLevel(levelNumber, out _))
+            if (_levelCatalogRepository.TryGetLevelSummary(levelNumber, out _))
             {
                 return true;
             }
@@ -271,14 +269,15 @@ namespace FoodieMatch.App
         {
             int savedLevelNumber = _playerProfileService.CurrentLevelNumber;
 
-            if (_levelRepository.TryGetLevel(savedLevelNumber, out _))
+            if (_levelCatalogRepository.TryGetLevelSummary(savedLevelNumber, out _))
             {
                 return savedLevelNumber;
             }
 
-            if (_levelRepository.TryGetFirstLevel(out _))
+            if (_levelCatalogRepository.TryGetFirstLevelSummary(
+                    out LevelSummary firstLevel))
             {
-                return 1;
+                return firstLevel.LevelNumber;
             }
 
             Debug.LogError("Level catalog does not contain a playable level.");
@@ -591,9 +590,11 @@ namespace FoodieMatch.App
                 int homeLevelNumber = _activeLevelNumber;
                 long startingCoinBalance = _playerProfileService.CoinBalance;
 
-                if (_levelRepository.TryGetNextLevel(_activeLevelNumber, out _))
+                if (_levelCatalogRepository.TryGetNextLevelSummary(
+                        _activeLevelNumber,
+                        out LevelSummary nextLevel))
                 {
-                    homeLevelNumber++;
+                    homeLevelNumber = nextLevel.LevelNumber;
                 }
 
                 _playerProfileService.ApplyLevelCompletionReward(

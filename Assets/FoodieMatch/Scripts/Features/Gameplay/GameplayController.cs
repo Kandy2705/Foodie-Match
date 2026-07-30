@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GameState;
 using FoodieMatch.Core.Application.Randomization;
-using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.UseCases;
 using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Booster;
@@ -40,7 +39,6 @@ namespace FoodieMatch.Features.Gameplay
         private FoodItemViewPool _foodItemViewPool;
         private RequiredPackageLifecycleUseCase _requiredPackageLifecycleUseCase;
         private SelectFoodUseCase _selectFoodUseCase;
-        private ILevelRepository _levelRepository;
         private BoardModelFactory _boardModelFactory;
         private PackageDeliveryCoordinator _packageDeliveryCoordinator;
         private WaitingRackPlacementCoordinator _waitingRackPlacementCoordinator;
@@ -99,7 +97,6 @@ namespace FoodieMatch.Features.Gameplay
             FoodItemViewPool foodItemViewPool,
             RequiredPackageLifecycleUseCase requiredPackageLifecycleUseCase,
             SelectFoodUseCase selectFoodUseCase,
-            ILevelRepository levelRepository,
             BoardModelFactory boardModelFactory)
         {
             _uiManager = uiManager;
@@ -115,7 +112,6 @@ namespace FoodieMatch.Features.Gameplay
             _foodItemViewPool = foodItemViewPool;
             _requiredPackageLifecycleUseCase = requiredPackageLifecycleUseCase;
             _selectFoodUseCase = selectFoodUseCase;
-            _levelRepository = levelRepository;
             _boardModelFactory = boardModelFactory;
 
             CreateCoordinators();
@@ -126,19 +122,15 @@ namespace FoodieMatch.Features.Gameplay
         }
 
         public void StartLevel(
-            int levelNumber,
+            LevelDefinition level,
             GameplayNavigationActions navigationActions,
             bool enableInput)
         {
+            int levelNumber = level.Id;
+
             if (!IsValidComboDuration())
             {
                 Debug.LogError("Combo duration must be greater than zero.");
-                return;
-            }
-
-            if (!_levelRepository.TryGetLevel(levelNumber, out LevelDefinition level))
-            {
-                Debug.LogError($"Level {levelNumber} could not be loaded.");
                 return;
             }
 

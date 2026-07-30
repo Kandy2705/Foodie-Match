@@ -27,23 +27,23 @@ namespace FoodieMatch.Editor.LevelDesign
             _initialPackageSignatureFactory = initialPackageSignatureFactory;
         }
 
-        public void Validate(LevelCatalog catalog)
+        public void Validate(IReadOnlyList<LevelDefinition> levels)
         {
             LevelSeedValidationReport report = new()
             {
                 GeneratedAtUtc = DateTime.UtcNow.ToString("O")
             };
-            LevelSeedValidationProgress progress = new(CountSeeds(catalog));
+            LevelSeedValidationProgress progress = new(CountSeeds(levels));
             bool cancelled = false;
 
             try
             {
                 for (int levelIndex = 0;
-                     levelIndex < catalog.OrderedLevels.Count && !cancelled;
+                     levelIndex < levels.Count && !cancelled;
                      levelIndex++)
                 {
                     cancelled = ValidateLevel(
-                        catalog.OrderedLevels[levelIndex],
+                        levels[levelIndex],
                         report,
                         progress);
                 }
@@ -156,13 +156,14 @@ namespace FoodieMatch.Editor.LevelDesign
             return null;
         }
 
-        private static int CountSeeds(LevelCatalog catalog)
+        private static int CountSeeds(
+            IReadOnlyList<LevelDefinition> levels)
         {
             int count = 0;
 
-            for (int i = 0; i < catalog.OrderedLevels.Count; i++)
+            for (int i = 0; i < levels.Count; i++)
             {
-                count += catalog.OrderedLevels[i].RandomSettings.PackageSeeds.Count;
+                count += levels[i].RandomSettings.PackageSeeds.Count;
             }
 
             return count;

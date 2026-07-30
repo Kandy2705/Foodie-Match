@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Infrastructure.Level.Json
 {
@@ -16,11 +17,10 @@ namespace FoodieMatch.Infrastructure.Level.Json
 
         public void Validate(
             LevelContentDto content,
-            LevelCatalogEntryDto catalogEntry,
-            int levelIndex,
+            LevelSummary expectedSummary,
             LevelValidationResult result)
         {
-            string levelPath = $"levels[{levelIndex}]";
+            string levelPath = $"level {expectedSummary.LevelNumber}";
 
             if (content == null)
             {
@@ -29,8 +29,12 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             ValidateSchemaVersion(content, levelPath, result);
-            _levelValidator.Validate(content.Level, levelIndex, result);
-            ValidateCatalogMetadata(content.Level, catalogEntry, levelPath, result);
+            _levelValidator.Validate(content.Level, levelPath, result);
+            ValidateCatalogMetadata(
+                content.Level,
+                expectedSummary,
+                levelPath,
+                result);
         }
 
         private static void ValidateSchemaVersion(
@@ -54,7 +58,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
 
         private static void ValidateCatalogMetadata(
             LevelDto level,
-            LevelCatalogEntryDto catalogEntry,
+            LevelSummary expectedSummary,
             string levelPath,
             LevelValidationResult result)
         {
@@ -64,24 +68,23 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             if (level.Id.HasValue &&
-                catalogEntry.Id.HasValue &&
-                level.Id.Value != catalogEntry.Id.Value)
+                level.Id.Value != expectedSummary.LevelNumber)
             {
                 result.AddError(
                     $"{levelPath}.id {level.Id.Value} does not match catalog id " +
-                    $"{catalogEntry.Id.Value}.");
+                    $"{expectedSummary.LevelNumber}.");
             }
 
             if (!string.IsNullOrWhiteSpace(level.Difficulty) &&
-                !string.IsNullOrWhiteSpace(catalogEntry.Difficulty) &&
-                !string.Equals(
+                Enum.TryParse(
                     level.Difficulty,
-                    catalogEntry.Difficulty,
-                    StringComparison.OrdinalIgnoreCase))
+                    ignoreCase: true,
+                    out LevelDifficulty difficulty) &&
+                difficulty != expectedSummary.Difficulty)
             {
                 result.AddError(
                     $"{levelPath}.difficulty '{level.Difficulty}' does not match catalog " +
-                    $"difficulty '{catalogEntry.Difficulty}'.");
+                    $"difficulty '{expectedSummary.Difficulty}'.");
             }
         }
     }

@@ -43,7 +43,9 @@ namespace FoodieMatch.App
 
         public bool Install(AppRoot appRoot)
         {
-            if (!TryCreateLevelRepository(out ILevelRepository levelRepository))
+            if (!TryCreateLevelRepositories(
+                    out ILevelCatalogRepository levelCatalogRepository,
+                    out ILevelRepository levelRepository))
             {
                 return false;
             }
@@ -123,7 +125,7 @@ namespace FoodieMatch.App
                 economyConfig,
                 advertisingRuntimeSettings,
                 playerProfileService,
-                levelRepository,
+                levelCatalogRepository,
                 shopConfig,
                 addressableUiFactory,
                 appRoot.GameplayPoolRoot.ComboFeedback);
@@ -167,7 +169,6 @@ namespace FoodieMatch.App
                 appRoot.GameplayPoolRoot.FoodItems,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
-                levelRepository,
                 boardModelFactory);
             appRoot.AppController.Construct(
                 appRoot.UIManager,
@@ -178,6 +179,7 @@ namespace FoodieMatch.App
                 shopPurchaseService,
                 rewardedAdService,
                 postLevelAdCoordinator,
+                levelCatalogRepository,
                 levelRepository,
                 audioService);
 
@@ -244,7 +246,9 @@ namespace FoodieMatch.App
             Debug.LogError($"Player profile save failed: {errorMessage}");
         }
 
-        private static bool TryCreateLevelRepository(out ILevelRepository levelRepository)
+        private static bool TryCreateLevelRepositories(
+            out ILevelCatalogRepository levelCatalogRepository,
+            out ILevelRepository levelRepository)
         {
             PackageSelectionSettingsValidator packageSelectionValidator = new();
             LevelRandomSettingsValidator randomSettingsValidator = new();
@@ -257,20 +261,28 @@ namespace FoodieMatch.App
                 grillMovementGroupValidator);
             ResourcesLevelCatalogLoader loader = new(
                 new LevelCatalogJsonParser(),
-                new LevelContentJsonParser(),
                 new LevelCatalogValidator(),
-                new LevelContentValidator(levelValidator),
                 new LevelCatalogMapper());
 
-            if (!loader.TryLoad(out LevelCatalog catalog, out LevelValidationResult validationResult))
+            if (!loader.TryLoad(
+                    out ResourcesLevelCatalogData catalogData,
+                    out LevelValidationResult validationResult))
             {
                 LogLevelValidation(validationResult);
+                levelCatalogRepository = null;
                 levelRepository = null;
                 return false;
             }
 
             LogLevelValidation(validationResult);
-            levelRepository = new LevelCatalogRepository(catalog);
+            levelCatalogRepository =
+                new LevelCatalogRepository(catalogData.Catalog);
+            levelRepository = new ResourcesLevelRepository(
+                levelCatalogRepository,
+                catalogData.ContentFiles,
+                new LevelContentJsonParser(),
+                new LevelContentValidator(levelValidator),
+                new LevelContentMapper());
             return true;
         }
 
