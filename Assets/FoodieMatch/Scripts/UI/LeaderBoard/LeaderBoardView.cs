@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FoodieMatch.UI.MainMenu;
 using PrimeTween;
 using TMPro;
@@ -14,11 +15,24 @@ namespace FoodieMatch.UI.LeaderBoard
         private const float VietnamUtcOffsetHours = 7f;
         private const float ListOvershootScale = 1.1f;
         private const float FeaturedOvershootScale = 1.2f;
+        private const int MaximumDisplayedPlayers = 100;
+        private const string WeeklyValueLabel = "Score";
+        private const string GlobalValueLabel = "Level";
 
         private enum LeaderBoardTab
         {
             Weekly,
             Global
+        }
+
+        [Serializable]
+        private sealed class AvatarBinding
+        {
+            [SerializeField] private string _avatarId;
+            [SerializeField] private Sprite _sprite;
+
+            public string AvatarId => _avatarId;
+            public Sprite Sprite => _sprite;
         }
 
         [Header("Tabs")]
@@ -36,6 +50,13 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private GameObject _weeklyContent;
         [SerializeField] private GameObject _globalContent;
         [SerializeField] private TMP_Text _weeklyTimeRemainingText;
+
+        [Header("Data Views")]
+        [SerializeField] private LeaderBoardPodiumPlayerView[] _weeklyPodiumPlayers;
+        [SerializeField] private LeaderBoardPlayerRowView[] _weeklyPlayerRows;
+        [SerializeField] private LeaderBoardPlayerRowView[] _globalPlayerRows;
+        [SerializeField] private LeaderBoardCurrentPlayerView _currentPlayerView;
+        [SerializeField] private AvatarBinding[] _avatarBindings;
 
         [Header("Weekly Reveal")]
         [SerializeField] private RectTransform _weeklyPodiumRoot;
@@ -58,6 +79,9 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField, Min(0f)] private float _settleDuration = 0.12f;
 
         private LeaderBoardTab _selectedTab;
+        private readonly Dictionary<string, Sprite> _avatarsById =
+            new(StringComparer.Ordinal);
+        private LeaderBoardPlayerData _currentPlayer;
         private Sequence _revealSequence;
         private float _nextTimerRefreshTime;
 
@@ -66,6 +90,7 @@ namespace FoodieMatch.UI.LeaderBoard
             _weeklyButton.onClick.AddListener(OnWeeklyButtonClicked);
             _globalButton.onClick.AddListener(OnGlobalButtonClicked);
 
+            LoadAndBindData();
             _selectedTab = _initialTab;
             SetTabContent(_selectedTab);
             RestoreRevealTargets();
@@ -135,6 +160,7 @@ namespace FoodieMatch.UI.LeaderBoard
             _globalContent.SetActive(!isWeekly);
             _weeklyButton.interactable = !isWeekly;
             _globalButton.interactable = isWeekly;
+            BindCurrentPlayer(tab);
 
             SetButtonVisual(
                 _weeklyButtonImage,
@@ -168,6 +194,204 @@ namespace FoodieMatch.UI.LeaderBoard
             Vector3 labelScale = label.rectTransform.localScale;
             labelScale.x = Mathf.Abs(labelScale.x);
             label.rectTransform.localScale = labelScale;
+        }
+
+        private void LoadAndBindData()
+        {
+            BuildAvatarLookup();
+
+            LeaderBoardDataLoader loader = new();
+            LeaderBoardDatabase database = loader.Load();
+            _currentPlayer = loader.FindCurrentPlayer(database);
+
+            LeaderBoardPlayerData[] weeklyPlayers =
+                GetRankedPlayers(
+                    database.players,
+                    (left, right) =>
+                        left.weeklyRank.CompareTo(right.weeklyRank));
+            LeaderBoardPlayerData[] globalPlayers =
+                GetRankedPlayers(
+                    database.players,
+                    (left, right) =>
+                        left.globalRank.CompareTo(right.globalRank));
+
+            BindPodium(weeklyPlayers);
+            _weeklyPlayerRows = CreateAndBindRows(
+                _weeklyPlayerRows,
+                weeklyPlayers,
+                LeaderBoardTab.Weekly);
+            _globalPlayerRows = CreateAndBindRows(
+                _globalPlayerRows,
+                globalPlayers,
+                LeaderBoardTab.Global);
+
+            CacheRevealRows(
+                _weeklyPlayerRows,
+                out _weeklyRows,
+                out _weeklyRowCanvasGroups);
+            CacheRevealRows(
+                _globalPlayerRows,
+                out _globalRows,
+                out _globalRowCanvasGroups);
+        }
+
+        private void BuildAvatarLookup()
+        {
+            for (int i = 0; i < _avatarBindings.Length; i++)
+            {
+                AvatarBinding binding = _avatarBindings[i];
+                _avatarsById.Add(
+                    binding.AvatarId,
+                    binding.Sprite);
+            }
+        }
+
+        private static LeaderBoardPlayerData[] GetRankedPlayers(
+            LeaderBoardPlayerData[] players,
+            Comparison<LeaderBoardPlayerData> comparison)
+        {
+            List<LeaderBoardPlayerData> rankedPlayers =
+                new(players.Length);
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                rankedPlayers.Add(players[i]);
+            }
+
+            rankedPlayers.Sort(comparison);
+            return rankedPlayers.ToArray();
+        }
+
+        private void BindPodium(
+            LeaderBoardPlayerData[] weeklyPlayers)
+        {
+            for (int i = 0; i < _weeklyPodiumPlayers.Length; i++)
+            {
+                bool hasPlayer = i < weeklyPlayers.Length;
+                _weeklyPodiumPlayers[i].gameObject.SetActive(hasPlayer);
+
+                if (hasPlayer)
+                {
+                    LeaderBoardPlayerData player = weeklyPlayers[i];
+                    _weeklyPodiumPlayers[i].Bind(
+                        player,
+                        GetAvatar(player.avatarId));
+                }
+            }
+        }
+
+        private LeaderBoardPlayerRowView[] CreateAndBindRows(
+            LeaderBoardPlayerRowView[] templates,
+            LeaderBoardPlayerData[] players,
+            LeaderBoardTab tab)
+        {
+            LeaderBoardMedalPlayerRowView medalTemplate = null;
+            LeaderBoardNumberedPlayerRowView numberedTemplate = null;
+
+            for (int i = 0; i < templates.Length; i++)
+            {
+                if (templates[i] is LeaderBoardMedalPlayerRowView medalRow)
+                {
+                    medalTemplate = medalRow;
+                }
+                else if (
+                    templates[i] is LeaderBoardNumberedPlayerRowView
+                        numberedRow)
+                {
+                    numberedTemplate = numberedRow;
+                }
+
+                templates[i].gameObject.SetActive(false);
+            }
+
+            if (medalTemplate == null || numberedTemplate == null)
+            {
+                throw new InvalidOperationException(
+                    "Leaderboard row templates are not configured.");
+            }
+
+            int rowCount =
+                Mathf.Min(players.Length, MaximumDisplayedPlayers);
+            LeaderBoardPlayerRowView[] rows =
+                new LeaderBoardPlayerRowView[rowCount];
+            Transform parent = templates[0].transform.parent;
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                LeaderBoardPlayerData player = players[i];
+                bool isWeekly = tab == LeaderBoardTab.Weekly;
+                int rank =
+                    isWeekly
+                        ? player.weeklyRank
+                        : player.globalRank;
+                int value =
+                    isWeekly
+                        ? player.weeklyScore
+                        : player.level;
+                LeaderBoardPlayerRowView template =
+                    rank <= 3
+                        ? medalTemplate
+                        : numberedTemplate;
+                LeaderBoardPlayerRowView row =
+                    Instantiate(template, parent);
+
+                row.gameObject.name =
+                    $"{tab}RankRow_{rank}";
+                row.gameObject.SetActive(true);
+                row.Bind(
+                    player,
+                    rank,
+                    isWeekly
+                        ? WeeklyValueLabel
+                        : GlobalValueLabel,
+                    value,
+                    GetAvatar(player.avatarId));
+                rows[i] = row;
+            }
+
+            return rows;
+        }
+
+        private static void CacheRevealRows(
+            LeaderBoardPlayerRowView[] rowViews,
+            out RectTransform[] rows,
+            out CanvasGroup[] rowCanvasGroups)
+        {
+            rows = new RectTransform[rowViews.Length];
+            rowCanvasGroups = new CanvasGroup[rowViews.Length];
+
+            for (int i = 0; i < rowViews.Length; i++)
+            {
+                rows[i] =
+                    (RectTransform)rowViews[i].transform;
+                rowCanvasGroups[i] =
+                    rowViews[i].GetComponent<CanvasGroup>();
+            }
+        }
+
+        private void BindCurrentPlayer(
+            LeaderBoardTab tab)
+        {
+            bool isWeekly = tab == LeaderBoardTab.Weekly;
+
+            _currentPlayerView.Bind(
+                _currentPlayer,
+                isWeekly
+                    ? _currentPlayer.weeklyRank
+                    : _currentPlayer.globalRank,
+                isWeekly
+                    ? WeeklyValueLabel
+                    : GlobalValueLabel,
+                isWeekly
+                    ? _currentPlayer.weeklyScore
+                    : _currentPlayer.level,
+                GetAvatar(_currentPlayer.avatarId));
+        }
+
+        private Sprite GetAvatar(
+            string avatarId)
+        {
+            return _avatarsById[avatarId];
         }
 
         private void PlayRevealAnimation(LeaderBoardTab tab)

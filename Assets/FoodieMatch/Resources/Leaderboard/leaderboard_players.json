@@ -1,0 +1,76 @@
+{
+  "currentAccountId": "acc_kandy_001",
+  "currentPlayerId": "player_kandy_001",
+  "players": [
+    {
+      "playerId": "player_trianna_001",
+      "accountId": "acc_trianna_001",
+      "displayName": "triana",
+      "avatarId": "avatar_girl_01",
+      "level": 2270,
+      "weeklyScore": 268,
+      "weeklyRank": 1,
+      "globalRank": 1
+    },
+    {
+      "playerId": "player_paisley_001",
+      "accountId": "acc_paisley_001",
+      "displayName": "Paisley",
+      "avatarId": "avatar_girl_01",
+      "level": 2111,
+      "weeklyScore": 140,
+      "weeklyRank": 2,
+      "globalRank": 2
+    },
+    {
+      "playerId": "player_christopher_001",
+      "accountId": "acc_christopher_001",
+      "displayName": "Christopher",
+      "avatarId": "avatar_girl_01",
+      "level": 1647,
+      "weeklyScore": 126,
+      "weeklyRank": 3,
+      "globalRank": 3
+    },
+    {
+      "playerId": "player_jen_001",
+      "accountId": "acc_jen_001",
+      "displayName": "Jen",
+      "avatarId": "avatar_girl_01",
+      "level": 1442,
+      "weeklyScore": 110,
+      "weeklyRank": 4,
+      "globalRank": 4
+    },
+    {
+      "playerId": "player_ana_001",
+      "accountId": "acc_ana_001",
+      "displayName": "ana",
+      "avatarId": "avatar_girl_02",
+      "level": 1391,
+      "weeklyScore": 100,
+      "weeklyRank": 5,
+      "globalRank": 5
+    },
+    {
+      "playerId": "player_kennedy_001",
+      "accountId": "acc_kennedy_001",
+      "displayName": "Kennedy",
+      "avatarId": "avatar_girl_01",
+      "level": 1350,
+      "weeklyScore": 92,
+      "weeklyRank": 6,
+      "globalRank": 6
+    },
+    {
+      "playerId": "player_kandy_001",
+      "accountId": "acc_kandy_001",
+      "displayName": "Kandy",
+      "avatarId": "avatar_kandy",
+      "level": 28,
+      "weeklyScore": 25,
+      "weeklyRank": 99,
+      "globalRank": 99
+    }
+  ]
+}
