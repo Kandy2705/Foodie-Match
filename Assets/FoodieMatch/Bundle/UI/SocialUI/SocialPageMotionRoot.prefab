@@ -457,7 +457,7 @@ GameObject:
   - component: {fileID: 6729556181389871393}
   - component: {fileID: 1087761828978482699}
   m_Layer: 5
-  m_Name: HomeBackground
+  m_Name: SocialBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
