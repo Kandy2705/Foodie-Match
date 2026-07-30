@@ -7,19 +7,18 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class LevelCatalogMapper
     {
-        public LevelCatalog Map(LevelCatalogDto catalogDto)
+        public LevelCatalog Map(
+            LevelCatalogDto catalogDto,
+            IReadOnlyDictionary<int, LevelDto> levelsById)
         {
             if (catalogDto == null)
             {
                 throw new ArgumentNullException(nameof(catalogDto));
             }
 
-            Dictionary<int, LevelDto> levelsById = new();
-
-            for (int i = 0; i < catalogDto.Levels.Count; i++)
+            if (levelsById == null)
             {
-                LevelDto levelDto = catalogDto.Levels[i];
-                levelsById.Add(levelDto.Id.Value, levelDto);
+                throw new ArgumentNullException(nameof(levelsById));
             }
 
             List<LevelDefinition> orderedLevels = new();

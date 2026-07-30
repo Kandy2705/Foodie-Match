@@ -16,7 +16,9 @@ namespace FoodieMatch.Editor.LevelDesign
                 new GrillMovementGroupValidator());
             ResourcesLevelCatalogLoader loader = new(
                 new LevelCatalogJsonParser(),
-                new LevelCatalogValidator(levelValidator),
+                new LevelContentJsonParser(),
+                new LevelCatalogValidator(),
+                new LevelContentValidator(levelValidator),
                 new LevelCatalogMapper());
 
             if (loader.TryLoad(out catalog, out LevelValidationResult validationResult))

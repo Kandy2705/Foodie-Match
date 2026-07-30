@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 7,
+  "level": {
+    "id": 2,
+    "difficulty": "normal",
+    "grillLayoutType": "standard",
+    "grillColumns": [],
+    "randomization": {
+      "packageSeeds": [
+        1002
+      ],
+      "generatePackageSeedEachRun": false,
+      "randomizeFoodVisualsEachRun": true,
+      "fixedFoodVisualSeed": 9002
+    },
+    "packageSelectionWeights": {
+      "early": {
+        "rackRescue": 15,
+        "readyNow": 70,
+        "topTray": 15
+      },
+      "middle": {
+        "rackRescue": 30,
+        "readyNow": 40,
+        "topTray": 30
+      },
+      "late": {
+        "rackRescue": 60,
+        "readyNow": 30,
+        "topTray": 10
+      }
+    },
+    "movingGrillGroups": [],
+    "grills": [
+      {
+        "id": 1,
+        "type": "standard",
+        "position": {
+          "x": -1.5,
+          "y": 0
+        },
+        "foodIds": [
+          1,
+          1,
+          1
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              3,
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "type": "standard",
+        "position": {
+          "x": 1.5,
+          "y": 0
+        },
+        "foodIds": [
+          2,
+          2,
+          2
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              3,
+              4,
+              5
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

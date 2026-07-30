@@ -1,19 +1,12 @@
 using System;
 using System.Collections.Generic;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class LevelCatalogValidator
     {
-        private const int SupportedSchemaVersion = 7;
-
-        private readonly LevelValidator _levelValidator;
-
-        public LevelCatalogValidator(LevelValidator levelValidator)
-        {
-            _levelValidator = levelValidator ??
-                              throw new ArgumentNullException(nameof(levelValidator));
-        }
+        private const int SupportedSchemaVersion = 1;
 
         public LevelValidationResult Validate(LevelCatalogDto catalog)
         {
@@ -26,7 +19,8 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             ValidateSchemaVersion(catalog, result);
-            Dictionary<int, LevelDto> levelsById = ValidateLevels(catalog.Levels, result);
+            Dictionary<int, LevelCatalogEntryDto> levelsById =
+                ValidateLevels(catalog.Levels, result);
             ValidateLevelOrder(catalog.LevelOrder, levelsById, result);
             return result;
         }
@@ -49,11 +43,11 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
         }
 
-        private Dictionary<int, LevelDto> ValidateLevels(
-            IReadOnlyList<LevelDto> levels,
+        private static Dictionary<int, LevelCatalogEntryDto> ValidateLevels(
+            IReadOnlyList<LevelCatalogEntryDto> levels,
             LevelValidationResult result)
         {
-            Dictionary<int, LevelDto> levelsById = new();
+            Dictionary<int, LevelCatalogEntryDto> levelsById = new();
 
             if (levels == null || levels.Count == 0)
             {
@@ -61,17 +55,24 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 return levelsById;
             }
 
+            HashSet<string> contentFiles = new(StringComparer.OrdinalIgnoreCase);
+
             for (int i = 0; i < levels.Count; i++)
             {
-                LevelDto level = levels[i];
-                _levelValidator.Validate(level, i, result);
+                LevelCatalogEntryDto level = levels[i];
+                string levelPath = $"levels[{i}]";
 
-                if (level?.Id == null || level.Id.Value <= 0)
+                if (level == null)
                 {
+                    result.AddError($"{levelPath} cannot be null.");
                     continue;
                 }
 
-                if (!levelsById.TryAdd(level.Id.Value, level))
+                ValidateLevelMetadata(level, levelPath, contentFiles, result);
+
+                if (level.Id.HasValue &&
+                    level.Id.Value > 0 &&
+                    !levelsById.TryAdd(level.Id.Value, level))
                 {
                     result.AddError($"levels[{i}].id {level.Id.Value} is duplicated.");
                 }
@@ -80,9 +81,42 @@ namespace FoodieMatch.Infrastructure.Level.Json
             return levelsById;
         }
 
+        private static void ValidateLevelMetadata(
+            LevelCatalogEntryDto level,
+            string levelPath,
+            ISet<string> contentFiles,
+            LevelValidationResult result)
+        {
+            if (!level.Id.HasValue)
+            {
+                result.AddError($"{levelPath}.id is required.");
+            }
+            else if (level.Id.Value <= 0)
+            {
+                result.AddError($"{levelPath}.id must be greater than zero.");
+            }
+
+            if (string.IsNullOrWhiteSpace(level.Difficulty) ||
+                !Enum.TryParse(level.Difficulty, true, out LevelDifficulty difficulty) ||
+                !Enum.IsDefined(typeof(LevelDifficulty), difficulty))
+            {
+                result.AddError($"{levelPath}.difficulty is invalid.");
+            }
+
+            if (string.IsNullOrWhiteSpace(level.ContentFile))
+            {
+                result.AddError($"{levelPath}.contentFile is required.");
+            }
+            else if (!contentFiles.Add(level.ContentFile))
+            {
+                result.AddError(
+                    $"{levelPath}.contentFile '{level.ContentFile}' is duplicated.");
+            }
+        }
+
         private static void ValidateLevelOrder(
             IReadOnlyList<int> levelOrder,
-            IReadOnlyDictionary<int, LevelDto> levelsById,
+            IReadOnlyDictionary<int, LevelCatalogEntryDto> levelsById,
             LevelValidationResult result)
         {
             if (levelOrder == null || levelOrder.Count == 0)

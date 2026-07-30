@@ -246,7 +246,6 @@ namespace FoodieMatch.App
 
         private static bool TryCreateLevelRepository(out ILevelRepository levelRepository)
         {
-            LevelCatalogJsonParser parser = new();
             PackageSelectionSettingsValidator packageSelectionValidator = new();
             LevelRandomSettingsValidator randomSettingsValidator = new();
             GrillLayoutValidator grillLayoutValidator = new();
@@ -256,9 +255,12 @@ namespace FoodieMatch.App
                 randomSettingsValidator,
                 grillLayoutValidator,
                 grillMovementGroupValidator);
-            LevelCatalogValidator catalogValidator = new(levelValidator);
-            LevelCatalogMapper mapper = new();
-            ResourcesLevelCatalogLoader loader = new(parser, catalogValidator, mapper);
+            ResourcesLevelCatalogLoader loader = new(
+                new LevelCatalogJsonParser(),
+                new LevelContentJsonParser(),
+                new LevelCatalogValidator(),
+                new LevelContentValidator(levelValidator),
+                new LevelCatalogMapper());
 
             if (!loader.TryLoad(out LevelCatalog catalog, out LevelValidationResult validationResult))
             {
