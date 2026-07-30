@@ -5,7 +5,7 @@ namespace FoodieMatch.UI.Navigation
         Shop,
         Social,
         Home,
-        Season,
+        LeaderBoard,
         Trophy
     }
 }

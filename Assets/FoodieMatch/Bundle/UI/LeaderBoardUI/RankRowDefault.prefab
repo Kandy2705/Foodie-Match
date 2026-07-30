@@ -859,6 +859,7 @@ GameObject:
   - component: {fileID: 3280463638767857395}
   - component: {fileID: 6464635796726260312}
   - component: {fileID: 2915549518793760490}
+  - component: {fileID: 7508437211686376221}
   m_Layer: 5
   m_Name: RankRowDefault
   m_TagString: Untagged
@@ -948,3 +949,15 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!225 &7508437211686376221
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8542288996157177969}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0

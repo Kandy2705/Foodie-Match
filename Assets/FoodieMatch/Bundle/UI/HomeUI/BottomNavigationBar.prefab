@@ -620,6 +620,14 @@ MonoBehaviour:
     _label: Home
     _screenRoot: {fileID: 8261796388687309077, guid: 3dc1dd59a96b7471caef08e797e884a6, type: 3}
     _screenCanvasGroup: {fileID: 7012365103632159397, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+  - _tab: 3
+    _button: {fileID: 1960511801439968795}
+    _target: {fileID: 6052525040010455197}
+    _normalIcon: {fileID: 2167860999512446932}
+    _selectedIcon: {fileID: -4690685448369472589, guid: 04376ff4179204c129e4abc94f573dcf, type: 3}
+    _label: Leaderboard
+    _screenRoot: {fileID: 0}
+    _screenCanvasGroup: {fileID: 0}
   _initialTab: 2
   _screenSlideDuration: 0.32
   _screenSlideEase: 9

@@ -782,6 +782,7 @@ GameObject:
   - component: {fileID: 576214472481835884}
   - component: {fileID: 4591379295485470317}
   - component: {fileID: 1281065570752038571}
+  - component: {fileID: 8247668162799004462}
   m_Layer: 5
   m_Name: CurrentPlayerRow
   m_TagString: Untagged
@@ -851,6 +852,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &8247668162799004462
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8399453740479988203}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8875372717301558659
 GameObject:
   m_ObjectHideFlags: 0
