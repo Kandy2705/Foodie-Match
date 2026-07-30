@@ -36,6 +36,7 @@ using FoodieMatch.UI.Revive;
 using FoodieMatch.UI.Setting;
 using FoodieMatch.UI.Shop;
 using FoodieMatch.UI.Social;
+using FoodieMatch.UI.StarterPack;
 using UnityEngine;
 
 namespace FoodieMatch.UI
@@ -1066,6 +1067,7 @@ namespace FoodieMatch.UI
                 new HomeViewActions(
                     OnHomePlayRequested,
                     OnHomeSettingRequested,
+                    OnHomeStarterPackRequested,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked));
             SetHomePlayLevel(homeView);
@@ -1151,6 +1153,13 @@ namespace FoodieMatch.UI
         private void OnHomeSettingRequested()
         {
             ShowSettingPopup();
+        }
+
+        private void OnHomeStarterPackRequested()
+        {
+            RunUiTask(
+                _popupManager.ShowAsync<StarterPackPopupView>(),
+                nameof(OnHomeStarterPackRequested));
         }
 
         private void OnHomeCoinClicked()

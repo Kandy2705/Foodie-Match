@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8943e0a8498654cb8b7b1d9149fea5bb
+guid: 26bfb81a5215b47dbbd86ba0d0b9caa7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6479761582952887072
-    second: icon_bagCoin_0
+      213: -5375736819801899559
+    second: light_blue_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -88,7 +88,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -101,7 +101,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -114,7 +114,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: icon_bagCoin_0
+      name: light_blue_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 405
-        height: 315
+        y: 1
+        width: 175
+        height: 169
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 023312514dcbce950800000000000000
-      internalID: 6479761582952887072
+      spriteID: 9dd38b128db8565b0800000000000000
+      internalID: -5375736819801899559
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      icon_bagCoin_0: 6479761582952887072
+      light_blue_0: -5375736819801899559
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

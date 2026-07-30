@@ -35,6 +35,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25cc0093651cf43828a6a78fcc81ac68
+    m_Address: Assets/FoodieMatch/Bundle/UI/StarterPackPopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2ef2879969b9d48839cbc8c052824003
     m_Address: Assets/FoodieMatch/Bundle/UI/BoosterBuyPopup.prefab
     m_ReadOnly: 0
@@ -65,6 +70,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4cd6b6f6773a943c7a6476e325843c4f
     m_Address: Assets/FoodieMatch/Bundle/UI/SettingsPopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 538d6065271024bb085488ce9665daf7
+    m_Address: Assets/FoodieMatch/Bundle/UI/StarterPack/RewardItem.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

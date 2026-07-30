@@ -51,6 +51,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playButton: {fileID: 4632995642553308059}
   _settingButton: {fileID: 1105202278278857296}
+  _starterPackButton: {fileID: 0}
   _playLevelText: {fileID: 3725143549059234066}
   _resourceBarView: {fileID: 4250100812085702141}
   _hardPlayButtonSprite: {fileID: 7158726796229424830, guid: 4f4c6305170cf4f2db6ea4496ba431ee, type: 3}

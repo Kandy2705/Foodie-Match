@@ -15,6 +15,7 @@ using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
 using FoodieMatch.UI.Setting;
 using FoodieMatch.UI.Shop;
+using FoodieMatch.UI.StarterPack;
 
 namespace FoodieMatch.UI.AddressableAssets
 {
@@ -38,6 +39,8 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(RetryGamePopupView)] = UiAddressKeys.RetryGamePopup,
                 [typeof(RevivePopupView)] = UiAddressKeys.RevivePopup,
                 [typeof(SettingPopupView)] = UiAddressKeys.SettingsPopup,
+                [typeof(StarterPackPopupView)] =
+                    UiAddressKeys.StarterPackPopup,
                 [typeof(ShopView)] = UiAddressKeys.ShopScreen
             };
 

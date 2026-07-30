@@ -49,8 +49,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Padding:
     m_Left: 0
     m_Right: 0
@@ -79,8 +79,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _coinCounterView: {fileID: 5373342136003834891}
   _heartCounterView: {fileID: 6356246357200524862}
-  _coinCounterButton: {fileID: 771111000000000001}
-  _addCoinButton: {fileID: 771111000000000002}
+  _coinCounterButton: {fileID: 5840324075759272870}
+  _addCoinButton: {fileID: 8988392210588664475}
 --- !u!1001 &4207615645074827350
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -91,11 +91,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 928428718808591034, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 210.567
+      value: 178.38
       objectReference: {fileID: 0}
     - target: {fileID: 928428718808591034, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -14.772
+      value: -16.095
       objectReference: {fileID: 0}
     - target: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_Pivot.x
@@ -123,7 +123,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 240.1103
+      value: 154.06
       objectReference: {fileID: 0}
     - target: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_SizeDelta.y
@@ -183,27 +183,27 @@ PrefabInstance:
       objectReference: {fileID: 1733836232598462721}
     - target: {fileID: 7301646517633085706, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_SizeDelta.x
-      value: -68.6192
+      value: -46.9334
       objectReference: {fileID: 0}
     - target: {fileID: 7301646517633085706, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 24.049881
+      value: 13.207
       objectReference: {fileID: 0}
     - target: {fileID: 8530830589297275893, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 185.4228
+      value: 137.7058
       objectReference: {fileID: 0}
     - target: {fileID: 8530830589297275893, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -159.9643
+      value: -112.1
       objectReference: {fileID: 0}
     - target: {fileID: 8565431001659471012, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 153.2656
+      value: 113.824
       objectReference: {fileID: 0}
     - target: {fileID: 8565431001659471012, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -85.247406
+      value: -56.61084
       objectReference: {fileID: 0}
     - target: {fileID: 9195090113304540354, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_Name
@@ -562,7 +562,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
   m_PrefabInstance: {fileID: 8315713305402346225}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &771111000000000001 stripped
+--- !u!114 &5840324075759272870 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2480259624863009111, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
   m_PrefabInstance: {fileID: 8315713305402346225}
@@ -571,9 +571,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
---- !u!1 &771111000000000002 stripped
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &8988392210588664475 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1142355363630778474, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
   m_PrefabInstance: {fileID: 8315713305402346225}
