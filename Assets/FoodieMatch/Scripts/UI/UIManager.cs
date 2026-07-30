@@ -49,6 +49,8 @@ namespace FoodieMatch.UI
             "main-menu/shop";
         private const string MainMenuSocialInstanceKey =
             "main-menu/social";
+        private const string StarterPackProductId =
+            "starter_pack";
 
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
@@ -1158,8 +1160,17 @@ namespace FoodieMatch.UI
         private void OnHomeStarterPackRequested()
         {
             RunUiTask(
-                _popupManager.ShowAsync<StarterPackPopupView>(),
+                ShowPopupAsync<StarterPackPopupView>(
+                    null,
+                    popup => popup.SetActions(
+                        new StarterPackPopupViewActions(
+                            OnStarterPackBuyRequestedAsync))),
                 nameof(OnHomeStarterPackRequested));
+        }
+
+        private Task<ShopPurchaseResult> OnStarterPackBuyRequestedAsync()
+        {
+            return ShopPurchaseHandler(StarterPackProductId);
         }
 
         private void OnHomeCoinClicked()
