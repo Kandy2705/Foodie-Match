@@ -12,9 +12,12 @@ namespace FoodieMatch.UI.Home
 {
     public sealed class HomeView : MonoBehaviour, IPlayerResourceView, IMainMenuViewLifecycle
     {
+        private const string StarterPackButtonName = "StarterPackButton";
+
         [Header("Actions")]
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
+        [SerializeField] private Button _starterPackButton;
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
@@ -23,19 +26,26 @@ namespace FoodieMatch.UI.Home
 
         private Action _playClicked;
         private Action _settingClicked;
+        private Action _starterPackClicked;
         private Sprite _normalPlayButtonSprite;
 
         private void Awake()
         {
+            _starterPackButton ??=
+                FindRequiredButton(StarterPackButtonName);
             _normalPlayButtonSprite = _playButton.image.sprite;
             _playButton.onClick.AddListener(OnPlayButtonClicked);
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
+            _starterPackButton.onClick.AddListener(
+                OnStarterPackButtonClicked);
         }
 
         private void OnDestroy()
         {
             _playButton.onClick.RemoveListener(OnPlayButtonClicked);
             _settingButton.onClick.RemoveListener(OnSettingButtonClicked);
+            _starterPackButton.onClick.RemoveListener(
+                OnStarterPackButtonClicked);
             Clear();
         }
 
@@ -43,6 +53,7 @@ namespace FoodieMatch.UI.Home
         {
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
+            _starterPackClicked = actions.StarterPackClicked;
             _resourceBarView.SetResourceClickActions(
                 actions.CoinClicked,
                 actions.HeartClicked);
@@ -95,6 +106,7 @@ namespace FoodieMatch.UI.Home
         {
             _playClicked = null;
             _settingClicked = null;
+            _starterPackClicked = null;
             _resourceBarView.Clear();
         }
 
@@ -106,6 +118,27 @@ namespace FoodieMatch.UI.Home
         private void OnSettingButtonClicked()
         {
             _settingClicked?.Invoke();
+        }
+
+        private Button FindRequiredButton(string buttonName)
+        {
+            Button[] buttons = GetComponentsInChildren<Button>(true);
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i].name == buttonName)
+                {
+                    return buttons[i];
+                }
+            }
+
+            throw new InvalidOperationException(
+                $"{nameof(HomeView)} could not find {buttonName}.");
+        }
+
+        private void OnStarterPackButtonClicked()
+        {
+            _starterPackClicked?.Invoke();
         }
 
     }
