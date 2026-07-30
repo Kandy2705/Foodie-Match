@@ -74,7 +74,7 @@ namespace FoodieMatch.UI.Home
                 StopCountdown();
                 _displayedSecondCount = -1;
                 SetUnlimitedPresentation(true);
-                SetRecoveryTimerVisible(true);
+                SetRecoveryTimerVisible(false);
                 UpdateUnlimitedHeartStatus(DateTimeOffset.UtcNow);
                 return;
             }
@@ -155,11 +155,14 @@ namespace FoodieMatch.UI.Home
         {
             if (currentUtc < _unlimitedHeartEndUtc)
             {
-                UpdateRecoveryTimerText(_unlimitedHeartEndUtc - currentUtc);
+                UpdateCountdownText(
+                    _heartCountText,
+                    _unlimitedHeartEndUtc - currentUtc);
                 return;
             }
 
             _isUnlimited = false;
+            _displayedSecondCount = -1;
             SetUnlimitedPresentation(false);
             UpdateHeartCountText();
 
@@ -184,7 +187,11 @@ namespace FoodieMatch.UI.Home
 
         private void SetUnlimitedPresentation(bool isUnlimited)
         {
-            _heartCountText.text = isUnlimited ? "Unlimited" : _heartCount.ToString();
+            if (!isUnlimited)
+            {
+                _heartCountText.text = _heartCount.ToString();
+            }
+
             _heartIconImage.sprite = isUnlimited
                 ? _unlimitedHeartIconSprite
                 : _normalHeartIconSprite;
@@ -201,6 +208,13 @@ namespace FoodieMatch.UI.Home
 
         private void UpdateRecoveryTimerText(TimeSpan remainingTime)
         {
+            UpdateCountdownText(_recoveryTimerText, remainingTime);
+        }
+
+        private void UpdateCountdownText(
+            TMP_Text countdownText,
+            TimeSpan remainingTime)
+        {
             int totalSeconds = Math.Max(
                 0,
                 (int)Math.Ceiling(remainingTime.TotalSeconds));
@@ -213,7 +227,7 @@ namespace FoodieMatch.UI.Home
             _displayedSecondCount = totalSeconds;
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            _recoveryTimerText.text = $"{minutes:00}:{seconds:00}";
+            countdownText.text = $"{minutes:00}:{seconds:00}";
         }
 
         private void OnClicked()
