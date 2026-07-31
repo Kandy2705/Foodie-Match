@@ -308,7 +308,8 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                 Version = version,
                 FirstLevel = pack.FirstLevel,
                 LastLevel = pack.LastLevel,
-                ManifestPath = pack.ManifestPath
+                ArchivePath = pack.ArchivePath,
+                ArchiveSha256 = pack.ArchiveSha256
             };
         }
 

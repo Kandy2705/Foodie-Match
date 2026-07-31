@@ -6,6 +6,18 @@ namespace FoodieMatch.Infrastructure.Level.Remote
     {
         public static bool IsSafeJsonPath(string relativePath)
         {
+            return IsSafePath(relativePath, ".json");
+        }
+
+        public static bool IsSafeZipPath(string relativePath)
+        {
+            return IsSafePath(relativePath, ".zip");
+        }
+
+        private static bool IsSafePath(
+            string relativePath,
+            string extension)
+        {
             if (string.IsNullOrWhiteSpace(relativePath) ||
                 relativePath.StartsWith("/", StringComparison.Ordinal) ||
                 relativePath.Contains("\\") ||
@@ -29,7 +41,7 @@ namespace FoodieMatch.Infrastructure.Level.Remote
             }
 
             return relativePath.EndsWith(
-                ".json",
+                extension,
                 StringComparison.OrdinalIgnoreCase);
         }
     }

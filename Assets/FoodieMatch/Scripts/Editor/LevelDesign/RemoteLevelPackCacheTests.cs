@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using FoodieMatch.Infrastructure.Level;
@@ -49,7 +48,7 @@ namespace FoodieMatch.Editor.LevelDesign
             RemoteLevelPackDto pack = CreatePack(version: 1);
             byte[] manifestContent = CreateManifest(
                 packVersion: 1,
-                CalculateSha256(levelContent));
+                RemoteLevelFileHash.Compute(levelContent));
             Dictionary<string, byte[]> levelContents = new()
             {
                 ["level_0001.json"] = levelContent
@@ -90,7 +89,7 @@ namespace FoodieMatch.Editor.LevelDesign
         public async Task TryReadLevel_NewVersionMissing_ReadsPreviousVersion()
         {
             byte[] levelContent = File.ReadAllBytes(LevelContentPath);
-            string sha256 = CalculateSha256(levelContent);
+            string sha256 = RemoteLevelFileHash.Compute(levelContent);
             Dictionary<string, byte[]> levelContents = new()
             {
                 ["level_0001.json"] = levelContent
@@ -128,8 +127,9 @@ namespace FoodieMatch.Editor.LevelDesign
                 Version = version,
                 FirstLevel = 1,
                 LastLevel = 1,
-                ManifestPath =
-                    "packs/pack_0001/pack_manifest.json"
+                ArchivePath =
+                    $"packs/pack_0001_v{version:D4}.zip",
+                ArchiveSha256 = new string('a', 64)
             };
         }
 
@@ -152,20 +152,6 @@ namespace FoodieMatch.Editor.LevelDesign
                 "]" +
                 "}";
             return Encoding.UTF8.GetBytes(json);
-        }
-
-        private static string CalculateSha256(byte[] content)
-        {
-            using SHA256 sha256 = SHA256.Create();
-            byte[] hash = sha256.ComputeHash(content);
-            StringBuilder builder = new(hash.Length * 2);
-
-            for (int i = 0; i < hash.Length; i++)
-            {
-                builder.Append(hash[i].ToString("x2"));
-            }
-
-            return builder.ToString();
         }
     }
 }

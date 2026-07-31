@@ -7,7 +7,6 @@ namespace FoodieMatch.Infrastructure.Level.Remote
     internal sealed class RemoteLevelPackManifestValidator
     {
         private const int SupportedSchemaVersion = 1;
-        private const int Sha256CharacterCount = 64;
         private const string LocalManifestFileName =
             "pack_manifest.json";
 
@@ -60,7 +59,7 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                         LocalManifestFileName,
                         StringComparison.OrdinalIgnoreCase) ||
                     !contentPaths.Add(level.ContentPath) ||
-                    !IsSha256Valid(level.Sha256))
+                    !RemoteLevelFileHash.IsValid(level.Sha256))
                 {
                     return false;
                 }
@@ -79,25 +78,6 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                    Enum.IsDefined(
                        typeof(LevelDifficulty),
                        parsedDifficulty);
-        }
-
-        private static bool IsSha256Valid(string sha256)
-        {
-            if (sha256 == null ||
-                sha256.Length != Sha256CharacterCount)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < sha256.Length; i++)
-            {
-                if (!Uri.IsHexDigit(sha256[i]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

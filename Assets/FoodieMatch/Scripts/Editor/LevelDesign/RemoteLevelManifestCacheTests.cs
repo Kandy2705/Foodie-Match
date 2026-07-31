@@ -37,7 +37,7 @@ namespace FoodieMatch.Editor.LevelDesign
             string content = CreateManifest(
                 manifestVersion: 2,
                 secondPackFirstLevel: 5,
-                secondPackPath: "packs/pack_0002/pack_manifest.json");
+                secondPackPath: "packs/pack_0002_v0001.zip");
 
             bool written = await _cache.WriteAtomicallyAsync(
                 content,
@@ -56,7 +56,7 @@ namespace FoodieMatch.Editor.LevelDesign
             string content = CreateManifest(
                 manifestVersion: 2,
                 secondPackFirstLevel: 5,
-                secondPackPath: "packs/pack_0002/pack_manifest.json");
+                secondPackPath: "packs/pack_0002_v0001.zip");
 
             bool written = await _cache.WriteAtomicallyAsync(
                 content,
@@ -72,7 +72,7 @@ namespace FoodieMatch.Editor.LevelDesign
             string content = CreateManifest(
                 manifestVersion: 1,
                 secondPackFirstLevel: 4,
-                secondPackPath: "packs/pack_0002/pack_manifest.json");
+                secondPackPath: "packs/pack_0002_v0001.zip");
 
             bool written = await _cache.WriteAtomicallyAsync(
                 content,
@@ -87,7 +87,7 @@ namespace FoodieMatch.Editor.LevelDesign
             string content = CreateManifest(
                 manifestVersion: 1,
                 secondPackFirstLevel: 5,
-                secondPackPath: "../pack_manifest.json");
+                secondPackPath: "../pack_0002.zip");
 
             bool written = await _cache.WriteAtomicallyAsync(
                 content,
@@ -111,14 +111,16 @@ namespace FoodieMatch.Editor.LevelDesign
                 "\"version\":1," +
                 "\"firstLevel\":1," +
                 "\"lastLevel\":4," +
-                "\"manifestPath\":\"packs/pack_0001/pack_manifest.json\"" +
+                "\"archivePath\":\"packs/pack_0001_v0001.zip\"," +
+                $"\"archiveSha256\":\"{new string('a', 64)}\"" +
                 "}," +
                 "{" +
                 "\"id\":2," +
                 "\"version\":1," +
                 $"\"firstLevel\":{secondPackFirstLevel}," +
                 "\"lastLevel\":8," +
-                $"\"manifestPath\":\"{secondPackPath}\"" +
+                $"\"archivePath\":\"{secondPackPath}\"," +
+                $"\"archiveSha256\":\"{new string('b', 64)}\"" +
                 "}" +
                 "]" +
                 "}";

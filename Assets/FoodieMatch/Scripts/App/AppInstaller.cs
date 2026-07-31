@@ -109,7 +109,9 @@ namespace FoodieMatch.App
                 new LevelContentJsonParser(),
                 levelContentValidator);
             RemoteLevelPackDownloader levelPackDownloader =
-                new(levelPackCache);
+                new(
+                    levelPackCache,
+                    new RemoteLevelPackArchiveReader());
             LevelSynchronizer = new RemoteLevelSynchronizer(
                 bundledLevelData,
                 levelCatalogRepository,

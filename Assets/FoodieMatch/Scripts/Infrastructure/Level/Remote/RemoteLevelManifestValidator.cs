@@ -34,7 +34,7 @@ namespace FoodieMatch.Infrastructure.Level.Remote
             IReadOnlyList<RemoteLevelPackDto> packs)
         {
             HashSet<int> packIds = new();
-            HashSet<string> manifestPaths =
+            HashSet<string> archivePaths =
                 new(StringComparer.OrdinalIgnoreCase);
             List<RemoteLevelPackDto> orderedPacks = new(packs);
 
@@ -44,7 +44,7 @@ namespace FoodieMatch.Infrastructure.Level.Remote
 
                 if (!IsPackValid(pack) ||
                     !packIds.Add(pack.Id.Value) ||
-                    !manifestPaths.Add(pack.ManifestPath))
+                    !archivePaths.Add(pack.ArchivePath))
                 {
                     return false;
                 }
@@ -77,8 +77,10 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                    pack.FirstLevel.Value > 0 &&
                    pack.LastLevel.HasValue &&
                    pack.LastLevel.Value >= pack.FirstLevel.Value &&
-                   RemoteLevelPathValidator.IsSafeJsonPath(
-                       pack.ManifestPath);
+                   RemoteLevelPathValidator.IsSafeZipPath(
+                       pack.ArchivePath) &&
+                   RemoteLevelFileHash.IsValid(
+                       pack.ArchiveSha256);
         }
     }
 }

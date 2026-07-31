@@ -29,7 +29,10 @@ namespace FoodieMatch.Infrastructure.Level.Remote
         [JsonProperty("lastLevel")]
         public int? LastLevel { get; set; }
 
-        [JsonProperty("manifestPath")]
-        public string ManifestPath { get; set; }
+        [JsonProperty("archivePath")]
+        public string ArchivePath { get; set; }
+
+        [JsonProperty("archiveSha256")]
+        public string ArchiveSha256 { get; set; }
     }
 }
