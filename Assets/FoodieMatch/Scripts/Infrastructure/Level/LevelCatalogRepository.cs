@@ -7,38 +7,41 @@ namespace FoodieMatch.Infrastructure.Level
 {
     public sealed class LevelCatalogRepository : ILevelCatalogRepository
     {
-        private readonly LevelCatalog _catalog;
-        private readonly Dictionary<int, int> _levelIndices = new();
+        private readonly Dictionary<int, LevelSummary> _localLevels = new();
+        private readonly Dictionary<int, LevelSummary> _allLevels = new();
+        private readonly List<LevelSummary> _orderedLevels = new();
 
         public LevelCatalogRepository(LevelCatalog catalog)
         {
-            _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
-
-            for (int i = 0; i < _catalog.OrderedLevels.Count; i++)
+            if (catalog == null)
             {
-                _levelIndices.Add(
-                    _catalog.OrderedLevels[i].LevelNumber,
-                    i);
+                throw new ArgumentNullException(nameof(catalog));
             }
+
+            for (int i = 0; i < catalog.OrderedLevels.Count; i++)
+            {
+                LevelSummary level = catalog.OrderedLevels[i];
+                _localLevels.Add(level.LevelNumber, level);
+            }
+
+            RebuildLevels(remoteLevels: null);
+        }
+
+        public void SetRemoteLevels(IReadOnlyList<LevelSummary> remoteLevels)
+        {
+            RebuildLevels(remoteLevels);
         }
 
         public bool TryGetLevelSummary(
             int levelNumber,
             out LevelSummary summary)
         {
-            if (_levelIndices.TryGetValue(levelNumber, out int levelIndex))
-            {
-                summary = _catalog.OrderedLevels[levelIndex];
-                return true;
-            }
-
-            summary = default;
-            return false;
+            return _allLevels.TryGetValue(levelNumber, out summary);
         }
 
         public bool TryGetFirstLevelSummary(out LevelSummary summary)
         {
-            summary = _catalog.OrderedLevels[0];
+            summary = _orderedLevels[0];
             return true;
         }
 
@@ -46,24 +49,48 @@ namespace FoodieMatch.Infrastructure.Level
             int currentLevelNumber,
             out LevelSummary summary)
         {
-            if (!_levelIndices.TryGetValue(
-                    currentLevelNumber,
-                    out int currentLevelIndex))
+            if (!_allLevels.ContainsKey(currentLevelNumber))
             {
                 summary = default;
                 return false;
             }
 
-            int nextLevelIndex = currentLevelIndex + 1;
-
-            if (nextLevelIndex >= _catalog.OrderedLevels.Count)
+            for (int i = 0; i < _orderedLevels.Count; i++)
             {
-                summary = default;
-                return false;
+                if (_orderedLevels[i].LevelNumber > currentLevelNumber)
+                {
+                    summary = _orderedLevels[i];
+                    return true;
+                }
             }
 
-            summary = _catalog.OrderedLevels[nextLevelIndex];
-            return true;
+            summary = default;
+            return false;
+        }
+
+        private void RebuildLevels(IReadOnlyList<LevelSummary> remoteLevels)
+        {
+            _allLevels.Clear();
+
+            foreach (KeyValuePair<int, LevelSummary> level in _localLevels)
+            {
+                _allLevels.Add(level.Key, level.Value);
+            }
+
+            if (remoteLevels != null)
+            {
+                for (int i = 0; i < remoteLevels.Count; i++)
+                {
+                    LevelSummary level = remoteLevels[i];
+                    _allLevels[level.LevelNumber] = level;
+                }
+            }
+
+            _orderedLevels.Clear();
+            _orderedLevels.AddRange(_allLevels.Values);
+            _orderedLevels.Sort(
+                (left, right) =>
+                    left.LevelNumber.CompareTo(right.LevelNumber));
         }
     }
 }

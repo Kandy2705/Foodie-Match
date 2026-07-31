@@ -13,45 +13,105 @@ namespace FoodieMatch.Infrastructure.Level.Remote
         private const int DownloadTimeoutSeconds = 4;
 
         private readonly RemoteLevelManifestCache _cache;
+        private readonly string _fallbackManifestUrl;
 
-        public RemoteLevelManifestLoader(RemoteLevelManifestCache cache)
+        private Uri _manifestUri;
+
+        public RemoteLevelManifestLoader(
+            RemoteLevelManifestCache cache,
+            string fallbackManifestUrl)
         {
             _cache = cache;
+            _fallbackManifestUrl = fallbackManifestUrl;
         }
 
-        public async Task RefreshAsync(CancellationToken cancellationToken)
+        public async Task<bool> RefreshAsync(
+            CancellationToken cancellationToken)
         {
-            FirebaseRemoteConfig remoteConfig =
-                FirebaseRemoteConfig.DefaultInstance;
-
-            if (!TryGetManifestSettings(
-                    remoteConfig,
-                    out int manifestVersion,
-                    out string manifestUrl))
+            if (!TryResolveManifestSettings(
+                    out Uri manifestUri,
+                    out int? expectedManifestVersion))
             {
-                return;
+                return _cache.TryLoad(out _);
             }
+
+            _manifestUri = manifestUri;
 
             if (_cache.TryLoad(out RemoteLevelManifestDto cachedManifest) &&
-                cachedManifest.ManifestVersion == manifestVersion)
+                (!expectedManifestVersion.HasValue ||
+                 cachedManifest.ManifestVersion ==
+                 expectedManifestVersion.Value))
             {
-                return;
+                return true;
             }
 
+            return await DownloadAndCacheAsync(
+                manifestUri,
+                expectedManifestVersion,
+                cancellationToken);
+        }
+
+        public async Task<bool> RefreshForMissingLevelAsync(
+            CancellationToken cancellationToken)
+        {
+            if (!TryResolveManifestSettings(
+                    out Uri manifestUri,
+                    out int? expectedManifestVersion))
+            {
+                return false;
+            }
+
+            _manifestUri = manifestUri;
+            return await DownloadAndCacheAsync(
+                manifestUri,
+                expectedManifestVersion,
+                cancellationToken);
+        }
+
+        public bool TryGetManifest(out RemoteLevelManifestDto manifest)
+        {
+            return _cache.TryLoad(out manifest);
+        }
+
+        public bool TryGetManifestUri(out Uri manifestUri)
+        {
+            if (_manifestUri != null)
+            {
+                manifestUri = _manifestUri;
+                return true;
+            }
+
+            if (TryResolveManifestSettings(out manifestUri, out _))
+            {
+                _manifestUri = manifestUri;
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<bool> DownloadAndCacheAsync(
+            Uri manifestUri,
+            int? expectedManifestVersion,
+            CancellationToken cancellationToken)
+        {
             try
             {
-                string content = await DownloadManifestAsync(
-                    manifestUrl,
+                byte[] content = await RemoteFileDownloader.DownloadAsync(
+                    manifestUri,
+                    DownloadTimeoutSeconds,
                     cancellationToken);
                 bool written = await _cache.WriteAtomicallyAsync(
-                    content,
-                    manifestVersion);
+                    Encoding.UTF8.GetString(content),
+                    expectedManifestVersion);
 
                 if (!written)
                 {
                     Debug.LogWarning(
                         "Downloaded level manifest is invalid. Cached manifest will be preserved.");
                 }
+
+                return written;
             }
             catch (OperationCanceledException) when (
                 cancellationToken.IsCancellationRequested)
@@ -63,42 +123,57 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                 Debug.LogWarning(
                     $"Level manifest could not be refreshed: {exception.Message}. " +
                     "Cached manifest will be used.");
+                return false;
             }
         }
 
-        private static bool TryGetManifestSettings(
-            FirebaseRemoteConfig remoteConfig,
-            out int manifestVersion,
-            out string manifestUrl)
+        private bool TryResolveManifestSettings(
+            out Uri manifestUri,
+            out int? manifestVersion)
         {
-            ConfigValue versionValue = remoteConfig.GetValue(
-                FirebaseRemoteConfigKeys.LevelManifestVersion);
-            ConfigValue urlValue = remoteConfig.GetValue(
-                FirebaseRemoteConfigKeys.LevelManifestUrl);
-
-            manifestVersion = 0;
-            manifestUrl = string.Empty;
-
-            if (versionValue.Source != ValueSource.RemoteValue ||
-                urlValue.Source != ValueSource.RemoteValue)
+            if (TryGetRemoteManifestSettings(
+                    out manifestUri,
+                    out int remoteManifestVersion))
             {
-                return false;
+                manifestVersion = remoteManifestVersion;
+                return true;
             }
+
+            manifestVersion = null;
+            return TryCreateManifestUri(
+                _fallbackManifestUrl,
+                out manifestUri);
+        }
+
+        private static bool TryGetRemoteManifestSettings(
+            out Uri manifestUri,
+            out int manifestVersion)
+        {
+            manifestUri = null;
+            manifestVersion = 0;
 
             try
             {
-                long remoteVersion = versionValue.LongValue;
-                manifestUrl = urlValue.StringValue;
+                FirebaseRemoteConfig remoteConfig =
+                    FirebaseRemoteConfig.DefaultInstance;
+                ConfigValue versionValue = remoteConfig.GetValue(
+                    FirebaseRemoteConfigKeys.LevelManifestVersion);
+                ConfigValue urlValue = remoteConfig.GetValue(
+                    FirebaseRemoteConfigKeys.LevelManifestUrl);
 
-                if (remoteVersion == 0 &&
-                    string.IsNullOrWhiteSpace(manifestUrl))
+                if (versionValue.Source != ValueSource.RemoteValue ||
+                    urlValue.Source != ValueSource.RemoteValue)
                 {
                     return false;
                 }
 
+                long remoteVersion = versionValue.LongValue;
+
                 if (remoteVersion <= 0 ||
                     remoteVersion > int.MaxValue ||
-                    !IsValidManifestUrl(manifestUrl))
+                    !TryCreateManifestUri(
+                        urlValue.StringValue,
+                        out manifestUri))
                 {
                     Debug.LogWarning(
                         "Remote level manifest settings are invalid.");
@@ -114,26 +189,23 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                     "Remote level manifest version is invalid.");
                 return false;
             }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"Remote level settings could not be read: {exception.Message}");
+                return false;
+            }
         }
 
-        private static bool IsValidManifestUrl(string manifestUrl)
+        private static bool TryCreateManifestUri(
+            string manifestUrl,
+            out Uri manifestUri)
         {
             return Uri.TryCreate(
                        manifestUrl,
                        UriKind.Absolute,
-                       out Uri uri) &&
-                   uri.Scheme == Uri.UriSchemeHttps;
-        }
-
-        private static async Task<string> DownloadManifestAsync(
-            string manifestUrl,
-            CancellationToken cancellationToken)
-        {
-            byte[] content = await RemoteFileDownloader.DownloadAsync(
-                new Uri(manifestUrl),
-                DownloadTimeoutSeconds,
-                cancellationToken);
-            return Encoding.UTF8.GetString(content);
+                       out manifestUri) &&
+                   manifestUri.Scheme == Uri.UriSchemeHttps;
         }
     }
 }

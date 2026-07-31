@@ -1,10 +1,12 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
@@ -28,6 +30,7 @@ namespace FoodieMatch.App
         private PostLevelAdCoordinator _postLevelAdCoordinator;
         private ILevelCatalogRepository _levelCatalogRepository;
         private ILevelRepository _levelRepository;
+        private ILevelSynchronizer _levelSynchronizer;
         private IAudioService _audioService;
         private GameplayNavigationActions _gameplayNavigationActions;
         private bool _isTransitionRunning;
@@ -44,6 +47,7 @@ namespace FoodieMatch.App
             PostLevelAdCoordinator postLevelAdCoordinator,
             ILevelCatalogRepository levelCatalogRepository,
             ILevelRepository levelRepository,
+            ILevelSynchronizer levelSynchronizer,
             IAudioService audioService)
         {
             _uiManager = uiManager;
@@ -56,6 +60,7 @@ namespace FoodieMatch.App
             _postLevelAdCoordinator = postLevelAdCoordinator;
             _levelCatalogRepository = levelCatalogRepository;
             _levelRepository = levelRepository;
+            _levelSynchronizer = levelSynchronizer;
             _audioService = audioService;
             _gameplayNavigationActions = new(
                 OnGameplayHomeRequested,
@@ -76,6 +81,7 @@ namespace FoodieMatch.App
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
             _uiManager.ShopPurchaseHandler = OnShopPurchaseRequestedAsync;
+            _levelSynchronizer.CatalogUpdated += OnLevelCatalogUpdated;
         }
 
         public void EnterHome()
@@ -95,6 +101,15 @@ namespace FoodieMatch.App
         {
             if (!CanLoadLevel(levelNumber))
             {
+                return;
+            }
+
+            if (!_levelSynchronizer.IsLevelAvailable(levelNumber) &&
+                Application.internetReachability ==
+                NetworkReachability.NotReachable)
+            {
+                _uiManager.ShowActionFeedback(
+                    "Connect to the internet to download new levels.");
                 return;
             }
 
@@ -120,26 +135,42 @@ namespace FoodieMatch.App
                 return;
             }
 
+            string feedbackMessage = null;
+
             try
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
-                Task<LevelDefinition> levelTask =
-                    _levelRepository.LoadLevelAsync(levelNumber);
-                await Task.WhenAll(loadingTask, levelTask);
-                LevelDefinition level = await levelTask;
+                bool levelAvailable =
+                    await _levelSynchronizer.EnsureLevelAvailableAsync(
+                        levelNumber,
+                        CancellationToken.None);
 
-                await OpenLevelAsync(
-                    level,
-                    enableGameplayInput: false);
-
-                try
+                if (levelAvailable)
                 {
-                    await _uiManager.PlayLevelWarningAsync(
-                        level.Difficulty);
+                    Task<LevelDefinition> levelTask =
+                        _levelRepository.LoadLevelAsync(levelNumber);
+                    await Task.WhenAll(loadingTask, levelTask);
+                    LevelDefinition level = await levelTask;
+
+                    await OpenLevelAsync(
+                        level,
+                        enableGameplayInput: false);
+
+                    try
+                    {
+                        await _uiManager.PlayLevelWarningAsync(
+                            level.Difficulty);
+                    }
+                    finally
+                    {
+                        _gameplayController.EnableGameplayInput();
+                    }
                 }
-                finally
+                else
                 {
-                    _gameplayController.EnableGameplayInput();
+                    await loadingTask;
+                    feedbackMessage =
+                        "Level download failed. Please try again.";
                 }
             }
             catch (Exception exception)
@@ -149,6 +180,11 @@ namespace FoodieMatch.App
             finally
             {
                 await FinishTransitionAsync();
+            }
+
+            if (feedbackMessage != null)
+            {
+                _uiManager.ShowActionFeedback(feedbackMessage);
             }
         }
 
@@ -175,7 +211,8 @@ namespace FoodieMatch.App
             try
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
-                await Task.Yield();
+                await SynchronizeUpcomingLevelsWithTimeoutAsync(
+                    levelNumber);
                 long displayedCoinBalance = coinRewardPresentation == null
                     ? _playerProfileService.CoinBalance
                     : coinRewardPresentation.StartingCoinBalance;
@@ -199,6 +236,51 @@ namespace FoodieMatch.App
                     coinRewardPresentation.StartingCoinBalance,
                     coinRewardPresentation.TargetCoinBalance,
                     coinRewardPresentation.CoinValuePerImage);
+            }
+        }
+
+        private async Task SynchronizeUpcomingLevelsWithTimeoutAsync(
+            int currentLevelNumber)
+        {
+            Task synchronizationTask =
+                _levelSynchronizer.SynchronizeUpcomingLevelsAsync(
+                    currentLevelNumber,
+                    LevelSynchronizationSettings.FollowingLevelCount,
+                    CancellationToken.None);
+            Task completedTask = await Task.WhenAny(
+                synchronizationTask,
+                Task.Delay(LevelSynchronizationSettings.LoadingWaitLimit));
+
+            if (completedTask == synchronizationTask)
+            {
+                await ObserveLevelSynchronizationAsync(
+                    synchronizationTask);
+                return;
+            }
+
+            _ = ObserveLevelSynchronizationAsync(
+                synchronizationTask);
+        }
+
+        private static async Task ObserveLevelSynchronizationAsync(
+            Task synchronizationTask)
+        {
+            try
+            {
+                await synchronizationTask;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"Level synchronization failed: {exception.Message}");
+            }
+        }
+
+        private void OnLevelCatalogUpdated()
+        {
+            if (_activeLevelNumber == 0)
+            {
+                _uiManager.RefreshHomeLevel();
             }
         }
 

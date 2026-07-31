@@ -64,6 +64,92 @@ namespace FoodieMatch.Infrastructure.Level.Remote
             return true;
         }
 
+        public bool ContainsLevel(
+            RemoteLevelPackDto expectedPack,
+            int levelNumber)
+        {
+            return TryFindAvailablePack(
+                expectedPack,
+                out RemoteLevelPackManifestDto manifest,
+                out _) &&
+                   FindLevel(manifest, levelNumber) != null;
+        }
+
+        public bool TryReadLevel(
+            RemoteLevelPackDto expectedPack,
+            int levelNumber,
+            out string content,
+            out LevelSummary summary)
+        {
+            content = null;
+            summary = default;
+
+            if (!TryFindAvailablePack(
+                    expectedPack,
+                    out RemoteLevelPackManifestDto manifest,
+                    out string versionDirectory))
+            {
+                return false;
+            }
+
+            RemoteLevelEntryDto level = FindLevel(manifest, levelNumber);
+
+            if (level == null ||
+                !_diskCache.TryReadBytes(
+                    $"{versionDirectory}/{level.ContentPath}",
+                    out byte[] levelContent) ||
+                !RemoteLevelFileHash.Matches(levelContent, level.Sha256))
+            {
+                return false;
+            }
+
+            try
+            {
+                content = FileEncoding.GetString(levelContent);
+                Enum.TryParse(
+                    level.Difficulty,
+                    ignoreCase: true,
+                    out LevelDifficulty difficulty);
+                summary = new LevelSummary(levelNumber, difficulty);
+                return true;
+            }
+            catch (DecoderFallbackException)
+            {
+                content = null;
+                summary = default;
+                return false;
+            }
+        }
+
+        public bool TryGetLevelSummaries(
+            RemoteLevelPackDto expectedPack,
+            out IReadOnlyList<LevelSummary> summaries)
+        {
+            if (!TryFindAvailablePack(
+                    expectedPack,
+                    out RemoteLevelPackManifestDto manifest,
+                    out _))
+            {
+                summaries = null;
+                return false;
+            }
+
+            List<LevelSummary> levels = new(manifest.Levels.Count);
+
+            for (int i = 0; i < manifest.Levels.Count; i++)
+            {
+                RemoteLevelEntryDto level = manifest.Levels[i];
+                Enum.TryParse(
+                    level.Difficulty,
+                    ignoreCase: true,
+                    out LevelDifficulty difficulty);
+                levels.Add(new LevelSummary(level.Id.Value, difficulty));
+            }
+
+            summaries = levels;
+            return true;
+        }
+
         internal bool TryParseManifest(
             byte[] content,
             RemoteLevelPackDto expectedPack,
@@ -117,6 +203,133 @@ namespace FoodieMatch.Infrastructure.Level.Remote
             _diskCache.DeleteSubdirectoriesExcept(
                 GetPackDirectory(activePack),
                 GetVersionDirectoryName(activePack));
+        }
+
+        private bool TryFindAvailablePack(
+            RemoteLevelPackDto expectedPack,
+            out RemoteLevelPackManifestDto manifest,
+            out string versionDirectory)
+        {
+            if (TryLoadPackVersion(
+                    expectedPack,
+                    expectedPack.Version.Value,
+                    out manifest,
+                    out versionDirectory))
+            {
+                return true;
+            }
+
+            IReadOnlyList<string> directoryNames =
+                _diskCache.GetSubdirectoryNames(
+                    GetPackDirectory(expectedPack));
+            List<int> versions = new();
+
+            for (int i = 0; i < directoryNames.Count; i++)
+            {
+                if (TryParseVersionDirectoryName(
+                        directoryNames[i],
+                        out int version) &&
+                    version != expectedPack.Version.Value)
+                {
+                    versions.Add(version);
+                }
+            }
+
+            versions.Sort((left, right) => right.CompareTo(left));
+
+            for (int i = 0; i < versions.Count; i++)
+            {
+                if (TryLoadPackVersion(
+                        expectedPack,
+                        versions[i],
+                        out manifest,
+                        out versionDirectory))
+                {
+                    return true;
+                }
+            }
+
+            manifest = null;
+            versionDirectory = null;
+            return false;
+        }
+
+        private bool TryLoadPackVersion(
+            RemoteLevelPackDto expectedPack,
+            int version,
+            out RemoteLevelPackManifestDto manifest,
+            out string versionDirectory)
+        {
+            RemoteLevelPackDto versionedPack =
+                CreateVersionedPack(expectedPack, version);
+            versionDirectory = GetVersionDirectory(versionedPack);
+            string manifestPath =
+                $"{versionDirectory}/{LocalManifestFileName}";
+
+            if (!IsAvailable(versionedPack) ||
+                !_diskCache.TryReadBytes(
+                    manifestPath,
+                    out byte[] manifestContent) ||
+                !TryParseManifest(
+                    manifestContent,
+                    versionedPack,
+                    out manifest))
+            {
+                manifest = null;
+                versionDirectory = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        private static RemoteLevelEntryDto FindLevel(
+            RemoteLevelPackManifestDto manifest,
+            int levelNumber)
+        {
+            for (int i = 0; i < manifest.Levels.Count; i++)
+            {
+                if (manifest.Levels[i].Id == levelNumber)
+                {
+                    return manifest.Levels[i];
+                }
+            }
+
+            return null;
+        }
+
+        private static RemoteLevelPackDto CreateVersionedPack(
+            RemoteLevelPackDto pack,
+            int version)
+        {
+            return new RemoteLevelPackDto
+            {
+                Id = pack.Id,
+                Version = version,
+                FirstLevel = pack.FirstLevel,
+                LastLevel = pack.LastLevel,
+                ManifestPath = pack.ManifestPath
+            };
+        }
+
+        private static bool TryParseVersionDirectoryName(
+            string directoryName,
+            out int version)
+        {
+            const string prefix = "version_";
+
+            if (!directoryName.StartsWith(
+                    prefix,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                version = 0;
+                return false;
+            }
+
+            return int.TryParse(
+                       directoryName.Substring(prefix.Length),
+                       out version) &&
+                   version > 0;
         }
 
         private bool IsStagedPackValid(

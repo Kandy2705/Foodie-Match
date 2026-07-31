@@ -86,6 +86,30 @@ namespace FoodieMatch.Editor.LevelDesign
             Assert.That(_cache.IsAvailable(pack), Is.False);
         }
 
+        [Test]
+        public async Task TryReadLevel_NewVersionMissing_ReadsPreviousVersion()
+        {
+            byte[] levelContent = File.ReadAllBytes(LevelContentPath);
+            string sha256 = CalculateSha256(levelContent);
+            Dictionary<string, byte[]> levelContents = new()
+            {
+                ["level_0001.json"] = levelContent
+            };
+
+            await _cache.WriteAtomicallyAsync(
+                CreatePack(version: 1),
+                CreateManifest(packVersion: 1, sha256),
+                levelContents);
+            bool loaded = _cache.TryReadLevel(
+                CreatePack(version: 2),
+                levelNumber: 1,
+                out string content,
+                out _);
+
+            Assert.That(loaded, Is.True);
+            Assert.That(content, Is.EqualTo(Encoding.UTF8.GetString(levelContent)));
+        }
+
         private static LevelContentValidator CreateLevelContentValidator()
         {
             LevelValidator levelValidator = new(

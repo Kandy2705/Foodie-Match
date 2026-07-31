@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Features.Board;
@@ -10,6 +11,7 @@ using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.UI;
 using UnityEngine;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace FoodieMatch.App
 {
@@ -66,6 +68,8 @@ namespace FoodieMatch.App
         private void OnDestroy()
         {
             _initializationCancellation?.Cancel();
+            _initializationCancellation?.Dispose();
+            _initializationCancellation = null;
         }
 
         public void Initialize()
@@ -83,20 +87,27 @@ namespace FoodieMatch.App
         {
             try
             {
+                Stopwatch startupTimer = Stopwatch.StartNew();
                 Task loadingTask = _uiManager.PlayLoadingAsync();
-                bool remoteConfigRefreshed =
-                    await _appInstaller.GameConfigurationLoader.RefreshAsync(
-                        cancellationToken);
+                await _appInstaller.GameConfigurationLoader.RefreshAsync(
+                    cancellationToken);
 
-                if (remoteConfigRefreshed)
-                {
-                    await _appInstaller.LevelManifestLoader.RefreshAsync(
+                Task<PlayerProfileInitializationResult> profileTask =
+                    _appInstaller.PlayerProfileInitializer.InitializeAsync(
                         cancellationToken);
-                }
-
                 PlayerProfileInitializationResult result =
-                    await _appInstaller.PlayerProfileInitializer.InitializeAsync(
-                        cancellationToken);
+                    await profileTask;
+                Task levelSynchronizationTask = result.IsSuccess
+                    ? _appInstaller.LevelSynchronizer
+                        .SynchronizeUpcomingLevelsAsync(
+                            result.Record.Profile.CurrentLevelNumber,
+                            LevelSynchronizationSettings.FollowingLevelCount,
+                            cancellationToken)
+                    : Task.CompletedTask;
+                await WaitForStartupLevelSynchronizationAsync(
+                    levelSynchronizationTask,
+                    startupTimer.Elapsed,
+                    cancellationToken);
                 await loadingTask;
 
                 if (!result.IsSuccess)
@@ -128,9 +139,60 @@ namespace FoodieMatch.App
                 {
                     await _uiManager.HideLoadingAsync();
                 }
+            }
+        }
 
-                _initializationCancellation?.Dispose();
-                _initializationCancellation = null;
+        private static async Task WaitForStartupLevelSynchronizationAsync(
+            Task synchronizationTask,
+            TimeSpan elapsed,
+            CancellationToken cancellationToken)
+        {
+            TimeSpan remainingDuration =
+                LevelSynchronizationSettings.LoadingWaitLimit - elapsed;
+
+            if (remainingDuration <= TimeSpan.Zero)
+            {
+                _ = ObserveLevelSynchronizationAsync(
+                    synchronizationTask,
+                    cancellationToken);
+                return;
+            }
+
+            Task completedTask = await Task.WhenAny(
+                synchronizationTask,
+                Task.Delay(
+                    remainingDuration,
+                    cancellationToken));
+
+            if (completedTask == synchronizationTask)
+            {
+                await ObserveLevelSynchronizationAsync(
+                    synchronizationTask,
+                    cancellationToken);
+                return;
+            }
+
+            _ = ObserveLevelSynchronizationAsync(
+                synchronizationTask,
+                cancellationToken);
+        }
+
+        private static async Task ObserveLevelSynchronizationAsync(
+            Task synchronizationTask,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await synchronizationTask;
+            }
+            catch (OperationCanceledException) when (
+                cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"Startup level synchronization failed: {exception.Message}");
             }
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -158,6 +159,26 @@ namespace FoodieMatch.Infrastructure.Level
                     Directory.Delete(directories[i], recursive: true);
                 }
             }
+        }
+
+        public IReadOnlyList<string> GetSubdirectoryNames(string relativePath)
+        {
+            string directoryPath = GetCachePath(relativePath);
+
+            if (!Directory.Exists(directoryPath))
+            {
+                return Array.Empty<string>();
+            }
+
+            string[] directories = Directory.GetDirectories(directoryPath);
+            string[] directoryNames = new string[directories.Length];
+
+            for (int i = 0; i < directories.Length; i++)
+            {
+                directoryNames[i] = Path.GetFileName(directories[i]);
+            }
+
+            return directoryNames;
         }
 
         public void ClearStaging()

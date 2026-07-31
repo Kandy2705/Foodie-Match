@@ -34,7 +34,7 @@ namespace FoodieMatch.Infrastructure.Level.Remote
 
         public Task<bool> WriteAtomicallyAsync(
             string content,
-            int expectedManifestVersion)
+            int? expectedManifestVersion)
         {
             return _diskCache.WriteFileAtomicallyAsync(
                 ManifestCachePath,

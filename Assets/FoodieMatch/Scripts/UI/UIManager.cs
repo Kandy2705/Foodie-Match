@@ -327,6 +327,16 @@ namespace FoodieMatch.UI
             }
         }
 
+        public void RefreshHomeLevel()
+        {
+            if (_popupManager.TryGetOpened(
+                    out MainMenuView mainMenuView) &&
+                mainMenuView.TryGetView(out HomeView homeView))
+            {
+                SetHomePlayLevel(homeView);
+            }
+        }
+
         public void HideHome()
         {
             CompleteCoinRewardImmediately();
