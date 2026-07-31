@@ -84,7 +84,16 @@ namespace FoodieMatch.App
             try
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
-                await _appInstaller.GameConfigurationLoader.RefreshAsync(cancellationToken);
+                bool remoteConfigRefreshed =
+                    await _appInstaller.GameConfigurationLoader.RefreshAsync(
+                        cancellationToken);
+
+                if (remoteConfigRefreshed)
+                {
+                    await _appInstaller.LevelManifestLoader.RefreshAsync(
+                        cancellationToken);
+                }
+
                 PlayerProfileInitializationResult result =
                     await _appInstaller.PlayerProfileInitializer.InitializeAsync(
                         cancellationToken);

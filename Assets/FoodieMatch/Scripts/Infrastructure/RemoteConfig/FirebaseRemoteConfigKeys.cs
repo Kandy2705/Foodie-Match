@@ -35,5 +35,9 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             "booster_box_unlock_level";
         public const string PostLevelAdIntervalMinutes =
             "ads_post_level_interval_minutes";
+        public const string LevelManifestVersion =
+            "levels_manifest_version";
+        public const string LevelManifestUrl =
+            "levels_manifest_url";
     }
 }

@@ -31,7 +31,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             _cache = cache;
         }
 
-        public async Task RefreshAsync(CancellationToken cancellationToken)
+        public async Task<bool> RefreshAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     Debug.LogWarning(
                         $"Firebase dependencies are unavailable: {dependencyStatus}. " +
                         "Cached or local configuration will be used.");
-                    return;
+                    return false;
                 }
 
                 FirebaseRemoteConfig remoteConfig =
@@ -67,7 +67,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                 {
                     Debug.LogWarning(
                         "Remote Config fetch failed. Cached or local configuration will be used.");
-                    return;
+                    return false;
                 }
 
                 await remoteConfig.ActivateAsync();
@@ -77,6 +77,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     _snapshotBuilder.Build(remoteConfig, _session.Current);
                 _session.Apply(configuration);
                 _cache.Save(configuration);
+                return true;
             }
             catch (OperationCanceledException) when (
                 cancellationToken.IsCancellationRequested)
@@ -88,6 +89,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                 Debug.LogWarning(
                     $"Remote Config could not be refreshed: {exception.Message}. " +
                     "Cached or local configuration will be used.");
+                return false;
             }
         }
 
@@ -129,7 +131,9 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                 [FirebaseRemoteConfigKeys.BoxBoosterUnlockLevel] =
                     defaults.Booster.GetUnlockLevel(BoosterType.Box),
                 [FirebaseRemoteConfigKeys.PostLevelAdIntervalMinutes] =
-                    checked((int)defaults.Ads.PostLevelAdInterval.TotalMinutes)
+                    checked((int)defaults.Ads.PostLevelAdInterval.TotalMinutes),
+                [FirebaseRemoteConfigKeys.LevelManifestVersion] = 0,
+                [FirebaseRemoteConfigKeys.LevelManifestUrl] = string.Empty
             };
         }
     }

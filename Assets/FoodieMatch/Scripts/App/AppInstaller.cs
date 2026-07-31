@@ -1,3 +1,4 @@
+using System.IO;
 using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
@@ -22,6 +23,7 @@ using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
+using FoodieMatch.Infrastructure.Level.Remote;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Persistence.Save;
@@ -45,6 +47,8 @@ namespace FoodieMatch.App
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
 
         public FirebaseGameConfigurationLoader GameConfigurationLoader { get; private set; }
+
+        public RemoteLevelManifestLoader LevelManifestLoader { get; private set; }
 
         public bool Install(AppRoot appRoot)
         {
@@ -78,6 +82,13 @@ namespace FoodieMatch.App
                 configurationSession,
                 localConfigDefaults,
                 configurationCache);
+            LevelDiskCache levelDiskCache = new(
+                Path.Combine(
+                    Application.persistentDataPath,
+                    "LevelCache"));
+            levelDiskCache.ClearStaging();
+            LevelManifestLoader = new RemoteLevelManifestLoader(
+                new RemoteLevelManifestCache(levelDiskCache));
             IAdvertisingRuntimeSettings advertisingRuntimeSettings =
                 new PlayerPrefsAdvertisingRuntimeSettings(saveService);
             IGameHeartConfig heartConfig = configurationSession;
