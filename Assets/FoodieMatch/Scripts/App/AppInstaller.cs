@@ -2,6 +2,7 @@ using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
@@ -22,7 +23,9 @@ using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Persistence.Save;
+using FoodieMatch.Infrastructure.RemoteConfig;
 using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
@@ -41,6 +44,8 @@ namespace FoodieMatch.App
 
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
 
+        public FirebaseGameConfigurationLoader GameConfigurationLoader { get; private set; }
+
         public bool Install(AppRoot appRoot)
         {
             if (!TryCreateLevelRepositories(
@@ -58,10 +63,24 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            GameConfigurationSnapshotSet localConfigDefaults =
+                GameConfigurationSnapshotSet.CreateDefaults();
+            PlayerPrefsGameConfigurationCache configurationCache = new(saveService);
+            GameConfigurationSnapshotSet initialConfig = localConfigDefaults;
+
+            if (configurationCache.TryLoad(out GameConfigurationSnapshotSet cachedConfig))
+            {
+                initialConfig = cachedConfig;
+            }
+
+            GameConfigurationSession configurationSession = new(initialConfig);
+            GameConfigurationLoader = new FirebaseGameConfigurationLoader(
+                configurationSession,
+                localConfigDefaults,
+                configurationCache);
             IAdvertisingRuntimeSettings advertisingRuntimeSettings =
                 new PlayerPrefsAdvertisingRuntimeSettings(saveService);
-            IGameHeartConfig heartConfig =
-                GameHeartDefaults.CreateSnapshot();
+            IGameHeartConfig heartConfig = configurationSession;
             IClock clock = new SystemClock();
             PlayerProfileSession profileSession = new();
             IPlayerProfileRepository profileRepository =
@@ -105,11 +124,9 @@ namespace FoodieMatch.App
             BoardModelFactory boardModelFactory = new();
 
             BoosterManager boosterManager = new(playerProfileService);
-            IGameBoosterConfig boosterConfig =
-                GameBoosterDefaults.CreateSnapshot();
-            IGameEconomyConfig economyConfig =
-                GameEconomyDefaults.CreateSnapshot();
-            IGameAdsConfig adsConfig = GameAdsDefaults.CreateSnapshot();
+            IGameBoosterConfig boosterConfig = configurationSession;
+            IGameEconomyConfig economyConfig = configurationSession;
+            IGameAdsConfig adsConfig = configurationSession;
             ShopPurchaseService shopPurchaseService = new(
                 shopConfig,
                 new DebugFreeShopPaymentGateway(),
