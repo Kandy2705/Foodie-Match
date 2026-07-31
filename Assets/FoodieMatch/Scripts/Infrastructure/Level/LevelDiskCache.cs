@@ -44,6 +44,22 @@ namespace FoodieMatch.Infrastructure.Level
             return true;
         }
 
+        public bool TryReadBytes(
+            string relativePath,
+            out byte[] content)
+        {
+            string filePath = GetCachePath(relativePath);
+
+            if (!File.Exists(filePath))
+            {
+                content = null;
+                return false;
+            }
+
+            content = File.ReadAllBytes(filePath);
+            return true;
+        }
+
         public async Task<bool> WriteFileAtomicallyAsync(
             string relativePath,
             string content,
@@ -73,6 +89,73 @@ namespace FoodieMatch.Infrastructure.Level
                 if (File.Exists(stagedPath))
                 {
                     File.Delete(stagedPath);
+                }
+            }
+        }
+
+        public async Task<bool> WriteDirectoryAtomicallyAsync(
+            string relativePath,
+            Func<string, Task> writeStagedDirectory,
+            Func<string, bool> isDirectoryValid)
+        {
+            string targetPath = GetCachePath(relativePath);
+            string stagedPath = CreateStagedDirectoryPath();
+
+            Directory.CreateDirectory(stagedPath);
+
+            try
+            {
+                await writeStagedDirectory(stagedPath);
+
+                if (!isDirectoryValid(stagedPath))
+                {
+                    return false;
+                }
+
+                ActivateStagedDirectory(stagedPath, targetPath);
+                return true;
+            }
+            finally
+            {
+                if (Directory.Exists(stagedPath))
+                {
+                    Directory.Delete(stagedPath, recursive: true);
+                }
+            }
+        }
+
+        public void DeleteSubdirectoriesExcept(
+            string relativePath,
+            string keptDirectoryName)
+        {
+            string parentPath = GetCachePath(relativePath);
+
+            if (!Directory.Exists(parentPath))
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(keptDirectoryName) ||
+                keptDirectoryName.Contains(
+                    Path.DirectorySeparatorChar.ToString()) ||
+                keptDirectoryName.Contains(
+                    Path.AltDirectorySeparatorChar.ToString()))
+            {
+                throw new ArgumentException(
+                    "Kept directory name must be a single directory name.",
+                    nameof(keptDirectoryName));
+            }
+
+            string[] directories = Directory.GetDirectories(parentPath);
+
+            for (int i = 0; i < directories.Length; i++)
+            {
+                if (!string.Equals(
+                        Path.GetFileName(directories[i]),
+                        keptDirectoryName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    Directory.Delete(directories[i], recursive: true);
                 }
             }
         }
@@ -117,6 +200,13 @@ namespace FoodieMatch.Infrastructure.Level
                 $"{Guid.NewGuid():N}.tmp");
         }
 
+        private string CreateStagedDirectoryPath()
+        {
+            return Path.Combine(
+                _stagingDirectory,
+                Guid.NewGuid().ToString("N"));
+        }
+
         private static async Task WriteStagedFileAsync(
             string stagedPath,
             string content)
@@ -148,6 +238,38 @@ namespace FoodieMatch.Infrastructure.Level
             }
 
             File.Move(stagedPath, targetPath);
+        }
+
+        private static void ActivateStagedDirectory(
+            string stagedPath,
+            string targetPath)
+        {
+            string targetParent = Path.GetDirectoryName(targetPath);
+            Directory.CreateDirectory(targetParent);
+
+            if (!Directory.Exists(targetPath))
+            {
+                Directory.Move(stagedPath, targetPath);
+                return;
+            }
+
+            string backupPath = $"{targetPath}.{Guid.NewGuid():N}.backup";
+            Directory.Move(targetPath, backupPath);
+
+            try
+            {
+                Directory.Move(stagedPath, targetPath);
+                Directory.Delete(backupPath, recursive: true);
+            }
+            catch
+            {
+                if (!Directory.Exists(targetPath))
+                {
+                    Directory.Move(backupPath, targetPath);
+                }
+
+                throw;
+            }
         }
     }
 }

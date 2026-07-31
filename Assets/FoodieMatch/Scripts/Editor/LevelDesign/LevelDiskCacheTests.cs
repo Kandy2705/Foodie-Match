@@ -79,6 +79,76 @@ namespace FoodieMatch.Editor.LevelDesign
         }
 
         [Test]
+        public async Task WriteDirectoryAtomicallyAsync_InvalidContent_PreservesActiveDirectory()
+        {
+            const string relativePath = "packs/pack_0001/version_0001";
+
+            await _cache.WriteDirectoryAtomicallyAsync(
+                relativePath,
+                directory =>
+                {
+                    File.WriteAllText(
+                        Path.Combine(directory, "level.json"),
+                        "original");
+                    return Task.CompletedTask;
+                },
+                directory => File.Exists(
+                    Path.Combine(directory, "level.json")));
+            bool written = await _cache.WriteDirectoryAtomicallyAsync(
+                relativePath,
+                directory =>
+                {
+                    File.WriteAllText(
+                        Path.Combine(directory, "level.json"),
+                        "updated");
+                    return Task.CompletedTask;
+                },
+                directory => false);
+
+            Assert.That(written, Is.False);
+            Assert.That(
+                _cache.TryReadFile(
+                    $"{relativePath}/level.json",
+                    out string content),
+                Is.True);
+            Assert.That(content, Is.EqualTo("original"));
+        }
+
+        [Test]
+        public async Task WriteDirectoryAtomicallyAsync_ValidContent_ReplacesActiveDirectory()
+        {
+            const string relativePath = "packs/pack_0001/version_0001";
+
+            await _cache.WriteDirectoryAtomicallyAsync(
+                relativePath,
+                directory => WriteDirectoryContent(directory, "original"),
+                directory => HasDirectoryContent(directory, "original"));
+            bool written = await _cache.WriteDirectoryAtomicallyAsync(
+                relativePath,
+                directory => WriteDirectoryContent(directory, "updated"),
+                directory => HasDirectoryContent(directory, "updated"));
+
+            Assert.That(written, Is.True);
+            Assert.That(
+                _cache.TryReadFile($"{relativePath}/level.json", out string content),
+                Is.True);
+            Assert.That(content, Is.EqualTo("updated"));
+        }
+
+        [Test]
+        public void DeleteSubdirectoriesExcept_RemovesInactiveVersions()
+        {
+            string packDirectory = Path.Combine(_cacheDirectory, "packs", "pack_0001");
+            Directory.CreateDirectory(Path.Combine(packDirectory, "version_0001"));
+            Directory.CreateDirectory(Path.Combine(packDirectory, "version_0002"));
+
+            _cache.DeleteSubdirectoriesExcept("packs/pack_0001", "version_0002");
+
+            Assert.That(Directory.Exists(Path.Combine(packDirectory, "version_0001")), Is.False);
+            Assert.That(Directory.Exists(Path.Combine(packDirectory, "version_0002")), Is.True);
+        }
+
+        [Test]
         public void ClearStaging_RemovesStaleFiles()
         {
             string stagingDirectory = Path.Combine(
@@ -99,6 +169,18 @@ namespace FoodieMatch.Editor.LevelDesign
         {
             Assert.Throws<ArgumentException>(
                 () => _cache.TryReadFile("../outside.json", out _));
+        }
+
+        private static Task WriteDirectoryContent(string directory, string content)
+        {
+            File.WriteAllText(Path.Combine(directory, "level.json"), content);
+            return Task.CompletedTask;
+        }
+
+        private static bool HasDirectoryContent(string directory, string expectedContent)
+        {
+            string path = Path.Combine(directory, "level.json");
+            return File.Exists(path) && File.ReadAllText(path) == expectedContent;
         }
     }
 }

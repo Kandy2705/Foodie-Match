@@ -1,10 +1,10 @@
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Firebase.RemoteConfig;
 using FoodieMatch.Infrastructure.RemoteConfig;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace FoodieMatch.Infrastructure.Level.Remote
 {
@@ -129,31 +129,11 @@ namespace FoodieMatch.Infrastructure.Level.Remote
             string manifestUrl,
             CancellationToken cancellationToken)
         {
-            using UnityWebRequest request =
-                UnityWebRequest.Get(manifestUrl);
-            request.timeout = DownloadTimeoutSeconds;
-            UnityWebRequestAsyncOperation operation =
-                request.SendWebRequest();
-
-            while (!operation.isDone)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    request.Abort();
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-
-                await Task.Yield();
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                throw new InvalidOperationException(request.error);
-            }
-
-            return request.downloadHandler.text;
+            byte[] content = await RemoteFileDownloader.DownloadAsync(
+                new Uri(manifestUrl),
+                DownloadTimeoutSeconds,
+                cancellationToken);
+            return Encoding.UTF8.GetString(content);
         }
     }
 }
