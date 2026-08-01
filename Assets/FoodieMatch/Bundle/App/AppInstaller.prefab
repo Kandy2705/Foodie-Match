@@ -46,3 +46,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rewardedAdUnitId: al9i0eex91mfiufa
   _interstitialAdUnitId: wv41yn6q47tyyb9n
+  _fallbackLevelManifestUrl: https://foodiematch-b5ea6.web.app/levels/manifest.json
