@@ -51,10 +51,18 @@ namespace FoodieMatch.Infrastructure.Level.Remote
 
         public async Task<bool> EnsureLevelAvailableAsync(
             int levelNumber,
+            Action<LevelSynchronizationProgress> progressChanged,
             CancellationToken cancellationToken)
         {
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.CheckingManifest);
+
             if (IsLevelAvailable(levelNumber))
             {
+                ReportProgress(
+                    progressChanged,
+                    LevelSynchronizationStage.Completed);
                 return true;
             }
 
@@ -73,28 +81,57 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                         out manifestUri))
                 {
                     RefreshCatalog();
+                    ReportProgress(
+                        progressChanged,
+                        LevelSynchronizationStage.Completed);
                     return false;
                 }
             }
 
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.ManifestReady);
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.DownloadingPacks,
+                completedPackCount: 0,
+                totalPackCount: 1);
             await DownloadPackAsync(
                 pack,
                 manifestUri,
                 cancellationToken);
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.DownloadingPacks,
+                completedPackCount: 1,
+                totalPackCount: 1);
             RefreshCatalog();
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.Completed);
             return IsLevelAvailable(levelNumber);
         }
 
         public async Task SynchronizeUpcomingLevelsAsync(
             int currentLevelNumber,
             int followingLevelCount,
+            Action<LevelSynchronizationProgress> progressChanged,
             CancellationToken cancellationToken)
         {
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.CheckingManifest);
             await _manifestLoader.RefreshAsync(cancellationToken);
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.ManifestReady);
 
             if (!_manifestLoader.TryGetManifest(
                     out RemoteLevelManifestDto manifest))
             {
+                ReportProgress(
+                    progressChanged,
+                    LevelSynchronizationStage.Completed);
                 return;
             }
 
@@ -114,6 +151,9 @@ namespace FoodieMatch.Infrastructure.Level.Remote
             if (manifest == null ||
                 !_manifestLoader.TryGetManifestUri(out Uri manifestUri))
             {
+                ReportProgress(
+                    progressChanged,
+                    LevelSynchronizationStage.Completed);
                 return;
             }
 
@@ -136,8 +176,37 @@ namespace FoodieMatch.Infrastructure.Level.Remote
                         cancellationToken));
             }
 
-            await Task.WhenAll(downloads);
+            await WaitForDownloadsAsync(downloads, progressChanged);
             RefreshCatalog(manifest);
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.Completed);
+        }
+
+        private static async Task WaitForDownloadsAsync(
+            List<Task<bool>> downloads,
+            Action<LevelSynchronizationProgress> progressChanged)
+        {
+            int totalPackCount = downloads.Count;
+            int completedPackCount = 0;
+            ReportProgress(
+                progressChanged,
+                LevelSynchronizationStage.DownloadingPacks,
+                completedPackCount,
+                totalPackCount);
+
+            while (downloads.Count > 0)
+            {
+                Task<bool> completedDownload = await Task.WhenAny(downloads);
+                await completedDownload;
+                downloads.Remove(completedDownload);
+                completedPackCount++;
+                ReportProgress(
+                    progressChanged,
+                    LevelSynchronizationStage.DownloadingPacks,
+                    completedPackCount,
+                    totalPackCount);
+            }
         }
 
         private Task<bool> DownloadPackAsync(
@@ -298,6 +367,19 @@ namespace FoodieMatch.Infrastructure.Level.Remote
         {
             return ((long)pack.Id.Value << 32) |
                    (uint)pack.Version.Value;
+        }
+
+        private static void ReportProgress(
+            Action<LevelSynchronizationProgress> progressChanged,
+            LevelSynchronizationStage stage,
+            int completedPackCount = 0,
+            int totalPackCount = 0)
+        {
+            progressChanged(
+                new LevelSynchronizationProgress(
+                    stage,
+                    completedPackCount,
+                    totalPackCount));
         }
     }
 }

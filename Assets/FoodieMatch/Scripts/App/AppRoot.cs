@@ -89,25 +89,36 @@ namespace FoodieMatch.App
             {
                 Stopwatch startupTimer = Stopwatch.StartNew();
                 Task loadingTask = _uiManager.PlayLoadingAsync();
+                _uiManager.SetLoadingProgress(0.2f);
                 await _appInstaller.GameConfigurationLoader.RefreshAsync(
                     cancellationToken);
 
+                _uiManager.SetLoadingProgress(0.35f);
                 Task<PlayerProfileInitializationResult> profileTask =
                     _appInstaller.PlayerProfileInitializer.InitializeAsync(
                         cancellationToken);
                 PlayerProfileInitializationResult result =
                     await profileTask;
+                LevelLoadingProgressReporter levelProgress = new(
+                    _uiManager,
+                    checkingManifest: 0.45f,
+                    manifestReady: 0.55f,
+                    packsReady: 0.87f,
+                    completed: 0.9f);
                 Task levelSynchronizationTask = result.IsSuccess
                     ? _appInstaller.LevelSynchronizer
                         .SynchronizeUpcomingLevelsAsync(
                             result.Record.Profile.CurrentLevelNumber,
                             LevelSynchronizationSettings.FollowingLevelCount,
+                            levelProgress.Report,
                             cancellationToken)
                     : Task.CompletedTask;
                 await WaitForStartupLevelSynchronizationAsync(
                     levelSynchronizationTask,
                     startupTimer.Elapsed,
                     cancellationToken);
+                levelProgress.Stop();
+                _uiManager.SetLoadingProgress(0.92f);
                 await loadingTask;
 
                 if (!result.IsSuccess)
@@ -124,6 +135,7 @@ namespace FoodieMatch.App
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
+                _uiManager.SetLoadingProgress(0.97f);
                 await _appController.EnterHomeAsync();
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -194,6 +206,92 @@ namespace FoodieMatch.App
                 Debug.LogWarning(
                     $"Startup level synchronization failed: {exception.Message}");
             }
+        }
+    }
+
+    internal sealed class LevelLoadingProgressReporter
+    {
+        private const float ActiveDownloadStepProgress = 0.85f;
+
+        private readonly UIManager _uiManager;
+        private readonly float _checkingManifest;
+        private readonly float _manifestReady;
+        private readonly float _packsReady;
+        private readonly float _completed;
+
+        private bool _isActive = true;
+
+        public LevelLoadingProgressReporter(
+            UIManager uiManager,
+            float checkingManifest,
+            float manifestReady,
+            float packsReady,
+            float completed)
+        {
+            _uiManager = uiManager;
+            _checkingManifest = checkingManifest;
+            _manifestReady = manifestReady;
+            _packsReady = packsReady;
+            _completed = completed;
+        }
+
+        public void Report(LevelSynchronizationProgress progress)
+        {
+            if (!_isActive)
+            {
+                return;
+            }
+
+            float loadingProgress = progress.Stage switch
+            {
+                LevelSynchronizationStage.CheckingManifest => _checkingManifest,
+                LevelSynchronizationStage.ManifestReady => _manifestReady,
+                LevelSynchronizationStage.DownloadingPacks => MapPackProgress(
+                    progress,
+                    _manifestReady,
+                    _packsReady),
+                LevelSynchronizationStage.Completed => _completed,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(progress),
+                    progress.Stage,
+                    null)
+            };
+
+            _uiManager.SetLoadingProgress(loadingProgress);
+        }
+
+        public void Stop()
+        {
+            _isActive = false;
+        }
+
+        private static float MapPackProgress(
+            LevelSynchronizationProgress progress,
+            float manifestReady,
+            float packsReady)
+        {
+            if (progress.TotalPackCount == 0)
+            {
+                return packsReady;
+            }
+
+            float completedRatio =
+                (float)progress.CompletedPackCount /
+                progress.TotalPackCount;
+
+            if (progress.CompletedPackCount >= progress.TotalPackCount)
+            {
+                return packsReady;
+            }
+
+            float nextPackRatio =
+                (float)(progress.CompletedPackCount + 1) /
+                progress.TotalPackCount;
+            float activeRatio = Mathf.Lerp(
+                completedRatio,
+                nextPackRatio,
+                ActiveDownloadStepProgress);
+            return Mathf.Lerp(manifestReady, packsReady, activeRatio);
         }
     }
 }

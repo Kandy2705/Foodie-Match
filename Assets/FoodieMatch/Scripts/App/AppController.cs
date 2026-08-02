@@ -140,21 +140,41 @@ namespace FoodieMatch.App
             try
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
-                bool levelAvailable =
-                    await _levelSynchronizer.EnsureLevelAvailableAsync(
-                        levelNumber,
-                        CancellationToken.None);
+                _uiManager.SetLoadingProgress(0.12f);
+                LevelLoadingProgressReporter levelProgress = new(
+                    _uiManager,
+                    checkingManifest: 0.25f,
+                    manifestReady: 0.4f,
+                    packsReady: 0.75f,
+                    completed: 0.82f);
+                bool levelAvailable;
+
+                try
+                {
+                    levelAvailable =
+                        await _levelSynchronizer.EnsureLevelAvailableAsync(
+                            levelNumber,
+                            levelProgress.Report,
+                            CancellationToken.None);
+                }
+                finally
+                {
+                    levelProgress.Stop();
+                }
 
                 if (levelAvailable)
                 {
+                    _uiManager.SetLoadingProgress(0.88f);
                     Task<LevelDefinition> levelTask =
                         _levelRepository.LoadLevelAsync(levelNumber);
                     await Task.WhenAll(loadingTask, levelTask);
                     LevelDefinition level = await levelTask;
 
+                    _uiManager.SetLoadingProgress(0.94f);
                     await OpenLevelAsync(
                         level,
                         enableGameplayInput: false);
+                    _uiManager.SetLoadingProgress(0.98f);
 
                     try
                     {
@@ -211,12 +231,15 @@ namespace FoodieMatch.App
             try
             {
                 Task loadingTask = _uiManager.PlayLoadingAsync();
+                _uiManager.SetLoadingProgress(0.15f);
                 await SynchronizeUpcomingLevelsWithTimeoutAsync(
                     levelNumber);
+                _uiManager.SetLoadingProgress(0.9f);
                 long displayedCoinBalance = coinRewardPresentation == null
                     ? _playerProfileService.CoinBalance
                     : coinRewardPresentation.StartingCoinBalance;
                 await OpenHomeAsync(levelNumber, displayedCoinBalance);
+                _uiManager.SetLoadingProgress(0.97f);
                 shouldPlayCoinReward = coinRewardPresentation != null;
 
                 await loadingTask;
@@ -242,14 +265,22 @@ namespace FoodieMatch.App
         private async Task SynchronizeUpcomingLevelsWithTimeoutAsync(
             int currentLevelNumber)
         {
+            LevelLoadingProgressReporter levelProgress = new(
+                _uiManager,
+                checkingManifest: 0.25f,
+                manifestReady: 0.4f,
+                packsReady: 0.78f,
+                completed: 0.85f);
             Task synchronizationTask =
                 _levelSynchronizer.SynchronizeUpcomingLevelsAsync(
                     currentLevelNumber,
                     LevelSynchronizationSettings.FollowingLevelCount,
+                    levelProgress.Report,
                     CancellationToken.None);
             Task completedTask = await Task.WhenAny(
                 synchronizationTask,
                 Task.Delay(LevelSynchronizationSettings.LoadingWaitLimit));
+            levelProgress.Stop();
 
             if (completedTask == synchronizationTask)
             {

@@ -143,8 +143,6 @@ namespace FoodieMatch.UI
             {
                 _addressableUiFactory.LoadingStateChanged -=
                     OnAddressableUiLoadingStateChanged;
-                _addressableUiFactory.LoadingProgressChanged -=
-                    OnAddressableUiLoadingProgressChanged;
             }
 
             ReleaseMainMenuViews();
@@ -174,8 +172,6 @@ namespace FoodieMatch.UI
                     _addressableLoadingTexture);
             _addressableUiFactory.LoadingStateChanged +=
                 OnAddressableUiLoadingStateChanged;
-            _addressableUiFactory.LoadingProgressChanged +=
-                OnAddressableUiLoadingProgressChanged;
             _popupManager.Construct(addressableUiFactory);
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
@@ -196,14 +192,6 @@ namespace FoodieMatch.UI
         {
             _isAddressableUiLoading = isLoading;
             RefreshAddressableLoadingOverlay();
-        }
-
-        private void OnAddressableUiLoadingProgressChanged(float progress)
-        {
-            if (_isTransitionLoadingVisible)
-            {
-                _loadingScreenView.SetProgress(progress);
-            }
         }
 
         private void RefreshAddressableLoadingOverlay()
@@ -438,6 +426,11 @@ namespace FoodieMatch.UI
             LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
             loadingScreen.Show();
             return Task.CompletedTask;
+        }
+
+        public void SetLoadingProgress(float progress)
+        {
+            _loadingScreenView.SetProgress(progress);
         }
 
         public async Task PlayLevelWarningAsync(LevelDifficulty difficulty)
