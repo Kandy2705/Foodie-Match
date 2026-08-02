@@ -249,7 +249,7 @@ namespace FoodieMatch.Features.Gameplay
             _comboCoordinator?.EndSession();
             _fridgeBoosterCoordinator?.EndSession();
             _foodSelectionTutorialCoordinator.Stop();
-            _uiManager.HideTutorialHand();
+            _uiManager.HideTutorial();
             _waitingRackView?.Clear();
             _session = null;
 
@@ -906,13 +906,14 @@ namespace FoodieMatch.Features.Gameplay
             if (!_foodSelectionTutorialCoordinator.IsActive)
             {
                 _boardLayoutView.ClearFoodInteractionRestriction();
-                _uiManager.HideTutorialHand();
+                _uiManager.HideTutorial();
                 return;
             }
 
             FoodBoardAddress targetAddress = _foodSelectionTutorialCoordinator.CurrentTarget;
             Vector2 targetPosition = _boardLayoutView.GetFoodScreenPosition(targetAddress);
             _boardLayoutView.RestrictFoodInteractionTo(targetAddress);
+            _uiManager.ShowTutorial();
             _uiManager.ShowTutorialHand(targetPosition);
         }
 

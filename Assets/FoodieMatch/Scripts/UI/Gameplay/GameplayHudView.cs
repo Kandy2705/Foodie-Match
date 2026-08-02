@@ -28,6 +28,7 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField] private RectTransform _comboFeedbackRoot;
 
         [Header("Tutorial")]
+        [SerializeField] private GameObject _tutorialRoot;
         [SerializeField] private TutorialHandView _tutorialHandView;
 
         private ComboFeedbackViewPool _comboFeedbackPool;
@@ -53,7 +54,7 @@ namespace FoodieMatch.UI.Gameplay
 
         private void OnDisable()
         {
-            _tutorialHandView.Hide();
+            HideTutorial();
             _comboFeedbackPool?.ReleaseAll();
         }
 
@@ -141,6 +142,11 @@ namespace FoodieMatch.UI.Gameplay
             _tutorialHandView.ShowAt(screenPosition);
         }
 
+        public void ShowTutorial()
+        {
+            _tutorialRoot.SetActive(true);
+        }
+
         public Task<MotionResult> MoveTutorialHandAsync(Vector2 screenPosition)
         {
             return _tutorialHandView.MoveToAsync(screenPosition);
@@ -149,6 +155,11 @@ namespace FoodieMatch.UI.Gameplay
         public void HideTutorialHand()
         {
             _tutorialHandView.Hide();
+        }
+
+        public void HideTutorial()
+        {
+            _tutorialRoot.SetActive(false);
         }
 
         private void PlayComboAnimIfNeeded(int comboCount)

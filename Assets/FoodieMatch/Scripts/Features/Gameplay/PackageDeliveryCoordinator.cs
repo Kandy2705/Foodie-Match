@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.UseCases;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Food;
@@ -55,6 +56,10 @@ namespace FoodieMatch.Features.Gameplay
             _session = session;
             _packageGroupView.ResetLayout();
             _packageGroupView.ResetSortingOrders();
+            int visibleSlotCount = session.Level.Tutorial == null
+                ? session.RequiredPackages.Length
+                : LevelRules.ActivePackageCount;
+            _packageGroupView.SetVisibleSlotCount(visibleSlotCount);
             _motionStates = new PackageMotionState[session.RequiredPackages.Length];
 
             for (int i = 0; i < session.RequiredPackages.Length; i++)
@@ -64,6 +69,7 @@ namespace FoodieMatch.Features.Gameplay
 
             RefreshPackageViews();
             RefreshLockedOverlays(session);
+            _packageGroupView.RecenterVisibleItemsImmediately();
         }
 
         private void RefreshLockedOverlays(GameplaySession session)

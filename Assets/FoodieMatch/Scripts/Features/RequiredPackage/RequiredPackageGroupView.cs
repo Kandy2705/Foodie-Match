@@ -139,7 +139,15 @@ namespace FoodieMatch.Features.RequiredPackage
         public bool HasLockedAt(int index)
         {
             LockedRequiredPackageView locked = GetLockedAt(index);
-            return locked != null && locked.gameObject.activeSelf;
+            return IsSlotVisible(index) && locked != null && locked.gameObject.activeSelf;
+        }
+
+        public void SetVisibleSlotCount(int visibleSlotCount)
+        {
+            for (int i = 0; i < _slotRoots.Length; i++)
+            {
+                _slotRoots[i].gameObject.SetActive(i < visibleSlotCount);
+            }
         }
 
         public void SetLockedActive(int index, bool active)
@@ -214,6 +222,19 @@ namespace FoodieMatch.Features.RequiredPackage
             _ = CompleteLayoutMotionAsync(sequence, motionRun);
 
             return _layoutCompletion.Task;
+        }
+
+        public void RecenterVisibleItemsImmediately()
+        {
+            if (!InitializeLayout())
+            {
+                return;
+            }
+
+            CancelLayoutMotion();
+            List<PackageLayoutItem> visibleItems = GetVisibleLayoutItems();
+            Vector3[] targetPositions = GetTargetPositions(visibleItems);
+            ApplyTargetPositions(visibleItems, targetPositions);
         }
 
         public void ResetLayout()
@@ -334,6 +355,12 @@ namespace FoodieMatch.Features.RequiredPackage
             for (int i = 0; i < _layoutItems.Count; i++)
             {
                 PackageLayoutItem item = _layoutItems[i];
+
+                if (!item.Root.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
                 int slotIndex = item.SlotIndex;
 
                 bool packageVisible =
@@ -357,6 +384,13 @@ namespace FoodieMatch.Features.RequiredPackage
             }
 
             return visibleItems;
+        }
+
+        private bool IsSlotVisible(int slotIndex)
+        {
+            return slotIndex >= 0 &&
+                   slotIndex < _slotRoots.Length &&
+                   _slotRoots[slotIndex].gameObject.activeSelf;
         }
 
         private Vector3[] GetTargetPositions(IReadOnlyList<PackageLayoutItem> visibleItems)

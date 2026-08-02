@@ -414,6 +414,11 @@ namespace FoodieMatch.UI
             _gameplayHudView.ShowTutorialHand(screenPosition);
         }
 
+        public void ShowTutorial()
+        {
+            _gameplayHudView.ShowTutorial();
+        }
+
         public Task<MotionResult> MoveTutorialHandAsync(Vector2 screenPosition)
         {
             return _gameplayHudView.MoveTutorialHandAsync(screenPosition);
@@ -422,6 +427,11 @@ namespace FoodieMatch.UI
         public void HideTutorialHand()
         {
             _gameplayHudView?.HideTutorialHand();
+        }
+
+        public void HideTutorial()
+        {
+            _gameplayHudView?.HideTutorial();
         }
 
         public void ShowActionFeedback(string message)
