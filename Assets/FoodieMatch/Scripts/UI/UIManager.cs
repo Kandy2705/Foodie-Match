@@ -13,6 +13,7 @@ using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Level;
+using FoodieMatch.Features.Motion;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.AddressableAssets;
 using FoodieMatch.UI.Booster;
@@ -406,6 +407,21 @@ namespace FoodieMatch.UI
         public void ShowComboFeedback(Vector3 worldPosition)
         {
             _gameplayHudView?.ShowComboFeedback(worldPosition);
+        }
+
+        public void ShowTutorialHand(Vector2 screenPosition)
+        {
+            _gameplayHudView.ShowTutorialHand(screenPosition);
+        }
+
+        public Task<MotionResult> MoveTutorialHandAsync(Vector2 screenPosition)
+        {
+            return _gameplayHudView.MoveTutorialHandAsync(screenPosition);
+        }
+
+        public void HideTutorialHand()
+        {
+            _gameplayHudView?.HideTutorialHand();
         }
 
         public void ShowActionFeedback(string message)

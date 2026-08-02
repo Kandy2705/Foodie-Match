@@ -8,11 +8,19 @@ namespace FoodieMatch.Features.Gameplay
 {
     internal sealed class FoodSelectionTutorialCoordinator
     {
+        private enum TutorialState
+        {
+            Inactive,
+            WaitingForSelection,
+            MovingToTarget
+        }
+
         private readonly List<FoodBoardAddress> _selectionSequence = new();
 
         private int _currentStepIndex;
+        private TutorialState _state;
 
-        public bool IsActive => _currentStepIndex < _selectionSequence.Count;
+        public bool IsActive => _state != TutorialState.Inactive;
         public FoodBoardAddress CurrentTarget => _selectionSequence[_currentStepIndex];
 
         public void Start(LevelTutorialDefinition tutorial, BoardModel board)
@@ -39,21 +47,42 @@ namespace FoodieMatch.Features.Gameplay
                         grill.PositionIndex,
                         step.FoodSlotIndex));
             }
+
+            _state = TutorialState.WaitingForSelection;
         }
 
         public bool CanSelect(FoodBoardAddress address)
         {
-            return !IsActive || CurrentTarget.Equals(address);
+            return !IsActive ||
+                   _state == TutorialState.WaitingForSelection &&
+                   CurrentTarget.Equals(address);
         }
 
-        public bool MoveToNextStep(FoodBoardAddress selectedAddress)
+        public bool TryAdvanceAfterSelection(FoodBoardAddress selectedAddress)
         {
-            if (!IsActive || !CurrentTarget.Equals(selectedAddress))
+            if (_state != TutorialState.WaitingForSelection ||
+                !CurrentTarget.Equals(selectedAddress))
             {
                 return false;
             }
 
             _currentStepIndex++;
+
+            _state = _currentStepIndex < _selectionSequence.Count
+                ? TutorialState.MovingToTarget
+                : TutorialState.Inactive;
+            return true;
+        }
+
+        public bool CompleteTargetMove(FoodBoardAddress targetAddress)
+        {
+            if (_state != TutorialState.MovingToTarget ||
+                !CurrentTarget.Equals(targetAddress))
+            {
+                return false;
+            }
+
+            _state = TutorialState.WaitingForSelection;
             return true;
         }
 
@@ -61,6 +90,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _selectionSequence.Clear();
             _currentStepIndex = 0;
+            _state = TutorialState.Inactive;
         }
     }
 }

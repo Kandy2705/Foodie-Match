@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
+using FoodieMatch.Features.Motion;
 using FoodieMatch.UI.Gameplay.Booster;
 using PrimeTween;
 using TMPro;
@@ -14,6 +16,7 @@ namespace FoodieMatch.UI.Gameplay
 
         [SerializeField] private Button _pauseButton;
         [SerializeField] private BoosterButtonView[] _boosterButtonViews;
+        [SerializeField] private TMP_Text[] _boosterCountTexts;
         [SerializeField] private TMP_Text _levelLabelText;
         [SerializeField] private TMP_Text _progressText;
         [SerializeField] private GameObject _comboProgressBarRoot;
@@ -24,7 +27,8 @@ namespace FoodieMatch.UI.Gameplay
         [Header("Combo Feedback")]
         [SerializeField] private RectTransform _comboFeedbackRoot;
 
-        [SerializeField] private TMP_Text[] _boosterCountTexts;
+        [Header("Tutorial")]
+        [SerializeField] private TutorialHandView _tutorialHandView;
 
         private ComboFeedbackViewPool _comboFeedbackPool;
         private Action _pauseClicked;
@@ -49,6 +53,7 @@ namespace FoodieMatch.UI.Gameplay
 
         private void OnDisable()
         {
+            _tutorialHandView.Hide();
             _comboFeedbackPool?.ReleaseAll();
         }
 
@@ -129,6 +134,21 @@ namespace FoodieMatch.UI.Gameplay
             _comboFeedbackPool.Play(
                 _comboFeedbackRoot,
                 localPosition);
+        }
+
+        public void ShowTutorialHand(Vector2 screenPosition)
+        {
+            _tutorialHandView.ShowAt(screenPosition);
+        }
+
+        public Task<MotionResult> MoveTutorialHandAsync(Vector2 screenPosition)
+        {
+            return _tutorialHandView.MoveToAsync(screenPosition);
+        }
+
+        public void HideTutorialHand()
+        {
+            _tutorialHandView.Hide();
         }
 
         private void PlayComboAnimIfNeeded(int comboCount)

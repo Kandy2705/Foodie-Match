@@ -12,6 +12,13 @@ namespace FoodieMatch.Features.Board
 {
     public sealed class BoardLayoutView : MonoBehaviour
     {
+        private enum FoodInteractionMode
+        {
+            Normal,
+            Disabled,
+            TargetOnly
+        }
+
         [SerializeField] private Transform _foodItemRoot;
 
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
@@ -42,7 +49,8 @@ namespace FoodieMatch.Features.Board
         private GrillMovementController _grillMovementController;
         private StackedGrillLayoutController _stackedGrillLayoutController;
         private bool _registeredFoodInputEnabled = true;
-        private FoodBoardAddress? _foodInteractionRestriction;
+        private FoodInteractionMode _foodInteractionMode;
+        private FoodBoardAddress _foodInteractionTarget;
 
         public event Action<FoodSelectionContext> FoodSelected;
         public event Action StackedGrillMotionFinished;
@@ -153,7 +161,7 @@ namespace FoodieMatch.Features.Board
             StopMotions();
             ClearFoodItems();
             ClearGrills();
-            _foodInteractionRestriction = null;
+            _foodInteractionMode = FoodInteractionMode.Normal;
         }
 
         public void StopMotions()
@@ -247,13 +255,20 @@ namespace FoodieMatch.Features.Board
 
         public void RestrictFoodInteractionTo(FoodBoardAddress targetAddress)
         {
-            _foodInteractionRestriction = targetAddress;
+            _foodInteractionMode = FoodInteractionMode.TargetOnly;
+            _foodInteractionTarget = targetAddress;
+            RefreshRegisteredFoodInteraction();
+        }
+
+        public void DisableFoodInteractionForTutorial()
+        {
+            _foodInteractionMode = FoodInteractionMode.Disabled;
             RefreshRegisteredFoodInteraction();
         }
 
         public void ClearFoodInteractionRestriction()
         {
-            _foodInteractionRestriction = null;
+            _foodInteractionMode = FoodInteractionMode.Normal;
             RefreshRegisteredFoodInteraction();
         }
 
@@ -298,6 +313,21 @@ namespace FoodieMatch.Features.Board
             }
 
             return _foodAddresses.TryGetValue(foodItemView, out address);
+        }
+
+        public Vector2 GetFoodScreenPosition(FoodBoardAddress address)
+        {
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
+            {
+                if (entry.Value.Equals(address))
+                {
+                    return _worldCamera.WorldToScreenPoint(entry.Key.transform.position);
+                }
+            }
+
+            throw new InvalidOperationException(
+                $"Food at grill {address.GrillPositionIndex}, " +
+                $"slot {address.FoodSlotIndex} is not displayed on the board.");
         }
 
         public List<FoodBoardEntry> GetActiveFoodEntries()
@@ -1095,8 +1125,17 @@ namespace FoodieMatch.Features.Board
 
         private bool IsFoodInteractionAllowed(FoodBoardAddress address)
         {
-            return !_foodInteractionRestriction.HasValue ||
-                   _foodInteractionRestriction.Value.Equals(address);
+            switch (_foodInteractionMode)
+            {
+                case FoodInteractionMode.Normal:
+                    return true;
+                case FoodInteractionMode.Disabled:
+                    return false;
+                case FoodInteractionMode.TargetOnly:
+                    return _foodInteractionTarget.Equals(address);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void MoveFoodToFlightRoot(
