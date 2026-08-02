@@ -9,6 +9,7 @@ using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Level.Remote;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace FoodieMatch.Editor.LevelDesign
 {
@@ -32,7 +33,8 @@ namespace FoodieMatch.Editor.LevelDesign
             MissingMemberHandling = MissingMemberHandling.Error
         };
 
-        public async Task<string> BuildAsync(string projectRoot)
+        public async Task<RemoteLevelHostingBuildResult> BuildAsync(
+            string projectRoot)
         {
             string settingsPath = GetProjectPath(
                 projectRoot,
@@ -51,7 +53,9 @@ namespace FoodieMatch.Editor.LevelDesign
             LevelCatalogDto catalog = LoadCatalog(catalogPath);
             IReadOnlyList<LevelBuildContent> levels =
                 LoadAndValidateLevels(catalog, contentDirectory);
-            ValidateBuildSettings(settings, levels.Count);
+            ValidateBuildSettings(settings);
+            RemoteLevelManifestDto existingManifest =
+                LoadExistingManifest(outputDirectory);
 
             string outputParent = Path.GetDirectoryName(outputDirectory);
             string stagedDirectory = Path.Combine(
@@ -62,15 +66,27 @@ namespace FoodieMatch.Editor.LevelDesign
 
             try
             {
+                CopyExistingArchives(outputDirectory, stagedDirectory);
+                List<RemoteLevelPackVersionChange> changedPacks = new();
                 RemoteLevelManifestDto manifest = BuildHostedFiles(
                     stagedDirectory,
                     settings,
-                    levels);
+                    levels,
+                    outputDirectory,
+                    existingManifest,
+                    changedPacks);
                 await ValidateHostedFilesAsync(
                     stagedDirectory,
                     manifest);
                 ActivateOutput(stagedDirectory, outputDirectory);
-                return outputDirectory;
+                SaveBuildSettings(settingsPath, settings, manifest);
+                int previousManifestVersion =
+                    existingManifest?.ManifestVersion ?? 0;
+                return new RemoteLevelHostingBuildResult(
+                    outputDirectory,
+                    previousManifestVersion,
+                    manifest.ManifestVersion.Value,
+                    changedPacks);
             }
             finally
             {
@@ -201,8 +217,7 @@ namespace FoodieMatch.Editor.LevelDesign
         }
 
         private static void ValidateBuildSettings(
-            RemoteLevelHostingBuildSettings settings,
-            int levelCount)
+            RemoteLevelHostingBuildSettings settings)
         {
             if (settings == null ||
                 settings.ManifestVersion <= 0 ||
@@ -211,15 +226,6 @@ namespace FoodieMatch.Editor.LevelDesign
                 throw new InvalidOperationException(
                     "Remote level build settings require a positive manifestVersion " +
                     "and packVersions.");
-            }
-
-            int packCount =
-                (levelCount + LevelsPerPack - 1) / LevelsPerPack;
-
-            if (settings.PackVersions.Count != packCount)
-            {
-                throw new InvalidOperationException(
-                    $"packVersions must contain {packCount} entries.");
             }
 
             for (int i = 0; i < settings.PackVersions.Count; i++)
@@ -235,12 +241,14 @@ namespace FoodieMatch.Editor.LevelDesign
         private static RemoteLevelManifestDto BuildHostedFiles(
             string outputDirectory,
             RemoteLevelHostingBuildSettings settings,
-            IReadOnlyList<LevelBuildContent> levels)
+            IReadOnlyList<LevelBuildContent> levels,
+            string existingOutputDirectory,
+            RemoteLevelManifestDto existingManifest,
+            ICollection<RemoteLevelPackVersionChange> changedPacks)
         {
             RemoteLevelManifestDto manifest = new()
             {
                 SchemaVersion = SchemaVersion,
-                ManifestVersion = settings.ManifestVersion,
                 Packs = new List<RemoteLevelPackDto>()
             };
             int packCount =
@@ -259,61 +267,418 @@ namespace FoodieMatch.Editor.LevelDesign
                     LevelsPerPack,
                     levels.Count - firstIndex);
                 int packId = packIndex + 1;
-                int packVersion = settings.PackVersions[packIndex];
-                string archiveRelativePath =
-                    $"packs/pack_{packId:D4}_v{packVersion:D4}.zip";
-                RemoteLevelPackDto pack = new()
-                {
-                    Id = packId,
-                    Version = packVersion,
-                    FirstLevel = levels[firstIndex].LevelNumber,
-                    LastLevel = levels[firstIndex + count - 1].LevelNumber,
-                    ArchivePath = archiveRelativePath
-                };
-                RemoteLevelPackManifestDto packManifest = new()
-                {
-                    SchemaVersion = SchemaVersion,
-                    PackId = pack.Id,
-                    PackVersion = pack.Version,
-                    Levels = new List<RemoteLevelEntryDto>()
-                };
+                RemoteLevelPackManifestDto packContent =
+                    CreatePackManifest(
+                        packId,
+                        packVersion: 0,
+                        levels,
+                        firstIndex,
+                        count);
+                RemoteLevelPackDto existingPack = FindPack(
+                    existingManifest,
+                    packId);
+                RemoteLevelPackDto pack;
 
-                for (int i = 0; i < count; i++)
+                if (CanReusePack(
+                        existingOutputDirectory,
+                        existingPack,
+                        packContent,
+                        levels,
+                        firstIndex))
                 {
-                    LevelBuildContent level = levels[firstIndex + i];
-                    string fileName =
-                        $"level_{level.LevelNumber:D4}.json";
-                    string contentPath = $"levels/{fileName}";
-                    packManifest.Levels.Add(
-                        new RemoteLevelEntryDto
-                        {
-                            Id = level.LevelNumber,
-                            Difficulty =
-                                ToDifficultyName(level.Difficulty),
-                            ContentPath = contentPath,
-                            Sha256 = RemoteLevelFileHash.Compute(
-                                level.Content)
-                        });
+                    pack = CopyPack(existingPack);
+                }
+                else
+                {
+                    int previousVersion = existingPack?.Version ?? 0;
+                    int packVersion = FindNextPackVersion(
+                        outputDirectory,
+                        packId,
+                        previousVersion,
+                        settings,
+                        packIndex);
+                    packContent.PackVersion = packVersion;
+                    pack = CreatePack(
+                        packId,
+                        packVersion,
+                        levels[firstIndex].LevelNumber,
+                        levels[firstIndex + count - 1].LevelNumber);
+                    string archivePath = Path.Combine(
+                        outputDirectory,
+                        ToSystemPath(pack.ArchivePath));
+                    WritePackArchive(
+                        archivePath,
+                        packContent,
+                        levels,
+                        firstIndex,
+                        count);
+                    pack.ArchiveSha256 = RemoteLevelFileHash.Compute(
+                        File.ReadAllBytes(archivePath));
+                    changedPacks.Add(
+                        new RemoteLevelPackVersionChange(
+                            packId,
+                            previousVersion,
+                            packVersion));
                 }
 
-                string archivePath = Path.Combine(
-                    outputDirectory,
-                    ToSystemPath(archiveRelativePath));
-                WritePackArchive(
-                    archivePath,
-                    packManifest,
-                    levels,
-                    firstIndex,
-                    count);
-                pack.ArchiveSha256 = RemoteLevelFileHash.Compute(
-                    File.ReadAllBytes(archivePath));
                 manifest.Packs.Add(pack);
             }
+
+            bool activePacksChanged = changedPacks.Count > 0 ||
+                                      HasRemovedPacks(
+                                          existingManifest,
+                                          packCount);
+            manifest.ManifestVersion = ResolveManifestVersion(
+                settings.ManifestVersion,
+                existingManifest,
+                activePacksChanged);
 
             WriteJson(
                 Path.Combine(outputDirectory, "manifest.json"),
                 manifest);
             return manifest;
+        }
+
+        private static RemoteLevelManifestDto LoadExistingManifest(
+            string outputDirectory)
+        {
+            string manifestPath = Path.Combine(
+                outputDirectory,
+                "manifest.json");
+
+            if (!File.Exists(manifestPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                RemoteLevelManifestDto manifest =
+                    JsonConvert.DeserializeObject<RemoteLevelManifestDto>(
+                        File.ReadAllText(manifestPath, FileEncoding),
+                        JsonSettings);
+
+                if (manifest?.SchemaVersion != SchemaVersion ||
+                    !manifest.ManifestVersion.HasValue ||
+                    manifest.ManifestVersion.Value <= 0 ||
+                    manifest.Packs == null)
+                {
+                    throw new InvalidOperationException(
+                        "Existing remote level manifest is invalid.");
+                }
+
+                return manifest;
+            }
+            catch (JsonException exception)
+            {
+                throw new InvalidOperationException(
+                    $"Existing remote level manifest is invalid: {exception.Message}",
+                    exception);
+            }
+        }
+
+        private static void CopyExistingArchives(
+            string existingOutputDirectory,
+            string stagedDirectory)
+        {
+            string existingPackDirectory = Path.Combine(
+                existingOutputDirectory,
+                "packs");
+
+            if (!Directory.Exists(existingPackDirectory))
+            {
+                return;
+            }
+
+            string stagedPackDirectory = Path.Combine(
+                stagedDirectory,
+                "packs");
+            Directory.CreateDirectory(stagedPackDirectory);
+            string[] archivePaths = Directory.GetFiles(
+                existingPackDirectory,
+                "*.zip",
+                SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < archivePaths.Length; i++)
+            {
+                File.Copy(
+                    archivePaths[i],
+                    Path.Combine(
+                        stagedPackDirectory,
+                        Path.GetFileName(archivePaths[i])));
+            }
+        }
+
+        private static RemoteLevelPackManifestDto CreatePackManifest(
+            int packId,
+            int packVersion,
+            IReadOnlyList<LevelBuildContent> levels,
+            int firstIndex,
+            int count)
+        {
+            RemoteLevelPackManifestDto manifest = new()
+            {
+                SchemaVersion = SchemaVersion,
+                PackId = packId,
+                PackVersion = packVersion,
+                Levels = new List<RemoteLevelEntryDto>()
+            };
+
+            for (int i = 0; i < count; i++)
+            {
+                LevelBuildContent level = levels[firstIndex + i];
+                string fileName = $"level_{level.LevelNumber:D4}.json";
+                manifest.Levels.Add(
+                    new RemoteLevelEntryDto
+                    {
+                        Id = level.LevelNumber,
+                        Difficulty = ToDifficultyName(level.Difficulty),
+                        ContentPath = $"levels/{fileName}",
+                        Sha256 = RemoteLevelFileHash.Compute(level.Content)
+                    });
+            }
+
+            return manifest;
+        }
+
+        private static RemoteLevelPackDto FindPack(
+            RemoteLevelManifestDto manifest,
+            int packId)
+        {
+            if (manifest == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < manifest.Packs.Count; i++)
+            {
+                if (manifest.Packs[i].Id == packId)
+                {
+                    return manifest.Packs[i];
+                }
+            }
+
+            return null;
+        }
+
+        private static bool CanReusePack(
+            string existingOutputDirectory,
+            RemoteLevelPackDto existingPack,
+            RemoteLevelPackManifestDto expectedContent,
+            IReadOnlyList<LevelBuildContent> levels,
+            int firstIndex)
+        {
+            if (existingPack?.Version == null ||
+                string.IsNullOrEmpty(existingPack.ArchivePath) ||
+                string.IsNullOrEmpty(existingPack.ArchiveSha256))
+            {
+                return false;
+            }
+
+            string archivePath = Path.Combine(
+                existingOutputDirectory,
+                ToSystemPath(existingPack.ArchivePath));
+
+            if (!File.Exists(archivePath))
+            {
+                return false;
+            }
+
+            byte[] archiveContent = File.ReadAllBytes(archivePath);
+
+            if (!RemoteLevelFileHash.Matches(
+                    archiveContent,
+                    existingPack.ArchiveSha256))
+            {
+                return false;
+            }
+
+            RemoteLevelPackArchiveReader archiveReader = new();
+
+            if (!archiveReader.TryRead(
+                    archiveContent,
+                    out byte[] manifestContent,
+                    out IReadOnlyDictionary<string, byte[]> levelContents))
+            {
+                return false;
+            }
+
+            try
+            {
+                RemoteLevelPackManifestDto existingContent =
+                    JsonConvert.DeserializeObject<RemoteLevelPackManifestDto>(
+                        FileEncoding.GetString(manifestContent),
+                        JsonSettings);
+                return HasSamePackContent(
+                    existingContent,
+                    expectedContent,
+                    levelContents,
+                    levels,
+                    firstIndex);
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
+        private static bool HasSamePackContent(
+            RemoteLevelPackManifestDto existingContent,
+            RemoteLevelPackManifestDto expectedContent,
+            IReadOnlyDictionary<string, byte[]> existingLevelContents,
+            IReadOnlyList<LevelBuildContent> levels,
+            int firstIndex)
+        {
+            if (existingContent?.SchemaVersion != expectedContent.SchemaVersion ||
+                existingContent.PackId != expectedContent.PackId ||
+                existingContent.Levels == null ||
+                existingContent.Levels.Count != expectedContent.Levels.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < existingContent.Levels.Count; i++)
+            {
+                RemoteLevelEntryDto existingLevel = existingContent.Levels[i];
+                RemoteLevelEntryDto expectedLevel = expectedContent.Levels[i];
+
+                if (existingLevel?.Id != expectedLevel.Id ||
+                    !string.Equals(
+                        existingLevel.Difficulty,
+                        expectedLevel.Difficulty,
+                        StringComparison.Ordinal) ||
+                    !string.Equals(
+                        existingLevel.ContentPath,
+                        expectedLevel.ContentPath,
+                        StringComparison.Ordinal) ||
+                    !existingLevelContents.TryGetValue(
+                        existingLevel.ContentPath,
+                        out byte[] existingLevelContent) ||
+                    !HasSameJsonContent(
+                        existingLevelContent,
+                        levels[firstIndex + i].Content))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool HasSameJsonContent(
+            byte[] existingContent,
+            byte[] expectedContent)
+        {
+            try
+            {
+                JToken existingJson = JToken.Parse(
+                    FileEncoding.GetString(existingContent));
+                JToken expectedJson = JToken.Parse(
+                    FileEncoding.GetString(expectedContent));
+                return JToken.DeepEquals(existingJson, expectedJson);
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
+        private static int FindNextPackVersion(
+            string outputDirectory,
+            int packId,
+            int previousVersion,
+            RemoteLevelHostingBuildSettings settings,
+            int packIndex)
+        {
+            int configuredVersion = packIndex < settings.PackVersions.Count
+                ? settings.PackVersions[packIndex]
+                : 1;
+            int version = previousVersion > 0
+                ? Math.Max(previousVersion + 1, configuredVersion)
+                : configuredVersion;
+
+            while (File.Exists(
+                       Path.Combine(
+                           outputDirectory,
+                           "packs",
+                           $"pack_{packId:D4}_v{version:D4}.zip")))
+            {
+                version++;
+            }
+
+            return version;
+        }
+
+        private static RemoteLevelPackDto CreatePack(
+            int packId,
+            int packVersion,
+            int firstLevel,
+            int lastLevel)
+        {
+            return new RemoteLevelPackDto
+            {
+                Id = packId,
+                Version = packVersion,
+                FirstLevel = firstLevel,
+                LastLevel = lastLevel,
+                ArchivePath =
+                    $"packs/pack_{packId:D4}_v{packVersion:D4}.zip"
+            };
+        }
+
+        private static RemoteLevelPackDto CopyPack(
+            RemoteLevelPackDto pack)
+        {
+            return new RemoteLevelPackDto
+            {
+                Id = pack.Id,
+                Version = pack.Version,
+                FirstLevel = pack.FirstLevel,
+                LastLevel = pack.LastLevel,
+                ArchivePath = pack.ArchivePath,
+                ArchiveSha256 = pack.ArchiveSha256
+            };
+        }
+
+        private static bool HasRemovedPacks(
+            RemoteLevelManifestDto existingManifest,
+            int packCount)
+        {
+            return existingManifest != null &&
+                   existingManifest.Packs.Count != packCount;
+        }
+
+        private static int ResolveManifestVersion(
+            int configuredVersion,
+            RemoteLevelManifestDto existingManifest,
+            bool activePacksChanged)
+        {
+            if (existingManifest == null)
+            {
+                return Math.Max(1, configuredVersion);
+            }
+
+            int previousVersion = existingManifest.ManifestVersion.Value;
+            return activePacksChanged
+                ? Math.Max(previousVersion + 1, configuredVersion)
+                : Math.Max(previousVersion, configuredVersion);
+        }
+
+        private static void SaveBuildSettings(
+            string settingsPath,
+            RemoteLevelHostingBuildSettings settings,
+            RemoteLevelManifestDto manifest)
+        {
+            settings.ManifestVersion = manifest.ManifestVersion.Value;
+            settings.PackVersions.Clear();
+
+            for (int i = 0; i < manifest.Packs.Count; i++)
+            {
+                settings.PackVersions.Add(
+                    manifest.Packs[i].Version.Value);
+            }
+
+            WriteJson(settingsPath, settings);
         }
 
         private static async Task ValidateHostedFilesAsync(
@@ -574,5 +939,50 @@ namespace FoodieMatch.Editor.LevelDesign
             public LevelDifficulty Difficulty { get; }
             public byte[] Content { get; }
         }
+    }
+
+    internal sealed class RemoteLevelHostingBuildResult
+    {
+        public RemoteLevelHostingBuildResult(
+            string outputDirectory,
+            int previousManifestVersion,
+            int manifestVersion,
+            IReadOnlyList<RemoteLevelPackVersionChange> changedPacks)
+        {
+            OutputDirectory = outputDirectory;
+            PreviousManifestVersion = previousManifestVersion;
+            ManifestVersion = manifestVersion;
+            ChangedPacks = changedPacks;
+        }
+
+        public string OutputDirectory { get; }
+
+        public int PreviousManifestVersion { get; }
+
+        public int ManifestVersion { get; }
+
+        public IReadOnlyList<RemoteLevelPackVersionChange> ChangedPacks { get; }
+
+        public bool ManifestVersionChanged =>
+            ManifestVersion != PreviousManifestVersion;
+    }
+
+    internal readonly struct RemoteLevelPackVersionChange
+    {
+        public RemoteLevelPackVersionChange(
+            int packId,
+            int previousVersion,
+            int version)
+        {
+            PackId = packId;
+            PreviousVersion = previousVersion;
+            Version = version;
+        }
+
+        public int PackId { get; }
+
+        public int PreviousVersion { get; }
+
+        public int Version { get; }
     }
 }
