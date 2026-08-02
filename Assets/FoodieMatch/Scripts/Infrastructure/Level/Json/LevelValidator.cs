@@ -47,6 +47,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 levelPath,
                 result);
             _grillLayoutValidator.Validate(level.Grills, levelPath, result);
+            LevelTutorialValidator.Validate(level, levelPath, result);
             StackedGrillLayoutValidator.Validate(
                 layoutType,
                 level.Grills,

@@ -5,7 +5,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class LevelContentValidator
     {
-        private const int SupportedSchemaVersion = 7;
+        private const int SupportedSchemaVersion = 8;
 
         private readonly LevelValidator _levelValidator;
 

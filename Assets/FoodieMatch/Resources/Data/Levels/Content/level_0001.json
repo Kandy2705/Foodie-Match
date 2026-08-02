@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "level": {
     "id": 1,
     "difficulty": "normal",
@@ -29,6 +29,34 @@
         "readyNow": 35,
         "topTray": 5
       }
+    },
+    "tutorial": {
+      "foodSelectionSequence": [
+        {
+          "grillId": 1,
+          "foodSlotIndex": 0
+        },
+        {
+          "grillId": 1,
+          "foodSlotIndex": 1
+        },
+        {
+          "grillId": 1,
+          "foodSlotIndex": 2
+        },
+        {
+          "grillId": 2,
+          "foodSlotIndex": 0
+        },
+        {
+          "grillId": 2,
+          "foodSlotIndex": 1
+        },
+        {
+          "grillId": 2,
+          "foodSlotIndex": 2
+        }
+      ]
     },
     "movingGrillGroups": [],
     "grills": [
