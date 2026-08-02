@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 7,
+  "level": {
+    "id": 11,
+    "difficulty": "hard",
+    "grillLayoutType": "standard",
+    "grillColumns": [],
+    "randomization": {
+      "packageSeeds": [
+        110001,
+        110007,
+        110008,
+        110010,
+        110012
+      ],
+      "generatePackageSeedEachRun": false,
+      "randomizeFoodVisualsEachRun": true,
+      "fixedFoodVisualSeed": 9011
+    },
+    "packageSelectionWeights": {
+      "early": {
+        "rackRescue": 25,
+        "readyNow": 60,
+        "topTray": 15
+      },
+      "middle": {
+        "rackRescue": 55,
+        "readyNow": 35,
+        "topTray": 10
+      },
+      "late": {
+        "rackRescue": 75,
+        "readyNow": 20,
+        "topTray": 5
+      }
+    },
+    "movingGrillGroups": [
+      {
+        "direction": "up",
+        "grillIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "movementSpeed": 1
+      },
+      {
+        "direction": "down",
+        "grillIds": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "movementSpeed": 1
+      }
+    ],
+    "grills": [
+      {
+        "id": 1,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": -10.4
+        },
+        "foodIds": [
+          1,
+          9,
+          19
+        ],
+        "trays": []
+      },
+      {
+        "id": 2,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": -7.800000000000001
+        },
+        "foodIds": [
+          19
+        ],
+        "trays": []
+      },
+      {
+        "id": 3,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": -5.2
+        },
+        "foodIds": [
+          2,
+          10,
+          20
+        ],
+        "trays": []
+      },
+      {
+        "id": 4,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": -2.5999999999999996
+        },
+        "foodIds": [
+          11,
+          20
+        ],
+        "trays": []
+      },
+      {
+        "id": 5,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": 0
+        },
+        "foodIds": [
+          3,
+          12,
+          21
+        ],
+        "trays": []
+      },
+      {
+        "id": 6,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": 2.5999999999999996
+        },
+        "foodIds": [
+          21
+        ],
+        "trays": []
+      },
+      {
+        "id": 7,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": 5.200000000000001
+        },
+        "foodIds": [
+          13,
+          22
+        ],
+        "trays": []
+      },
+      {
+        "id": 8,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": 7.799999999999999
+        },
+        "foodIds": [
+          4,
+          14,
+          22
+        ],
+        "trays": []
+      },
+      {
+        "id": 9,
+        "type": "standard",
+        "position": {
+          "x": -4.2,
+          "y": 10.4
+        },
+        "foodIds": [
+          23
+        ],
+        "trays": []
+      },
+      {
+        "id": 10,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": -10.4
+        },
+        "foodIds": [
+          5,
+          15,
+          23
+        ],
+        "trays": []
+      },
+      {
+        "id": 11,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": -7.800000000000001
+        },
+        "foodIds": [
+          24
+        ],
+        "trays": []
+      },
+      {
+        "id": 12,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": -5.2
+        },
+        "foodIds": [
+          6,
+          16,
+          24
+        ],
+        "trays": []
+      },
+      {
+        "id": 13,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": -2.5999999999999996
+        },
+        "foodIds": [
+          25
+        ],
+        "trays": []
+      },
+      {
+        "id": 14,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": 0
+        },
+        "foodIds": [
+          7,
+          17,
+          25
+        ],
+        "trays": []
+      },
+      {
+        "id": 15,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": 2.5999999999999996
+        },
+        "foodIds": [
+          26
+        ],
+        "trays": []
+      },
+      {
+        "id": 16,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": 5.200000000000001
+        },
+        "foodIds": [
+          8,
+          18,
+          26
+        ],
+        "trays": []
+      },
+      {
+        "id": 17,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": 7.799999999999999
+        },
+        "foodIds": [
+          27
+        ],
+        "trays": []
+      },
+      {
+        "id": 18,
+        "type": "standard",
+        "position": {
+          "x": 4.2,
+          "y": 10.4
+        },
+        "foodIds": [
+          27
+        ],
+        "trays": []
+      },
+      {
+        "id": 19,
+        "type": "standard",
+        "position": {
+          "x": -1.4,
+          "y": 3
+        },
+        "foodIds": [
+          28,
+          29,
+          38
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              35
+            ]
+          },
+          {
+            "foodIds": [
+              43,
+              47,
+              51
+            ]
+          },
+          {
+            "foodIds": [
+              44
+            ]
+          },
+          {
+            "foodIds": [
+              45,
+              49,
+              53
+            ]
+          },
+          {
+            "foodIds": [
+              54
+            ]
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "type": "standard",
+        "position": {
+          "x": 1.4,
+          "y": 3
+        },
+        "foodIds": [
+          28,
+          30,
+          39
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              35
+            ]
+          },
+          {
+            "foodIds": [
+              43,
+              47,
+              32
+            ]
+          },
+          {
+            "foodIds": [
+              48
+            ]
+          },
+          {
+            "foodIds": [
+              53
+            ]
+          },
+          {
+            "foodIds": [
+              46,
+              50,
+              54
+            ]
+          }
+        ]
+      },
+      {
+        "id": 21,
+        "type": "standard",
+        "position": {
+          "x": -1.4,
+          "y": -3
+        },
+        "foodIds": [
+          39,
+          0,
+          0
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              31,
+              33,
+              36
+            ]
+          },
+          {
+            "foodIds": [
+              43,
+              51,
+              32
+            ]
+          },
+          {
+            "foodIds": [
+              44,
+              48,
+              52
+            ]
+          },
+          {
+            "foodIds": [
+              45,
+              49,
+              53
+            ]
+          },
+          {
+            "foodIds": [
+              46,
+              50,
+              54
+            ]
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "type": "standard",
+        "position": {
+          "x": 1.4,
+          "y": -3
+        },
+        "foodIds": [
+          29,
+          30,
+          40
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              31,
+              33,
+              37
+            ]
+          },
+          {
+            "foodIds": [
+              47,
+              51,
+              34
+            ]
+          },
+          {
+            "foodIds": [
+              44,
+              48,
+              52
+            ]
+          },
+          {
+            "foodIds": [
+              45,
+              49,
+              42
+            ]
+          },
+          {
+            "foodIds": [
+              46,
+              50,
+              42
+            ]
+          }
+        ]
+      },
+      {
+        "id": 23,
+        "type": "single",
+        "position": {
+          "x": -1.4,
+          "y": -0.2
+        },
+        "foodIds": [
+          41
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              37
+            ]
+          },
+          {
+            "foodIds": [
+              34
+            ]
+          },
+          {
+            "foodIds": [
+              52
+            ]
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "type": "single",
+        "position": {
+          "x": 1.4,
+          "y": -0.2
+        },
+        "foodIds": [
+          41
+        ],
+        "trays": [
+          {
+            "foodIds": [
+              38
+            ]
+          },
+          {
+            "foodIds": [
+              40
+            ]
+          },
+          {
+            "foodIds": [
+              36
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

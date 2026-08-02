@@ -112,3 +112,12 @@ node_modules/
 *.md
 !README.md
 !Docs/LEVEL_DESIGN_GUIDE.md
+
+# Firebase generated artifacts
+/Assets/GeneratedLocalRepo/
+/Assets/GeneratedLocalRepo.meta
+/Assets/Plugins/Android/FirebaseApp.androidlib/
+/Assets/Plugins/Android/FirebaseApp.androidlib.meta
+/Assets/StreamingAssets/google-services-desktop.json
+/Assets/StreamingAssets/google-services-desktop.json.meta
+/Assets/StreamingAssets.meta

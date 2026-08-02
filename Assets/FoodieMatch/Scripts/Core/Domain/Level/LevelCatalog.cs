@@ -6,9 +6,9 @@ namespace FoodieMatch.Core.Domain.Level
 {
     public sealed class LevelCatalog
     {
-        private readonly ReadOnlyCollection<LevelDefinition> _orderedLevels;
+        private readonly ReadOnlyCollection<LevelSummary> _orderedLevels;
 
-        public LevelCatalog(IReadOnlyList<LevelDefinition> orderedLevels)
+        public LevelCatalog(IReadOnlyList<LevelSummary> orderedLevels)
         {
             if (orderedLevels == null)
             {
@@ -24,31 +24,31 @@ namespace FoodieMatch.Core.Domain.Level
 
             ValidateLevels(orderedLevels);
 
-            List<LevelDefinition> copiedLevels = new(orderedLevels);
+            List<LevelSummary> copiedLevels = new(orderedLevels);
             _orderedLevels = copiedLevels.AsReadOnly();
         }
 
-        public IReadOnlyList<LevelDefinition> OrderedLevels => _orderedLevels;
+        public IReadOnlyList<LevelSummary> OrderedLevels => _orderedLevels;
 
-        private static void ValidateLevels(IReadOnlyList<LevelDefinition> levels)
+        private static void ValidateLevels(IReadOnlyList<LevelSummary> levels)
         {
             HashSet<int> levelIds = new();
 
             for (int i = 0; i < levels.Count; i++)
             {
-                LevelDefinition level = levels[i];
+                LevelSummary level = levels[i];
 
-                if (level == null)
+                if (level.LevelNumber <= 0)
                 {
                     throw new ArgumentException(
-                        "Level catalog cannot contain null.",
+                        "Level number must be greater than zero.",
                         nameof(levels));
                 }
 
-                if (!levelIds.Add(level.Id))
+                if (!levelIds.Add(level.LevelNumber))
                 {
                     throw new ArgumentException(
-                        $"Level id {level.Id} is duplicated.",
+                        $"Level number {level.LevelNumber} is duplicated.",
                         nameof(levels));
                 }
             }

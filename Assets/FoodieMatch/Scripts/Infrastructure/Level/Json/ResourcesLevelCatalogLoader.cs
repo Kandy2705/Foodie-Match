@@ -1,5 +1,4 @@
 using System;
-using FoodieMatch.Core.Domain.Level;
 using UnityEngine;
 
 namespace FoodieMatch.Infrastructure.Level.Json
@@ -8,25 +7,27 @@ namespace FoodieMatch.Infrastructure.Level.Json
     {
         private const string CatalogResourcePath = "Data/Levels/level_catalog";
 
-        private readonly LevelCatalogJsonParser _parser;
-        private readonly LevelCatalogValidator _validator;
+        private readonly LevelCatalogJsonParser _catalogParser;
+        private readonly LevelCatalogValidator _catalogValidator;
         private readonly LevelCatalogMapper _mapper;
 
         public ResourcesLevelCatalogLoader(
-            LevelCatalogJsonParser parser,
-            LevelCatalogValidator validator,
+            LevelCatalogJsonParser catalogParser,
+            LevelCatalogValidator catalogValidator,
             LevelCatalogMapper mapper)
         {
-            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _catalogParser = catalogParser ??
+                             throw new ArgumentNullException(nameof(catalogParser));
+            _catalogValidator = catalogValidator ??
+                                throw new ArgumentNullException(nameof(catalogValidator));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public bool TryLoad(
-            out LevelCatalog catalog,
+            out ResourcesLevelCatalogData catalogData,
             out LevelValidationResult validationResult)
         {
-            catalog = null;
+            catalogData = null;
             validationResult = new LevelValidationResult();
 
             TextAsset catalogAsset = Resources.Load<TextAsset>(CatalogResourcePath);
@@ -38,16 +39,25 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 return false;
             }
 
-            if (!_parser.TryParse(
-                    catalogAsset.text,
-                    out LevelCatalogDto catalogDto,
-                    out string parseError))
+            LevelCatalogDto catalogDto;
+
+            try
             {
-                validationResult.AddError(parseError);
-                return false;
+                if (!_catalogParser.TryParse(
+                        catalogAsset.text,
+                        out catalogDto,
+                        out string parseError))
+                {
+                    validationResult.AddError(parseError);
+                    return false;
+                }
+            }
+            finally
+            {
+                Resources.UnloadAsset(catalogAsset);
             }
 
-            validationResult = _validator.Validate(catalogDto);
+            validationResult = _catalogValidator.Validate(catalogDto);
 
             if (!validationResult.IsValid)
             {
@@ -56,7 +66,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
 
             try
             {
-                catalog = _mapper.Map(catalogDto);
+                catalogData = _mapper.Map(catalogDto);
                 return true;
             }
             catch (ArgumentException exception)

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Level;
 using UnityEditor;
+using UnityEngine;
 
 namespace FoodieMatch.Editor.LevelDesign
 {
@@ -10,24 +12,28 @@ namespace FoodieMatch.Editor.LevelDesign
         private const int MaximumSecondsPerSeed = 10;
 
         [MenuItem("Foodie Match/Level Design/Validate Package Seeds")]
-        public static void ValidatePackageSeeds()
+        public static async void ValidatePackageSeeds()
         {
-            LevelCatalogEditorLoader catalogLoader = new();
-
-            if (!catalogLoader.TryLoad(out LevelCatalog catalog))
+            try
             {
-                return;
+                LevelCatalogEditorLoader catalogLoader = new();
+                IReadOnlyList<LevelDefinition> levels =
+                    await catalogLoader.LoadAsync();
+
+                LevelSeedSolverSettings settings = new(
+                    MaximumVisitedStates,
+                    TimeSpan.FromSeconds(MaximumSecondsPerSeed));
+                LevelSeedCatalogValidator validator = new(
+                    new LevelSeedSolver(settings),
+                    new LevelSeedValidationReportWriter(),
+                    new InitialPackageSignatureFactory());
+
+                validator.Validate(levels);
             }
-
-            LevelSeedSolverSettings settings = new(
-                MaximumVisitedStates,
-                TimeSpan.FromSeconds(MaximumSecondsPerSeed));
-            LevelSeedCatalogValidator validator = new(
-                new LevelSeedSolver(settings),
-                new LevelSeedValidationReportWriter(),
-                new InitialPackageSignatureFactory());
-
-            validator.Validate(catalog);
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
     }
 }

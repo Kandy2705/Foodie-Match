@@ -6,7 +6,10 @@ namespace FoodieMatch.UI.Loading
 {
     public sealed class LoadingScreenView : MonoBehaviour
     {
-        private const float MinimumVisibleSeconds = 0.1f;
+        private const float InitialProgress = 0.08f;
+        private const float ProgressFollowSpeed = 2.5f;
+        private const float CompletionFollowSpeed = 12f;
+        private const float CompletionThreshold = 0.001f;
         private const float MaximumFrameDelta = 0.05f;
 
         [SerializeField] private Slider _progressSlider;
@@ -16,13 +19,20 @@ namespace FoodieMatch.UI.Loading
 
         private void Update()
         {
-            float frameDelta = Mathf.Min(
-                Time.unscaledDeltaTime,
-                MaximumFrameDelta);
-            float visibleProgress = Mathf.MoveTowards(
+            float frameDelta = Mathf.Min(Time.unscaledDeltaTime, MaximumFrameDelta);
+            float followSpeed = _targetProgress >= 1f
+                ? CompletionFollowSpeed
+                : ProgressFollowSpeed;
+            float interpolation = 1f - Mathf.Exp(-followSpeed * frameDelta);
+            float visibleProgress = Mathf.Lerp(
                 _progressSlider.value,
                 _targetProgress,
-                frameDelta / MinimumVisibleSeconds);
+                interpolation);
+
+            if (Mathf.Abs(_targetProgress - visibleProgress) <= CompletionThreshold)
+            {
+                visibleProgress = _targetProgress;
+            }
 
             _progressSlider.SetValueWithoutNotify(visibleProgress);
         }
@@ -30,7 +40,7 @@ namespace FoodieMatch.UI.Loading
         public void Show()
         {
             _showVersion++;
-            _targetProgress = 0f;
+            _targetProgress = InitialProgress;
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
             _progressSlider.SetValueWithoutNotify(0f);

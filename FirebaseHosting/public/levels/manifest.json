@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "manifestVersion": 4,
+  "packs": [
+    {
+      "id": 1,
+      "version": 5,
+      "firstLevel": 1,
+      "lastLevel": 4,
+      "archivePath": "packs/pack_0001_v0005.zip",
+      "archiveSha256": "8f0ce3cf00fccc4bdef35d886381c01ac5f33ce0fcbf47848cb295d059810cdf"
+    },
+    {
+      "id": 2,
+      "version": 1,
+      "firstLevel": 5,
+      "lastLevel": 8,
+      "archivePath": "packs/pack_0002_v0001.zip",
+      "archiveSha256": "253b05e6b495cd552f22f80a35dc865bc248b8b5e89544caeee132132036b98b"
+    },
+    {
+      "id": 3,
+      "version": 1,
+      "firstLevel": 9,
+      "lastLevel": 12,
+      "archivePath": "packs/pack_0003_v0001.zip",
+      "archiveSha256": "9bdf756bf4d9cbf0fe426ec9a50455d3b525d5d5c133078b967d022560df0f7b"
+    },
+    {
+      "id": 4,
+      "version": 1,
+      "firstLevel": 13,
+      "lastLevel": 13,
+      "archivePath": "packs/pack_0004_v0001.zip",
+      "archiveSha256": "6d441e2487b0e80fa3ef40beb8c07a779db6cfe8e27d7f8d07bea2d06c979cbf"
+    }
+  ]
+}

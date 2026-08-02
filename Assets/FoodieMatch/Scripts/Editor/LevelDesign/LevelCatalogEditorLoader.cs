@@ -1,13 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
-using UnityEngine;
 
 namespace FoodieMatch.Editor.LevelDesign
 {
     internal sealed class LevelCatalogEditorLoader
     {
-        public bool TryLoad(out LevelCatalog catalog)
+        public async Task<IReadOnlyList<LevelDefinition>> LoadAsync()
         {
             LevelValidator levelValidator = new(
                 new PackageSelectionSettingsValidator(),
@@ -16,20 +19,40 @@ namespace FoodieMatch.Editor.LevelDesign
                 new GrillMovementGroupValidator());
             ResourcesLevelCatalogLoader loader = new(
                 new LevelCatalogJsonParser(),
-                new LevelCatalogValidator(levelValidator),
+                new LevelCatalogValidator(),
                 new LevelCatalogMapper());
 
-            if (loader.TryLoad(out catalog, out LevelValidationResult validationResult))
+            if (!loader.TryLoad(
+                    out ResourcesLevelCatalogData catalogData,
+                    out LevelValidationResult validationResult))
             {
-                return true;
+                throw new InvalidOperationException(
+                    string.Join(
+                        Environment.NewLine,
+                        validationResult.Errors));
             }
 
-            for (int i = 0; i < validationResult.Errors.Count; i++)
+            ILevelCatalogRepository catalogRepository =
+                new LevelCatalogRepository(catalogData.Catalog);
+            ILevelRepository levelRepository = new ResourcesLevelRepository(
+                catalogRepository,
+                catalogData.ContentFiles,
+                new LevelContentJsonParser(),
+                new LevelContentValidator(levelValidator),
+                new LevelContentMapper());
+            List<LevelDefinition> levels = new();
+
+            for (int i = 0;
+                 i < catalogData.Catalog.OrderedLevels.Count;
+                 i++)
             {
-                Debug.LogError(validationResult.Errors[i]);
+                int levelNumber =
+                    catalogData.Catalog.OrderedLevels[i].LevelNumber;
+                levels.Add(
+                    await levelRepository.LoadLevelAsync(levelNumber));
             }
 
-            return false;
+            return levels;
         }
     }
 }

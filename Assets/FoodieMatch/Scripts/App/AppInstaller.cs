@@ -1,13 +1,16 @@
+using System.IO;
 using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
+using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
@@ -21,8 +24,11 @@ using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
+using FoodieMatch.Infrastructure.Level.Remote;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Persistence.Save;
+using FoodieMatch.Infrastructure.RemoteConfig;
 using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
@@ -37,13 +43,22 @@ namespace FoodieMatch.App
         [SerializeField] private string _rewardedAdUnitId;
         [SerializeField] private string _interstitialAdUnitId;
 
+        [Header("Remote Levels")]
+        [SerializeField] private string _fallbackLevelManifestUrl;
+
         public GameplayEvents GameplayEvents { get; private set; }
 
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
 
+        public FirebaseGameConfigurationLoader GameConfigurationLoader { get; private set; }
+
+        public ILevelSynchronizer LevelSynchronizer { get; private set; }
+
         public bool Install(AppRoot appRoot)
         {
-            if (!TryCreateLevelRepository(out ILevelRepository levelRepository))
+            if (!TryLoadBundledLevelData(
+                    out ResourcesLevelCatalogData bundledLevelData,
+                    out LevelContentValidator levelContentValidator))
             {
                 return false;
             }
@@ -56,10 +71,64 @@ namespace FoodieMatch.App
             GameplayEvents = new GameplayEvents();
 
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            GameConfigurationSnapshotSet localConfigDefaults =
+                GameConfigurationSnapshotSet.CreateDefaults();
+            PlayerPrefsGameConfigurationCache configurationCache = new(saveService);
+            GameConfigurationSnapshotSet initialConfig = localConfigDefaults;
+
+            if (configurationCache.TryLoad(out GameConfigurationSnapshotSet cachedConfig))
+            {
+                initialConfig = cachedConfig;
+            }
+
+            GameConfigurationSession configurationSession = new(initialConfig);
+            GameConfigurationLoader = new FirebaseGameConfigurationLoader(
+                configurationSession,
+                localConfigDefaults,
+                configurationCache);
+            LevelCatalogRepository levelCatalogRepository =
+                new(bundledLevelData.Catalog);
+            ResourcesLevelRepository resourcesLevelRepository = new(
+                new LevelCatalogRepository(bundledLevelData.Catalog),
+                bundledLevelData.ContentFiles,
+                new LevelContentJsonParser(),
+                levelContentValidator,
+                new LevelContentMapper());
+            LevelDiskCache levelDiskCache = new(
+                Path.Combine(
+                    Application.persistentDataPath,
+                    "LevelCache"));
+            levelDiskCache.ClearStaging();
+            RemoteLevelManifestCache levelManifestCache =
+                new(levelDiskCache);
+            RemoteLevelManifestLoader levelManifestLoader = new(
+                levelManifestCache,
+                _fallbackLevelManifestUrl);
+            RemoteLevelPackCache levelPackCache = new(
+                levelDiskCache,
+                new LevelContentJsonParser(),
+                levelContentValidator);
+            RemoteLevelPackDownloader levelPackDownloader =
+                new(
+                    levelPackCache,
+                    new RemoteLevelPackArchiveReader());
+            LevelSynchronizer = new RemoteLevelSynchronizer(
+                bundledLevelData,
+                levelCatalogRepository,
+                levelManifestLoader,
+                levelPackCache,
+                levelPackDownloader);
+            ILevelRepository levelRepository =
+                new RemoteFirstLevelRepository(
+                    resourcesLevelRepository,
+                    levelManifestLoader,
+                    levelPackCache,
+                    new LevelContentJsonParser(),
+                    levelContentValidator,
+                    new LevelContentMapper());
             IAdvertisingRuntimeSettings advertisingRuntimeSettings =
                 new PlayerPrefsAdvertisingRuntimeSettings(saveService);
-            IGameHeartConfig heartConfig =
-                GameHeartDefaults.CreateSnapshot();
+            IGameHeartConfig heartConfig = configurationSession;
             IClock clock = new SystemClock();
             PlayerProfileSession profileSession = new();
             IPlayerProfileRepository profileRepository =
@@ -103,11 +172,9 @@ namespace FoodieMatch.App
             BoardModelFactory boardModelFactory = new();
 
             BoosterManager boosterManager = new(playerProfileService);
-            IGameBoosterConfig boosterConfig =
-                GameBoosterDefaults.CreateSnapshot();
-            IGameEconomyConfig economyConfig =
-                GameEconomyDefaults.CreateSnapshot();
-            IGameAdsConfig adsConfig = GameAdsDefaults.CreateSnapshot();
+            IGameBoosterConfig boosterConfig = configurationSession;
+            IGameEconomyConfig economyConfig = configurationSession;
+            IGameAdsConfig adsConfig = configurationSession;
             ShopPurchaseService shopPurchaseService = new(
                 shopConfig,
                 new DebugFreeShopPaymentGateway(),
@@ -123,7 +190,7 @@ namespace FoodieMatch.App
                 economyConfig,
                 advertisingRuntimeSettings,
                 playerProfileService,
-                levelRepository,
+                levelCatalogRepository,
                 shopConfig,
                 addressableUiFactory,
                 appRoot.GameplayPoolRoot.ComboFeedback);
@@ -167,7 +234,6 @@ namespace FoodieMatch.App
                 appRoot.GameplayPoolRoot.FoodItems,
                 requiredPackageLifecycleUseCase,
                 selectFoodUseCase,
-                levelRepository,
                 boardModelFactory);
             appRoot.AppController.Construct(
                 appRoot.UIManager,
@@ -178,7 +244,9 @@ namespace FoodieMatch.App
                 shopPurchaseService,
                 rewardedAdService,
                 postLevelAdCoordinator,
+                levelCatalogRepository,
                 levelRepository,
+                LevelSynchronizer,
                 audioService);
 
             return true;
@@ -244,9 +312,10 @@ namespace FoodieMatch.App
             Debug.LogError($"Player profile save failed: {errorMessage}");
         }
 
-        private static bool TryCreateLevelRepository(out ILevelRepository levelRepository)
+        private static bool TryLoadBundledLevelData(
+            out ResourcesLevelCatalogData catalogData,
+            out LevelContentValidator levelContentValidator)
         {
-            LevelCatalogJsonParser parser = new();
             PackageSelectionSettingsValidator packageSelectionValidator = new();
             LevelRandomSettingsValidator randomSettingsValidator = new();
             GrillLayoutValidator grillLayoutValidator = new();
@@ -256,19 +325,23 @@ namespace FoodieMatch.App
                 randomSettingsValidator,
                 grillLayoutValidator,
                 grillMovementGroupValidator);
-            LevelCatalogValidator catalogValidator = new(levelValidator);
-            LevelCatalogMapper mapper = new();
-            ResourcesLevelCatalogLoader loader = new(parser, catalogValidator, mapper);
+            ResourcesLevelCatalogLoader loader = new(
+                new LevelCatalogJsonParser(),
+                new LevelCatalogValidator(),
+                new LevelCatalogMapper());
 
-            if (!loader.TryLoad(out LevelCatalog catalog, out LevelValidationResult validationResult))
+            if (!loader.TryLoad(
+                    out catalogData,
+                    out LevelValidationResult validationResult))
             {
                 LogLevelValidation(validationResult);
-                levelRepository = null;
+                levelContentValidator = null;
                 return false;
             }
 
             LogLevelValidation(validationResult);
-            levelRepository = new LevelCatalogRepository(catalog);
+            levelContentValidator =
+                new LevelContentValidator(levelValidator);
             return true;
         }
 
