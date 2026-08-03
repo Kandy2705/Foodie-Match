@@ -87,7 +87,7 @@ namespace FoodieMatch.UI
         private IGameEconomyConfig _economyConfig;
         private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
-        private ILevelRepository _levelRepository;
+        private ILevelCatalogRepository _levelCatalogRepository;
         private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
         private IAddressableUiFactory _addressableUiFactory;
@@ -148,8 +148,6 @@ namespace FoodieMatch.UI
             {
                 _addressableUiFactory.LoadingStateChanged -=
                     OnAddressableUiLoadingStateChanged;
-                _addressableUiFactory.LoadingProgressChanged -=
-                    OnAddressableUiLoadingProgressChanged;
             }
 
             ReleaseMainMenuViews();
@@ -166,7 +164,7 @@ namespace FoodieMatch.UI
             IGameEconomyConfig economyConfig,
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
-            ILevelRepository levelRepository,
+            ILevelCatalogRepository levelCatalogRepository,
             IGameShopConfig shopConfig,
             IAddressableUiFactory addressableUiFactory,
             ComboFeedbackViewPool comboFeedbackViewPool)
@@ -179,8 +177,6 @@ namespace FoodieMatch.UI
                     _addressableLoadingTexture);
             _addressableUiFactory.LoadingStateChanged +=
                 OnAddressableUiLoadingStateChanged;
-            _addressableUiFactory.LoadingProgressChanged +=
-                OnAddressableUiLoadingProgressChanged;
             _popupManager.Construct(addressableUiFactory);
             _audioService = audioService;
             _uiGlobalButtonClickSfx.Construct(audioService);
@@ -191,7 +187,7 @@ namespace FoodieMatch.UI
             _economyConfig = economyConfig;
             _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
-            _levelRepository = levelRepository;
+            _levelCatalogRepository = levelCatalogRepository;
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
             SubscribeEvents();
@@ -201,14 +197,6 @@ namespace FoodieMatch.UI
         {
             _isAddressableUiLoading = isLoading;
             RefreshAddressableLoadingOverlay();
-        }
-
-        private void OnAddressableUiLoadingProgressChanged(float progress)
-        {
-            if (_isTransitionLoadingVisible)
-            {
-                _loadingScreenView.SetProgress(progress);
-            }
         }
 
         private void RefreshAddressableLoadingOverlay()
@@ -332,6 +320,16 @@ namespace FoodieMatch.UI
             }
         }
 
+        public void RefreshHomeLevel()
+        {
+            if (_popupManager.TryGetOpened(
+                    out MainMenuView mainMenuView) &&
+                mainMenuView.TryGetView(out HomeView homeView))
+            {
+                SetHomePlayLevel(homeView);
+            }
+        }
+
         public void HideHome()
         {
             CompleteCoinRewardImmediately();
@@ -433,6 +431,11 @@ namespace FoodieMatch.UI
             LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
             loadingScreen.Show();
             return Task.CompletedTask;
+        }
+
+        public void SetLoadingProgress(float progress)
+        {
+            _loadingScreenView.SetProgress(progress);
         }
 
         public async Task PlayLevelWarningAsync(LevelDifficulty difficulty)
@@ -1348,7 +1351,7 @@ namespace FoodieMatch.UI
         {
             PlayerProfileDebugUpdate playerProfile = values.PlayerProfile;
 
-            if (!_levelRepository.TryGetLevel(
+            if (!_levelCatalogRepository.TryGetLevelSummary(
                     playerProfile.CurrentLevelNumber,
                     out _))
             {
@@ -1400,15 +1403,15 @@ namespace FoodieMatch.UI
 
         private void SetHomePlayLevel(HomeView homeView)
         {
-            if (!_levelRepository.TryGetLevel(
+            if (!_levelCatalogRepository.TryGetLevelSummary(
                     _currentLevelNumber,
-                    out LevelDefinition level))
+                    out LevelSummary level))
             {
                 Debug.LogError($"Level {_currentLevelNumber} could not be loaded.");
                 return;
             }
 
-            homeView.SetPlayLevel(level.Id, level.Difficulty);
+            homeView.SetPlayLevel(level.LevelNumber, level.Difficulty);
         }
 
         private void OnPauseResumeClicked()

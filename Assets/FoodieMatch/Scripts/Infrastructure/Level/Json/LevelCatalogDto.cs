@@ -12,6 +12,6 @@ namespace FoodieMatch.Infrastructure.Level.Json
         public List<int> LevelOrder { get; set; }
 
         [JsonProperty("levels")]
-        public List<LevelDto> Levels { get; set; }
+        public List<LevelCatalogEntryDto> Levels { get; set; }
     }
 }
