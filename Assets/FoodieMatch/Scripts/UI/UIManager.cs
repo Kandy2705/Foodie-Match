@@ -24,6 +24,7 @@ using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
+using FoodieMatch.UI.LeaderBoard;
 using FoodieMatch.UI.Loading;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Navigation;
@@ -49,6 +50,10 @@ namespace FoodieMatch.UI
             "main-menu/shop";
         private const string MainMenuSocialInstanceKey =
             "main-menu/social";
+        private const string MainMenuLeaderBoardInstanceKey =
+            "main-menu/leaderboard";
+        private const string StarterPackProductId =
+            "starter_pack";
 
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
@@ -1056,6 +1061,13 @@ namespace FoodieMatch.UI
                             MainMenuSocialInstanceKey,
                             mainMenuView.ViewContainer);
 
+                case BottomNavigationTab.LeaderBoard:
+                    return await _addressableUiFactory
+                        .GetOrCreateAsync<LeaderBoardView>(
+                            UiAddressKeys.LeaderBoardScreen,
+                            MainMenuLeaderBoardInstanceKey,
+                            mainMenuView.ViewContainer);
+
                 default:
                     throw new InvalidOperationException(
                         $"Main menu tab {tab} does not have an Addressable view.");
@@ -1089,6 +1101,7 @@ namespace FoodieMatch.UI
             _addressableUiFactory.Release(MainMenuHomeInstanceKey);
             _addressableUiFactory.Release(MainMenuShopInstanceKey);
             _addressableUiFactory.Release(MainMenuSocialInstanceKey);
+            _addressableUiFactory.Release(MainMenuLeaderBoardInstanceKey);
         }
 
         private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
@@ -1161,8 +1174,17 @@ namespace FoodieMatch.UI
         private void OnHomeStarterPackRequested()
         {
             RunUiTask(
-                _popupManager.ShowAsync<StarterPackPopupView>(),
+                ShowPopupAsync<StarterPackPopupView>(
+                    null,
+                    popup => popup.SetActions(
+                        new StarterPackPopupViewActions(
+                            OnStarterPackBuyRequestedAsync))),
                 nameof(OnHomeStarterPackRequested));
+        }
+
+        private Task<ShopPurchaseResult> OnStarterPackBuyRequestedAsync()
+        {
+            return ShopPurchaseHandler(StarterPackProductId);
         }
 
         private void OnHomeCoinClicked()

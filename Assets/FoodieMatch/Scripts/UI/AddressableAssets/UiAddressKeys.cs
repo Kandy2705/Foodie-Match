@@ -30,6 +30,8 @@ namespace FoodieMatch.UI.AddressableAssets
             "Assets/FoodieMatch/Bundle/UI/ShopUI/ShopScreen.prefab";
         public const string SocialScreen =
             "Assets/FoodieMatch/Bundle/UI/SocialUI/SocialScreen.prefab";
+        public const string LeaderBoardScreen =
+            "Assets/FoodieMatch/Bundle/UI/LeaderBoardUI/LeaderBoardScreen.prefab";
         public const string PausePopup =
             "Assets/FoodieMatch/Bundle/UI/PausePopup.prefab";
         public const string RetryGamePopup =

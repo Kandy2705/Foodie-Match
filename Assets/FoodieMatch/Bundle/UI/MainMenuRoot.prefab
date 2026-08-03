@@ -272,22 +272,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1095116679980289}
     m_Modifications:
-    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
-      propertyPath: _tabs.Array.data[3]._button
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
-      propertyPath: _tabs.Array.data[3]._target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
-      propertyPath: _tabs.Array.data[4]._button
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
-      propertyPath: _tabs.Array.data[4]._target
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 3852758425585065568, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
       propertyPath: m_Name
       value: BottomNavigationBar
