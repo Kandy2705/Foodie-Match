@@ -16,6 +16,7 @@ namespace FoodieMatch.UI.LeaderBoard
         private const float ListOvershootScale = 1.1f;
         private const float FeaturedOvershootScale = 1.2f;
         private const int MaximumDisplayedPlayers = 100;
+        private const int MedalRankCount = 3;
         private const string WeeklyValueLabel = "Score";
         private const string GlobalValueLabel = "Level";
 
@@ -33,6 +34,17 @@ namespace FoodieMatch.UI.LeaderBoard
 
             public string AvatarId => _avatarId;
             public Sprite Sprite => _sprite;
+        }
+
+        private sealed class VirtualizedListState
+        {
+            public LeaderBoardPlayerData[] Players;
+            public LeaderBoardMedalPlayerRowView MedalTemplate;
+            public LeaderBoardNumberedPlayerRowView NumberedTemplate;
+            public LeaderBoardMedalPlayerRowView[] MedalRows;
+            public LeaderBoardNumberedPlayerRowView[] NumberedRows;
+            public int[] NumberedRowIndices;
+            public bool IsInitialized;
         }
 
         [Header("Tabs")]
@@ -58,6 +70,17 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private LeaderBoardCurrentPlayerView _currentPlayerView;
         [SerializeField] private AvatarBinding[] _avatarBindings;
 
+        [Header("Virtualized Lists")]
+        [SerializeField] private ScrollRect _weeklyScrollRect;
+        [SerializeField] private VerticalLayoutGroup _weeklyLayoutGroup;
+        [SerializeField] private ContentSizeFitter _weeklyContentSizeFitter;
+        [SerializeField] private ScrollRect _globalScrollRect;
+        [SerializeField] private VerticalLayoutGroup _globalLayoutGroup;
+        [SerializeField] private ContentSizeFitter _globalContentSizeFitter;
+        [SerializeField, Min(1f)] private float _rowHeight = 125f;
+        [SerializeField, Min(0f)] private float _rowSpacing = 14f;
+        [SerializeField, Min(0)] private int _virtualizationBufferRows = 2;
+
         [Header("Weekly Reveal")]
         [SerializeField] private RectTransform _weeklyPodiumRoot;
         [SerializeField] private CanvasGroup _weeklyPodiumCanvasGroup;
@@ -82,6 +105,8 @@ namespace FoodieMatch.UI.LeaderBoard
         private readonly Dictionary<string, Sprite> _avatarsById =
             new(StringComparer.Ordinal);
         private LeaderBoardPlayerData _currentPlayer;
+        private readonly VirtualizedListState _weeklyList = new();
+        private readonly VirtualizedListState _globalList = new();
         private Sequence _revealSequence;
         private float _nextTimerRefreshTime;
 
@@ -89,6 +114,8 @@ namespace FoodieMatch.UI.LeaderBoard
         {
             _weeklyButton.onClick.AddListener(OnWeeklyButtonClicked);
             _globalButton.onClick.AddListener(OnGlobalButtonClicked);
+            _weeklyScrollRect.onValueChanged.AddListener(OnWeeklyScrolled);
+            _globalScrollRect.onValueChanged.AddListener(OnGlobalScrolled);
 
             LoadAndBindData();
             _selectedTab = _initialTab;
@@ -118,6 +145,8 @@ namespace FoodieMatch.UI.LeaderBoard
             StopRevealAnimation();
             _weeklyButton.onClick.RemoveListener(OnWeeklyButtonClicked);
             _globalButton.onClick.RemoveListener(OnGlobalButtonClicked);
+            _weeklyScrollRect.onValueChanged.RemoveListener(OnWeeklyScrolled);
+            _globalScrollRect.onValueChanged.RemoveListener(OnGlobalScrolled);
         }
 
         public void OnTabSelected()
@@ -158,6 +187,7 @@ namespace FoodieMatch.UI.LeaderBoard
 
             _weeklyContent.SetActive(isWeekly);
             _globalContent.SetActive(!isWeekly);
+            EnsureListInitialized(tab);
             _weeklyButton.interactable = !isWeekly;
             _globalButton.interactable = isWeekly;
             BindCurrentPlayer(tab);
@@ -216,23 +246,14 @@ namespace FoodieMatch.UI.LeaderBoard
                         left.globalRank.CompareTo(right.globalRank));
 
             BindPodium(weeklyPlayers);
-            _weeklyPlayerRows = CreateAndBindRows(
+            ConfigureListState(
+                _weeklyList,
                 _weeklyPlayerRows,
-                weeklyPlayers,
-                LeaderBoardTab.Weekly);
-            _globalPlayerRows = CreateAndBindRows(
+                weeklyPlayers);
+            ConfigureListState(
+                _globalList,
                 _globalPlayerRows,
-                globalPlayers,
-                LeaderBoardTab.Global);
-
-            CacheRevealRows(
-                _weeklyPlayerRows,
-                out _weeklyRows,
-                out _weeklyRowCanvasGroups);
-            CacheRevealRows(
-                _globalPlayerRows,
-                out _globalRows,
-                out _globalRowCanvasGroups);
+                globalPlayers);
         }
 
         private void BuildAvatarLookup()
@@ -280,92 +301,280 @@ namespace FoodieMatch.UI.LeaderBoard
             }
         }
 
-        private LeaderBoardPlayerRowView[] CreateAndBindRows(
+        private static void ConfigureListState(
+            VirtualizedListState list,
             LeaderBoardPlayerRowView[] templates,
-            LeaderBoardPlayerData[] players,
-            LeaderBoardTab tab)
+            LeaderBoardPlayerData[] players)
         {
-            LeaderBoardMedalPlayerRowView medalTemplate = null;
-            LeaderBoardNumberedPlayerRowView numberedTemplate = null;
+            list.Players = players;
 
             for (int i = 0; i < templates.Length; i++)
             {
                 if (templates[i] is LeaderBoardMedalPlayerRowView medalRow)
                 {
-                    medalTemplate = medalRow;
+                    list.MedalTemplate = medalRow;
                 }
                 else if (
                     templates[i] is LeaderBoardNumberedPlayerRowView
                         numberedRow)
                 {
-                    numberedTemplate = numberedRow;
+                    list.NumberedTemplate = numberedRow;
                 }
 
                 templates[i].gameObject.SetActive(false);
             }
-
-            if (medalTemplate == null || numberedTemplate == null)
-            {
-                throw new InvalidOperationException(
-                    "Leaderboard row templates are not configured.");
-            }
-
-            int rowCount =
-                Mathf.Min(players.Length, MaximumDisplayedPlayers);
-            LeaderBoardPlayerRowView[] rows =
-                new LeaderBoardPlayerRowView[rowCount];
-            Transform parent = templates[0].transform.parent;
-
-            for (int i = 0; i < rowCount; i++)
-            {
-                LeaderBoardPlayerData player = players[i];
-                bool isWeekly = tab == LeaderBoardTab.Weekly;
-                int rank =
-                    isWeekly
-                        ? player.weeklyRank
-                        : player.globalRank;
-                int value =
-                    isWeekly
-                        ? player.weeklyScore
-                        : player.level;
-                LeaderBoardPlayerRowView template =
-                    rank <= 3
-                        ? medalTemplate
-                        : numberedTemplate;
-                LeaderBoardPlayerRowView row =
-                    Instantiate(template, parent);
-
-                row.gameObject.name =
-                    $"{tab}RankRow_{rank}";
-                row.gameObject.SetActive(true);
-                row.Bind(
-                    player,
-                    rank,
-                    isWeekly
-                        ? WeeklyValueLabel
-                        : GlobalValueLabel,
-                    value,
-                    GetAvatar(player.avatarId));
-                rows[i] = row;
-            }
-
-            return rows;
         }
 
-        private static void CacheRevealRows(
-            LeaderBoardPlayerRowView[] rowViews,
-            out RectTransform[] rows,
-            out CanvasGroup[] rowCanvasGroups)
+        private void EnsureListInitialized(
+            LeaderBoardTab tab)
         {
-            rows = new RectTransform[rowViews.Length];
-            rowCanvasGroups = new CanvasGroup[rowViews.Length];
+            VirtualizedListState list =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyList
+                    : _globalList;
 
-            for (int i = 0; i < rowViews.Length; i++)
+            if (list.IsInitialized)
             {
-                rows[i] =
-                    (RectTransform)rowViews[i].transform;
-                rowCanvasGroups[i] =
-                    rowViews[i].GetComponent<CanvasGroup>();
+                RefreshVirtualizedList(tab, list);
+                return;
+            }
+
+            ScrollRect scrollRect =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyScrollRect
+                    : _globalScrollRect;
+            VerticalLayoutGroup layoutGroup =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyLayoutGroup
+                    : _globalLayoutGroup;
+            ContentSizeFitter contentSizeFitter =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyContentSizeFitter
+                    : _globalContentSizeFitter;
+
+            layoutGroup.enabled = false;
+            contentSizeFitter.enabled = false;
+            Canvas.ForceUpdateCanvases();
+
+            int rowCount =
+                Mathf.Min(
+                    list.Players.Length,
+                    MaximumDisplayedPlayers);
+            float rowStride = _rowHeight + _rowSpacing;
+            float contentHeight =
+                rowCount == 0
+                    ? 0f
+                    : rowCount * _rowHeight +
+                      (rowCount - 1) * _rowSpacing;
+            Vector2 contentSize = scrollRect.content.sizeDelta;
+            contentSize.y = contentHeight;
+            scrollRect.content.sizeDelta = contentSize;
+            scrollRect.content.anchoredPosition = Vector2.zero;
+
+            int medalRowCount =
+                Mathf.Min(MedalRankCount, rowCount);
+            list.MedalRows =
+                new LeaderBoardMedalPlayerRowView[medalRowCount];
+
+            for (int i = 0; i < medalRowCount; i++)
+            {
+                LeaderBoardMedalPlayerRowView row =
+                    Instantiate(
+                        list.MedalTemplate,
+                        scrollRect.content);
+                row.gameObject.SetActive(true);
+                PositionRow(row.transform, i, rowStride);
+                BindRow(row, list.Players[i], tab);
+                list.MedalRows[i] = row;
+            }
+
+            int visibleRowCount =
+                Mathf.Max(
+                    1,
+                    Mathf.CeilToInt(
+                        scrollRect.viewport.rect.height /
+                        rowStride));
+            int numberedPlayerCount =
+                Mathf.Max(0, rowCount - MedalRankCount);
+            int numberedPoolCount =
+                Mathf.Min(
+                    numberedPlayerCount,
+                    visibleRowCount +
+                    _virtualizationBufferRows * 2);
+            list.NumberedRows =
+                new LeaderBoardNumberedPlayerRowView[
+                    numberedPoolCount];
+            list.NumberedRowIndices = new int[numberedPoolCount];
+
+            for (int i = 0; i < numberedPoolCount; i++)
+            {
+                LeaderBoardNumberedPlayerRowView row =
+                    Instantiate(
+                        list.NumberedTemplate,
+                        scrollRect.content);
+                row.gameObject.SetActive(false);
+                list.NumberedRows[i] = row;
+                list.NumberedRowIndices[i] = -1;
+            }
+
+            list.IsInitialized = true;
+            RefreshVirtualizedList(tab, list);
+            CacheRevealRows(tab, list);
+        }
+
+        private void OnWeeklyScrolled(
+            Vector2 normalizedPosition)
+        {
+            RefreshVirtualizedList(
+                LeaderBoardTab.Weekly,
+                _weeklyList);
+        }
+
+        private void OnGlobalScrolled(
+            Vector2 normalizedPosition)
+        {
+            RefreshVirtualizedList(
+                LeaderBoardTab.Global,
+                _globalList);
+        }
+
+        private void RefreshVirtualizedList(
+            LeaderBoardTab tab,
+            VirtualizedListState list)
+        {
+            if (!list.IsInitialized)
+            {
+                return;
+            }
+
+            ScrollRect scrollRect =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyScrollRect
+                    : _globalScrollRect;
+            float rowStride = _rowHeight + _rowSpacing;
+            int rowCount =
+                Mathf.Min(
+                    list.Players.Length,
+                    MaximumDisplayedPlayers);
+            int firstVisibleIndex =
+                Mathf.FloorToInt(
+                    scrollRect.content.anchoredPosition.y /
+                    rowStride);
+            int firstNumberedIndex =
+                Mathf.Clamp(
+                    firstVisibleIndex -
+                    _virtualizationBufferRows,
+                    MedalRankCount,
+                    Mathf.Max(MedalRankCount, rowCount));
+
+            for (int i = 0; i < list.NumberedRows.Length; i++)
+            {
+                int playerIndex = firstNumberedIndex + i;
+                LeaderBoardNumberedPlayerRowView row =
+                    list.NumberedRows[i];
+                bool hasPlayer = playerIndex < rowCount;
+                row.gameObject.SetActive(hasPlayer);
+
+                if (hasPlayer &&
+                    list.NumberedRowIndices[i] != playerIndex)
+                {
+                    PositionRow(
+                        row.transform,
+                        playerIndex,
+                        rowStride);
+                    BindRow(
+                        row,
+                        list.Players[playerIndex],
+                        tab);
+                    list.NumberedRowIndices[i] = playerIndex;
+                }
+            }
+        }
+
+        private void PositionRow(
+            Transform rowTransform,
+            int playerIndex,
+            float rowStride)
+        {
+            RectTransform row = (RectTransform)rowTransform;
+            row.anchorMin = new Vector2(0.5f, 1f);
+            row.anchorMax = new Vector2(0.5f, 1f);
+            row.pivot = new Vector2(0.5f, 0.5f);
+            Vector2 rowSize = row.sizeDelta;
+            rowSize.y = _rowHeight;
+            row.sizeDelta = rowSize;
+            row.anchoredPosition =
+                new Vector2(
+                    0f,
+                    -playerIndex * rowStride -
+                    row.sizeDelta.y * 0.5f);
+        }
+
+        private void BindRow(
+            LeaderBoardPlayerRowView row,
+            LeaderBoardPlayerData player,
+            LeaderBoardTab tab)
+        {
+            bool isWeekly = tab == LeaderBoardTab.Weekly;
+            int rank =
+                isWeekly
+                    ? player.weeklyRank
+                    : player.globalRank;
+
+            row.gameObject.name = $"{tab}RankRow_{rank}";
+            row.Bind(
+                player,
+                rank,
+                isWeekly
+                    ? WeeklyValueLabel
+                    : GlobalValueLabel,
+                isWeekly
+                    ? player.weeklyScore
+                    : player.level,
+                GetAvatar(player.avatarId));
+        }
+
+        private void CacheRevealRows(
+            LeaderBoardTab tab,
+            VirtualizedListState list)
+        {
+            int rowCount =
+                list.MedalRows.Length +
+                list.NumberedRows.Length;
+            RectTransform[] rows = new RectTransform[rowCount];
+            CanvasGroup[] rowCanvasGroups =
+                new CanvasGroup[rowCount];
+            int targetIndex = 0;
+
+            for (int i = 0; i < list.MedalRows.Length; i++)
+            {
+                rows[targetIndex] =
+                    (RectTransform)list.MedalRows[i].transform;
+                rowCanvasGroups[targetIndex] =
+                    list.MedalRows[i]
+                        .GetComponent<CanvasGroup>();
+                targetIndex++;
+            }
+
+            for (int i = 0; i < list.NumberedRows.Length; i++)
+            {
+                rows[targetIndex] =
+                    (RectTransform)list.NumberedRows[i].transform;
+                rowCanvasGroups[targetIndex] =
+                    list.NumberedRows[i]
+                        .GetComponent<CanvasGroup>();
+                targetIndex++;
+            }
+
+            if (tab == LeaderBoardTab.Weekly)
+            {
+                _weeklyRows = rows;
+                _weeklyRowCanvasGroups = rowCanvasGroups;
+            }
+            else
+            {
+                _globalRows = rows;
+                _globalRowCanvasGroups = rowCanvasGroups;
             }
         }
 
