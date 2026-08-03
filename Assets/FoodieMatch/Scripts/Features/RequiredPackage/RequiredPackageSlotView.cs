@@ -7,12 +7,16 @@ namespace FoodieMatch.Features.RequiredPackage
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private float _previewAlpha = 0.45f;
         [SerializeField] private float _filledAlpha = 1f;
+        [SerializeField] private int _filledSortingOrderOffset = 10;
+
+        private int _previewSortingOrder;
 
         public bool IsVisible { get; private set; }
         public bool IsFilled { get; private set; }
 
         private void Awake()
         {
+            _previewSortingOrder = _spriteRenderer.sortingOrder;
             ApplyVisibility();
         }
 
@@ -47,6 +51,9 @@ namespace FoodieMatch.Features.RequiredPackage
         {
             _spriteRenderer.enabled = IsVisible && _spriteRenderer.sprite != null;
             _spriteRenderer.color = GetCurrentColor();
+            _spriteRenderer.sortingOrder = IsFilled
+                ? _previewSortingOrder + _filledSortingOrderOffset
+                : _previewSortingOrder;
         }
 
         private Color GetCurrentColor()

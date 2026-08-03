@@ -35,6 +35,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
         {
             try
             {
+                FirebaseApp.LogLevel = LogLevel.Error;
                 DependencyStatus dependencyStatus =
                     await FirebaseApp.CheckAndFixDependenciesAsync();
                 cancellationToken.ThrowIfCancellationRequested();
