@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FoodieMatch.UI.MainMenu;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 
 namespace FoodieMatch.UI.LeaderBoard
@@ -21,6 +24,10 @@ namespace FoodieMatch.UI.LeaderBoard
         private const int MedalRankCount = 3;
         private const string WeeklyValueLabel = "Score";
         private const string GlobalValueLabel = "Level";
+        private const string WeeklyContentAddress =
+            "Assets/FoodieMatch/Bundle/UI/LeaderBoardUI/WeeklyContent.prefab";
+        private const string GlobalContentAddress =
+            "Assets/FoodieMatch/Bundle/UI/LeaderBoardUI/GlobalContent.prefab";
 
         private enum LeaderBoardTab
         {
@@ -64,14 +71,10 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private LeaderBoardTab _initialTab = LeaderBoardTab.Weekly;
 
         [Header("Content")]
-        [SerializeField] private GameObject _weeklyContent;
-        [SerializeField] private GameObject _globalContent;
+        [SerializeField] private RectTransform _contentRoot;
         [SerializeField] private TMP_Text _weeklyTimeRemainingText;
 
         [Header("Data Views")]
-        [SerializeField] private LeaderBoardPodiumPlayerView[] _weeklyPodiumPlayers;
-        [SerializeField] private LeaderBoardPlayerRowView[] _weeklyPlayerRows;
-        [SerializeField] private LeaderBoardPlayerRowView[] _globalPlayerRows;
         [SerializeField] private LeaderBoardCurrentPlayerView _currentPlayerView;
         [SerializeField] private AvatarBinding[] _avatarBindings;
 
@@ -88,23 +91,17 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private Sprite _unlimitedHeartRewardSprite;
 
         [Header("Virtualized Lists")]
-        [SerializeField] private ScrollRect _weeklyScrollRect;
-        [SerializeField] private VerticalLayoutGroup _weeklyLayoutGroup;
-        [SerializeField] private ContentSizeFitter _weeklyContentSizeFitter;
-        [SerializeField] private ScrollRect _globalScrollRect;
-        [SerializeField] private VerticalLayoutGroup _globalLayoutGroup;
-        [SerializeField] private ContentSizeFitter _globalContentSizeFitter;
         [SerializeField, Min(0)] private int _virtualizationBufferRows = 2;
 
         [Header("Weekly Reveal")]
-        [SerializeField] private RectTransform _weeklyPodiumRoot;
-        [SerializeField] private CanvasGroup _weeklyPodiumCanvasGroup;
-        [SerializeField] private RectTransform[] _weeklyRows;
-        [SerializeField] private CanvasGroup[] _weeklyRowCanvasGroups;
-
-        [Header("Global Reveal")]
-        [SerializeField] private RectTransform[] _globalRows;
-        [SerializeField] private CanvasGroup[] _globalRowCanvasGroups;
+        private RectTransform _weeklyPodiumRoot;
+        private CanvasGroup _weeklyPodiumCanvasGroup;
+        private RectTransform[] _weeklyRows = Array.Empty<RectTransform>();
+        private CanvasGroup[] _weeklyRowCanvasGroups =
+            Array.Empty<CanvasGroup>();
+        private RectTransform[] _globalRows = Array.Empty<RectTransform>();
+        private CanvasGroup[] _globalRowCanvasGroups =
+            Array.Empty<CanvasGroup>();
 
         [Header("Current Player Reveal")]
         [SerializeField] private RectTransform _currentPlayerRow;
@@ -120,8 +117,23 @@ namespace FoodieMatch.UI.LeaderBoard
         private readonly Dictionary<string, Sprite> _avatarsById =
             new(StringComparer.Ordinal);
         private LeaderBoardPlayerData _currentPlayer;
+        private LeaderBoardPlayerData[] _weeklyPlayers;
+        private LeaderBoardPlayerData[] _globalPlayers;
         private readonly VirtualizedListState _weeklyList = new();
         private readonly VirtualizedListState _globalList = new();
+        private ScrollRect _weeklyScrollRect;
+        private VerticalLayoutGroup _weeklyLayoutGroup;
+        private ContentSizeFitter _weeklyContentSizeFitter;
+        private ScrollRect _globalScrollRect;
+        private VerticalLayoutGroup _globalLayoutGroup;
+        private ContentSizeFitter _globalContentSizeFitter;
+        private AsyncOperationHandle<GameObject> _activeContentHandle;
+        private bool _hasActiveContentHandle;
+        private bool _isContentLoading;
+        private bool _isDestroyed;
+        private int _contentRequestVersion;
+        private LeaderBoardTab _loadingTab;
+        private LeaderBoardTab _loadedContentTab;
         private Sequence _revealSequence;
         private Tween _rewardPreviewHideTween;
         private Tween _rewardPreviewDeactivateTween;
@@ -139,30 +151,31 @@ namespace FoodieMatch.UI.LeaderBoard
         {
             _weeklyButton.onClick.AddListener(OnWeeklyButtonClicked);
             _globalButton.onClick.AddListener(OnGlobalButtonClicked);
-            _weeklyScrollRect.onValueChanged.AddListener(OnWeeklyScrolled);
-            _globalScrollRect.onValueChanged.AddListener(OnGlobalScrolled);
-            _weeklyScrollDragRelay =
-                InitializeScrollDragRelay(_weeklyScrollRect);
-            _globalScrollDragRelay =
-                InitializeScrollDragRelay(_globalScrollRect);
             InitializeRewardPreviewPool();
             HideRewardPreview();
 
-            LoadAndBindData();
+            LoadData();
             _selectedTab = _initialTab;
-            SetTabContent(_selectedTab);
-            RestoreRevealTargets();
+            SetTabVisuals(_selectedTab);
+            BindCurrentPlayer(_selectedTab);
             UpdateWeeklyTimeRemaining();
         }
 
         private void OnEnable()
         {
             UpdateWeeklyTimeRemaining();
+            _ = EnsureTabContentLoadedAsync(
+                _selectedTab,
+                true);
         }
 
         private void OnDisable()
         {
             HideRewardPreview();
+            StopRevealAnimation();
+            _contentRequestVersion++;
+            _isContentLoading = false;
+            ReleaseActiveContent();
         }
 
         private void Update()
@@ -195,36 +208,41 @@ namespace FoodieMatch.UI.LeaderBoard
 
         private void OnDestroy()
         {
+            _isDestroyed = true;
+            _contentRequestVersion++;
+            _isContentLoading = false;
             StopRevealAnimation();
             HideRewardPreview();
+            ReleaseActiveContent();
             _weeklyButton.onClick.RemoveListener(OnWeeklyButtonClicked);
             _globalButton.onClick.RemoveListener(OnGlobalButtonClicked);
-            _weeklyScrollRect.onValueChanged.RemoveListener(OnWeeklyScrolled);
-            _globalScrollRect.onValueChanged.RemoveListener(OnGlobalScrolled);
-            _weeklyScrollDragRelay?.SetBeginDragHandler(null);
-            _globalScrollDragRelay?.SetBeginDragHandler(null);
         }
 
         public void OnTabSelected()
         {
-            SelectTab(_selectedTab, true);
+            _ = EnsureTabContentLoadedAsync(
+                _selectedTab,
+                true);
         }
 
-        private void OnWeeklyButtonClicked()
+        private async void OnWeeklyButtonClicked()
         {
-            SelectTab(LeaderBoardTab.Weekly, false);
+            await SelectTabAsync(LeaderBoardTab.Weekly, false);
         }
 
-        private void OnGlobalButtonClicked()
+        private async void OnGlobalButtonClicked()
         {
-            SelectTab(LeaderBoardTab.Global, false);
+            await SelectTabAsync(LeaderBoardTab.Global, false);
         }
 
-        private void SelectTab(
+        private async Task SelectTabAsync(
             LeaderBoardTab tab,
             bool restartReveal)
         {
-            if (!restartReveal && tab == _selectedTab)
+            if (!restartReveal &&
+                tab == _selectedTab &&
+                (_hasActiveContentHandle ||
+                 (_isContentLoading && _loadingTab == tab)))
             {
                 return;
             }
@@ -234,21 +252,17 @@ namespace FoodieMatch.UI.LeaderBoard
             RestoreRevealTargets();
 
             _selectedTab = tab;
-            SetTabContent(tab);
-            PlayRevealAnimation(tab);
+            SetTabVisuals(tab);
+            BindCurrentPlayer(tab);
+            await EnsureTabContentLoadedAsync(tab, restartReveal);
         }
 
-        private void SetTabContent(LeaderBoardTab tab)
+        private void SetTabVisuals(LeaderBoardTab tab)
         {
             bool isWeekly = tab == LeaderBoardTab.Weekly;
 
-            _weeklyContent.SetActive(isWeekly);
-            _globalContent.SetActive(!isWeekly);
-            ResetListToTop(tab);
-            EnsureListInitialized(tab);
             _weeklyButton.interactable = !isWeekly;
             _globalButton.interactable = isWeekly;
-            BindCurrentPlayer(tab);
 
             SetButtonVisual(
                 _weeklyButtonImage,
@@ -260,6 +274,260 @@ namespace FoodieMatch.UI.LeaderBoard
                 _globalButtonLabel,
                 !isWeekly,
                 true);
+        }
+
+        private async Task EnsureTabContentLoadedAsync(
+            LeaderBoardTab tab,
+            bool restartReveal)
+        {
+            if (_isDestroyed || !isActiveAndEnabled)
+            {
+                return;
+            }
+
+            if (_hasActiveContentHandle &&
+                _loadedContentTab == tab)
+            {
+                if (restartReveal)
+                {
+                    ActivateLoadedContent(tab);
+                }
+
+                return;
+            }
+
+            if (_isContentLoading && _loadingTab == tab)
+            {
+                return;
+            }
+
+            int requestVersion = ++_contentRequestVersion;
+            _isContentLoading = true;
+            _loadingTab = tab;
+            ReleaseActiveContent();
+
+            string address =
+                tab == LeaderBoardTab.Weekly
+                    ? WeeklyContentAddress
+                    : GlobalContentAddress;
+            AsyncOperationHandle<GameObject> handle =
+                Addressables.InstantiateAsync(
+                    address,
+                    _contentRoot,
+                    instantiateInWorldSpace: false,
+                    trackHandle: true);
+
+            try
+            {
+                GameObject instance = await handle.Task;
+
+                if (_isDestroyed ||
+                    !isActiveAndEnabled ||
+                    requestVersion != _contentRequestVersion ||
+                    tab != _selectedTab)
+                {
+                    ReleaseContentHandle(handle);
+                    return;
+                }
+
+                if (handle.Status != AsyncOperationStatus.Succeeded ||
+                    instance == null)
+                {
+                    throw handle.OperationException ??
+                        new InvalidOperationException(
+                            $"Leaderboard content could not load: {address}");
+                }
+
+                _activeContentHandle = handle;
+                _hasActiveContentHandle = true;
+                _loadedContentTab = tab;
+                BindLoadedContent(tab, instance);
+                ActivateLoadedContent(tab);
+            }
+            catch (Exception exception)
+            {
+                if (_hasActiveContentHandle &&
+                    _activeContentHandle.Equals(handle))
+                {
+                    ReleaseActiveContent();
+                }
+                else if (handle.IsValid())
+                {
+                    ReleaseContentHandle(handle);
+                }
+
+                Debug.LogError(
+                    $"Failed to load leaderboard {tab} content: " +
+                    exception);
+            }
+            finally
+            {
+                if (requestVersion == _contentRequestVersion)
+                {
+                    _isContentLoading = false;
+                }
+            }
+        }
+
+        private void BindLoadedContent(
+            LeaderBoardTab tab,
+            GameObject instance)
+        {
+            LeaderBoardContentView contentView =
+                instance.GetComponent<LeaderBoardContentView>();
+
+            if (contentView == null)
+            {
+                throw new MissingComponentException(
+                    $"{instance.name} needs {nameof(LeaderBoardContentView)}.");
+            }
+
+            instance.transform.SetAsFirstSibling();
+            instance.SetActive(true);
+
+            if (tab == LeaderBoardTab.Weekly)
+            {
+                _weeklyScrollRect = contentView.ScrollRect;
+                _weeklyLayoutGroup = contentView.LayoutGroup;
+                _weeklyContentSizeFitter =
+                    contentView.ContentSizeFitter;
+                _weeklyPodiumRoot = contentView.PodiumRoot;
+                _weeklyPodiumCanvasGroup =
+                    contentView.PodiumCanvasGroup;
+                ConfigureListState(
+                    _weeklyList,
+                    contentView.PlayerRows,
+                    _weeklyPlayers);
+                BindPodium(
+                    contentView.PodiumPlayers,
+                    _weeklyPlayers);
+                _weeklyScrollRect.onValueChanged.AddListener(
+                    OnWeeklyScrolled);
+                _weeklyScrollDragRelay =
+                    InitializeScrollDragRelay(_weeklyScrollRect);
+            }
+            else
+            {
+                _globalScrollRect = contentView.ScrollRect;
+                _globalLayoutGroup = contentView.LayoutGroup;
+                _globalContentSizeFitter =
+                    contentView.ContentSizeFitter;
+                ConfigureListState(
+                    _globalList,
+                    contentView.PlayerRows,
+                    _globalPlayers);
+                _globalScrollRect.onValueChanged.AddListener(
+                    OnGlobalScrolled);
+                _globalScrollDragRelay =
+                    InitializeScrollDragRelay(_globalScrollRect);
+            }
+        }
+
+        private void ActivateLoadedContent(
+            LeaderBoardTab tab)
+        {
+            StopRevealAnimation();
+            RestoreRevealTargets();
+            ResetListToTop(tab);
+            EnsureListInitialized(tab);
+            BindCurrentPlayer(tab);
+            UpdateWeeklyTimeRemaining();
+            PlayRevealAnimation(tab);
+        }
+
+        private void ReleaseActiveContent()
+        {
+            if (!_hasActiveContentHandle)
+            {
+                return;
+            }
+
+            HideRewardPreview();
+            StopRevealAnimation();
+
+            if (_loadedContentTab == LeaderBoardTab.Weekly)
+            {
+                if (_weeklyScrollRect != null)
+                {
+                    _weeklyScrollRect.onValueChanged.RemoveListener(
+                        OnWeeklyScrolled);
+                }
+
+                _weeklyScrollDragRelay?.SetBeginDragHandler(null);
+                ResetContentReferences(LeaderBoardTab.Weekly);
+            }
+            else
+            {
+                if (_globalScrollRect != null)
+                {
+                    _globalScrollRect.onValueChanged.RemoveListener(
+                        OnGlobalScrolled);
+                }
+
+                _globalScrollDragRelay?.SetBeginDragHandler(null);
+                ResetContentReferences(LeaderBoardTab.Global);
+            }
+
+            ReleaseContentHandle(_activeContentHandle);
+            _activeContentHandle = default;
+            _hasActiveContentHandle = false;
+        }
+
+        private void ResetContentReferences(
+            LeaderBoardTab tab)
+        {
+            VirtualizedListState list =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyList
+                    : _globalList;
+            list.MedalTemplate = null;
+            list.NumberedTemplate = null;
+            list.MedalRows = null;
+            list.NumberedRows = null;
+            list.NumberedRowIndices = null;
+            list.IsInitialized = false;
+
+            if (tab == LeaderBoardTab.Weekly)
+            {
+                _weeklyScrollRect = null;
+                _weeklyLayoutGroup = null;
+                _weeklyContentSizeFitter = null;
+                _weeklyScrollDragRelay = null;
+                _weeklyPodiumRoot = null;
+                _weeklyPodiumCanvasGroup = null;
+                _weeklyRows = Array.Empty<RectTransform>();
+                _weeklyRowCanvasGroups =
+                    Array.Empty<CanvasGroup>();
+            }
+            else
+            {
+                _globalScrollRect = null;
+                _globalLayoutGroup = null;
+                _globalContentSizeFitter = null;
+                _globalScrollDragRelay = null;
+                _globalRows = Array.Empty<RectTransform>();
+                _globalRowCanvasGroups =
+                    Array.Empty<CanvasGroup>();
+            }
+        }
+
+        private static void ReleaseContentHandle(
+            AsyncOperationHandle<GameObject> handle)
+        {
+            if (!handle.IsValid())
+            {
+                return;
+            }
+
+            if (handle.Status == AsyncOperationStatus.Succeeded &&
+                handle.Result != null)
+            {
+                Addressables.ReleaseInstance(handle);
+            }
+            else
+            {
+                Addressables.Release(handle);
+            }
         }
 
         private void ResetListToTop(
@@ -299,7 +567,7 @@ namespace FoodieMatch.UI.LeaderBoard
             label.rectTransform.localScale = labelScale;
         }
 
-        private void LoadAndBindData()
+        private void LoadData()
         {
             BuildAvatarLookup();
 
@@ -307,36 +575,29 @@ namespace FoodieMatch.UI.LeaderBoard
             LeaderBoardDatabase database = loader.Load();
             _currentPlayer = loader.FindCurrentPlayer(database);
 
-            LeaderBoardPlayerData[] weeklyPlayers =
+            _weeklyPlayers =
                 GetRankedPlayers(
                     database.players,
                     (left, right) =>
                         right.weeklyScore.CompareTo(
                             left.weeklyScore));
-            LeaderBoardPlayerData[] globalPlayers =
+            _globalPlayers =
                 GetRankedPlayers(
                     database.players,
                     (left, right) =>
                         right.level.CompareTo(left.level));
 
             AssignRanks(
-                weeklyPlayers,
+                _weeklyPlayers,
                 player => player.weeklyScore,
                 (player, rank) => player.weeklyRank = rank);
             AssignRanks(
-                globalPlayers,
+                _globalPlayers,
                 player => player.level,
                 (player, rank) => player.globalRank = rank);
 
-            BindPodium(weeklyPlayers);
-            ConfigureListState(
-                _weeklyList,
-                _weeklyPlayerRows,
-                weeklyPlayers);
-            ConfigureListState(
-                _globalList,
-                _globalPlayerRows,
-                globalPlayers);
+            _weeklyList.Players = _weeklyPlayers;
+            _globalList.Players = _globalPlayers;
         }
 
         private void BuildAvatarLookup()
@@ -389,17 +650,18 @@ namespace FoodieMatch.UI.LeaderBoard
         }
 
         private void BindPodium(
+            LeaderBoardPodiumPlayerView[] podiumPlayers,
             LeaderBoardPlayerData[] weeklyPlayers)
         {
-            for (int i = 0; i < _weeklyPodiumPlayers.Length; i++)
+            for (int i = 0; i < podiumPlayers.Length; i++)
             {
                 bool hasPlayer = i < weeklyPlayers.Length;
-                _weeklyPodiumPlayers[i].gameObject.SetActive(hasPlayer);
+                podiumPlayers[i].gameObject.SetActive(hasPlayer);
 
                 if (hasPlayer)
                 {
                     LeaderBoardPlayerData player = weeklyPlayers[i];
-                    _weeklyPodiumPlayers[i].Bind(
+                    podiumPlayers[i].Bind(
                         player,
                         GetAvatar(player.avatarId));
                 }
@@ -1255,6 +1517,11 @@ namespace FoodieMatch.UI.LeaderBoard
             RectTransform target,
             CanvasGroup canvasGroup)
         {
+            if (target == null || canvasGroup == null)
+            {
+                return;
+            }
+
             target.localScale = Vector3.zero;
             canvasGroup.alpha = 0f;
         }
@@ -1291,6 +1558,11 @@ namespace FoodieMatch.UI.LeaderBoard
             RectTransform target,
             CanvasGroup canvasGroup)
         {
+            if (target == null || canvasGroup == null)
+            {
+                return;
+            }
+
             target.localScale = Vector3.one;
             canvasGroup.alpha = 1f;
         }
@@ -1314,8 +1586,11 @@ namespace FoodieMatch.UI.LeaderBoard
                 GetNextWeeklyResetTime(vietnamNow) -
                 vietnamNow;
 
-            _weeklyTimeRemainingText.text =
-                $"{remaining.Days}d {remaining.Hours:00}h";
+            if (_weeklyTimeRemainingText != null)
+            {
+                _weeklyTimeRemainingText.text =
+                    $"{remaining.Days}d {remaining.Hours:00}h";
+            }
         }
 
         private static DateTimeOffset GetNextWeeklyResetTime(
