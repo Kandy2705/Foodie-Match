@@ -8,6 +8,7 @@ using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.LeaveGame;
+using FoodieMatch.UI.LeaderBoard;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Result;
@@ -41,7 +42,8 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(SettingPopupView)] = UiAddressKeys.SettingsPopup,
                 [typeof(StarterPackPopupView)] =
                     UiAddressKeys.StarterPackPopup,
-                [typeof(ShopView)] = UiAddressKeys.ShopScreen
+                [typeof(ShopView)] = UiAddressKeys.ShopScreen,
+                [typeof(LeaderBoardView)] = UiAddressKeys.LeaderBoardScreen
             };
 
         public static bool TryGetAddress(Type uiType, out string address)

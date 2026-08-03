@@ -23,6 +23,7 @@ namespace FoodieMatch.UI.Shop
     {
         private const float CardOvershootScale = 1.1f;
         private const float CardStaggerFraction = 0.5f;
+        private const string StarterPackSection = "StarterPack";
 
         [SerializeField] private ResourceBarView _resourceBarView;
         [SerializeField] private CoinCounterView _coinCounterView;
@@ -255,6 +256,14 @@ namespace FoodieMatch.UI.Shop
             for (int i = 0; i < _shopConfig.Products.Count; i++)
             {
                 ShopProductDefinition product = _shopConfig.Products[i];
+
+                if (string.Equals(
+                        product.Section,
+                        StarterPackSection,
+                        StringComparison.Ordinal))
+                {
+                    continue;
+                }
 
                 if (!_cardsByProductId.TryGetValue(product.Id, out ShopProductCardView card))
                 {

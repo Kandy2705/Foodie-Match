@@ -1,6 +1,26 @@
 {
   "products": [
     {
+      "id": "starter_pack",
+      "storeProductId": "com.foodiematch.shop.starter_pack",
+      "fallbackDisplayPrice": "$1.99",
+      "displayName": "Starter Pack",
+      "cardType": "Special",
+      "section": "StarterPack",
+      "sortOrder": 0,
+      "rewards": {
+        "coins": 2000,
+        "unlimitedHeartSeconds": 3600,
+        "removeAds": false,
+        "boosters": [
+          { "type": "Plate", "amount": 1 },
+          { "type": "Storage", "amount": 1 },
+          { "type": "Swap", "amount": 1 },
+          { "type": "Fridge", "amount": 1 }
+        ]
+      }
+    },
+    {
       "id": "limited_pack",
       "storeProductId": "com.foodiematch.shop.limited_pack",
       "fallbackDisplayPrice": "$5.99",

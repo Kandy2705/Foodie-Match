@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using UnityEngine;
@@ -9,33 +11,27 @@ namespace FoodieMatch.UI.StarterPack
     [DisallowMultipleComponent]
     public sealed class StarterPackPopupView : PopupBase
     {
-        private const string CloseButtonName = "CloseButton";
-
         [SerializeField] private Button _closeButton;
+        [SerializeField] private Button _buyButton;
         [SerializeField] private PopupAnimController _popupAnimController;
+
+        private Func<Task<ShopPurchaseResult>> _buyClicked;
 
         private void Awake()
         {
-            _closeButton ??= FindRequiredButton(CloseButtonName);
-            _popupAnimController ??=
-                GetComponent<PopupAnimController>();
-
-            if (_popupAnimController == null)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(StarterPackPopupView)} requires a " +
-                    $"{nameof(PopupAnimController)} on its root.");
-            }
-
             _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _buyButton.onClick.AddListener(OnBuyButtonClicked);
         }
 
         private void OnDestroy()
         {
-            if (_closeButton != null)
-            {
-                _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
+            _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+            _buyButton.onClick.RemoveListener(OnBuyButtonClicked);
+        }
+
+        public void SetActions(StarterPackPopupViewActions actions)
+        {
+            _buyClicked = actions.BuyClicked;
         }
 
         public override void Show()
@@ -55,26 +51,36 @@ namespace FoodieMatch.UI.StarterPack
             base.Hide();
         }
 
-        private Button FindRequiredButton(string buttonName)
+        public override void Dispose()
         {
-            Button[] buttons = GetComponentsInChildren<Button>(true);
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                if (buttons[i].name == buttonName)
-                {
-                    return buttons[i];
-                }
-            }
-
-            throw new InvalidOperationException(
-                $"{nameof(StarterPackPopupView)} could not find " +
-                $"{buttonName}.");
+            _buyClicked = null;
+            base.Dispose();
         }
 
         private void OnCloseButtonClicked()
         {
             RequestHide();
+        }
+
+        private async void OnBuyButtonClicked()
+        {
+            _buyButton.interactable = false;
+
+            try
+            {
+                await _buyClicked();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
+            finally
+            {
+                if (this != null)
+                {
+                    _buyButton.interactable = true;
+                }
+            }
         }
 
         private void OnCloseAnimationFinished()

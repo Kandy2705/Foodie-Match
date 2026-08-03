@@ -110,6 +110,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d9af11fced6b448c0ab1919ce139b903
+    m_Address: Assets/FoodieMatch/Bundle/UI/LeaderBoardUI/LeaderBoardScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0650f64b95e148d7a30d2e64a051082
     m_Address: Assets/FoodieMatch/Bundle/UI/MainMenuRoot.prefab
     m_ReadOnly: 0

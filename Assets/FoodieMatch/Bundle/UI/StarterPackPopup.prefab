@@ -175,6 +175,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _closeButton: {fileID: 3698172402874008995}
+  _buyButton: {fileID: 5604134683408322693}
   _popupAnimController: {fileID: 4454833220311908803}
 --- !u!95 &1198026627008211052
 Animator:
@@ -406,3 +407,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &5604134683408322693 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4053831835319752614, guid: 015288d8b7b524510bf5e5db641fe60d, type: 3}
+  m_PrefabInstance: {fileID: 8469010707148998435}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
