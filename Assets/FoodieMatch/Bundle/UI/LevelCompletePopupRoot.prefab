@@ -5802,7 +5802,7 @@ GameObject:
   - component: {fileID: 7079506838022049694}
   - component: {fileID: 918528150111377311}
   m_Layer: 0
-  m_Name: 'LevelCompletePopupRoot '
+  m_Name: LevelCompletePopupRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6583,6 +6583,10 @@ PrefabInstance:
     - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
       propertyPath: referenceSize.y
       value: 1737.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+      propertyPath: startingAnimation
+      value: UI_win
       objectReference: {fileID: 0}
     - target: {fileID: 2741627359711599136, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
       propertyPath: meshGenerator.settings.pmaVertexColors

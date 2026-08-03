@@ -121,3 +121,5 @@ node_modules/
 /Assets/StreamingAssets/google-services-desktop.json
 /Assets/StreamingAssets/google-services-desktop.json.meta
 /Assets/StreamingAssets.meta
+/Assets/GoogleService-Info.plist
+/Assets/GoogleService-Info.plist.meta
