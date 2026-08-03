@@ -106,7 +106,6 @@ MonoBehaviour:
   _globalScrollRect: {fileID: 1301732411062201151}
   _globalLayoutGroup: {fileID: 511255744641196795}
   _globalContentSizeFitter: {fileID: 7924304581893101457}
-  _rowHeight: 125
   _virtualizationBufferRows: 2
   _weeklyPodiumRoot: {fileID: 7859656026194592294}
   _weeklyPodiumCanvasGroup: {fileID: 4795599684602584619}

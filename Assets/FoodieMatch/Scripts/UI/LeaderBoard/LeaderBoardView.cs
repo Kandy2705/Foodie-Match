@@ -44,6 +44,7 @@ namespace FoodieMatch.UI.LeaderBoard
             public LeaderBoardMedalPlayerRowView[] MedalRows;
             public LeaderBoardNumberedPlayerRowView[] NumberedRows;
             public int[] NumberedRowIndices;
+            public float RowHeight;
             public float RowStride;
             public int TopPadding;
             public bool IsInitialized;
@@ -79,7 +80,6 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private ScrollRect _globalScrollRect;
         [SerializeField] private VerticalLayoutGroup _globalLayoutGroup;
         [SerializeField] private ContentSizeFitter _globalContentSizeFitter;
-        [SerializeField, Min(1f)] private float _rowHeight = 125f;
         [SerializeField, Min(0)] private int _virtualizationBufferRows = 2;
 
         [Header("Weekly Reveal")]
@@ -188,6 +188,7 @@ namespace FoodieMatch.UI.LeaderBoard
 
             _weeklyContent.SetActive(isWeekly);
             _globalContent.SetActive(!isWeekly);
+            ResetListToTop(tab);
             EnsureListInitialized(tab);
             _weeklyButton.interactable = !isWeekly;
             _globalButton.interactable = isWeekly;
@@ -203,6 +204,21 @@ namespace FoodieMatch.UI.LeaderBoard
                 _globalButtonLabel,
                 !isWeekly,
                 true);
+        }
+
+        private void ResetListToTop(
+            LeaderBoardTab tab)
+        {
+            ScrollRect scrollRect =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyScrollRect
+                    : _globalScrollRect;
+            Vector2 contentPosition =
+                scrollRect.content.anchoredPosition;
+
+            scrollRect.StopMovement();
+            contentPosition.y = 0f;
+            scrollRect.content.anchoredPosition = contentPosition;
         }
 
         private void SetButtonVisual(
@@ -393,14 +409,17 @@ namespace FoodieMatch.UI.LeaderBoard
                 Mathf.Min(
                     list.Players.Length,
                     MaximumDisplayedPlayers);
+            list.RowHeight =
+                ((RectTransform)list.NumberedTemplate.transform)
+                    .sizeDelta.y;
             list.RowStride =
-                _rowHeight + layoutGroup.spacing;
+                list.RowHeight + layoutGroup.spacing;
             list.TopPadding = layoutGroup.padding.top;
             float contentHeight =
                 rowCount == 0
                     ? 0f
                     : layoutGroup.padding.top +
-                      rowCount * _rowHeight +
+                      rowCount * list.RowHeight +
                       (rowCount - 1) * layoutGroup.spacing +
                       layoutGroup.padding.bottom;
             Vector2 contentSize = scrollRect.content.sizeDelta;
@@ -424,6 +443,7 @@ namespace FoodieMatch.UI.LeaderBoard
                     row.transform,
                     i,
                     list.RowStride,
+                    list.RowHeight,
                     list.TopPadding);
                 BindRow(row, list.Players[i], tab);
                 list.MedalRows[i] = row;
@@ -522,6 +542,7 @@ namespace FoodieMatch.UI.LeaderBoard
                         row.transform,
                         playerIndex,
                         list.RowStride,
+                        list.RowHeight,
                         list.TopPadding);
                     BindRow(
                         row,
@@ -536,6 +557,7 @@ namespace FoodieMatch.UI.LeaderBoard
             Transform rowTransform,
             int playerIndex,
             float rowStride,
+            float rowHeight,
             int topPadding)
         {
             RectTransform row = (RectTransform)rowTransform;
@@ -543,7 +565,7 @@ namespace FoodieMatch.UI.LeaderBoard
             row.anchorMax = new Vector2(0.5f, 1f);
             row.pivot = new Vector2(0.5f, 0.5f);
             Vector2 rowSize = row.sizeDelta;
-            rowSize.y = _rowHeight;
+            rowSize.y = rowHeight;
             row.sizeDelta = rowSize;
             row.anchoredPosition =
                 new Vector2(
@@ -575,6 +597,12 @@ namespace FoodieMatch.UI.LeaderBoard
                     ? player.weeklyScore
                     : player.level,
                 GetAvatar(player.avatarId));
+
+            if (isWeekly &&
+                row is LeaderBoardMedalPlayerRowView medalRow)
+            {
+                medalRow.ShowWeeklyGift(rank);
+            }
         }
 
         private void CacheRevealRows(

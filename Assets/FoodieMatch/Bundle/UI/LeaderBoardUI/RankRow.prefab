@@ -710,6 +710,10 @@ MonoBehaviour:
   _goldMedalSprite: {fileID: 4461319446144044641, guid: abd61e4b1c7db4f4c877a99c6a8ebfbc, type: 3}
   _silverMedalSprite: {fileID: -3285601094067260333, guid: fa329ed94e4e24661b008341346c733a, type: 3}
   _bronzeMedalSprite: {fileID: -1477533276216546767, guid: e6eee38705114491dad20fd572c6a5f1, type: 3}
+  _giftImage: {fileID: 8833456601107688425}
+  _firstPlaceGiftSprite: {fileID: 3696404629803487614, guid: 880a7299ef45048c1bc69067315011f3, type: 3}
+  _secondPlaceGiftSprite: {fileID: -8738802878007288431, guid: 3cb89466345ce48f38f4f8430570b92e, type: 3}
+  _thirdPlaceGiftSprite: {fileID: 3376284193408385180, guid: 65d6e5775695248c68dce6ba276d759f, type: 3}
 --- !u!1 &8508758692450493175
 GameObject:
   m_ObjectHideFlags: 0
