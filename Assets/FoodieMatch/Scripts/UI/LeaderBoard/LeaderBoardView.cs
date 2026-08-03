@@ -134,6 +134,14 @@ namespace FoodieMatch.UI.LeaderBoard
         private int _contentRequestVersion;
         private LeaderBoardTab _loadingTab;
         private LeaderBoardTab _loadedContentTab;
+        private RectTransform _currentPlayerStickyParent;
+        private Vector3 _currentPlayerStickyLocalPosition;
+        private Vector2 _currentPlayerStickyAnchorMin;
+        private Vector2 _currentPlayerStickyAnchorMax;
+        private Vector2 _currentPlayerStickyPivot;
+        private Vector2 _currentPlayerStickySizeDelta;
+        private Vector2 _currentPlayerStickyAnchoredPosition;
+        private bool _isCurrentPlayerDocked;
         private Sequence _revealSequence;
         private Tween _rewardPreviewHideTween;
         private Tween _rewardPreviewDeactivateTween;
@@ -153,6 +161,7 @@ namespace FoodieMatch.UI.LeaderBoard
             _globalButton.onClick.AddListener(OnGlobalButtonClicked);
             InitializeRewardPreviewPool();
             HideRewardPreview();
+            CaptureCurrentPlayerStickyLayout();
 
             LoadData();
             _selectedTab = _initialTab;
@@ -430,6 +439,7 @@ namespace FoodieMatch.UI.LeaderBoard
             RestoreRevealTargets();
             ResetListToTop(tab);
             EnsureListInitialized(tab);
+            UpdateCurrentPlayerDock(tab);
             BindCurrentPlayer(tab);
             UpdateWeeklyTimeRemaining();
             PlayRevealAnimation(tab);
@@ -444,6 +454,7 @@ namespace FoodieMatch.UI.LeaderBoard
 
             HideRewardPreview();
             StopRevealAnimation();
+            UndockCurrentPlayer();
 
             if (_loadedContentTab == LeaderBoardTab.Weekly)
             {
@@ -740,6 +751,14 @@ namespace FoodieMatch.UI.LeaderBoard
                       rowCount * list.RowHeight +
                       (rowCount - 1) * layoutGroup.spacing +
                       layoutGroup.padding.bottom;
+            int currentPlayerIndex =
+                GetCurrentPlayerIndex(list.Players);
+
+            if (currentPlayerIndex >= rowCount)
+            {
+                contentHeight +=
+                    list.RowHeight + layoutGroup.spacing;
+            }
             Vector2 contentSize = scrollRect.content.sizeDelta;
             contentSize.y = contentHeight;
             scrollRect.content.sizeDelta = contentSize;
@@ -886,6 +905,11 @@ namespace FoodieMatch.UI.LeaderBoard
 
                 row.gameObject.SetActive(hasPlayer);
 
+                if (!hasPlayer)
+                {
+                    list.NumberedRowIndices[i] = -1;
+                }
+
                 if (hasPlayer &&
                     list.NumberedRowIndices[i] != playerIndex)
                 {
@@ -902,6 +926,9 @@ namespace FoodieMatch.UI.LeaderBoard
                     list.NumberedRowIndices[i] = playerIndex;
                 }
             }
+
+            UpdateCurrentPlayerDock(tab);
+            UpdateCurrentPlayerRowVisibility(list);
         }
 
         private void PositionRow(
@@ -924,6 +951,177 @@ namespace FoodieMatch.UI.LeaderBoard
                     -topPadding -
                     playerIndex * rowStride -
                     row.sizeDelta.y * 0.5f);
+        }
+
+        private void CaptureCurrentPlayerStickyLayout()
+        {
+            _currentPlayerStickyParent =
+                _currentPlayerRow.parent as RectTransform;
+            _currentPlayerStickyLocalPosition =
+                _currentPlayerRow.localPosition;
+            _currentPlayerStickyAnchorMin =
+                _currentPlayerRow.anchorMin;
+            _currentPlayerStickyAnchorMax =
+                _currentPlayerRow.anchorMax;
+            _currentPlayerStickyPivot =
+                _currentPlayerRow.pivot;
+            _currentPlayerStickySizeDelta =
+                _currentPlayerRow.sizeDelta;
+            _currentPlayerStickyAnchoredPosition =
+                _currentPlayerRow.anchoredPosition;
+        }
+
+        private void UpdateCurrentPlayerDock(
+            LeaderBoardTab tab)
+        {
+            VirtualizedListState list =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyList
+                    : _globalList;
+            ScrollRect scrollRect =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyScrollRect
+                    : _globalScrollRect;
+
+            if (!list.IsInitialized ||
+                scrollRect == null ||
+                _currentPlayerStickyParent == null)
+            {
+                UndockCurrentPlayer();
+                return;
+            }
+
+            int currentPlayerIndex =
+                GetCurrentPlayerIndex(list.Players);
+
+            if (currentPlayerIndex < 0)
+            {
+                UndockCurrentPlayer();
+                return;
+            }
+
+            int rowCount =
+                Mathf.Min(
+                    list.Players.Length,
+                    MaximumDisplayedPlayers);
+            int inlineIndex =
+                Mathf.Min(currentPlayerIndex, rowCount);
+            float inlineY =
+                -list.TopPadding -
+                inlineIndex * list.RowStride -
+                list.RowHeight * 0.5f;
+            Vector3 inlineWorldPosition =
+                scrollRect.content.TransformPoint(
+                    new Vector3(0f, inlineY, 0f));
+            Vector3 inlineInStickyParent =
+                _currentPlayerStickyParent.InverseTransformPoint(
+                    inlineWorldPosition);
+            bool shouldDock =
+                inlineInStickyParent.y >=
+                _currentPlayerStickyLocalPosition.y;
+
+            if (!shouldDock)
+            {
+                UndockCurrentPlayer();
+                return;
+            }
+
+            if (!_isCurrentPlayerDocked)
+            {
+                _currentPlayerRow.SetParent(
+                    scrollRect.content,
+                    false);
+                _isCurrentPlayerDocked = true;
+            }
+
+            PositionRow(
+                _currentPlayerRow,
+                inlineIndex,
+                list.RowStride,
+                list.RowHeight,
+                list.TopPadding);
+            _currentPlayerRow.SetAsLastSibling();
+        }
+
+        private void UndockCurrentPlayer()
+        {
+            if (!_isCurrentPlayerDocked ||
+                _currentPlayerStickyParent == null)
+            {
+                return;
+            }
+
+            _currentPlayerRow.SetParent(
+                _currentPlayerStickyParent,
+                false);
+            _currentPlayerRow.anchorMin =
+                _currentPlayerStickyAnchorMin;
+            _currentPlayerRow.anchorMax =
+                _currentPlayerStickyAnchorMax;
+            _currentPlayerRow.pivot =
+                _currentPlayerStickyPivot;
+            _currentPlayerRow.sizeDelta =
+                _currentPlayerStickySizeDelta;
+            _currentPlayerRow.anchoredPosition =
+                _currentPlayerStickyAnchoredPosition;
+            _currentPlayerRow.SetAsLastSibling();
+            _isCurrentPlayerDocked = false;
+        }
+
+        private int GetCurrentPlayerIndex(
+            LeaderBoardPlayerData[] players)
+        {
+            if (_currentPlayer == null || players == null)
+            {
+                return -1;
+            }
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                LeaderBoardPlayerData player = players[i];
+
+                if (ReferenceEquals(player, _currentPlayer) ||
+                    (player.playerId == _currentPlayer.playerId &&
+                     player.accountId == _currentPlayer.accountId))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void UpdateCurrentPlayerRowVisibility(
+            VirtualizedListState list)
+        {
+            if (!list.IsInitialized)
+            {
+                return;
+            }
+
+            int currentPlayerIndex =
+                GetCurrentPlayerIndex(list.Players);
+
+            for (int i = 0; i < list.MedalRows.Length; i++)
+            {
+                bool shouldShow =
+                    !_isCurrentPlayerDocked ||
+                    currentPlayerIndex != i;
+                list.MedalRows[i].gameObject.SetActive(shouldShow);
+            }
+
+            for (int i = 0; i < list.NumberedRows.Length; i++)
+            {
+                bool hasBoundPlayer =
+                    list.NumberedRowIndices[i] >= 0;
+                bool isCurrentPlayerRow =
+                    list.NumberedRowIndices[i] ==
+                    currentPlayerIndex;
+                list.NumberedRows[i].gameObject.SetActive(
+                    hasBoundPlayer &&
+                    (!_isCurrentPlayerDocked ||
+                     !isCurrentPlayerRow));
+            }
         }
 
         private void BindRow(
