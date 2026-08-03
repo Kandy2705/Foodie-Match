@@ -77,6 +77,11 @@ namespace FoodieMatch.UI.Gameplay
             _levelLabelText.text = levelNumber.ToString();
         }
 
+        public void SetPauseButtonVisible(bool visible)
+        {
+            _pauseButton.gameObject.SetActive(visible);
+        }
+
         public void SetProgress(int servedCount, int totalCount)
         {
             _progressText.text = $"{servedCount}/{totalCount}";

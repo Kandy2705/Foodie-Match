@@ -318,6 +318,7 @@ namespace FoodieMatch.UI
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.SetLevelNumber(levelNumber);
+                _gameplayHudView.SetPauseButtonVisible(levelNumber > 1);
             }
         }
 
@@ -1043,6 +1044,8 @@ namespace FoodieMatch.UI
                     OnGameplayBoosterUseRequested,
                     OnGameplayBoosterAddRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
+            _gameplayHudView.SetPauseButtonVisible(
+                _currentLevelNumber > 1);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboRemainingSeconds);
             RefreshBoosterHud();
