@@ -20,6 +20,7 @@ namespace FoodieMatch.Features.Board
         }
 
         [SerializeField] private Transform _foodItemRoot;
+        [SerializeField] private Transform _foodInteractionTopBoundary;
 
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
             _foodAddresses = new();
@@ -1007,7 +1008,9 @@ namespace FoodieMatch.Features.Board
         {
             if (!_foodAddresses.TryGetValue(
                     foodItemView,
-                    out FoodBoardAddress address))
+                    out FoodBoardAddress address) ||
+                foodItemView.ClickBounds.min.y >
+                _foodInteractionTopBoundary.position.y)
             {
                 return;
             }
