@@ -20,6 +20,7 @@ namespace FoodieMatch.UI.MainMenu
 
         private readonly Dictionary<Type, MonoBehaviour> _viewsByType = new();
         private readonly Dictionary<BottomNavigationTab, MonoBehaviour> _viewsByTab = new();
+        private readonly Dictionary<BottomNavigationTab, RectTransform> _screenRootsByTab = new();
         private Func<BottomNavigationTab, Task<MonoBehaviour>> _viewLoader;
 
         public bool IsVisible =>
@@ -30,6 +31,8 @@ namespace FoodieMatch.UI.MainMenu
 
         private void Awake()
         {
+            _bottomNavigationBarView.SetTabPrepareHandler(
+                PrepareScreen);
             _bottomNavigationBarView.SetTabLoadHandler(
                 EnsureTabLoadedAsync);
             _bottomNavigationBarView.TabSelected += OnTabSelected;
@@ -129,13 +132,9 @@ namespace FoodieMatch.UI.MainMenu
 
             _viewsByTab.Add(tab, view);
             _viewsByType.Add(view.GetType(), view);
-            RectTransform screenRoot = CreateScreenRoot(tab);
+            RectTransform screenRoot = EnsureScreenRegistered(tab);
             view.transform.SetParent(screenRoot, false);
             StretchView(view);
-            _bottomNavigationBarView.RegisterScreen(
-                tab,
-                screenRoot,
-                screenRoot.GetComponent<CanvasGroup>());
         }
 
         public override void Dispose()
@@ -143,6 +142,7 @@ namespace FoodieMatch.UI.MainMenu
             ClearRegisteredViews();
             _viewsByType.Clear();
             _viewsByTab.Clear();
+            _screenRootsByTab.Clear();
             base.Dispose();
         }
 
@@ -169,6 +169,31 @@ namespace FoodieMatch.UI.MainMenu
             RegisterView(tab, view);
             await Task.Yield();
             Canvas.ForceUpdateCanvases();
+        }
+
+        private RectTransform EnsureScreenRegistered(
+            BottomNavigationTab tab)
+        {
+            if (_screenRootsByTab.TryGetValue(
+                    tab,
+                    out RectTransform registeredScreenRoot))
+            {
+                return registeredScreenRoot;
+            }
+
+            RectTransform screenRoot = CreateScreenRoot(tab);
+            _screenRootsByTab.Add(tab, screenRoot);
+            _bottomNavigationBarView.RegisterScreen(
+                tab,
+                screenRoot,
+                screenRoot.GetComponent<CanvasGroup>());
+            return screenRoot;
+        }
+
+        private void PrepareScreen(
+            BottomNavigationTab tab)
+        {
+            EnsureScreenRegistered(tab);
         }
 
         private RectTransform CreateScreenRoot(
