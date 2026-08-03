@@ -107,7 +107,6 @@ MonoBehaviour:
   _globalLayoutGroup: {fileID: 511255744641196795}
   _globalContentSizeFitter: {fileID: 7924304581893101457}
   _rowHeight: 125
-  _rowSpacing: 14
   _virtualizationBufferRows: 2
   _weeklyPodiumRoot: {fileID: 7859656026194592294}
   _weeklyPodiumCanvasGroup: {fileID: 4795599684602584619}
@@ -283,7 +282,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1845082403403794630, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
       propertyPath: m_Padding.m_Bottom
-      value: 80
+      value: 140
       objectReference: {fileID: 0}
     - target: {fileID: 1999979106039294212, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
       propertyPath: m_Name
@@ -495,7 +494,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7660587413354213386, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
       propertyPath: m_Padding.m_Bottom
-      value: 80
+      value: 140
       objectReference: {fileID: 0}
     - target: {fileID: 7916888976339591004, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
       propertyPath: m_AnchorMax.y

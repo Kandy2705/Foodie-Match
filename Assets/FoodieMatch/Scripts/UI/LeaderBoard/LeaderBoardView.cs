@@ -15,7 +15,7 @@ namespace FoodieMatch.UI.LeaderBoard
         private const float VietnamUtcOffsetHours = 7f;
         private const float ListOvershootScale = 1.1f;
         private const float FeaturedOvershootScale = 1.2f;
-        private const int MaximumDisplayedPlayers = 100;
+        private const int MaximumDisplayedPlayers = 99;
         private const int MedalRankCount = 3;
         private const string WeeklyValueLabel = "Score";
         private const string GlobalValueLabel = "Level";
@@ -44,6 +44,8 @@ namespace FoodieMatch.UI.LeaderBoard
             public LeaderBoardMedalPlayerRowView[] MedalRows;
             public LeaderBoardNumberedPlayerRowView[] NumberedRows;
             public int[] NumberedRowIndices;
+            public float RowStride;
+            public int TopPadding;
             public bool IsInitialized;
         }
 
@@ -78,7 +80,6 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private VerticalLayoutGroup _globalLayoutGroup;
         [SerializeField] private ContentSizeFitter _globalContentSizeFitter;
         [SerializeField, Min(1f)] private float _rowHeight = 125f;
-        [SerializeField, Min(0f)] private float _rowSpacing = 14f;
         [SerializeField, Min(0)] private int _virtualizationBufferRows = 2;
 
         [Header("Weekly Reveal")]
@@ -238,12 +239,22 @@ namespace FoodieMatch.UI.LeaderBoard
                 GetRankedPlayers(
                     database.players,
                     (left, right) =>
-                        left.weeklyRank.CompareTo(right.weeklyRank));
+                        right.weeklyScore.CompareTo(
+                            left.weeklyScore));
             LeaderBoardPlayerData[] globalPlayers =
                 GetRankedPlayers(
                     database.players,
                     (left, right) =>
-                        left.globalRank.CompareTo(right.globalRank));
+                        right.level.CompareTo(left.level));
+
+            AssignRanks(
+                weeklyPlayers,
+                player => player.weeklyScore,
+                (player, rank) => player.weeklyRank = rank);
+            AssignRanks(
+                globalPlayers,
+                player => player.level,
+                (player, rank) => player.globalRank = rank);
 
             BindPodium(weeklyPlayers);
             ConfigureListState(
@@ -281,6 +292,28 @@ namespace FoodieMatch.UI.LeaderBoard
 
             rankedPlayers.Sort(comparison);
             return rankedPlayers.ToArray();
+        }
+
+        private static void AssignRanks(
+            LeaderBoardPlayerData[] players,
+            Func<LeaderBoardPlayerData, int> getValue,
+            Action<LeaderBoardPlayerData, int> setRank)
+        {
+            int previousValue = getValue(players[0]);
+            int rank = 1;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                int value = getValue(players[i]);
+
+                if (value != previousValue)
+                {
+                    rank = i + 1;
+                }
+
+                setRank(players[i], rank);
+                previousValue = value;
+            }
         }
 
         private void BindPodium(
@@ -360,12 +393,16 @@ namespace FoodieMatch.UI.LeaderBoard
                 Mathf.Min(
                     list.Players.Length,
                     MaximumDisplayedPlayers);
-            float rowStride = _rowHeight + _rowSpacing;
+            list.RowStride =
+                _rowHeight + layoutGroup.spacing;
+            list.TopPadding = layoutGroup.padding.top;
             float contentHeight =
                 rowCount == 0
                     ? 0f
-                    : rowCount * _rowHeight +
-                      (rowCount - 1) * _rowSpacing;
+                    : layoutGroup.padding.top +
+                      rowCount * _rowHeight +
+                      (rowCount - 1) * layoutGroup.spacing +
+                      layoutGroup.padding.bottom;
             Vector2 contentSize = scrollRect.content.sizeDelta;
             contentSize.y = contentHeight;
             scrollRect.content.sizeDelta = contentSize;
@@ -383,7 +420,11 @@ namespace FoodieMatch.UI.LeaderBoard
                         list.MedalTemplate,
                         scrollRect.content);
                 row.gameObject.SetActive(true);
-                PositionRow(row.transform, i, rowStride);
+                PositionRow(
+                    row.transform,
+                    i,
+                    list.RowStride,
+                    list.TopPadding);
                 BindRow(row, list.Players[i], tab);
                 list.MedalRows[i] = row;
             }
@@ -393,7 +434,7 @@ namespace FoodieMatch.UI.LeaderBoard
                     1,
                     Mathf.CeilToInt(
                         scrollRect.viewport.rect.height /
-                        rowStride));
+                        list.RowStride));
             int numberedPlayerCount =
                 Mathf.Max(0, rowCount - MedalRankCount);
             int numberedPoolCount =
@@ -451,7 +492,6 @@ namespace FoodieMatch.UI.LeaderBoard
                 tab == LeaderBoardTab.Weekly
                     ? _weeklyScrollRect
                     : _globalScrollRect;
-            float rowStride = _rowHeight + _rowSpacing;
             int rowCount =
                 Mathf.Min(
                     list.Players.Length,
@@ -459,7 +499,7 @@ namespace FoodieMatch.UI.LeaderBoard
             int firstVisibleIndex =
                 Mathf.FloorToInt(
                     scrollRect.content.anchoredPosition.y /
-                    rowStride);
+                    list.RowStride);
             int firstNumberedIndex =
                 Mathf.Clamp(
                     firstVisibleIndex -
@@ -481,7 +521,8 @@ namespace FoodieMatch.UI.LeaderBoard
                     PositionRow(
                         row.transform,
                         playerIndex,
-                        rowStride);
+                        list.RowStride,
+                        list.TopPadding);
                     BindRow(
                         row,
                         list.Players[playerIndex],
@@ -494,7 +535,8 @@ namespace FoodieMatch.UI.LeaderBoard
         private void PositionRow(
             Transform rowTransform,
             int playerIndex,
-            float rowStride)
+            float rowStride,
+            int topPadding)
         {
             RectTransform row = (RectTransform)rowTransform;
             row.anchorMin = new Vector2(0.5f, 1f);
@@ -506,7 +548,8 @@ namespace FoodieMatch.UI.LeaderBoard
             row.anchoredPosition =
                 new Vector2(
                     0f,
-                    -playerIndex * rowStride -
+                    -topPadding -
+                    playerIndex * rowStride -
                     row.sizeDelta.y * 0.5f);
         }
 
