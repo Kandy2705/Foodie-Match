@@ -15,6 +15,8 @@ namespace FoodieMatch.UI.LeaderBoard
         private const float VietnamUtcOffsetHours = 7f;
         private const float ListOvershootScale = 1.1f;
         private const float FeaturedOvershootScale = 1.2f;
+        private const float RewardPreviewDuration = 3f;
+        private const float RewardPreviewCloseDuration = 0.5f;
         private const int MaximumDisplayedPlayers = 99;
         private const int MedalRankCount = 3;
         private const string WeeklyValueLabel = "Score";
@@ -73,6 +75,18 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private LeaderBoardCurrentPlayerView _currentPlayerView;
         [SerializeField] private AvatarBinding[] _avatarBindings;
 
+        [Header("Reward Preview")]
+        [SerializeField] private RectTransform _rewardPreviewPanel;
+        [SerializeField] private Animator _rewardPreviewAnimator;
+        [SerializeField] private RectTransform _rewardItemsContainer;
+        [SerializeField] private RewardItemView _rewardItemPrefab;
+        [SerializeField] private Sprite _coinRewardSprite;
+        [SerializeField] private Sprite _plusOneRewardSprite;
+        [SerializeField] private Sprite _brownBagRewardSprite;
+        [SerializeField] private Sprite _freezeRewardSprite;
+        [SerializeField] private Sprite _shuffleRewardSprite;
+        [SerializeField] private Sprite _unlimitedHeartRewardSprite;
+
         [Header("Virtualized Lists")]
         [SerializeField] private ScrollRect _weeklyScrollRect;
         [SerializeField] private VerticalLayoutGroup _weeklyLayoutGroup;
@@ -109,6 +123,16 @@ namespace FoodieMatch.UI.LeaderBoard
         private readonly VirtualizedListState _weeklyList = new();
         private readonly VirtualizedListState _globalList = new();
         private Sequence _revealSequence;
+        private Tween _rewardPreviewHideTween;
+        private Tween _rewardPreviewDeactivateTween;
+        private readonly List<RewardItemView> _rewardItemPool = new();
+        private LeaderBoardPlayerRowView _rewardPreviewSourceRow;
+        private RectTransform _rewardPreviewSourceGift;
+        private HorizontalLayoutGroup _rewardItemsLayoutGroup;
+        private LeaderBoardScrollDragRelay _weeklyScrollDragRelay;
+        private LeaderBoardScrollDragRelay _globalScrollDragRelay;
+        private float _rewardPanelHorizontalPadding;
+        private bool _rewardPreviewIsClosing;
         private float _nextTimerRefreshTime;
 
         private void Awake()
@@ -117,6 +141,12 @@ namespace FoodieMatch.UI.LeaderBoard
             _globalButton.onClick.AddListener(OnGlobalButtonClicked);
             _weeklyScrollRect.onValueChanged.AddListener(OnWeeklyScrolled);
             _globalScrollRect.onValueChanged.AddListener(OnGlobalScrolled);
+            _weeklyScrollDragRelay =
+                InitializeScrollDragRelay(_weeklyScrollRect);
+            _globalScrollDragRelay =
+                InitializeScrollDragRelay(_globalScrollRect);
+            InitializeRewardPreviewPool();
+            HideRewardPreview();
 
             LoadAndBindData();
             _selectedTab = _initialTab;
@@ -130,8 +160,30 @@ namespace FoodieMatch.UI.LeaderBoard
             UpdateWeeklyTimeRemaining();
         }
 
+        private void OnDisable()
+        {
+            HideRewardPreview();
+        }
+
         private void Update()
         {
+            if (!_rewardPreviewIsClosing &&
+                _rewardPreviewPanel != null &&
+                _rewardPreviewPanel.gameObject.activeSelf)
+            {
+                if (_rewardPreviewSourceGift == null ||
+                    !_rewardPreviewSourceGift.gameObject
+                        .activeInHierarchy)
+                {
+                    HideRewardPreview();
+                }
+                else
+                {
+                    PositionRewardPreview(
+                        _rewardPreviewSourceGift);
+                }
+            }
+
             if (Time.unscaledTime < _nextTimerRefreshTime)
             {
                 return;
@@ -144,10 +196,13 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnDestroy()
         {
             StopRevealAnimation();
+            HideRewardPreview();
             _weeklyButton.onClick.RemoveListener(OnWeeklyButtonClicked);
             _globalButton.onClick.RemoveListener(OnGlobalButtonClicked);
             _weeklyScrollRect.onValueChanged.RemoveListener(OnWeeklyScrolled);
             _globalScrollRect.onValueChanged.RemoveListener(OnGlobalScrolled);
+            _weeklyScrollDragRelay?.SetBeginDragHandler(null);
+            _globalScrollDragRelay?.SetBeginDragHandler(null);
         }
 
         public void OnTabSelected()
@@ -174,6 +229,7 @@ namespace FoodieMatch.UI.LeaderBoard
                 return;
             }
 
+            HideRewardPreview();
             StopRevealAnimation();
             RestoreRevealTargets();
 
@@ -499,6 +555,32 @@ namespace FoodieMatch.UI.LeaderBoard
                 _globalList);
         }
 
+        private LeaderBoardScrollDragRelay InitializeScrollDragRelay(
+            ScrollRect scrollRect)
+        {
+            LeaderBoardScrollDragRelay relay =
+                scrollRect.GetComponent<LeaderBoardScrollDragRelay>();
+
+            if (relay == null)
+            {
+                relay = scrollRect.gameObject
+                    .AddComponent<LeaderBoardScrollDragRelay>();
+            }
+
+            relay.SetBeginDragHandler(HideRewardPreviewOnScroll);
+            return relay;
+        }
+
+        private void HideRewardPreviewOnScroll()
+        {
+            if (_rewardPreviewPanel != null &&
+                _rewardPreviewPanel.gameObject.activeSelf &&
+                !_rewardPreviewIsClosing)
+            {
+                BeginHideRewardPreview();
+            }
+        }
+
         private void RefreshVirtualizedList(
             LeaderBoardTab tab,
             VirtualizedListState list)
@@ -533,6 +615,13 @@ namespace FoodieMatch.UI.LeaderBoard
                 LeaderBoardNumberedPlayerRowView row =
                     list.NumberedRows[i];
                 bool hasPlayer = playerIndex < rowCount;
+
+                if (!hasPlayer &&
+                    ReferenceEquals(_rewardPreviewSourceRow, row))
+                {
+                    HideRewardPreview();
+                }
+
                 row.gameObject.SetActive(hasPlayer);
 
                 if (hasPlayer &&
@@ -580,6 +669,11 @@ namespace FoodieMatch.UI.LeaderBoard
             LeaderBoardPlayerData player,
             LeaderBoardTab tab)
         {
+            if (ReferenceEquals(_rewardPreviewSourceRow, row))
+            {
+                HideRewardPreview();
+            }
+
             bool isWeekly = tab == LeaderBoardTab.Weekly;
             int rank =
                 isWeekly
@@ -587,6 +681,7 @@ namespace FoodieMatch.UI.LeaderBoard
                     : player.globalRank;
 
             row.gameObject.name = $"{tab}RankRow_{rank}";
+            row.SetGiftClickHandler(OnGiftClicked);
             row.Bind(
                 player,
                 rank,
@@ -598,11 +693,361 @@ namespace FoodieMatch.UI.LeaderBoard
                     : player.level,
                 GetAvatar(player.avatarId));
 
+            row.HideGift();
+
             if (isWeekly &&
                 row is LeaderBoardMedalPlayerRowView medalRow)
             {
                 medalRow.ShowWeeklyGift(rank);
             }
+        }
+
+        private void OnGiftClicked(
+            LeaderBoardPlayerRowView sourceRow,
+            RectTransform giftRectTransform,
+            int rank)
+        {
+            if (sourceRow == null ||
+                giftRectTransform == null ||
+                _rewardPreviewPanel == null ||
+                rank < 1 ||
+                rank > MedalRankCount)
+            {
+                HideRewardPreview();
+                return;
+            }
+
+            bool isSameGiftOpen =
+                !_rewardPreviewIsClosing &&
+                _rewardPreviewPanel.gameObject.activeSelf &&
+                ReferenceEquals(
+                    _rewardPreviewSourceRow,
+                    sourceRow) &&
+                ReferenceEquals(
+                    _rewardPreviewSourceGift,
+                    giftRectTransform);
+
+            if (isSameGiftOpen)
+            {
+                BeginHideRewardPreview();
+                return;
+            }
+
+            StopRewardPreviewTimer();
+            StopRewardPreviewDeactivateTimer();
+            _rewardPreviewIsClosing = false;
+            _rewardPreviewSourceRow = sourceRow;
+            _rewardPreviewSourceGift = giftRectTransform;
+            PopulateRewardPreview(rank);
+
+            if (!PositionRewardPreview(giftRectTransform))
+            {
+                HideRewardPreview();
+                return;
+            }
+
+            _rewardPreviewPanel.SetAsLastSibling();
+            _rewardPreviewPanel.gameObject.SetActive(true);
+            PlayRewardPreviewOpenAnimation();
+
+            _rewardPreviewHideTween = Tween.Delay(
+                this,
+                RewardPreviewDuration,
+                view => view.BeginHideRewardPreview(),
+                useUnscaledTime: true);
+        }
+
+        private void PlayRewardPreviewOpenAnimation()
+        {
+            if (!PrepareRewardPreviewAnimator())
+            {
+                return;
+            }
+
+            _rewardPreviewAnimator.ResetTrigger("Close");
+            _rewardPreviewAnimator.ResetTrigger("Open");
+            _rewardPreviewAnimator.Play("Normal", 0, 0f);
+            _rewardPreviewAnimator.Update(0f);
+            _rewardPreviewAnimator.SetTrigger("Open");
+        }
+
+        private void BeginHideRewardPreview()
+        {
+            StopRewardPreviewTimer();
+
+            if (_rewardPreviewIsClosing)
+            {
+                return;
+            }
+
+            if (_rewardPreviewPanel == null ||
+                !_rewardPreviewPanel.gameObject.activeSelf)
+            {
+                HideRewardPreview();
+                return;
+            }
+
+            if (!PrepareRewardPreviewAnimator())
+            {
+                HideRewardPreview();
+                return;
+            }
+
+            StopRewardPreviewDeactivateTimer();
+            _rewardPreviewIsClosing = true;
+            _rewardPreviewAnimator.ResetTrigger("Open");
+            _rewardPreviewAnimator.ResetTrigger("Close");
+            _rewardPreviewAnimator.SetTrigger("Close");
+            _rewardPreviewDeactivateTween = Tween.Delay(
+                this,
+                RewardPreviewCloseDuration,
+                view => view.HideRewardPreview(),
+                useUnscaledTime: true);
+        }
+
+        private bool PositionRewardPreview(
+            RectTransform giftRectTransform)
+        {
+            if (_rewardPreviewPanel == null ||
+                giftRectTransform == null ||
+                _rewardPreviewPanel.parent is not
+                    RectTransform panelParent)
+            {
+                return false;
+            }
+
+            Vector3 giftTopCenter =
+                giftRectTransform.TransformPoint(
+                    new Vector3(
+                        giftRectTransform.rect.center.x,
+                        giftRectTransform.rect.yMax,
+                        0f));
+            Vector2 localPosition =
+                panelParent.InverseTransformPoint(giftTopCenter);
+            localPosition.y +=
+                _rewardPreviewPanel.rect.height *
+                _rewardPreviewPanel.pivot.y + 20f;
+            _rewardPreviewPanel.anchoredPosition = localPosition;
+            return true;
+        }
+
+        private void InitializeRewardPreviewPool()
+        {
+            if (_rewardPreviewPanel == null ||
+                _rewardItemsContainer == null)
+            {
+                return;
+            }
+
+            _rewardItemsLayoutGroup =
+                _rewardItemsContainer
+                    .GetComponent<HorizontalLayoutGroup>();
+
+            if (_rewardItemsLayoutGroup != null)
+            {
+                float existingItemsWidth = 0f;
+                int existingItemCount =
+                    _rewardItemsContainer.childCount;
+
+                for (int i = 0; i < existingItemCount; i++)
+                {
+                    if (_rewardItemsContainer.GetChild(i) is
+                        RectTransform itemRect)
+                    {
+                        existingItemsWidth += itemRect.rect.width;
+                    }
+                }
+
+                float existingSpacing =
+                    Mathf.Max(0, existingItemCount - 1) *
+                    _rewardItemsLayoutGroup.spacing;
+                _rewardPanelHorizontalPadding =
+                    Mathf.Max(
+                        0f,
+                        _rewardPreviewPanel.rect.width -
+                        existingItemsWidth -
+                        existingSpacing);
+            }
+
+            RewardItemView[] existingItems =
+                _rewardItemsContainer
+                    .GetComponentsInChildren<RewardItemView>(true);
+
+            for (int i = 0; i < existingItems.Length; i++)
+            {
+                existingItems[i].gameObject.SetActive(false);
+                _rewardItemPool.Add(existingItems[i]);
+            }
+        }
+
+        private void PopulateRewardPreview(
+            int rank)
+        {
+            for (int i = 0; i < _rewardItemPool.Count; i++)
+            {
+                _rewardItemPool[i].gameObject.SetActive(false);
+            }
+
+            int rewardCount = rank switch
+            {
+                1 => 5,
+                2 => 3,
+                3 => 2,
+                _ => 0
+            };
+
+            EnsureRewardItemPoolSize(rewardCount);
+
+            switch (rank)
+            {
+                case 1:
+                    BindRewardItem(0, _coinRewardSprite, "2000");
+                    BindRewardItem(1, _plusOneRewardSprite, "x1");
+                    BindRewardItem(2, _brownBagRewardSprite, "x1");
+                    BindRewardItem(3, _freezeRewardSprite, "x1");
+                    BindRewardItem(4, _shuffleRewardSprite, "x1");
+                    break;
+                case 2:
+                    BindRewardItem(0, _brownBagRewardSprite, "x1");
+                    BindRewardItem(1, _coinRewardSprite, "500");
+                    BindRewardItem(
+                        2,
+                        _unlimitedHeartRewardSprite,
+                        "30m");
+                    break;
+                case 3:
+                    BindRewardItem(0, _coinRewardSprite, "500");
+                    BindRewardItem(
+                        1,
+                        _unlimitedHeartRewardSprite,
+                        "30m");
+                    break;
+            }
+
+            ResizeRewardPreviewPanel(rewardCount);
+        }
+
+        private void EnsureRewardItemPoolSize(
+            int requiredCount)
+        {
+            if (_rewardItemPrefab == null ||
+                _rewardItemsContainer == null)
+            {
+                return;
+            }
+
+            while (_rewardItemPool.Count < requiredCount)
+            {
+                RewardItemView item =
+                    Instantiate(
+                        _rewardItemPrefab,
+                        _rewardItemsContainer);
+                item.gameObject.SetActive(false);
+                _rewardItemPool.Add(item);
+            }
+        }
+
+        private void BindRewardItem(
+            int index,
+            Sprite icon,
+            string amountText)
+        {
+            if (index < 0 || index >= _rewardItemPool.Count)
+            {
+                return;
+            }
+
+            _rewardItemPool[index].Bind(icon, amountText);
+        }
+
+        private void ResizeRewardPreviewPanel(
+            int activeItemCount)
+        {
+            if (_rewardPreviewPanel == null ||
+                _rewardItemsLayoutGroup == null ||
+                _rewardItemPrefab == null ||
+                activeItemCount <= 0)
+            {
+                return;
+            }
+
+            RectTransform itemRect =
+                (RectTransform)_rewardItemPrefab.transform;
+            float width =
+                _rewardPanelHorizontalPadding +
+                activeItemCount * itemRect.rect.width +
+                Mathf.Max(0, activeItemCount - 1) *
+                _rewardItemsLayoutGroup.spacing;
+            Vector2 panelSize = _rewardPreviewPanel.sizeDelta;
+            panelSize.x = width;
+            _rewardPreviewPanel.sizeDelta = panelSize;
+        }
+
+        private void HideRewardPreview()
+        {
+            StopRewardPreviewTimer();
+            StopRewardPreviewDeactivateTimer();
+            _rewardPreviewIsClosing = false;
+            _rewardPreviewSourceRow = null;
+            _rewardPreviewSourceGift = null;
+
+            if (CanControlRewardPreviewAnimator())
+            {
+                _rewardPreviewAnimator.ResetTrigger("Open");
+                _rewardPreviewAnimator.ResetTrigger("Close");
+            }
+
+            if (_rewardPreviewPanel != null)
+            {
+                _rewardPreviewPanel.gameObject.SetActive(false);
+            }
+        }
+
+        private bool PrepareRewardPreviewAnimator()
+        {
+            if (_rewardPreviewAnimator == null ||
+                !_rewardPreviewAnimator.isActiveAndEnabled ||
+                _rewardPreviewAnimator.runtimeAnimatorController == null)
+            {
+                return false;
+            }
+
+            if (!_rewardPreviewAnimator.isInitialized)
+            {
+                _rewardPreviewAnimator.Rebind();
+                _rewardPreviewAnimator.Update(0f);
+            }
+
+            return _rewardPreviewAnimator.isInitialized;
+        }
+
+        private bool CanControlRewardPreviewAnimator()
+        {
+            return _rewardPreviewAnimator != null &&
+                   _rewardPreviewAnimator.isActiveAndEnabled &&
+                   _rewardPreviewAnimator.isInitialized &&
+                   _rewardPreviewAnimator
+                       .runtimeAnimatorController != null;
+        }
+
+        private void StopRewardPreviewTimer()
+        {
+            if (_rewardPreviewHideTween.isAlive)
+            {
+                _rewardPreviewHideTween.Stop();
+            }
+
+            _rewardPreviewHideTween = default;
+        }
+
+        private void StopRewardPreviewDeactivateTimer()
+        {
+            if (_rewardPreviewDeactivateTween.isAlive)
+            {
+                _rewardPreviewDeactivateTween.Stop();
+            }
+
+            _rewardPreviewDeactivateTween = default;
         }
 
         private void CacheRevealRows(
