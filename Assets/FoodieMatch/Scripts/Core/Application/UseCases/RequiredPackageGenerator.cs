@@ -45,6 +45,11 @@ namespace FoodieMatch.Core.Application.UseCases
                     board,
                     availabilityByFoodId,
                     random,
+                    out selected) &&
+                !TrySelectNearestTrayFood(
+                    board,
+                    availabilityByFoodId,
+                    random,
                     out selected))
             {
                 return false;
@@ -300,12 +305,53 @@ namespace FoodieMatch.Core.Application.UseCases
             PackageRandom random,
             out FoodAvailability selected)
         {
-            selected = null;
             IReadOnlyList<int> foodIds = board.LayoutType == GrillLayoutType.StackedColumns
                 ? GetAccessibleFoodTokenIds(board)
                 : board.GetActiveFoodTokenIds();
-            Dictionary<int, int> foodCounts =
-                CountAvailableFood(foodIds, availabilityByFoodId);
+
+            return TrySelectMostCommonFood(
+                foodIds,
+                availabilityByFoodId,
+                random,
+                out selected);
+        }
+
+        private static bool TrySelectNearestTrayFood(
+            BoardModel board,
+            IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId,
+            PackageRandom random,
+            out FoodAvailability selected)
+        {
+            selected = null;
+
+            if (board.LayoutType == GrillLayoutType.StackedColumns)
+            {
+                return false;
+            }
+
+            for (int depth = 1; depth < board.FoodDepthCount; depth++)
+            {
+                if (TrySelectMostCommonFood(
+                        board.GetFoodTokenIdsAtDepth(depth),
+                        availabilityByFoodId,
+                        random,
+                        out selected))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TrySelectMostCommonFood(
+            IReadOnlyList<int> foodIds,
+            IReadOnlyDictionary<int, FoodAvailability> availabilityByFoodId,
+            PackageRandom random,
+            out FoodAvailability selected)
+        {
+            selected = null;
+            Dictionary<int, int> foodCounts = CountAvailableFood(foodIds, availabilityByFoodId);
 
             if (foodCounts.Count == 0)
             {
