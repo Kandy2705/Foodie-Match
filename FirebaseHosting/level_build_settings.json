@@ -1,9 +1,8 @@
 {
-  "manifestVersion": 5,
+  "manifestVersion": 7,
   "packVersions": [
     6,
-    2,
-    2,
-    2
+    4,
+    3
   ]
 }
