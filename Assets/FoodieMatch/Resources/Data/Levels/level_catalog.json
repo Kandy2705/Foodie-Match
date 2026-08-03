@@ -12,8 +12,7 @@
     9,
     10,
     11,
-    12,
-    13
+    12
   ],
   "levels": [
     {
@@ -68,18 +67,13 @@
     },
     {
       "id": 11,
-      "difficulty": "hard",
+      "difficulty": "normal",
       "contentFile": "level_0011"
     },
     {
       "id": 12,
       "difficulty": "superHard",
       "contentFile": "level_0012"
-    },
-    {
-      "id": 13,
-      "difficulty": "normal",
-      "contentFile": "level_0013"
     }
   ]
 }

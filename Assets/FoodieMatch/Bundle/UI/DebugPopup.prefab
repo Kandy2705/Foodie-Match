@@ -5351,7 +5351,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Storage:'
+  m_text: 'Swap:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ccc34e86a330446d7b597add70726a46, type: 2}
   m_sharedMaterial: {fileID: 5495315089969489303, guid: ccc34e86a330446d7b597add70726a46, type: 2}
@@ -6205,6 +6205,10 @@ PrefabInstance:
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_text
       value: Apply
+      objectReference: {fileID: 0}
+    - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+      propertyPath: m_TextWrappingMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_Pivot.x

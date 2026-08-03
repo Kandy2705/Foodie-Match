@@ -136,7 +136,7 @@ namespace FoodieMatch.App
 
                 cancellationToken.ThrowIfCancellationRequested();
                 _uiManager.SetLoadingProgress(0.97f);
-                await _appController.EnterHomeAsync();
+                await _appController.EnterStartupDestinationAsync();
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

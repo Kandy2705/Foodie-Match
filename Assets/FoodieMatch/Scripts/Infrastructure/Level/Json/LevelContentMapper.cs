@@ -27,6 +27,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 MapGrillLayoutType(levelDto.GrillLayoutType),
                 MapRandomSettings(levelDto.RandomSettings),
                 MapPackageSelectionSettings(levelDto.PackageSelectionSettings),
+                MapTutorial(levelDto.Tutorial),
                 MapMovementGroups(levelDto.MovingGrillGroups),
                 MapStackedGrillColumns(levelDto.StackedGrillColumns),
                 MapGrills(levelDto.Grills));
@@ -64,6 +65,29 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 MapWeights(settingsDto.Early),
                 MapWeights(settingsDto.Middle),
                 MapWeights(settingsDto.Late));
+        }
+
+        private static LevelTutorialDefinition MapTutorial(LevelTutorialDto tutorialDto)
+        {
+            if (tutorialDto == null)
+            {
+                return null;
+            }
+
+            List<FoodSelectionTutorialStep> sequence = new(
+                tutorialDto.FoodSelectionSequence.Count);
+
+            for (int i = 0; i < tutorialDto.FoodSelectionSequence.Count; i++)
+            {
+                FoodSelectionTutorialStepDto stepDto =
+                    tutorialDto.FoodSelectionSequence[i];
+                sequence.Add(
+                    new FoodSelectionTutorialStep(
+                        stepDto.GrillId.Value,
+                        stepDto.FoodSlotIndex.Value));
+            }
+
+            return new LevelTutorialDefinition(sequence);
         }
 
         private static PackageSelectionWeights MapWeights(

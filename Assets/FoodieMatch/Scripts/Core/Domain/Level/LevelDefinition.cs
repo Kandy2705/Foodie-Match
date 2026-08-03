@@ -22,6 +22,7 @@ namespace FoodieMatch.Core.Domain.Level
             GrillLayoutType grillLayoutType,
             LevelRandomSettings randomSettings,
             PackageSelectionSettings packageSelectionSettings,
+            LevelTutorialDefinition tutorial,
             IReadOnlyList<GrillMovementGroupDefinition> movingGrillGroups,
             IReadOnlyList<StackedGrillColumnDefinition> stackedGrillColumns,
             IReadOnlyList<GrillDefinition> grills)
@@ -70,6 +71,7 @@ namespace FoodieMatch.Core.Domain.Level
             RandomSettings = randomSettings ?? throw new ArgumentNullException(nameof(randomSettings));
             PackageSelectionSettings = packageSelectionSettings ??
                                        throw new ArgumentNullException(nameof(packageSelectionSettings));
+            Tutorial = tutorial;
 
             List<GrillDefinition> copiedGrills = new(grills);
             List<GrillMovementGroupDefinition> copiedMovementGroups = new(movingGrillGroups);
@@ -88,6 +90,7 @@ namespace FoodieMatch.Core.Domain.Level
         public GrillLayoutType GrillLayoutType { get; }
         public LevelRandomSettings RandomSettings { get; }
         public PackageSelectionSettings PackageSelectionSettings { get; }
+        public LevelTutorialDefinition Tutorial { get; }
         public IReadOnlyList<GrillMovementGroupDefinition> MovingGrillGroups =>
             _movingGrillGroups;
         public IReadOnlyList<StackedGrillColumnDefinition> StackedGrillColumns =>
