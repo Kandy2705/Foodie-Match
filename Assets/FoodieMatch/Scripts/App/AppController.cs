@@ -20,6 +20,8 @@ namespace FoodieMatch.App
 {
     public sealed class AppController : MonoBehaviour
     {
+        private const int TutorialLevelNumber = 1;
+
         private UIManager _uiManager;
         private GameplayController _gameplayController;
         private PlayerProfileService _playerProfileService;
@@ -95,6 +97,32 @@ namespace FoodieMatch.App
             return OpenHomeAsync(
                 levelNumber,
                 _playerProfileService.CoinBalance);
+        }
+
+        public async Task EnterStartupDestinationAsync()
+        {
+            int levelNumber = GetSavedPlayableLevelNumber();
+
+            if (levelNumber != TutorialLevelNumber)
+            {
+                await OpenHomeAsync(
+                    levelNumber,
+                    _playerProfileService.CoinBalance);
+                return;
+            }
+
+            LevelDefinition level =
+                await _levelRepository.LoadLevelAsync(levelNumber);
+            await OpenLevelAsync(level, enableGameplayInput: false);
+
+            try
+            {
+                await _uiManager.PlayLevelWarningAsync(level.Difficulty);
+            }
+            finally
+            {
+                _gameplayController.EnableGameplayInput();
+            }
         }
 
         public void StartLevel(int levelNumber)
