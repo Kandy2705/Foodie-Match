@@ -12,7 +12,15 @@ namespace FoodieMatch.Features.Board
 {
     public sealed class BoardLayoutView : MonoBehaviour
     {
+        private enum FoodInteractionMode
+        {
+            Normal,
+            Disabled,
+            TargetOnly
+        }
+
         [SerializeField] private Transform _foodItemRoot;
+        [SerializeField] private Transform _foodInteractionTopBoundary;
 
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
             _foodAddresses = new();
@@ -42,6 +50,8 @@ namespace FoodieMatch.Features.Board
         private GrillMovementController _grillMovementController;
         private StackedGrillLayoutController _stackedGrillLayoutController;
         private bool _registeredFoodInputEnabled = true;
+        private FoodInteractionMode _foodInteractionMode;
+        private FoodBoardAddress _foodInteractionTarget;
 
         public event Action<FoodSelectionContext> FoodSelected;
         public event Action StackedGrillMotionFinished;
@@ -152,6 +162,7 @@ namespace FoodieMatch.Features.Board
             StopMotions();
             ClearFoodItems();
             ClearGrills();
+            _foodInteractionMode = FoodInteractionMode.Normal;
         }
 
         public void StopMotions()
@@ -240,6 +251,30 @@ namespace FoodieMatch.Features.Board
         {
             _registeredFoodInputEnabled = isInteractable;
 
+            RefreshRegisteredFoodInteraction();
+        }
+
+        public void RestrictFoodInteractionTo(FoodBoardAddress targetAddress)
+        {
+            _foodInteractionMode = FoodInteractionMode.TargetOnly;
+            _foodInteractionTarget = targetAddress;
+            RefreshRegisteredFoodInteraction();
+        }
+
+        public void DisableFoodInteractionForTutorial()
+        {
+            _foodInteractionMode = FoodInteractionMode.Disabled;
+            RefreshRegisteredFoodInteraction();
+        }
+
+        public void ClearFoodInteractionRestriction()
+        {
+            _foodInteractionMode = FoodInteractionMode.Normal;
+            RefreshRegisteredFoodInteraction();
+        }
+
+        private void RefreshRegisteredFoodInteraction()
+        {
             foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
             {
                 FoodItemView foodItemView = entry.Key;
@@ -251,10 +286,10 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                foodItemView.SetInteractable(
-                    isInteractable &&
-                    IsGrillAccessible(
-                        entry.Value.GrillPositionIndex));
+                SetFoodInteractable(
+                    foodItemView,
+                    entry.Value,
+                    _registeredFoodInputEnabled);
             }
         }
 
@@ -279,6 +314,21 @@ namespace FoodieMatch.Features.Board
             }
 
             return _foodAddresses.TryGetValue(foodItemView, out address);
+        }
+
+        public Vector2 GetFoodScreenPosition(FoodBoardAddress address)
+        {
+            foreach (KeyValuePair<FoodItemView, FoodBoardAddress> entry in _foodAddresses)
+            {
+                if (entry.Value.Equals(address))
+                {
+                    return _worldCamera.WorldToScreenPoint(entry.Key.transform.position);
+                }
+            }
+
+            throw new InvalidOperationException(
+                $"Food at grill {address.GrillPositionIndex}, " +
+                $"slot {address.FoodSlotIndex} is not displayed on the board.");
         }
 
         public List<FoodBoardEntry> GetActiveFoodEntries()
@@ -667,10 +717,7 @@ namespace FoodieMatch.Features.Board
             _foodAddresses.Add(foodItemView, address);
             foodItemView.Selected -= HandleFoodSelected;
             foodItemView.Selected += HandleFoodSelected;
-            foodItemView.SetInteractable(
-                makeInteractable &&
-                IsGrillAccessible(
-                    grillModel.PositionIndex));
+            SetFoodInteractable(foodItemView, address, makeInteractable);
             return true;
         }
 
@@ -704,10 +751,10 @@ namespace FoodieMatch.Features.Board
                 foodAnchor);
             _foodAddresses.Add(foodItemView, address);
             foodItemView.Selected += HandleFoodSelected;
-            foodItemView.SetInteractable(
-                _registeredFoodInputEnabled &&
-                IsGrillAccessible(
-                    address.GrillPositionIndex));
+            SetFoodInteractable(
+                foodItemView,
+                address,
+                _registeredFoodInputEnabled);
         }
 
         public bool TryPrepareTopTrayFoodMove(
@@ -832,7 +879,7 @@ namespace FoodieMatch.Features.Board
             foodItemView.Selected -= HandleFoodSelected;
             foodItemView.Selected += HandleFoodSelected;
 
-            foodItemView.SetInteractable(makeInteractable);
+            SetFoodInteractable(foodItemView, address, makeInteractable);
 
             return true;
         }
@@ -932,7 +979,7 @@ namespace FoodieMatch.Features.Board
                     foodAnchor.rotation);
                 foodItemView.Setup(foodTokenId, ResolveFoodSprite(foodTokenId));
                 foodItemView.SetVisualState(visualState);
-                foodItemView.SetInteractable(isInteractable);
+                foodItemView.SetInteractable(false);
                 foodItemViews.Add(foodItemView);
 
                 if (!registerSelection)
@@ -946,6 +993,7 @@ namespace FoodieMatch.Features.Board
 
                 _foodAddresses.Add(foodItemView, address);
                 foodItemView.Selected += HandleFoodSelected;
+                SetFoodInteractable(foodItemView, address, isInteractable);
             }
 
             return foodItemViews;
@@ -960,7 +1008,9 @@ namespace FoodieMatch.Features.Board
         {
             if (!_foodAddresses.TryGetValue(
                     foodItemView,
-                    out FoodBoardAddress address))
+                    out FoodBoardAddress address) ||
+                foodItemView.ClickBounds.min.y >
+                _foodInteractionTopBoundary.position.y)
             {
                 return;
             }
@@ -1063,6 +1113,32 @@ namespace FoodieMatch.Features.Board
             return _stackedGrillLayoutController?
                        .IsGrillAccessible(grillPositionIndex) ??
                    true;
+        }
+
+        private void SetFoodInteractable(
+            FoodItemView foodItemView,
+            FoodBoardAddress address,
+            bool isInteractable)
+        {
+            foodItemView.SetInteractable(
+                isInteractable &&
+                IsGrillAccessible(address.GrillPositionIndex) &&
+                IsFoodInteractionAllowed(address));
+        }
+
+        private bool IsFoodInteractionAllowed(FoodBoardAddress address)
+        {
+            switch (_foodInteractionMode)
+            {
+                case FoodInteractionMode.Normal:
+                    return true;
+                case FoodInteractionMode.Disabled:
+                    return false;
+                case FoodInteractionMode.TargetOnly:
+                    return _foodInteractionTarget.Equals(address);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void MoveFoodToFlightRoot(

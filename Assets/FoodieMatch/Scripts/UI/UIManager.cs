@@ -13,6 +13,7 @@ using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Level;
+using FoodieMatch.Features.Motion;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.AddressableAssets;
 using FoodieMatch.UI.Booster;
@@ -317,6 +318,7 @@ namespace FoodieMatch.UI
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.SetLevelNumber(levelNumber);
+                _gameplayHudView.SetPauseButtonVisible(levelNumber > 1);
             }
         }
 
@@ -411,6 +413,31 @@ namespace FoodieMatch.UI
         public void ShowComboFeedback(Vector3 worldPosition)
         {
             _gameplayHudView?.ShowComboFeedback(worldPosition);
+        }
+
+        public void ShowTutorialHand(Vector2 screenPosition)
+        {
+            _gameplayHudView.ShowTutorialHand(screenPosition);
+        }
+
+        public void ShowTutorial()
+        {
+            _gameplayHudView.ShowTutorial();
+        }
+
+        public Task<MotionResult> MoveTutorialHandAsync(Vector2 screenPosition)
+        {
+            return _gameplayHudView.MoveTutorialHandAsync(screenPosition);
+        }
+
+        public void HideTutorialHand()
+        {
+            _gameplayHudView?.HideTutorialHand();
+        }
+
+        public void HideTutorial()
+        {
+            _gameplayHudView?.HideTutorial();
         }
 
         public void ShowActionFeedback(string message)
@@ -1017,6 +1044,8 @@ namespace FoodieMatch.UI
                     OnGameplayBoosterUseRequested,
                     OnGameplayBoosterAddRequested));
             _gameplayHudView.SetLevelNumber(_currentLevelNumber);
+            _gameplayHudView.SetPauseButtonVisible(
+                _currentLevelNumber > 1);
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboRemainingSeconds);
             RefreshBoosterHud();

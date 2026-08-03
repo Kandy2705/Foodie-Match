@@ -20,6 +20,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
         [JsonProperty("packageSelectionWeights")]
         public PackageSelectionSettingsDto PackageSelectionSettings { get; set; }
 
+        [JsonProperty("tutorial")]
+        public LevelTutorialDto Tutorial { get; set; }
+
         [JsonProperty("movingGrillGroups")]
         public List<GrillMovementGroupDto> MovingGrillGroups { get; set; }
 

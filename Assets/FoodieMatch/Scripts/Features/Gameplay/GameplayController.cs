@@ -12,6 +12,7 @@ using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Core.Domain.WaitingRack;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Food;
+using FoodieMatch.Features.Motion;
 using FoodieMatch.Features.RequiredPackage;
 using FoodieMatch.Features.WaitingRack;
 using FoodieMatch.UI;
@@ -25,6 +26,7 @@ namespace FoodieMatch.Features.Gameplay
         [SerializeField] private float _comboDurationSeconds = 8f;
 
         private readonly GameplaySessionGuard _sessionGuard = new();
+        private readonly FoodSelectionTutorialCoordinator _foodSelectionTutorialCoordinator = new();
 
         private UIManager _uiManager;
         private GameplayEvents _gameplayEvents;
@@ -72,6 +74,7 @@ namespace FoodieMatch.Features.Gameplay
             _grillCompletionCoordinator?.EndSession();
             _comboCoordinator?.EndSession();
             _fridgeBoosterCoordinator?.EndSession();
+            _foodSelectionTutorialCoordinator.Stop();
 
             if (_boardLayoutView != null)
             {
@@ -190,6 +193,10 @@ namespace FoodieMatch.Features.Gameplay
             _boardLayoutView.Setup(
                 _session.Board,
                 _session.Level.MovingGrillGroups);
+            _foodSelectionTutorialCoordinator.Start(
+                _session.Level.Tutorial,
+                _session.Board);
+            StartTutorialPresentation();
             _waitingRackView.Clear();
             _packageDeliveryCoordinator.BeginSession(_session);
             SubscribeLockedPackages();
@@ -241,6 +248,8 @@ namespace FoodieMatch.Features.Gameplay
             _grillCompletionCoordinator?.EndSession();
             _comboCoordinator?.EndSession();
             _fridgeBoosterCoordinator?.EndSession();
+            _foodSelectionTutorialCoordinator.Stop();
+            _uiManager.HideTutorial();
             _waitingRackView?.Clear();
             _session = null;
 
@@ -586,6 +595,11 @@ namespace FoodieMatch.Features.Gameplay
                 return;
             }
 
+            if (!_foodSelectionTutorialCoordinator.CanSelect(context.Address))
+            {
+                return;
+            }
+
             if (!session.CanSelectFood)
             {
                 _uiManager.ShowActionFeedback("Wait for the food to finish moving!");
@@ -599,6 +613,8 @@ namespace FoodieMatch.Features.Gameplay
             {
                 return;
             }
+
+            MoveTutorialToNextStep(context.Address, session);
 
             _gameplayAudioPresenter.PlayFoodSelected();
 
@@ -836,6 +852,69 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayWorldClickSfx?
                 .StartListening();
+        }
+
+        private void MoveTutorialToNextStep(
+            FoodBoardAddress selectedAddress,
+            GameplaySession session)
+        {
+            if (!_foodSelectionTutorialCoordinator.TryAdvanceAfterSelection(selectedAddress))
+            {
+                return;
+            }
+
+            if (!_foodSelectionTutorialCoordinator.IsActive)
+            {
+                _boardLayoutView.ClearFoodInteractionRestriction();
+                _uiManager.HideTutorialHand();
+                return;
+            }
+
+            FoodBoardAddress targetAddress = _foodSelectionTutorialCoordinator.CurrentTarget;
+            Vector2 targetPosition = _boardLayoutView.GetFoodScreenPosition(targetAddress);
+            _boardLayoutView.DisableFoodInteractionForTutorial();
+            _ = MoveTutorialHandSafelyAsync(session, targetAddress, targetPosition);
+        }
+
+        private async Task MoveTutorialHandSafelyAsync(
+            GameplaySession session,
+            FoodBoardAddress targetAddress,
+            Vector2 targetPosition)
+        {
+            try
+            {
+                MotionResult result = await _uiManager.MoveTutorialHandAsync(targetPosition);
+
+                if (result != MotionResult.Completed ||
+                    !IsCurrentSession(session) ||
+                    !_foodSelectionTutorialCoordinator.CompleteTargetMove(targetAddress))
+                {
+                    return;
+                }
+
+                _boardLayoutView.RestrictFoodInteractionTo(
+                    targetAddress);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private void StartTutorialPresentation()
+        {
+            if (!_foodSelectionTutorialCoordinator.IsActive)
+            {
+                _boardLayoutView.ClearFoodInteractionRestriction();
+                _uiManager.HideTutorial();
+                return;
+            }
+
+            FoodBoardAddress targetAddress = _foodSelectionTutorialCoordinator.CurrentTarget;
+            Vector2 targetPosition = _boardLayoutView.GetFoodScreenPosition(targetAddress);
+            _boardLayoutView.RestrictFoodInteractionTo(targetAddress);
+            _uiManager.ShowTutorial();
+            _uiManager.ShowTutorialHand(targetPosition);
         }
 
         private void FinalizeLose()
