@@ -5802,7 +5802,7 @@ GameObject:
   - component: {fileID: 7079506838022049694}
   - component: {fileID: 918528150111377311}
   m_Layer: 0
-  m_Name: 'LevelCompletePopupRoot '
+  m_Name: LevelCompletePopupRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -97,9 +97,16 @@ namespace FoodieMatch.UI.Navigation
         private TabBinding _currentTab;
         private bool _isInitialized;
         private bool _isTransitioning;
+        private Action<BottomNavigationTab> _tabPrepareHandler;
         private Func<BottomNavigationTab, Task> _tabLoadHandler;
 
         public event Action<BottomNavigationTab> TabSelected;
+
+        public void SetTabPrepareHandler(
+            Action<BottomNavigationTab> tabPrepareHandler)
+        {
+            _tabPrepareHandler = tabPrepareHandler;
+        }
 
         public void SetTabLoadHandler(
             Func<BottomNavigationTab, Task> tabLoadHandler)
@@ -336,9 +343,12 @@ namespace FoodieMatch.UI.Navigation
         {
             _isTransitioning = true;
 
-            if (selectedBinding.ScreenRect == null)
+            bool requiresLoad =
+                selectedBinding.ScreenRect == null;
+
+            if (requiresLoad)
             {
-                await _tabLoadHandler(selectedBinding.Tab);
+                _tabPrepareHandler(selectedBinding.Tab);
             }
 
             TabBinding previousBinding =
@@ -371,8 +381,11 @@ namespace FoodieMatch.UI.Navigation
             BringScreenToFront(
                 selectedBinding);
 
-            TabSelected?.Invoke(
-                selectedBinding.Tab);
+            if (!requiresLoad)
+            {
+                TabSelected?.Invoke(
+                    selectedBinding.Tab);
+            }
 
             await SwitchScreenAsync(
                 previousBinding,
@@ -380,6 +393,13 @@ namespace FoodieMatch.UI.Navigation
 
             _currentTab =
                 selectedBinding;
+
+            if (requiresLoad)
+            {
+                await _tabLoadHandler(selectedBinding.Tab);
+                TabSelected?.Invoke(
+                    selectedBinding.Tab);
+            }
         }
 
         private void MoveIndicatorImmediately(

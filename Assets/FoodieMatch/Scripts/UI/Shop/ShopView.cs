@@ -56,6 +56,7 @@ namespace FoodieMatch.UI.Shop
             _closeButton.gameObject.SetActive(false);
             DisableResourceActions();
             EnsureInitialized();
+            PrepareCardsForReveal();
         }
 
         private void OnEnable()
