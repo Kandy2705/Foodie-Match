@@ -72,9 +72,10 @@ namespace FoodieMatch.UI
         [Header("Level Warning")]
         [SerializeField] private WarningLevelView _levelWarningPrefab;
 
-        [Header("Reward Effect")]
+        [Header("Effect")]
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
         [SerializeField] private Transform _effectRoot;
+        [SerializeField] private GameplayClickParticleInput _clickParticleInput;
 
         [Header("Action Feedback")]
         [SerializeField] private ActionFeedbackView _actionFeedbackPrefab;
@@ -195,6 +196,8 @@ namespace FoodieMatch.UI
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
             _clickParticlePool = clickParticlePool;
+            _clickParticleInput.Construct(PlayClickParticle);
+            RefreshClickParticleInput();
             SubscribeEvents();
         }
 
@@ -214,6 +217,7 @@ namespace FoodieMatch.UI
         {
             _isAddressableUiLoading = isLoading;
             RefreshAddressableLoadingOverlay();
+            RefreshClickParticleInput();
         }
 
         private void RefreshAddressableLoadingOverlay()
@@ -383,6 +387,7 @@ namespace FoodieMatch.UI
             {
                 _gameplayHudView.gameObject.SetActive(true);
                 BindGameplayHudActions();
+                RefreshClickParticleInput();
                 _addressableUiFactory.ReleaseLabel(
                     UiAddressLabels.BootstrapCritical);
                 return;
@@ -405,11 +410,13 @@ namespace FoodieMatch.UI
             if (requestVersion != _gameplayHudRequestVersion)
             {
                 _gameplayHudView.gameObject.SetActive(false);
+                RefreshClickParticleInput();
                 return;
             }
 
             _gameplayHudView.gameObject.SetActive(true);
             BindGameplayHudActions();
+            RefreshClickParticleInput();
             _addressableUiFactory.ReleaseLabel(
                 UiAddressLabels.BootstrapCritical);
         }
@@ -418,12 +425,13 @@ namespace FoodieMatch.UI
         {
             _gameplayHudRequestVersion++;
 
-            if (_gameplayHudView == null)
+            if (_gameplayHudView != null)
             {
-                return;
+                _gameplayHudView.gameObject.SetActive(false);
             }
 
-            _gameplayHudView.gameObject.SetActive(false);
+            ReleaseClickParticles();
+            RefreshClickParticleInput();
         }
 
         public void ShowComboFeedback(Vector3 worldPosition)
@@ -471,6 +479,7 @@ namespace FoodieMatch.UI
         {
             _isTransitionLoadingVisible = true;
             RefreshAddressableLoadingOverlay();
+            RefreshClickParticleInput();
             LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
             loadingScreen.Show();
             return Task.CompletedTask;
@@ -528,6 +537,20 @@ namespace FoodieMatch.UI
 
             _isTransitionLoadingVisible = false;
             RefreshAddressableLoadingOverlay();
+            RefreshClickParticleInput();
+        }
+
+        private void RefreshClickParticleInput()
+        {
+            bool isGameplayHudVisible =
+                _gameplayHudView != null &&
+                _gameplayHudView.gameObject.activeSelf;
+            bool inputEnabled =
+                isGameplayHudVisible &&
+                !_isTransitionLoadingVisible &&
+                !_isAddressableUiLoading;
+
+            _clickParticleInput.SetInputEnabled(inputEnabled);
         }
 
         public void ShowSettingPopup()
