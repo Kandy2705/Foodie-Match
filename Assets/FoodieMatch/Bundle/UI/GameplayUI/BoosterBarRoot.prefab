@@ -176,6 +176,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2134854968055777743}
     m_Modifications:
+    - target: {fileID: 499414003034200089, guid: 0f5d0fd0355284409842bf7f9fd57875, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3109605400886524729, guid: 0f5d0fd0355284409842bf7f9fd57875, type: 3}
       propertyPath: m_Name
       value: BoosterButton_04
@@ -290,6 +294,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2134854968055777743}
     m_Modifications:
+    - target: {fileID: 499414003034200089, guid: 0f5d0fd0355284409842bf7f9fd57875, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3052072093746421443, guid: 0f5d0fd0355284409842bf7f9fd57875, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -408,6 +416,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2134854968055777743}
     m_Modifications:
+    - target: {fileID: 499414003034200089, guid: 0f5d0fd0355284409842bf7f9fd57875, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3109605400886524729, guid: 0f5d0fd0355284409842bf7f9fd57875, type: 3}
       propertyPath: m_Name
       value: BoosterButton_03
