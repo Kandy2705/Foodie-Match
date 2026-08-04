@@ -2,6 +2,7 @@ using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Effects;
 using FoodieMatch.Features.Food;
 using FoodieMatch.Shared.Pooling;
+using FoodieMatch.UI.Effects;
 using FoodieMatch.UI.Gameplay;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace FoodieMatch.App
         [SerializeField] private ParticleEffectPool _smokeParticles;
         [SerializeField] private ParticleEffectPool _packageCompleteBursts;
         [SerializeField] private ComboFeedbackViewPool _comboFeedback;
+        [SerializeField] private ClickParticlePool _clickParticles;
 
         private IPoolLifecycle[] _poolLifecycles;
 
@@ -24,6 +26,7 @@ namespace FoodieMatch.App
         public ParticleEffectPool SmokeParticles => _smokeParticles;
         public ParticleEffectPool PackageCompleteBursts => _packageCompleteBursts;
         public ComboFeedbackViewPool ComboFeedback => _comboFeedback;
+        public ClickParticlePool ClickParticles => _clickParticles;
 
         private void OnDestroy()
         {
@@ -41,7 +44,8 @@ namespace FoodieMatch.App
                 _trays,
                 _smokeParticles,
                 _packageCompleteBursts,
-                _comboFeedback
+                _comboFeedback,
+                _clickParticles
             };
 
             foreach (IPoolLifecycle poolLifecycle in _poolLifecycles)
