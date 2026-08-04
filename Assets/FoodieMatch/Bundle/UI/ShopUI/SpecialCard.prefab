@@ -131,8 +131,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 4000
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: cf586525bf0e64167ae0b2bddaccd679, type: 2}
-  m_sharedMaterial: {fileID: 5495315089969489303, guid: cf586525bf0e64167ae0b2bddaccd679, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7b50e19209906400aa1a63814d6118c3, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: 7b50e19209906400aa1a63814d6118c3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -162,7 +162,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -447,8 +447,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: cf586525bf0e64167ae0b2bddaccd679, type: 2}
-  m_sharedMaterial: {fileID: 5495315089969489303, guid: cf586525bf0e64167ae0b2bddaccd679, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7b50e19209906400aa1a63814d6118c3, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: 7b50e19209906400aa1a63814d6118c3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -478,7 +478,7 @@ MonoBehaviour:
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 64
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -1223,6 +1223,18 @@ PrefabInstance:
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_margin.w
       value: 13.946129
+      objectReference: {fileID: 0}
+    - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 7ae6f5f00e5dc4edfa5083ac156921d5, type: 2}
+    - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -1580529860782755119, guid: 7ae6f5f00e5dc4edfa5083ac156921d5, type: 2}
+    - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3784841441675226708, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_Pivot.x
