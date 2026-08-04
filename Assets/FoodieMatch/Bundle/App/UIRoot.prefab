@@ -31,6 +31,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7862614207918457073}
   - {fileID: 5060214487057562974}
   - {fileID: 3612331460484704028}
   m_Father: {fileID: 0}
@@ -55,7 +56,8 @@ MonoBehaviour:
   _addressableLoadingTexture: {fileID: 2800000, guid: 8adfa78f64ea542c2b7f446fdb7c2c4b, type: 3}
   _levelWarningPrefab: {fileID: 918528150111377311, guid: b5723d20ac5db4e2fb1098fcc97a593b, type: 3}
   _coinRewardOverlayPrefab: {fileID: 796654897352748538, guid: 682972031a027134a9375906f5c06ab3, type: 3}
-  _rewardEffectRoot: {fileID: 6443555530003102396}
+  _effectRoot: {fileID: 6443555530003102396}
+  _clickParticleInput: {fileID: 7603923458211305388}
   _actionFeedbackPrefab: {fileID: 970213579789557558, guid: a510e4ff824994d8eb7d6d8193512769, type: 3}
   _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
 --- !u!114 &2571854868624730069
@@ -321,6 +323,50 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &6213619869911672507
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7862614207918457073}
+  - component: {fileID: 7603923458211305388}
+  m_Layer: 0
+  m_Name: GameplayClickParticleInput
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7862614207918457073
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6213619869911672507}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6605339517566366066}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7603923458211305388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6213619869911672507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 828b4966f19ef4c44984ffe5d7dc0c1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6598249838430209339
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,7 +377,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6443555530003102396}
   m_Layer: 0
-  m_Name: RewardEffectRoot
+  m_Name: EffectRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

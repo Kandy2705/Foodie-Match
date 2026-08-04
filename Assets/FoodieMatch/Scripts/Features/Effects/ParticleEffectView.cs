@@ -6,6 +6,7 @@ namespace FoodieMatch.Features.Effects
     public sealed class ParticleEffectView : MonoBehaviour
     {
         [SerializeField] private ParticleSystem _particleSystem;
+        [SerializeField] private ParticleEffectCompletionRelay _completionRelay;
 
         private Action<ParticleEffectView> _completed;
 
@@ -13,6 +14,7 @@ namespace FoodieMatch.Features.Effects
         {
             ParticleSystem.MainModule main = _particleSystem.main;
             main.stopAction = ParticleSystemStopAction.Callback;
+            _completionRelay?.SetCompletedAction(Complete);
         }
 
         public void Play(Action<ParticleEffectView> completed)
@@ -36,6 +38,11 @@ namespace FoodieMatch.Features.Effects
         }
 
         private void OnParticleSystemStopped()
+        {
+            Complete();
+        }
+
+        private void Complete()
         {
             Action<ParticleEffectView> completed = _completed;
             _completed = null;
