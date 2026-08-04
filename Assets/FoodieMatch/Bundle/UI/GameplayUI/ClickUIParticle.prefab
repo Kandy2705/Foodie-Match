@@ -4902,6 +4902,7 @@ GameObject:
   - component: {fileID: 7564002097523718371}
   - component: {fileID: 9149954791913469742}
   - component: {fileID: 4028920382701673795}
+  - component: {fileID: 8123320853110667475}
   m_Layer: 0
   m_Name: ClickUIParticle
   m_TagString: Untagged
@@ -4974,6 +4975,20 @@ MonoBehaviour:
   m_UseCustomView: 0
   m_CustomViewSize: 10
   m_TimeScaleMultiplier: 1
+--- !u!114 &8123320853110667475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085590610956168952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4baab210836b354aa3d6857dd5e01f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _particleSystem: {fileID: 1002795797459375589}
+  _completionRelay: {fileID: 19512728414571535}
 --- !u!1 &5707946436559636063
 GameObject:
   m_ObjectHideFlags: 0
@@ -4985,6 +5000,7 @@ GameObject:
   - component: {fileID: 1450246163095336531}
   - component: {fileID: 1002795797459375589}
   - component: {fileID: 290703670470118145}
+  - component: {fileID: 19512728414571535}
   m_Layer: 0
   m_Name: CircleParticle
   m_TagString: Untagged
@@ -9866,3 +9882,15 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &19512728414571535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5707946436559636063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8924103e6d710045bd8a92c5b8dfca1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

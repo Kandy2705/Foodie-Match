@@ -21,6 +21,7 @@ using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Debugging;
+using FoodieMatch.UI.Effects;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.Home;
@@ -73,7 +74,7 @@ namespace FoodieMatch.UI
 
         [Header("Reward Effect")]
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
-        [SerializeField] private Transform _rewardEffectRoot;
+        [SerializeField] private Transform _effectRoot;
 
         [Header("Action Feedback")]
         [SerializeField] private ActionFeedbackView _actionFeedbackPrefab;
@@ -93,6 +94,7 @@ namespace FoodieMatch.UI
         private IAudioService _audioService;
         private IAddressableUiFactory _addressableUiFactory;
         private ComboFeedbackViewPool _comboFeedbackViewPool;
+        private ClickParticlePool _clickParticlePool;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
@@ -168,7 +170,8 @@ namespace FoodieMatch.UI
             ILevelCatalogRepository levelCatalogRepository,
             IGameShopConfig shopConfig,
             IAddressableUiFactory addressableUiFactory,
-            ComboFeedbackViewPool comboFeedbackViewPool)
+            ComboFeedbackViewPool comboFeedbackViewPool,
+            ClickParticlePool clickParticlePool)
         {
             _addressableUiFactory = addressableUiFactory ??
                 throw new ArgumentNullException(nameof(addressableUiFactory));
@@ -191,7 +194,20 @@ namespace FoodieMatch.UI
             _levelCatalogRepository = levelCatalogRepository;
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
+            _clickParticlePool = clickParticlePool;
             SubscribeEvents();
+        }
+
+        public void PlayClickParticle(Vector2 screenPosition)
+        {
+            _clickParticlePool.Play(
+                (RectTransform)_effectRoot,
+                screenPosition);
+        }
+
+        public void ReleaseClickParticles()
+        {
+            _clickParticlePool.ReleaseAll();
         }
 
         private void OnAddressableUiLoadingStateChanged(bool isLoading)
@@ -444,7 +460,7 @@ namespace FoodieMatch.UI
         {
             ActionFeedbackView actionFeedback = Instantiate(
                 _actionFeedbackPrefab,
-                _rewardEffectRoot);
+                _effectRoot);
             actionFeedback.gameObject.name = _actionFeedbackPrefab.gameObject.name;
             _actionFeedbackViews.Add(actionFeedback);
             actionFeedback.Show(message, OnActionFeedbackHidden);
@@ -478,7 +494,7 @@ namespace FoodieMatch.UI
             {
                 _levelWarningView = Instantiate(
                     _levelWarningPrefab,
-                    _rewardEffectRoot);
+                    _effectRoot);
                 _levelWarningView.gameObject.name = _levelWarningPrefab.gameObject.name;
             }
 
@@ -1140,7 +1156,7 @@ namespace FoodieMatch.UI
                 return _coinRewardOverlayView;
             }
 
-            _coinRewardOverlayView = Instantiate(_coinRewardOverlayPrefab, _rewardEffectRoot);
+            _coinRewardOverlayView = Instantiate(_coinRewardOverlayPrefab, _effectRoot);
             _coinRewardOverlayView.gameObject.name = _coinRewardOverlayPrefab.gameObject.name;
             return _coinRewardOverlayView;
         }

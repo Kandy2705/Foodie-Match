@@ -55,7 +55,7 @@ MonoBehaviour:
   _addressableLoadingTexture: {fileID: 2800000, guid: 8adfa78f64ea542c2b7f446fdb7c2c4b, type: 3}
   _levelWarningPrefab: {fileID: 918528150111377311, guid: b5723d20ac5db4e2fb1098fcc97a593b, type: 3}
   _coinRewardOverlayPrefab: {fileID: 796654897352748538, guid: 682972031a027134a9375906f5c06ab3, type: 3}
-  _rewardEffectRoot: {fileID: 6443555530003102396}
+  _effectRoot: {fileID: 6443555530003102396}
   _actionFeedbackPrefab: {fileID: 970213579789557558, guid: a510e4ff824994d8eb7d6d8193512769, type: 3}
   _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
 --- !u!114 &2571854868624730069
@@ -331,7 +331,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6443555530003102396}
   m_Layer: 0
-  m_Name: RewardEffectRoot
+  m_Name: EffectRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
