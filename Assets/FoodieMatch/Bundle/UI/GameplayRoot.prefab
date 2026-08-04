@@ -912,6 +912,18 @@ PrefabInstance:
       propertyPath: m_fontStyle
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2898985322959800535, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 6a65ef03abc9b49c3a0723d539fc34a1, type: 2}
+    - target: {fileID: 2898985322959800535, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -1580529860782755119, guid: 6a65ef03abc9b49c3a0723d539fc34a1, type: 2}
+    - target: {fileID: 2898985322959800535, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3410245822993221069, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 155
