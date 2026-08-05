@@ -968,29 +968,22 @@ namespace FoodieMatch.UI
 
         public void ShowUnlockLockedPackagePopup(int slotIndex, Action<int> onUnlockConfirmed)
         {
-            if (!_boosterBuyCatalog.TryGet(BoosterType.Box, out BoosterBuyContentEntry entry))
-            {
-                Debug.LogError("Booster buy content not found for Box.");
-                return;
-            }
-
             int coinPrice = _economyConfig.GetBoosterPrice(BoosterType.Box);
-            BoosterBuyPopupData popupData =
-                BoosterBuyPopupData.FromCatalogEntry(entry, coinPrice.ToString());
             _addBoxFlowSource = AddBoxFlowSource.LockedPackage;
             _pendingUnlockSlotIndex = slotIndex;
             _pendingUnlockCallback = onUnlockConfirmed;
 
             RunUiTask(
-                ShowPopupAsync<BoosterBuyPopupView>(
-                    popupData,
+                ShowPopupAsync<RevivePopupView>(
+                    data: null,
                     popup =>
                     {
                         popup.SetActions(
-                            new BoosterBuyPopupViewActions(
+                            new RevivePopupViewActions(
                                 OnUnlockPopupCloseClicked,
                                 OnUnlockPopupFreeAdsClicked,
                                 OnUnlockPopupBuyClicked));
+                        popup.SetCost(coinPrice.ToString());
                         SetCurrentPlayerResources(popup);
                     }),
                 nameof(ShowUnlockLockedPackagePopup));
@@ -1000,7 +993,7 @@ namespace FoodieMatch.UI
         {
             _addBoxFlowSource = AddBoxFlowSource.None;
             ClearLockedPackageUnlock();
-            HideBoosterBuyPopup();
+            HideRevivePopup();
         }
 
         private void OnUnlockPopupFreeAdsClicked()
@@ -1037,7 +1030,7 @@ namespace FoodieMatch.UI
             int slotIndex = _pendingUnlockSlotIndex;
             Action<int> callback = _pendingUnlockCallback;
             ClearLockedPackageUnlock();
-            HideBoosterBuyPopup();
+            HideRevivePopup();
             callback(slotIndex);
         }
 

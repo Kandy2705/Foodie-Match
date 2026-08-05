@@ -24,6 +24,8 @@ namespace FoodieMatch.UI.Shop
         private const float CardOvershootScale = 1.1f;
         private const float CardStaggerFraction = 0.5f;
         private const string StarterPackSection = "StarterPack";
+        private const string HeaderSuffix = "Header";
+        private const string SectionSuffix = "Section";
 
         [SerializeField] private ResourceBarView _resourceBarView;
         [SerializeField] private CoinCounterView _coinCounterView;
@@ -210,7 +212,7 @@ namespace FoodieMatch.UI.Shop
                  headerIndex++)
             {
                 RectTransform header = _sectionHeaders[headerIndex];
-                Transform section = header.parent;
+                Transform section = ResolveRevealSection(header);
 
                 revealTargets.Add(header);
                 targetCards.Add(null);
@@ -243,6 +245,28 @@ namespace FoodieMatch.UI.Shop
                 _targetVisibleScales[i] =
                     _revealTargets[i].localScale;
             }
+        }
+
+        private static Transform ResolveRevealSection(RectTransform header)
+        {
+            Transform parent = header.parent;
+
+            if (parent == null ||
+                !header.name.EndsWith(
+                    HeaderSuffix,
+                    StringComparison.Ordinal))
+            {
+                return parent;
+            }
+
+            string sectionName =
+                header.name.Substring(
+                    0,
+                    header.name.Length - HeaderSuffix.Length) +
+                SectionSuffix;
+            Transform siblingSection = parent.Find(sectionName);
+
+            return siblingSection != null ? siblingSection : parent;
         }
 
         private void BindCards()
