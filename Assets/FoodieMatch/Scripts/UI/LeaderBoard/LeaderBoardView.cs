@@ -953,6 +953,44 @@ namespace FoodieMatch.UI.LeaderBoard
                     row.sizeDelta.y * 0.5f);
         }
 
+        private void MatchCurrentPlayerRowToList(
+            VirtualizedListState list,
+            ScrollRect scrollRect)
+        {
+            if (_currentPlayerRow == null || scrollRect == null)
+            {
+                return;
+            }
+
+            RectTransform referenceRow = null;
+
+            if (list.NumberedTemplate != null)
+            {
+                referenceRow =
+                    (RectTransform)list.NumberedTemplate.transform;
+            }
+            else if (list.MedalTemplate != null)
+            {
+                referenceRow =
+                    (RectTransform)list.MedalTemplate.transform;
+            }
+
+            float targetWidth =
+                referenceRow != null
+                    ? referenceRow.rect.width
+                    : scrollRect.content.rect.width;
+
+            _currentPlayerRow.localScale = Vector3.one;
+
+            _currentPlayerRow.SetSizeWithCurrentAnchors(
+                RectTransform.Axis.Horizontal,
+                targetWidth);
+
+            _currentPlayerRow.SetSizeWithCurrentAnchors(
+                RectTransform.Axis.Vertical,
+                list.RowHeight);
+        }
+
         private void CaptureCurrentPlayerStickyLayout()
         {
             _currentPlayerStickyParent =
@@ -1040,6 +1078,9 @@ namespace FoodieMatch.UI.LeaderBoard
                 list.RowStride,
                 list.RowHeight,
                 list.TopPadding);
+            MatchCurrentPlayerRowToList(
+                list,
+                scrollRect);
             _currentPlayerRow.SetAsLastSibling();
         }
 
