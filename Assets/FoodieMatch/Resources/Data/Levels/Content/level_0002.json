@@ -36,8 +36,8 @@
         "id": 1,
         "type": "standard",
         "position": {
-          "x": -1.5,
-          "y": 0
+          "x": -1.64,
+          "y": 1
         },
         "foodIds": [
           1,
@@ -58,8 +58,8 @@
         "id": 2,
         "type": "standard",
         "position": {
-          "x": 1.5,
-          "y": 0
+          "x": 1.64,
+          "y": 1
         },
         "foodIds": [
           2,
