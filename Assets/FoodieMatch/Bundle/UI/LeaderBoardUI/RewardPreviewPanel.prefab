@@ -151,14 +151,14 @@ GameObject:
   - component: {fileID: 2493348594358499943}
   - component: {fileID: 4908047354139432494}
   - component: {fileID: 413993043982987808}
-  - component: {fileID: 365891747670806595}
+  - component: {fileID: 7574934688180051860}
   m_Layer: 5
   m_Name: RewardPreviewPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2493348594358499943
 RectTransform:
   m_ObjectHideFlags: 0
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!95 &365891747670806595
+--- !u!95 &7574934688180051860
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
