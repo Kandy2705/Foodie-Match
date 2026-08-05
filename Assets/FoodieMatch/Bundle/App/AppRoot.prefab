@@ -59,6 +59,7 @@ MonoBehaviour:
   _gameplayMotionPresenter: {fileID: 86517351395246559}
   _audioService: {fileID: 7935935628349520364}
   _gameplayPoolRoot: {fileID: 3836553929533049447}
+  _gameplayTopRoot: {fileID: 5429455309209413856}
   _boardLayoutView: {fileID: 5535215390786423237}
   _requiredPackageGroupView: {fileID: 8855672181408796993}
   _waitingRackView: {fileID: 9095491401499760532}
@@ -450,6 +451,10 @@ PrefabInstance:
       propertyPath: _loadingScreenPrefab
       value: 
       objectReference: {fileID: 7440178564741621615, guid: 4292533880ee24a5e83a102feeda0aa8, type: 3}
+    - target: {fileID: 5414341360215047437, guid: 3af3d03f28c57b140ba399087cc20671, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6605339517566366066, guid: 3af3d03f28c57b140ba399087cc20671, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -589,6 +594,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89d334c28e84042bf98467c0e2741603, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &5429455309209413856 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4584925039884091008, guid: f73cb6410410c984893f55d18a4f340b, type: 3}
+  m_PrefabInstance: {fileID: 8428946154357298784}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &5535215390786423237 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4046669860431011749, guid: f73cb6410410c984893f55d18a4f340b, type: 3}

@@ -38,6 +38,8 @@ namespace FoodieMatch.App
         [Header("Gameplay Roots")]
         [SerializeField] private GameplayPoolRoot _gameplayPoolRoot;
 
+        [SerializeField] private Transform _gameplayTopRoot;
+
         [SerializeField] private BoardLayoutView _boardLayoutView;
 
         [SerializeField] private RequiredPackageGroupView _requiredPackageGroupView;
@@ -58,6 +60,7 @@ namespace FoodieMatch.App
             _gameplayMotionPresenter;
         public UnityAudioService AudioService => _audioService;
         public GameplayPoolRoot GameplayPoolRoot => _gameplayPoolRoot;
+        public Transform GameplayTopRoot => _gameplayTopRoot;
         public BoardLayoutView BoardLayoutView => _boardLayoutView;
         public RequiredPackageGroupView RequiredPackageGroupView => _requiredPackageGroupView;
         public WaitingRackView WaitingRackView => _waitingRackView;

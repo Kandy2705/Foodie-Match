@@ -152,12 +152,9 @@ namespace FoodieMatch.App
             gameplayWorldClickSfx.Construct(audioService);
             Camera worldCamera = Camera.main;
 
-            if (worldCamera == null)
-            {
-                Debug.LogError(
-                    "Cannot install app because Main Camera is missing.");
-                return false;
-            }
+            worldCamera
+                .GetComponent<GameplayCameraSafeAreaFitter>()
+                .SetTopRoot(appRoot.GameplayTopRoot);
 
             appRoot.GameplayPoolRoot.Initialize();
             RequiredPackageMatcher requiredPackageMatcher =
