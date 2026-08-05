@@ -23,6 +23,9 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private ResourceBarView _resourceBarView;
         [SerializeField] private Sprite _hardPlayButtonSprite;
         [SerializeField] private Sprite _superHardPlayButtonSprite;
+        [SerializeField] private TMP_FontAsset _normalPlayLevelFont;
+        [SerializeField] private TMP_FontAsset _hardPlayLevelFont;
+        [SerializeField] private TMP_FontAsset _superHardPlayLevelFont;
 
         private Action _playClicked;
         private Action _settingClicked;
@@ -68,6 +71,13 @@ namespace FoodieMatch.UI.Home
                 LevelDifficulty.Hard => _hardPlayButtonSprite,
                 LevelDifficulty.SuperHard => _superHardPlayButtonSprite,
                 _ => _normalPlayButtonSprite
+            };
+
+            _playLevelText.font = difficulty switch
+            {
+                LevelDifficulty.Hard => _hardPlayLevelFont,
+                LevelDifficulty.SuperHard => _superHardPlayLevelFont,
+                _ => _normalPlayLevelFont
             };
         }
 
