@@ -355,6 +355,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: LeaderBoardPageMotionRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 8061539177225197951, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
+      propertyPath: m_fontSize
+      value: 96
+      objectReference: {fileID: 0}
+    - target: {fileID: 8061539177225197951, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 96
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
