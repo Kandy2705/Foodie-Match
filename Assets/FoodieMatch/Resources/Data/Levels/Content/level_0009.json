@@ -41,7 +41,7 @@
         "type": "standard",
         "position": {
           "x": -3,
-          "y": 2.7
+          "y": 3
         },
         "foodIds": [
           43,
@@ -86,7 +86,7 @@
         "type": "standard",
         "position": {
           "x": -3,
-          "y": -2.7
+          "y": -3
         },
         "foodIds": [
           25,
@@ -249,7 +249,7 @@
         "type": "standard",
         "position": {
           "x": 3,
-          "y": 2.7
+          "y": 3
         },
         "foodIds": [
           43,
@@ -292,7 +292,7 @@
         "type": "single",
         "position": {
           "x": 3,
-          "y": -2.7
+          "y": -3
         },
         "foodIds": [
           20
