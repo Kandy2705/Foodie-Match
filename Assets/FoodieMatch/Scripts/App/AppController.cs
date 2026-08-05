@@ -505,6 +505,7 @@ namespace FoodieMatch.App
 
                 if (!_playerProfileService.TrySpendCoins(coinPrice))
                 {
+                    _uiManager.ShowActionFeedback("Not enough coins.");
                     return;
                 }
 
