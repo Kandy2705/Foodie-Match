@@ -55,8 +55,8 @@
         "id": 1,
         "type": "standard",
         "position": {
-          "x": -8.75,
-          "y": 4
+          "x": -9.45,
+          "y": 4.5
         },
         "foodIds": [
           1,
@@ -69,8 +69,8 @@
         "id": 2,
         "type": "standard",
         "position": {
-          "x": -6.25,
-          "y": 4
+          "x": -6.75,
+          "y": 4.5
         },
         "foodIds": [
           12
@@ -81,8 +81,8 @@
         "id": 3,
         "type": "standard",
         "position": {
-          "x": -3.75,
-          "y": 4
+          "x": -4.05,
+          "y": 4.5
         },
         "foodIds": [
           2,
@@ -95,8 +95,8 @@
         "id": 4,
         "type": "standard",
         "position": {
-          "x": -1.25,
-          "y": 4
+          "x": -1.35,
+          "y": 4.5
         },
         "foodIds": [
           7,
@@ -108,8 +108,8 @@
         "id": 5,
         "type": "standard",
         "position": {
-          "x": 1.25,
-          "y": 4
+          "x": 1.35,
+          "y": 4.5
         },
         "foodIds": [
           3,
@@ -122,8 +122,8 @@
         "id": 6,
         "type": "standard",
         "position": {
-          "x": 3.75,
-          "y": 4
+          "x": 4.05,
+          "y": 4.5
         },
         "foodIds": [
           16
@@ -134,8 +134,8 @@
         "id": 7,
         "type": "standard",
         "position": {
-          "x": 6.25,
-          "y": 4
+          "x": 6.75,
+          "y": 4.5
         },
         "foodIds": [
           9,
@@ -147,8 +147,8 @@
         "id": 8,
         "type": "standard",
         "position": {
-          "x": 8.75,
-          "y": 4
+          "x": 9.45,
+          "y": 4.5
         },
         "foodIds": [
           4,
@@ -162,7 +162,7 @@
         "type": "standard",
         "position": {
           "x": -3,
-          "y": 1.2
+          "y": 1.5
         },
         "foodIds": [
           21,
@@ -203,7 +203,7 @@
         "type": "standard",
         "position": {
           "x": 3,
-          "y": 1.2
+          "y": 1.5
         },
         "foodIds": [
           19,
@@ -245,7 +245,7 @@
         "type": "standard",
         "position": {
           "x": -1.5,
-          "y": -1.8
+          "y": -1.5
         },
         "foodIds": [
           20,
@@ -288,7 +288,7 @@
         "type": "standard",
         "position": {
           "x": 1.5,
-          "y": -1.8
+          "y": -1.5
         },
         "foodIds": [
           21,
@@ -331,7 +331,7 @@
         "type": "single",
         "position": {
           "x": 0,
-          "y": -5
+          "y": -4.5
         },
         "foodIds": [
           25

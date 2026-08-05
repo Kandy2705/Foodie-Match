@@ -1,30 +1,30 @@
 {
   "schemaVersion": 1,
-  "manifestVersion": 7,
+  "manifestVersion": 8,
   "packs": [
     {
       "id": 1,
-      "version": 6,
+      "version": 7,
       "firstLevel": 1,
       "lastLevel": 4,
-      "archivePath": "packs/pack_0001_v0006.zip",
-      "archiveSha256": "c8953327562ea288e7d80a7bfb0887a326cb8a9250bdf4107567976a326d8437"
+      "archivePath": "packs/pack_0001_v0007.zip",
+      "archiveSha256": "c9ab93545fc7f3ae0c670b61b5c8c91243eadaa3fafe2c14b46ecc74f0fb5d2a"
     },
     {
       "id": 2,
-      "version": 4,
+      "version": 5,
       "firstLevel": 5,
       "lastLevel": 8,
-      "archivePath": "packs/pack_0002_v0004.zip",
-      "archiveSha256": "9c00fcb024b612f5eceea901ef8016eb7e8a3ad0d1991e27b99004b77ece58c9"
+      "archivePath": "packs/pack_0002_v0005.zip",
+      "archiveSha256": "13c758703cfff7c8cffff37c32d32619ffea00f69589a7785b53844a348323a9"
     },
     {
       "id": 3,
-      "version": 3,
+      "version": 4,
       "firstLevel": 9,
       "lastLevel": 12,
-      "archivePath": "packs/pack_0003_v0003.zip",
-      "archiveSha256": "2c8c45bf0bceea9bccf61d81865e5cbce015f02e6966c065b207750ac0d1876d"
+      "archivePath": "packs/pack_0003_v0004.zip",
+      "archiveSha256": "51654354077553cba9fca0c8644a9d12907dca01c988e33aa4b4487d0565cb8e"
     }
   ]
 }
