@@ -142,8 +142,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 14:15
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
-  m_sharedMaterial: {fileID: -1580529860782755119, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 19d8a726b01554f6d9677ffc1f918618, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: 19d8a726b01554f6d9677ffc1f918618, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -733,8 +733,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 800
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 7ce276de56108418bb86abce5edfaf96, type: 2}
-  m_sharedMaterial: {fileID: -1580529860782755119, guid: 7ce276de56108418bb86abce5edfaf96, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b8a96b35cdec8404b841d7931e17d73c, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: b8a96b35cdec8404b841d7931e17d73c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1735,7 +1735,7 @@ PrefabInstance:
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
+      objectReference: {fileID: 11400000, guid: e847296d142f7487fb81147ba9ce95d5, type: 2}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_fontStyle
       value: 0
@@ -1747,7 +1747,7 @@ PrefabInstance:
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: -1580529860782755119, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
+      objectReference: {fileID: -1580529860782755119, guid: e847296d142f7487fb81147ba9ce95d5, type: 2}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_characterSpacing
       value: -1.9
