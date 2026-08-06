@@ -553,6 +553,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5353496739673673255}
     m_Modifications:
+    - target: {fileID: 338475055495938881, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 34.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 338475055495938881, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7601366822663529138, guid: 12d5a86afc2914d9d9c5f43a4325a79b, type: 3}
       propertyPath: m_Name
       value: TopHudRoot
