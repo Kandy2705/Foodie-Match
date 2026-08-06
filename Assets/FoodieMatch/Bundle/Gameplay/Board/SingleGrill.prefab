@@ -60,7 +60,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 5495315089969489303, guid: abdcc8cd0582e44a0906eb20362f55e3, type: 2}
+  - {fileID: -1580529860782755119, guid: 7ce276de56108418bb86abce5edfaf96, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -104,8 +104,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 3
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: abdcc8cd0582e44a0906eb20362f55e3, type: 2}
-  m_sharedMaterial: {fileID: 5495315089969489303, guid: abdcc8cd0582e44a0906eb20362f55e3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 7ce276de56108418bb86abce5edfaf96, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: 7ce276de56108418bb86abce5edfaf96, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1007,7 +1007,7 @@ SortingGroup:
   m_GameObject: {fileID: 8137175616764260842}
   m_Enabled: 1
   m_SortingLayerID: -40046413
-  m_SortingLayer: 5
+  m_SortingLayer: 10
   m_SortingOrder: 0
   m_SortAtRoot: 0
 --- !u!1 &9213462043716918652

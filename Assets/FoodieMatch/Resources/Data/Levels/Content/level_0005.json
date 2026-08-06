@@ -40,8 +40,8 @@
         "id": 1,
         "type": "standard",
         "position": {
-          "x": -3,
-          "y": 3
+          "x": -3.28,
+          "y": 3.8
         },
         "foodIds": [
           37,
@@ -86,7 +86,7 @@
         "type": "standard",
         "position": {
           "x": 0,
-          "y": 3
+          "y": 3.8
         },
         "foodIds": [
           19,
@@ -132,8 +132,8 @@
         "id": 3,
         "type": "standard",
         "position": {
-          "x": 3,
-          "y": 3
+          "x": 3.28,
+          "y": 3.8
         },
         "foodIds": [
           1,
@@ -177,8 +177,8 @@
         "id": 4,
         "type": "standard",
         "position": {
-          "x": -1.5,
-          "y": 0
+          "x": -1.64,
+          "y": 1
         },
         "foodIds": [
           37,
@@ -220,8 +220,8 @@
         "id": 5,
         "type": "standard",
         "position": {
-          "x": 1.5,
-          "y": 0
+          "x": 1.64,
+          "y": 1
         },
         "foodIds": [
           37,
@@ -264,7 +264,7 @@
         "type": "single",
         "position": {
           "x": 0,
-          "y": -3
+          "y": -1.8
         },
         "foodIds": [
           18

@@ -36,6 +36,7 @@ namespace FoodieMatch.Features.Food
         [SerializeField, Range(0.1f, 0.9f)] private float _flightPeakProgress = 0.45f;
         [SerializeField] private Ease _flightTransformEase = Ease.OutCubic;
         [SerializeField] private float _topTrayToGrillFlightDuration = 0.32f;
+        [SerializeField] private float _topTrayToGrillTransformDuration = 0.2f;
         [SerializeField] private string _flyingSortingLayerName = "FlyingFood";
 
         [Header("Landing Motion")]
@@ -70,6 +71,7 @@ namespace FoodieMatch.Features.Food
         private Vector3 _scaleBeforeLanding;
         private Vector3 _flightStartScale;
         private Quaternion _flightStartRotation;
+        private float _flightTransformProgressMultiplier;
         private FoodItemVisualState? _flightTargetVisualState;
         private int _flyingSortingLayerId;
         private int _sortingLayerBeforeFlightId;
@@ -168,7 +170,13 @@ namespace FoodieMatch.Features.Food
             Vector3 targetPosition,
             float startDelay = 0f)
         {
-            return PlayFlightAsync(targetPosition, null, null, _flightDuration, startDelay);
+            return PlayFlightAsync(
+                targetPosition,
+                null,
+                null,
+                _flightDuration,
+                _flightDuration,
+                startDelay);
         }
 
         public Task<MotionResult> PlayFlightAsync(
@@ -181,7 +189,13 @@ namespace FoodieMatch.Features.Food
                 return Task.FromResult(MotionResult.Failed);
             }
 
-            return PlayFlightAsync(target.position, target, null, _flightDuration, startDelay);
+            return PlayFlightAsync(
+                target.position,
+                target,
+                null,
+                _flightDuration,
+                _flightDuration,
+                startDelay);
         }
 
         public Task<MotionResult> PlayFlightToGrillAsync(
@@ -202,6 +216,7 @@ namespace FoodieMatch.Features.Food
                 target,
                 FoodItemVisualState.OnGrill,
                 _topTrayToGrillFlightDuration,
+                _topTrayToGrillTransformDuration,
                 startDelay);
         }
 
@@ -210,11 +225,12 @@ namespace FoodieMatch.Features.Food
             Transform target,
             FoodItemVisualState? targetVisualState,
             float duration,
+            float transformDuration,
             float startDelay)
         {
             StopLandingFeedback(resetScale: true);
 
-            if (!CanStartFlight(duration, startDelay))
+            if (!CanStartFlight(duration, transformDuration, startDelay))
             {
                 return MotionResult.Failed;
             }
@@ -225,6 +241,7 @@ namespace FoodieMatch.Features.Food
             _latestFlightTargetPosition = targetPosition;
             _flightStartScale = transform.localScale;
             _flightStartRotation = transform.localRotation;
+            _flightTransformProgressMultiplier = duration / transformDuration;
             _flightTargetVisualState = targetVisualState;
             _isFlying = true;
             _didFlightComplete = false;
@@ -592,7 +609,10 @@ namespace FoodieMatch.Features.Food
             Selected?.Invoke(this);
         }
 
-        private bool CanStartFlight(float duration, float startDelay)
+        private bool CanStartFlight(
+            float duration,
+            float transformDuration,
+            float startDelay)
         {
             if (IsEmpty)
             {
@@ -611,6 +631,7 @@ namespace FoodieMatch.Features.Food
             }
 
             if (!IsValidTime(duration) ||
+                !IsValidPositiveNumber(transformDuration) ||
                 !IsValidPositiveNumber(_flightArcHeight) ||
                 !IsValidPeakProgress(_flightPeakProgress) ||
                 !IsValidTime(startDelay))
@@ -671,7 +692,11 @@ namespace FoodieMatch.Features.Food
 
         private void UpdateFlightTransform(float progress, FoodItemVisualState targetVisualState)
         {
-            float easedProgress = Easing.Evaluate(progress, _flightTransformEase);
+            float transformProgress = Mathf.Clamp01(
+                progress * _flightTransformProgressMultiplier);
+            float easedProgress = Easing.Evaluate(
+                transformProgress,
+                _flightTransformEase);
             Vector3 targetScale = GetVisualScale(targetVisualState);
             Quaternion targetRotation = GetVisualRotation(targetVisualState);
 
