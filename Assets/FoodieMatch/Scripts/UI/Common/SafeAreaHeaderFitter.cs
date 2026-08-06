@@ -7,15 +7,37 @@ namespace FoodieMatch.UI.Common
     {
         [SerializeField] private RectTransform _headerRoot;
         [SerializeField] private Canvas _canvas;
-        [SerializeField] private bool _updateWhenScreenChanges;
+        [SerializeField] private bool _updateWhenScreenChanges = true;
 
-        private float _heightWithoutSafeArea;
+        private float _baseHeight;
+        private int _lastScreenWidth;
         private int _lastScreenHeight;
         private Rect _lastSafeArea;
+        private bool _initialized;
 
-        private void Start()
+        private void Awake()
         {
-            _heightWithoutSafeArea = _headerRoot.rect.height;
+            if (_headerRoot == null)
+            {
+                _headerRoot = transform as RectTransform;
+            }
+
+            if (_canvas == null)
+            {
+                _canvas = GetComponentInParent<Canvas>();
+            }
+        }
+
+        private void OnEnable()
+        {
+            Canvas.ForceUpdateCanvases();
+
+            if (!_initialized)
+            {
+                _baseHeight = _headerRoot.rect.height;
+                _initialized = true;
+            }
+
             RefreshHeaderHeight();
         }
 
@@ -29,19 +51,30 @@ namespace FoodieMatch.UI.Common
 
         private bool HasScreenChanged()
         {
-            return Screen.height != _lastScreenHeight || Screen.safeArea != _lastSafeArea;
+            return Screen.width != _lastScreenWidth ||
+                   Screen.height != _lastScreenHeight ||
+                   Screen.safeArea != _lastSafeArea;
         }
 
         private void RefreshHeaderHeight()
         {
+            _lastScreenWidth = Screen.width;
             _lastScreenHeight = Screen.height;
             _lastSafeArea = Screen.safeArea;
 
-            float topSafeAreaInset = Screen.height - Screen.safeArea.yMax;
-            float topSafeAreaInsetInCanvasUnits = topSafeAreaInset / _canvas.rootCanvas.scaleFactor;
-            float headerHeight = _heightWithoutSafeArea + topSafeAreaInsetInCanvasUnits;
+            float topInsetPixels =
+                Screen.height - Screen.safeArea.yMax;
 
-            _headerRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, headerHeight);
+            float topInsetCanvasUnits =
+                topInsetPixels / _canvas.rootCanvas.scaleFactor;
+
+            float targetHeight =
+                _baseHeight + topInsetCanvasUnits;
+
+            _headerRoot.SetSizeWithCurrentAnchors(
+                RectTransform.Axis.Vertical,
+                targetHeight
+            );
         }
     }
 }
