@@ -147,6 +147,66 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2605229163587576317, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2605229163587576317, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2605229163587576317, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2605229163587576317, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3818770725042232147, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3818770725042232147, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322857755066051014, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_margin.w
+      value: 44.89422
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322857755066051014, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 7864568134023283546, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7864568134023283546, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7864568134023283546, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7864568134023283546, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8519579016161820930, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8519579016161820930, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3264919329692358596, guid: 04ad7316b4b964a69a6b181e00b1cc36, type: 3}
+    - target: {fileID: 8519579016161820930, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9200749560868768972, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
       propertyPath: m_Name
       value: HomePageMotionRoot
