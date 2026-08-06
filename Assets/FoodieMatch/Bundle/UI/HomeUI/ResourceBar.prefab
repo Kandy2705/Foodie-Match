@@ -97,6 +97,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: -16.095
       objectReference: {fileID: 0}
+    - target: {fileID: 1142355363630778474, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2850004482932567309, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3884435956593229059, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -177,13 +185,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4191271843337895118, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 5357528278273254606, guid: d60781aae7991413c8227c000d050b77, type: 3}
     - target: {fileID: 4660843292467552367, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: _lifeCounterButton
       value: 
       objectReference: {fileID: 1733836232598462721}
     - target: {fileID: 5121591282378887531, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_text
-      value: 5
+      value: 959:57
       objectReference: {fileID: 0}
     - target: {fileID: 5121591282378887531, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_fontSize
@@ -459,7 +471,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5121591282378887531, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_text
-      value: 10,590
+      value: 39,900
       objectReference: {fileID: 0}
     - target: {fileID: 5121591282378887531, guid: f733216c88770449884ed1a3e224f7e7, type: 3}
       propertyPath: m_fontSize
