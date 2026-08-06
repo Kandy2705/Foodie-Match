@@ -31,12 +31,14 @@ namespace FoodieMatch.UI.Home
         private Action _settingClicked;
         private Action _starterPackClicked;
         private Sprite _normalPlayButtonSprite;
+        private Vector4 _normalPlayLevelMargin;
 
         private void Awake()
         {
             _starterPackButton ??=
                 FindRequiredButton(StarterPackButtonName);
             _normalPlayButtonSprite = _playButton.image.sprite;
+            _normalPlayLevelMargin = _playLevelText.margin;
             _playButton.onClick.AddListener(OnPlayButtonClicked);
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
             _starterPackButton.onClick.AddListener(
@@ -79,6 +81,14 @@ namespace FoodieMatch.UI.Home
                 LevelDifficulty.SuperHard => _superHardPlayLevelFont,
                 _ => _normalPlayLevelFont
             };
+
+            Vector4 margin = _normalPlayLevelMargin;
+            if (difficulty == LevelDifficulty.Hard ||
+                difficulty == LevelDifficulty.SuperHard)
+            {
+                margin.y = 44f;
+            }
+            _playLevelText.margin = margin;
         }
 
         public void SetCoinBalance(long coinBalance)
