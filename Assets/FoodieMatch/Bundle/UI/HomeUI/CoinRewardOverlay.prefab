@@ -117,7 +117,7 @@ MonoBehaviour:
   _coinArrivalParticle: {fileID: 476861588379451310}
   _coinSpawnRadius: 200
   _coinAppearInterval: 0.1
-  _coinHoldDuration: 1
+  _coinHoldDuration: 0.4
   _coinFlightIntervalRange: {x: 0.1, y: 0.1}
 --- !u!1 &5547876593773083989
 GameObject:

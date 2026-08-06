@@ -119,6 +119,7 @@ GameObject:
   m_Component:
   - component: {fileID: 747554771458724178}
   - component: {fileID: 7346011492833633386}
+  - component: {fileID: 893611782359785459}
   - component: {fileID: 2015942173537180516}
   m_Layer: 5
   m_Name: CoinReward
@@ -155,6 +156,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3121422496543667810}
   m_CullTransparentMesh: 1
+--- !u!225 &893611782359785459
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3121422496543667810}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &2015942173537180516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,10 +180,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ff35ee15e006b449828f6363d97645, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appearanceDuration: 0.1
-  _appearanceEase: 27
+  _canvasGroup: {fileID: 893611782359785459}
+  _scaleUpDuration: 0.1
+  _scaleSettleDuration: 0.1
+  _overshootScale: 1.2
+  _scaleUpEase: 9
+  _scaleSettleEase: 4
+  _fadeInDuration: 0.2
+  _fadeInEase: 9
   _arrivalHoldDuration: 0.1
   _retreatStrength: 50
-  _movementDurationRange: {x: 1.2, y: 1.2}
+  _movementDurationRange: {x: 0.2, y: 0.2}
   _curveOffset: 60
   _movementEase: 1

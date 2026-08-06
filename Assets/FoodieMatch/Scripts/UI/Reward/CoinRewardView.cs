@@ -7,9 +7,17 @@ namespace FoodieMatch.UI.Reward
 {
     public sealed class CoinRewardView : MonoBehaviour
     {
+        [Header("References")]
+        [SerializeField] private CanvasGroup _canvasGroup;
+
         [Header("Appearance")]
-        [SerializeField] private float _appearanceDuration = 0.2f;
-        [SerializeField] private Ease _appearanceEase = Ease.OutBack;
+        [SerializeField] private float _scaleUpDuration = 0.12f;
+        [SerializeField] private float _scaleSettleDuration = 0.08f;
+        [SerializeField] private float _overshootScale = 1.2f;
+        [SerializeField] private Ease _scaleUpEase = Ease.OutCubic;
+        [SerializeField] private Ease _scaleSettleEase = Ease.InOutSine;
+        [SerializeField] private float _fadeInDuration = 0.2f;
+        [SerializeField] private Ease _fadeInEase = Ease.OutCubic;
         [SerializeField] private float _arrivalHoldDuration = 0.1f;
 
         [Header("Movement")]
@@ -27,7 +35,9 @@ namespace FoodieMatch.UI.Reward
         private Vector3 _spawnPosition;
         private float _curveDirection;
 
-        public float AppearanceDuration => _appearanceDuration;
+        public float AppearanceDuration => Mathf.Max(
+            _scaleUpDuration + _scaleSettleDuration,
+            _fadeInDuration);
         public bool IsPlaying { get; private set; }
 
         private void Awake()
@@ -52,19 +62,31 @@ namespace FoodieMatch.UI.Reward
             _curveDirection = Random.value < 0.5f ? -1f : 1f;
             _rectTransform.localPosition = spawnPosition;
             _rectTransform.localScale = Vector3.zero;
+            _canvasGroup.alpha = 0f;
             gameObject.SetActive(true);
             _rectTransform.SetAsLastSibling();
             IsPlaying = true;
 
             float movementDuration = GetRandomMovementDuration();
             float arrivalTime = movementStartTime + movementDuration;
+            float scaleSettleStartTime = appearanceStartTime + _scaleUpDuration;
 
             _motionSequence = Sequence.Create(useUnscaledTime: true)
                 .Insert(appearanceStartTime, Tween.Scale(
                     _rectTransform,
+                    _visibleScale * _overshootScale,
+                    _scaleUpDuration,
+                    _scaleUpEase))
+                .Insert(scaleSettleStartTime, Tween.Scale(
+                    _rectTransform,
                     _visibleScale,
-                    _appearanceDuration,
-                    _appearanceEase))
+                    _scaleSettleDuration,
+                    _scaleSettleEase))
+                .Insert(appearanceStartTime, Tween.Alpha(
+                    _canvasGroup,
+                    1f,
+                    _fadeInDuration,
+                    _fadeInEase))
                 .Insert(movementStartTime, Tween.Custom(
                     this,
                     0f,
