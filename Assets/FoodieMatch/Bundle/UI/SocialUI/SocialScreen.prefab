@@ -85,6 +85,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6076624464372456947}
     m_Modifications:
+    - target: {fileID: 829313028647506515, guid: 70f54467327e340009a00e44d9674391, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 4183b283e46a24097a584d37295c9b18, type: 3}
     - target: {fileID: 2332099367002469567, guid: 70f54467327e340009a00e44d9674391, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -169,6 +173,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: SocialPageMotionRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 5393873479933516124, guid: 70f54467327e340009a00e44d9674391, type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5393873479933516124, guid: 70f54467327e340009a00e44d9674391, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 4183b283e46a24097a584d37295c9b18, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
