@@ -14,7 +14,7 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
     public sealed class PlayerPrefsGameConfigurationCache
     {
         private const string CacheKey = "GameConfiguration";
-        private const int CurrentSchemaVersion = 1;
+        private const int CurrentSchemaVersion = 2;
 
         private readonly ISaveService _saveService;
 
@@ -103,7 +103,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 new GameHeartConfigSnapshot(
                     dto.Heart.MaxCount,
                     TimeSpan.FromMinutes(dto.Heart.RecoveryMinutes)),
-                new GameBoosterConfigSnapshot(unlockLevels),
+                new GameBoosterConfigSnapshot(
+                    unlockLevels,
+                    dto.Booster.UnlockRewardAmount),
                 new GameAdsConfigSnapshot(
                     TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)));
         }
@@ -152,7 +154,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                     FridgeUnlockLevel =
                         configuration.Booster.GetUnlockLevel(BoosterType.Fridge),
                     BoxUnlockLevel =
-                        configuration.Booster.GetUnlockLevel(BoosterType.Box)
+                        configuration.Booster.GetUnlockLevel(BoosterType.Box),
+                    UnlockRewardAmount =
+                        configuration.Booster.UnlockRewardAmount
                 },
                 Ads = new AdsConfigDto
                 {

@@ -212,6 +212,17 @@ namespace FoodieMatch.Features.Gameplay
             List<Task<bool>> pendingFoodEntries =
                 new();
 
+            Vector3 spoonRestPosition =
+                _waitingRackView.GetFoodAnchorWorldPositionAt(0);
+
+            await _view.PlaySpoonAppearAsync(
+                spoonRestPosition);
+
+            if (!CanContinue(session))
+            {
+                return false;
+            }
+
             for (int slotIndex = 0;
                  slotIndex < session.WaitingRack.Capacity;
                  slotIndex++)
@@ -247,9 +258,15 @@ namespace FoodieMatch.Features.Gameplay
                 }
             }
 
+            Task spoonReturnTask =
+                _view.PlaySpoonReturnAsync(
+                    spoonRestPosition);
+
             bool[] enterResults =
                 await Task.WhenAll(
                     pendingFoodEntries);
+
+            await spoonReturnTask;
 
             for (int i = 0;
                  i < enterResults.Length;
@@ -267,13 +284,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             UpdateFridgeVisualState(session);
-
-            await _view.PlaySpoonExitLeftAsync();
-
-            if (!CanContinue(session))
-            {
-                return false;
-            }
 
             session.StartPlaying();
 
@@ -515,10 +525,12 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             Vector3 waitingRackWorldPosition =
-                foodItemView.transform.position;
+                _waitingRackView.GetFoodAnchorWorldPositionAt(
+                    slotIndex);
 
             bool modelRemoved = false;
             bool viewRemoved = false;
+            bool foodEntryStarted = false;
 
             try
             {
@@ -562,17 +574,11 @@ namespace FoodieMatch.Features.Gameplay
                 Vector3 originalScale =
                     foodItemView.transform.localScale;
 
-                bool hasNextFood =
-                    TryGetNextScoopWorldPosition(
-                        session,
-                        slotIndex,
-                        out Vector3 nextFoodWorldPosition);
+                await _view.PlaySpoonMoveToFoodAsync(
+                    waitingRackWorldPosition);
 
-                await _view.PlayScoopFlickAsync(
-                    foodItemView,
-                    waitingRackWorldPosition,
-                    hasNextFood,
-                    nextFoodWorldPosition);
+                await _view.PlaySpoonLowerAsync(
+                    waitingRackWorldPosition);
 
                 if (!CanContinue(session))
                 {
@@ -599,11 +605,10 @@ namespace FoodieMatch.Features.Gameplay
                         originalScale);
 
                 pendingFoodEntries.Add(enterTask);
+                foodEntryStarted = true;
 
-                if (hasNextFood)
-                {
-                    await _view.WaitBeforeNextScoopAsync();
-                }
+                await _view.PlaySpoonLiftAsync(
+                    waitingRackWorldPosition);
 
                 return true;
             }
@@ -611,13 +616,16 @@ namespace FoodieMatch.Features.Gameplay
             {
                 Debug.LogException(exception);
 
-                RollbackScoop(
-                    session,
-                    slotIndex,
-                    expectedFoodTokenId,
-                    foodItemView,
-                    modelRemoved,
-                    viewRemoved);
+                if (!foodEntryStarted)
+                {
+                    RollbackScoop(
+                        session,
+                        slotIndex,
+                        expectedFoodTokenId,
+                        foodItemView,
+                        modelRemoved,
+                        viewRemoved);
+                }
 
                 return false;
             }
@@ -632,7 +640,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             try
             {
-                await _view.PlayFoodEnterAsync(
+                await _view.PlayFoodFlightAsync(
                     foodItemView);
 
                 if (!CanContinue(session))
@@ -732,43 +740,6 @@ namespace FoodieMatch.Features.Gameplay
                     $"Fridge failed to restore model food " +
                     $"at slot {slotIndex}.");
             }
-        }
-
-        private bool TryGetNextScoopWorldPosition(
-            GameplaySession session,
-            int currentSlotIndex,
-            out Vector3 nextFoodWorldPosition)
-        {
-            nextFoodWorldPosition = default;
-
-            for (int slotIndex = currentSlotIndex + 1;
-                 slotIndex < session.WaitingRack.Capacity;
-                 slotIndex++)
-            {
-                int tokenId =
-                    session.WaitingRack
-                        .GetFoodTokenIdAt(slotIndex);
-
-                if (tokenId <= 0)
-                {
-                    continue;
-                }
-
-                if (!_waitingRackView.TryGetFoodAt(
-                        slotIndex,
-                        out FoodItemView nextFoodView) ||
-                    nextFoodView == null)
-                {
-                    continue;
-                }
-
-                nextFoodWorldPosition =
-                    nextFoodView.transform.position;
-
-                return true;
-            }
-
-            return false;
         }
 
         private void UpdateFridgeVisualState(

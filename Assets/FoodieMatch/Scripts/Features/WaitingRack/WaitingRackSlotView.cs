@@ -15,6 +15,8 @@ namespace FoodieMatch.Features.WaitingRack
         private bool IsPlacementComplete =>
             _state == WaitingRackSlotState.Occupied;
 
+        public Vector3 FoodAnchorWorldPosition => _foodAnchor.position;
+
         public bool RestoreFood(FoodItemView foodItemView)
         {
             if (!TryReserveFood(foodItemView, out _))

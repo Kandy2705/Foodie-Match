@@ -93,7 +93,12 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                             remoteConfig,
                             FirebaseRemoteConfigKeys.HeartRecoveryMinutes,
                             checked((int)fallback.Heart.HeartRecoveryDuration.TotalMinutes)))),
-                new GameBoosterConfigSnapshot(unlockLevels),
+                new GameBoosterConfigSnapshot(
+                    unlockLevels,
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.BoosterUnlockRewardAmount,
+                        fallback.Booster.UnlockRewardAmount)),
                 new GameAdsConfigSnapshot(
                     TimeSpan.FromMinutes(
                         ReadPositiveInt(

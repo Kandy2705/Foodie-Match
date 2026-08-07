@@ -36,6 +36,8 @@ namespace FoodieMatch.Core.Application.Configuration
 
         public TimeSpan PostLevelAdInterval => _current.Ads.PostLevelAdInterval;
 
+        public int UnlockRewardAmount => _current.Booster.UnlockRewardAmount;
+
         public int GetBoosterPrice(BoosterType boosterType)
         {
             return _current.Economy.GetBoosterPrice(boosterType);

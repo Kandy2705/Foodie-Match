@@ -10,6 +10,7 @@ namespace FoodieMatch.Core.Application.Configuration.Booster
         private const int DefaultSwapUnlockLevel = 8;
         private const int DefaultFridgeUnlockLevel = 10;
         private const int DefaultBoxUnlockLevel = 2;
+        private const int DefaultUnlockRewardAmount = 3;
 
         public static GameBoosterConfigSnapshot CreateSnapshot()
         {
@@ -22,7 +23,9 @@ namespace FoodieMatch.Core.Application.Configuration.Booster
                 [BoosterType.Box] = DefaultBoxUnlockLevel
             };
 
-            return new GameBoosterConfigSnapshot(unlockLevels);
+            return new GameBoosterConfigSnapshot(
+                unlockLevels,
+                DefaultUnlockRewardAmount);
         }
     }
 }

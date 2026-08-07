@@ -168,8 +168,10 @@ namespace FoodieMatch.App
                 new SelectFoodUseCase(requiredPackageMatcher);
             BoardModelFactory boardModelFactory = new();
 
-            BoosterManager boosterManager = new(playerProfileService);
             IGameBoosterConfig boosterConfig = configurationSession;
+            BoosterManager boosterManager = new(
+                playerProfileService,
+                boosterConfig);
             IGameEconomyConfig economyConfig = configurationSession;
             IGameAdsConfig adsConfig = configurationSession;
             ShopPurchaseService shopPurchaseService = new(

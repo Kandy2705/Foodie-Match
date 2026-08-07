@@ -13,10 +13,19 @@ namespace FoodieMatch.Core.Application.Configuration.Booster
         private readonly ReadOnlyDictionary<BoosterType, int> _unlockLevels;
 
         public GameBoosterConfigSnapshot(
-            IReadOnlyDictionary<BoosterType, int> unlockLevels)
+            IReadOnlyDictionary<BoosterType, int> unlockLevels,
+            int unlockRewardAmount)
         {
             _unlockLevels = CopyUnlockLevels(unlockLevels);
+            UnlockRewardAmount = unlockRewardAmount > 0
+                ? unlockRewardAmount
+                : throw new ArgumentOutOfRangeException(
+                    nameof(unlockRewardAmount),
+                    unlockRewardAmount,
+                    "Unlock reward amount must be greater than zero.");
         }
+
+        public int UnlockRewardAmount { get; }
 
         public int GetUnlockLevel(BoosterType boosterType)
         {

@@ -64,5 +64,27 @@ namespace FoodieMatch.UI.Booster
                     return false;
             }
         }
+
+        public static bool TryGetButtonIndex(BoosterType boosterType, out int buttonIndex)
+        {
+            switch (boosterType)
+            {
+                case BoosterType.Plate:
+                    buttonIndex = 0;
+                    return true;
+                case BoosterType.Storage:
+                    buttonIndex = 1;
+                    return true;
+                case BoosterType.Swap:
+                    buttonIndex = 2;
+                    return true;
+                case BoosterType.Fridge:
+                    buttonIndex = 3;
+                    return true;
+                default:
+                    buttonIndex = -1;
+                    return false;
+            }
+        }
     }
 }

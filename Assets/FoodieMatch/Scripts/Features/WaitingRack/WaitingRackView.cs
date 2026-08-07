@@ -252,6 +252,11 @@ namespace FoodieMatch.Features.WaitingRack
             return slot.RemoveFood();
         }
 
+        public Vector3 GetFoodAnchorWorldPositionAt(int index)
+        {
+            return GetSlot(index).FoodAnchorWorldPosition;
+        }
+
         public void Clear()
         {
             for (int i = 0; i < _slots.Count; i++)

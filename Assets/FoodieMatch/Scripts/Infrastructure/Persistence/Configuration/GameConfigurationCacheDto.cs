@@ -75,6 +75,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
 
         [JsonProperty("boxUnlockLevel", Required = Required.Always)]
         public int BoxUnlockLevel { get; set; }
+
+        [JsonProperty("unlockRewardAmount", Required = Required.Always)]
+        public int UnlockRewardAmount { get; set; }
     }
 
     internal sealed class AdsConfigDto
