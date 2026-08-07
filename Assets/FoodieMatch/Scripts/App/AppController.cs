@@ -466,6 +466,7 @@ namespace FoodieMatch.App
 
                 if (!_boosterManager.TryPurchase(boosterType, coinPrice))
                 {
+                    _uiManager.ShowActionFeedback("Not enough coins.");
                     return;
                 }
 
