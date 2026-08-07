@@ -293,22 +293,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7511334524938248330}
     m_Modifications:
-    - target: {fileID: 947162571865625903, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 947162571865625903, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 947162571865625903, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 947162571865625903, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1776239250096937972, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
       propertyPath: m_Name
       value: TopHudRoot
@@ -392,26 +376,6 @@ PrefabInstance:
     - target: {fileID: 4707254342250173787, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4911125112245729160, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4911125112245729160, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4911125112245729160, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4911125112245729160, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9214147793827445063, guid: 8d23af62449ae49f99d4764708f3e30b, type: 3}
-      propertyPath: m_fontSize
-      value: 33.35
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

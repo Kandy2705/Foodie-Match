@@ -147,6 +147,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8402383340575043060, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -44.6208
+      objectReference: {fileID: 0}
+    - target: {fileID: 8402383340575043060, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 13.868
+      objectReference: {fileID: 0}
     - target: {fileID: 9200749560868768972, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
       propertyPath: m_Name
       value: HomePageMotionRoot
