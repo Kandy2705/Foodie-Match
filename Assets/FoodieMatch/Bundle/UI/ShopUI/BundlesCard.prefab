@@ -35,7 +35,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 142, y: -8.8367}
+  m_AnchoredPosition: {x: 142, y: -8.83667}
   m_SizeDelta: {x: 342.9526, y: -17.6733}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1832171710977427098
@@ -72,8 +72,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 221, y: 198}
+  m_AnchoredPosition: {x: 22, y: 0}
+  m_SizeDelta: {x: 297, y: 249}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6127120415323388423
 CanvasRenderer:
@@ -103,7 +103,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 9020309683659089575, guid: e7d652af476124bbba58a9f3e1b7d237, type: 3}
+  m_Sprite: {fileID: 6667325617402726463, guid: f09a596683b8b42d68f9c5f6afadb69b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -487,8 +487,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 2500
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 7b50e19209906400aa1a63814d6118c3, type: 2}
-  m_sharedMaterial: {fileID: -1580529860782755119, guid: 7b50e19209906400aa1a63814d6118c3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -799,8 +799,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Big Bundle
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bbde6455e750d4a1ea4ef7076832c2dc, type: 2}
-  m_sharedMaterial: {fileID: -1580529860782755119, guid: bbde6455e750d4a1ea4ef7076832c2dc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ff399321134864eaabdb0e571a602045, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: ff399321134864eaabdb0e571a602045, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1038,31 +1038,39 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_fontSize
-      value: 68
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_margin.w
-      value: 20.02752
+      value: 12.051353
+      objectReference: {fileID: 0}
+    - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+      propertyPath: m_margin.x
+      value: 7.9147263
+      objectReference: {fileID: 0}
+    - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
+      propertyPath: m_margin.z
+      value: 16.258636
       objectReference: {fileID: 0}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 7ae6f5f00e5dc4edfa5083ac156921d5, type: 2}
+      objectReference: {fileID: 11400000, guid: 66dd3602b606d4d5396aabc9ba67f410, type: 2}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_fontStyle
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_fontSizeBase
-      value: 68
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: -1580529860782755119, guid: 7ae6f5f00e5dc4edfa5083ac156921d5, type: 2}
+      objectReference: {fileID: -1580529860782755119, guid: 66dd3602b606d4d5396aabc9ba67f410, type: 2}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_characterSpacing
-      value: -4
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 3120034723020659302, guid: a618e59255a3b4c2abbb2064c2c46796, type: 3}
       propertyPath: m_hasFontAssetChanged

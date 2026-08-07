@@ -56,9 +56,9 @@ MonoBehaviour:
   _resourceBarView: {fileID: 4250100812085702141}
   _hardPlayButtonSprite: {fileID: 7158726796229424830, guid: 4f4c6305170cf4f2db6ea4496ba431ee, type: 3}
   _superHardPlayButtonSprite: {fileID: 5815313891412978213, guid: 881b3a9fd349e4be0a6ea67a07a69334, type: 3}
-  _normalPlayLevelFont: {fileID: 11400000, guid: 7ce276de56108418bb86abce5edfaf96, type: 2}
-  _hardPlayLevelFont: {fileID: 11400000, guid: 67239d8066960413d9d4bc7ca091cb05, type: 2}
-  _superHardPlayLevelFont: {fileID: 11400000, guid: 6e65d2bc4684746c0a9430974787c658, type: 2}
+  _normalPlayLevelFont: {fileID: 11400000, guid: 0095178d06968469fb4ad2292b24f4f1, type: 2}
+  _hardPlayLevelFont: {fileID: 11400000, guid: fa21fe646907e4d5d9c4992341372850, type: 2}
+  _superHardPlayLevelFont: {fileID: 11400000, guid: 890206b6c0817484a94aa4196b8663f9, type: 2}
 --- !u!1001 &8821646492971716820
 PrefabInstance:
   m_ObjectHideFlags: 0

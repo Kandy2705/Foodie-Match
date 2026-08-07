@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -2.2, y: -44.3}
+  m_AnchoredPosition: {x: -2, y: -44.3}
   m_SizeDelta: {x: 900, y: 103.20001}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1127753234604168285
@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Leaderboard
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bbde6455e750d4a1ea4ef7076832c2dc, type: 2}
-  m_sharedMaterial: {fileID: -1580529860782755119, guid: bbde6455e750d4a1ea4ef7076832c2dc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 96ab27bd5642b49c487a500f9e2d1418, type: 2}
+  m_sharedMaterial: {fileID: -1580529860782755119, guid: 96ab27bd5642b49c487a500f9e2d1418, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -92,17 +92,17 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 96
-  m_fontSizeBase: 96
+  m_fontSize: 100
+  m_fontSizeBase: 100
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 1
+  m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: -7.38
+  m_characterSpacing: -0.33
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1.5
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &4151679470156269413
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,7 +446,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: -46}
+  m_AnchoredPosition: {x: 0, y: -41.1}
   m_SizeDelta: {x: 644.629, y: 170.8815}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7940221478788653956
@@ -766,6 +766,10 @@ PrefabInstance:
     - target: {fileID: 2199778253261792541, guid: be04a465363454fc9b004ae357d9dd41, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2335162274103107607, guid: be04a465363454fc9b004ae357d9dd41, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 9.3
       objectReference: {fileID: 0}
     - target: {fileID: 5123970691428099358, guid: be04a465363454fc9b004ae357d9dd41, type: 3}
       propertyPath: m_Name

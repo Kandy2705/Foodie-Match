@@ -86,7 +86,7 @@ namespace FoodieMatch.UI.Home
             if (difficulty == LevelDifficulty.Hard ||
                 difficulty == LevelDifficulty.SuperHard)
             {
-                margin.y = 44f;
+                margin.y = 48f;
             }
             _playLevelText.margin = margin;
         }
