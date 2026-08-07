@@ -1213,6 +1213,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3698702895399697418, guid: 7aec692a1f4724729af38267c4e19537, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8542288996157177969, guid: 7aec692a1f4724729af38267c4e19537, type: 3}
       propertyPath: m_Name
       value: RankRowDefault (1)
