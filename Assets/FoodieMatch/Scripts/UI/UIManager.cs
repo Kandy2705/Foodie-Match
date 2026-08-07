@@ -103,7 +103,7 @@ namespace FoodieMatch.UI
         private WarningLevelView _levelWarningView;
         private CoinRewardOverlayView _coinRewardOverlayView;
         private readonly List<ActionFeedbackView> _actionFeedbackViews = new();
-        private bool _isBoosterGuideShowing;
+        private BoosterGuideFlowState _boosterGuideFlowState;
         private AddBoxFlowSource _addBoxFlowSource;
         private LeavePopupSource _leavePopupSource;
         private ReviveFlowContext _reviveFlowContext;
@@ -113,7 +113,6 @@ namespace FoodieMatch.UI
         private int _currentComboCount;
         private float _currentComboRemainingSeconds;
         private BoosterType _currentBoosterBuyType;
-        private BoosterType _currentBoosterGuideType;
         private int _pendingUnlockSlotIndex = -1;
         private Action<int> _pendingUnlockCallback;
         private Action _heartRefillCompleted;
@@ -864,7 +863,8 @@ namespace FoodieMatch.UI
         {
             CompleteCoinRewardImmediately();
             _pendingBoosterGuides.Clear();
-            _isBoosterGuideShowing = false;
+            _boosterGuideFlowState = BoosterGuideFlowState.Idle;
+            _gameplayHudView?.StopBoosterUnlockReward();
             _addBoxFlowSource = AddBoxFlowSource.None;
             _leavePopupSource = LeavePopupSource.None;
             _reviveFlowContext = null;
@@ -1049,23 +1049,23 @@ namespace FoodieMatch.UI
             }
 
             BoosterGuidePopupData popupData = BoosterGuidePopupData.FromCatalogEntry(entry);
-            _currentBoosterGuideType = boosterType;
-            _isBoosterGuideShowing = true;
+            _boosterGuideFlowState = BoosterGuideFlowState.ShowingGuide;
             RunUiTask(
                 ShowPopupAsync<BoosterGuidePopupView>(
                     popupData,
                     popup =>
                         popup.SetActions(
                             new BoosterGuidePopupViewActions(
-                                OnBoosterGuideClosed))),
+                                () => OnBoosterGuideConfirmed(
+                                    boosterType,
+                                    entry.Icon)))),
                 nameof(ShowBoosterGuidePopup),
-                () => _isBoosterGuideShowing = false);
+                OnBoosterGuideFlowFailed);
         }
 
         public void HideBoosterGuidePopup()
         {
             _popupManager.Hide<BoosterGuidePopupView>();
-            _isBoosterGuideShowing = false;
         }
 
         private void BindGameplayHudActions()
@@ -1608,7 +1608,7 @@ namespace FoodieMatch.UI
                 BoosterBuyContentEntry entry = entries[i];
 
                 if (entry == null ||
-                    GetBoosterUnlockLevel(entry.BoosterType) != levelNumber ||
+                    GetBoosterUnlockLevel(entry.BoosterType) > levelNumber ||
                     HasSeenBoosterGuide(entry.BoosterType))
                 {
                     continue;
@@ -1620,7 +1620,8 @@ namespace FoodieMatch.UI
 
         private void TryShowNextBoosterGuide()
         {
-            if (_isBoosterGuideShowing || _pendingBoosterGuides.Count == 0)
+            if (_boosterGuideFlowState != BoosterGuideFlowState.Idle ||
+                _pendingBoosterGuides.Count == 0)
             {
                 return;
             }
@@ -1637,16 +1638,60 @@ namespace FoodieMatch.UI
             ShowBoosterGuidePopup(entry.BoosterType);
         }
 
-        private void OnBoosterGuideClosed()
+        private void OnBoosterGuideConfirmed(
+            BoosterType boosterType,
+            Sprite icon)
         {
-            if (_boosterManager.TryClaimUnlockReward(
-                    _currentBoosterGuideType))
+            HideBoosterGuidePopup();
+
+            if (!BoosterBuyCatalogSO.TryGetButtonIndex(
+                    boosterType,
+                    out int boosterIndex))
+            {
+                _boosterManager.TryMarkGuideSeen(boosterType);
+                CompleteBoosterGuideFlow();
+                return;
+            }
+
+            _boosterGuideFlowState = BoosterGuideFlowState.PlayingReward;
+            RunUiTask(
+                PlayBoosterUnlockRewardAsync(
+                    boosterType,
+                    boosterIndex,
+                    icon),
+                nameof(PlayBoosterUnlockRewardAsync),
+                OnBoosterGuideFlowFailed);
+        }
+
+        private async Task PlayBoosterUnlockRewardAsync(
+            BoosterType boosterType,
+            int boosterIndex,
+            Sprite icon)
+        {
+            MotionResult result =
+                await _gameplayHudView.PlayBoosterUnlockRewardAsync(
+                    boosterIndex,
+                    icon,
+                    _boosterConfig.UnlockRewardAmount);
+
+            if (result == MotionResult.Completed &&
+                _boosterManager.TryClaimUnlockReward(boosterType))
             {
                 RefreshBoosterHud();
             }
 
-            HideBoosterGuidePopup();
+            CompleteBoosterGuideFlow();
+        }
+
+        private void CompleteBoosterGuideFlow()
+        {
+            _boosterGuideFlowState = BoosterGuideFlowState.Idle;
             TryShowNextBoosterGuide();
+        }
+
+        private void OnBoosterGuideFlowFailed()
+        {
+            CompleteBoosterGuideFlow();
         }
 
         private bool HasSeenBoosterGuide(BoosterType boosterType)
@@ -1710,7 +1755,8 @@ namespace FoodieMatch.UI
                 }
 
                 int unlockLevel = GetBoosterUnlockLevel(boosterType);
-                unlockedStates[i] = _currentLevelNumber >= unlockLevel;
+                unlockedStates[i] = _currentLevelNumber >= unlockLevel &&
+                    HasSeenBoosterGuide(boosterType);
                 _gameplayHudView.SetBoosterUnlockLevel(i, unlockLevel);
 
                 if (_boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
@@ -1727,7 +1773,12 @@ namespace FoodieMatch.UI
 
         private bool IsBoosterUnlocked(BoosterType boosterType)
         {
-            return _currentLevelNumber >= GetBoosterUnlockLevel(boosterType);
+            bool hasReachedUnlockLevel =
+                _currentLevelNumber >= GetBoosterUnlockLevel(boosterType);
+
+            return hasReachedUnlockLevel &&
+                (boosterType == BoosterType.Box ||
+                 HasSeenBoosterGuide(boosterType));
         }
 
         private int GetBoosterUnlockLevel(BoosterType boosterType)
@@ -1799,6 +1850,13 @@ namespace FoodieMatch.UI
             None,
             LockedPackage,
             Revive
+        }
+
+        private enum BoosterGuideFlowState
+        {
+            Idle,
+            ShowingGuide,
+            PlayingReward
         }
 
         private sealed class ReviveFlowContext

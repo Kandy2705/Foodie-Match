@@ -24,6 +24,9 @@ namespace FoodieMatch.UI.Gameplay
         [SerializeField] private Image _comboBarFillImage;
         [SerializeField] private ComboBarAnimController _comboBarAnimController;
 
+        [Header("Booster Unlock Reward")]
+        [SerializeField] private BoosterUnlockRewardView _boosterUnlockRewardView;
+
         [Header("Combo Feedback")]
         [SerializeField] private RectTransform _comboFeedbackRoot;
 
@@ -43,6 +46,7 @@ namespace FoodieMatch.UI.Gameplay
         {
             BindButtons();
             ResetCombo();
+            _boosterUnlockRewardView.Initialize();
         }
 
         private void OnDestroy()
@@ -55,6 +59,7 @@ namespace FoodieMatch.UI.Gameplay
         private void OnDisable()
         {
             HideTutorial();
+            _boosterUnlockRewardView.StopAndHide();
             _comboFeedbackPool?.ReleaseAll();
         }
 
@@ -359,6 +364,22 @@ namespace FoodieMatch.UI.Gameplay
             {
                 _boosterButtonViews[i].SetUnlocked(unlockedStates[i]);
             }
+        }
+
+        public Task<MotionResult> PlayBoosterUnlockRewardAsync(
+            int boosterIndex,
+            Sprite icon,
+            int amount)
+        {
+            return _boosterUnlockRewardView.PlayAsync(
+                icon,
+                amount,
+                _boosterButtonViews[boosterIndex].RewardTarget);
+        }
+
+        public void StopBoosterUnlockReward()
+        {
+            _boosterUnlockRewardView.StopAndHide();
         }
 
         private void BindButtons()

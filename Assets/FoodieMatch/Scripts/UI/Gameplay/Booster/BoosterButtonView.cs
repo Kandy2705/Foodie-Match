@@ -33,6 +33,7 @@ namespace FoodieMatch.UI.Gameplay.Booster
         private Sprite _defaultButtonSprite;
         private Sprite _defaultIconSprite;
         public bool IsUnlocked => _isUnlocked;
+        public RectTransform RewardTarget => (RectTransform)transform;
 
         private void Awake()
         {

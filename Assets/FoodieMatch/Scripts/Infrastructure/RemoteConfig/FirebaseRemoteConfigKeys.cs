@@ -33,6 +33,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             "booster_fridge_unlock_level";
         public const string BoxBoosterUnlockLevel =
             "booster_box_unlock_level";
+        public const string BoosterUnlockRewardAmount =
+            "booster_unlock_reward_amount";
         public const string PostLevelAdIntervalMinutes =
             "ads_post_level_interval_minutes";
         public const string LevelManifestVersion =

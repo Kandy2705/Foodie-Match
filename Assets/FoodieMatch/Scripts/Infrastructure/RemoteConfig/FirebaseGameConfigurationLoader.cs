@@ -131,6 +131,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     defaults.Booster.GetUnlockLevel(BoosterType.Fridge),
                 [FirebaseRemoteConfigKeys.BoxBoosterUnlockLevel] =
                     defaults.Booster.GetUnlockLevel(BoosterType.Box),
+                [FirebaseRemoteConfigKeys.BoosterUnlockRewardAmount] =
+                    defaults.Booster.UnlockRewardAmount,
                 [FirebaseRemoteConfigKeys.PostLevelAdIntervalMinutes] =
                     checked((int)defaults.Ads.PostLevelAdInterval.TotalMinutes),
                 [FirebaseRemoteConfigKeys.LevelManifestVersion] = 0,

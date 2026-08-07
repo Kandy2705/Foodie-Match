@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Domain.Booster;
 
@@ -10,11 +11,16 @@ namespace FoodieMatch.Core.Application.Booster
             (BoosterType[])Enum.GetValues(typeof(BoosterType));
 
         private readonly PlayerProfileService _playerProfileService;
+        private readonly IGameBoosterConfig _boosterConfig;
 
-        public BoosterManager(PlayerProfileService playerProfileService)
+        public BoosterManager(
+            PlayerProfileService playerProfileService,
+            IGameBoosterConfig boosterConfig)
         {
             _playerProfileService = playerProfileService ??
                 throw new ArgumentNullException(nameof(playerProfileService));
+            _boosterConfig = boosterConfig ??
+                throw new ArgumentNullException(nameof(boosterConfig));
         }
 
         public int GetCount(BoosterType type)
@@ -59,7 +65,14 @@ namespace FoodieMatch.Core.Application.Booster
 
         public bool TryClaimUnlockReward(BoosterType type)
         {
-            return _playerProfileService.TryClaimBoosterUnlockReward(type);
+            return _playerProfileService.TryClaimBoosterUnlockReward(
+                type,
+                _boosterConfig.UnlockRewardAmount);
+        }
+
+        public bool TryMarkGuideSeen(BoosterType type)
+        {
+            return _playerProfileService.TryMarkBoosterGuideSeen(type);
         }
     }
 }
