@@ -14,19 +14,24 @@ namespace FoodieMatch.Features.Board
             return index == 0 ? _foodAnchor : null;
         }
 
-        public bool TrySetHiddenFoodCount(int hiddenFoodCount)
+        public void SetupCounter(int hiddenFoodCount)
         {
-            return _counterView.TrySetHiddenFoodCount(hiddenFoodCount);
+            _counterView.Setup(hiddenFoodCount);
+        }
+
+        public void SetRemainingFoodCount(int hiddenFoodCount)
+        {
+            _counterView.SetRemainingFoodCount(hiddenFoodCount);
         }
 
         public override void ResetForUse()
         {
-            _counterView.TrySetHiddenFoodCount(0);
+            _counterView.ResetCounter();
         }
 
         public override void ResetForPool()
         {
-            _counterView.TrySetHiddenFoodCount(0);
+            _counterView.ResetCounter();
         }
     }
 }
