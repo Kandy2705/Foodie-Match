@@ -115,13 +115,6 @@ namespace FoodieMatch.Core.Domain.Level
                     nameof(foodTokenIds));
             }
 
-            if (trays.Count != 3)
-            {
-                throw new ArgumentException(
-                    "Single grill must contain exactly three hidden food trays.",
-                    nameof(trays));
-            }
-
             for (int i = 0; i < trays.Count; i++)
             {
                 if (trays[i].FoodTokenIds.Count != 1)

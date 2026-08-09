@@ -132,11 +132,6 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 return;
             }
 
-            if (grill.Trays.Count != 3)
-            {
-                result.AddError($"{grillPath}.trays must contain exactly three trays for a single grill.");
-            }
-
             for (int i = 0; i < grill.Trays.Count; i++)
             {
                 TrayDto tray = grill.Trays[i];
