@@ -1,79 +1,151 @@
 {
-  "schemaVersion": 1,
-  "levelOrder": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12
-  ],
-  "levels": [
-    {
-      "id": 1,
-      "difficulty": "normal",
-      "contentFile": "level_0001"
-    },
-    {
-      "id": 2,
-      "difficulty": "normal",
-      "contentFile": "level_0002"
-    },
-    {
-      "id": 3,
-      "difficulty": "hard",
-      "contentFile": "level_0003"
-    },
-    {
-      "id": 4,
-      "difficulty": "superHard",
-      "contentFile": "level_0004"
-    },
-    {
-      "id": 5,
-      "difficulty": "normal",
-      "contentFile": "level_0005"
-    },
-    {
-      "id": 6,
-      "difficulty": "normal",
-      "contentFile": "level_0006"
-    },
-    {
-      "id": 7,
-      "difficulty": "hard",
-      "contentFile": "level_0007"
-    },
-    {
-      "id": 8,
-      "difficulty": "superHard",
-      "contentFile": "level_0008"
-    },
-    {
-      "id": 9,
-      "difficulty": "normal",
-      "contentFile": "level_0009"
-    },
-    {
-      "id": 10,
-      "difficulty": "normal",
-      "contentFile": "level_0010"
-    },
-    {
-      "id": 11,
-      "difficulty": "normal",
-      "contentFile": "level_0011"
-    },
-    {
-      "id": 12,
-      "difficulty": "superHard",
-      "contentFile": "level_0012"
-    }
-  ]
+    "schemaVersion":  1,
+    "levelOrder":  [
+                       1,
+                       2,
+                       3,
+                       4,
+                       5,
+                       6,
+                       7,
+                       8,
+                       9,
+                       10,
+                       11,
+                       12,
+                       13,
+                       14,
+                       15,
+                       16,
+                       17,
+                       18,
+                       19,
+                       20,
+                       21,
+                       22,
+                       23,
+                       24
+                   ],
+    "levels":  [
+                   {
+                       "id":  1,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0001"
+                   },
+                   {
+                       "id":  2,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0002"
+                   },
+                   {
+                       "id":  3,
+                       "difficulty":  "hard",
+                       "contentFile":  "level_0003"
+                   },
+                   {
+                       "id":  4,
+                       "difficulty":  "superHard",
+                       "contentFile":  "level_0004"
+                   },
+                   {
+                       "id":  5,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0005"
+                   },
+                   {
+                       "id":  6,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0006"
+                   },
+                   {
+                       "id":  7,
+                       "difficulty":  "hard",
+                       "contentFile":  "level_0007"
+                   },
+                   {
+                       "id":  8,
+                       "difficulty":  "superHard",
+                       "contentFile":  "level_0008"
+                   },
+                   {
+                       "id":  9,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0009"
+                   },
+                   {
+                       "id":  10,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0010"
+                   },
+                   {
+                       "id":  11,
+                       "difficulty":  "hard",
+                       "contentFile":  "level_0011"
+                   },
+                   {
+                       "id":  12,
+                       "difficulty":  "superHard",
+                       "contentFile":  "level_0012"
+                   },
+                   {
+                       "id":  13,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0013"
+                   },
+                   {
+                       "id":  14,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0014"
+                   },
+                   {
+                       "id":  15,
+                       "difficulty":  "hard",
+                       "contentFile":  "level_0015"
+                   },
+                   {
+                       "id":  16,
+                       "difficulty":  "superHard",
+                       "contentFile":  "level_0016"
+                   },
+                   {
+                       "id":  17,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0017"
+                   },
+                   {
+                       "id":  18,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0018"
+                   },
+                   {
+                       "id":  19,
+                       "difficulty":  "hard",
+                       "contentFile":  "level_0019"
+                   },
+                   {
+                       "id":  20,
+                       "difficulty":  "superHard",
+                       "contentFile":  "level_0020"
+                   },
+                   {
+                       "id":  21,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0021"
+                   },
+                   {
+                       "id":  22,
+                       "difficulty":  "normal",
+                       "contentFile":  "level_0022"
+                   },
+                   {
+                       "id":  23,
+                       "difficulty":  "hard",
+                       "contentFile":  "level_0023"
+                   },
+                   {
+                       "id":  24,
+                       "difficulty":  "superHard",
+                       "contentFile":  "level_0024"
+                   }
+               ]
 }
