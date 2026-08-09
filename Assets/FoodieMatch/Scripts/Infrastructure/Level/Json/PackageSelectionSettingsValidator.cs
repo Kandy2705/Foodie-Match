@@ -5,6 +5,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
         public void Validate(
             PackageSelectionSettingsDto settings,
             string levelPath,
+            bool requireReadyNowPriority,
             LevelValidationResult result)
         {
             string settingsPath = $"{levelPath}.packageSelectionWeights";
@@ -15,14 +16,27 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 return;
             }
 
-            ValidateWeights(settings.Early, $"{settingsPath}.early", result);
-            ValidateWeights(settings.Middle, $"{settingsPath}.middle", result);
-            ValidateWeights(settings.Late, $"{settingsPath}.late", result);
+            ValidateWeights(
+                settings.Early,
+                $"{settingsPath}.early",
+                requireReadyNowPriority,
+                result);
+            ValidateWeights(
+                settings.Middle,
+                $"{settingsPath}.middle",
+                requireReadyNowPriority,
+                result);
+            ValidateWeights(
+                settings.Late,
+                $"{settingsPath}.late",
+                requireReadyNowPriority,
+                result);
         }
 
         private static void ValidateWeights(
             PackageSelectionWeightsDto weights,
             string weightsPath,
+            bool requireReadyNowPriority,
             LevelValidationResult result)
         {
             if (weights == null)
@@ -50,6 +64,20 @@ namespace FoodieMatch.Infrastructure.Level.Json
             if (totalWeight <= 0)
             {
                 result.AddError($"{weightsPath} must contain at least one positive weight.");
+            }
+
+            if (requireReadyNowPriority &&
+                weights.ReadyNow.Value <= weights.RackRescue.Value)
+            {
+                result.AddError(
+                    $"{weightsPath}.readyNow must be greater than rackRescue.");
+            }
+
+            if (requireReadyNowPriority &&
+                weights.RackRescue.Value <= weights.TopTray.Value)
+            {
+                result.AddError(
+                    $"{weightsPath}.rackRescue must be greater than topTray.");
             }
         }
 
