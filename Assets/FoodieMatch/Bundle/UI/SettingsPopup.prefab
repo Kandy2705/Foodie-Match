@@ -494,7 +494,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: abdcc8cd0582e44a0906eb20362f55e3, type: 2}
     - target: {fileID: 8503843817086359383, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_fontStyle
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8503843817086359383, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_fontSizeBase
@@ -506,7 +506,7 @@ PrefabInstance:
       objectReference: {fileID: 5495315089969489303, guid: abdcc8cd0582e44a0906eb20362f55e3, type: 2}
     - target: {fileID: 8503843817086359383, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_characterSpacing
-      value: -10
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 8503843817086359383, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_hasFontAssetChanged

@@ -96,9 +96,9 @@ MonoBehaviour:
   _currentPlayerRow: {fileID: 683831995196233602}
   _currentPlayerCanvasGroup: {fileID: 9004894609278580672}
   _revealDelay: 0
+  _podiumRevealDuration: 0.4
   _rowStagger: 0.08
-  _scaleUpDuration: 0.2
-  _settleDuration: 0.12
+  _rowRevealDuration: 0.5
 --- !u!1001 &4344828594166216676
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -354,6 +354,14 @@ PrefabInstance:
     - target: {fileID: 1999979106039294212, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
       propertyPath: m_Name
       value: LeaderBoardPageMotionRoot
+      objectReference: {fileID: 0}
+    - target: {fileID: 3122516963663996817, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6635860656310650852, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

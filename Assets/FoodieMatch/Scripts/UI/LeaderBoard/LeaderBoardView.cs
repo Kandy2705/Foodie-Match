@@ -16,8 +16,6 @@ namespace FoodieMatch.UI.LeaderBoard
         IMainMenuTabSelectionHandler
     {
         private const float VietnamUtcOffsetHours = 7f;
-        private const float ListOvershootScale = 1.1f;
-        private const float FeaturedOvershootScale = 1.2f;
         private const float RewardPreviewDuration = 3f;
         private const float RewardPreviewCloseDuration = 0.5f;
         private const int MaximumDisplayedPlayers = 99;
@@ -94,8 +92,10 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField, Min(0)] private int _virtualizationBufferRows = 2;
 
         [Header("Weekly Reveal")]
-        private RectTransform _weeklyPodiumRoot;
-        private CanvasGroup _weeklyPodiumCanvasGroup;
+        private RectTransform[] _weeklyPodiumPlayers =
+            Array.Empty<RectTransform>();
+        private CanvasGroup[] _weeklyPodiumPlayerCanvasGroups =
+            Array.Empty<CanvasGroup>();
         private RectTransform[] _weeklyRows = Array.Empty<RectTransform>();
         private CanvasGroup[] _weeklyRowCanvasGroups =
             Array.Empty<CanvasGroup>();
@@ -108,10 +108,16 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private CanvasGroup _currentPlayerCanvasGroup;
 
         [Header("Reveal Settings")]
-        [SerializeField, Min(0f)] private float _revealDelay = 0.08f;
-        [SerializeField, Min(0f)] private float _rowStagger = 0.08f;
-        [SerializeField, Min(0f)] private float _scaleUpDuration = 0.18f;
-        [SerializeField, Min(0f)] private float _settleDuration = 0.12f;
+        [SerializeField, Min(0f)] private float _revealDelay = 0.05f;
+
+        [SerializeField, Min(0f)]
+        private float _podiumRevealDuration = 0.45f;
+
+        [SerializeField, Min(0f)]
+        private float _rowStagger = 0.07f;
+
+        [SerializeField, Min(0f)]
+        private float _rowRevealDuration = 0.28f;
 
         private LeaderBoardTab _selectedTab;
         private readonly Dictionary<string, Sprite> _avatarsById =
@@ -400,9 +406,8 @@ namespace FoodieMatch.UI.LeaderBoard
                 _weeklyLayoutGroup = contentView.LayoutGroup;
                 _weeklyContentSizeFitter =
                     contentView.ContentSizeFitter;
-                _weeklyPodiumRoot = contentView.PodiumRoot;
-                _weeklyPodiumCanvasGroup =
-                    contentView.PodiumCanvasGroup;
+                CachePodiumRevealTargets(
+                    contentView.PodiumPlayers);
                 ConfigureListState(
                     _weeklyList,
                     contentView.PlayerRows,
@@ -433,16 +438,19 @@ namespace FoodieMatch.UI.LeaderBoard
         }
 
         private void ActivateLoadedContent(
-            LeaderBoardTab tab)
+    LeaderBoardTab tab)
         {
             StopRevealAnimation();
-            RestoreRevealTargets();
+
             ResetListToTop(tab);
             EnsureListInitialized(tab);
             UpdateCurrentPlayerDock(tab);
             BindCurrentPlayer(tab);
             UpdateWeeklyTimeRemaining();
-            PlayRevealAnimation(tab);
+
+            PrepareRevealTargets(tab);
+
+            PlayRevealAnimation(tab, false);
         }
 
         private void ReleaseActiveContent()
@@ -504,8 +512,10 @@ namespace FoodieMatch.UI.LeaderBoard
                 _weeklyLayoutGroup = null;
                 _weeklyContentSizeFitter = null;
                 _weeklyScrollDragRelay = null;
-                _weeklyPodiumRoot = null;
-                _weeklyPodiumCanvasGroup = null;
+                _weeklyPodiumPlayers =
+                    Array.Empty<RectTransform>();
+                _weeklyPodiumPlayerCanvasGroups =
+                    Array.Empty<CanvasGroup>();
                 _weeklyRows = Array.Empty<RectTransform>();
                 _weeklyRowCanvasGroups =
                     Array.Empty<CanvasGroup>();
@@ -676,6 +686,53 @@ namespace FoodieMatch.UI.LeaderBoard
                         player,
                         GetAvatar(player.avatarId));
                 }
+            }
+        }
+
+        private void CachePodiumRevealTargets(
+            LeaderBoardPodiumPlayerView[] podiumPlayers)
+        {
+            if (podiumPlayers == null ||
+                podiumPlayers.Length == 0)
+            {
+                _weeklyPodiumPlayers =
+                    Array.Empty<RectTransform>();
+                _weeklyPodiumPlayerCanvasGroups =
+                    Array.Empty<CanvasGroup>();
+                return;
+            }
+
+            int count = podiumPlayers.Length;
+            _weeklyPodiumPlayers =
+                new RectTransform[count];
+            _weeklyPodiumPlayerCanvasGroups =
+                new CanvasGroup[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                LeaderBoardPodiumPlayerView podiumPlayer =
+                    podiumPlayers[i];
+
+                if (podiumPlayer == null)
+                {
+                    continue;
+                }
+
+                _weeklyPodiumPlayers[i] =
+                    podiumPlayer.transform as RectTransform;
+
+                CanvasGroup canvasGroup =
+                    podiumPlayer.GetComponent<CanvasGroup>();
+
+                if (canvasGroup == null)
+                {
+                    canvasGroup =
+                        podiumPlayer.gameObject
+                            .AddComponent<CanvasGroup>();
+                }
+
+                _weeklyPodiumPlayerCanvasGroups[i] =
+                    canvasGroup;
             }
         }
 
@@ -1620,29 +1677,33 @@ namespace FoodieMatch.UI.LeaderBoard
             return _avatarsById[avatarId];
         }
 
-        private void PlayRevealAnimation(LeaderBoardTab tab)
+        private void PlayRevealAnimation(
+    LeaderBoardTab tab,
+    bool prepareTargets = true)
         {
-            PrepareRevealTargets(tab);
+            if (prepareTargets)
+            {
+                PrepareRevealTargets(tab);
+            }
 
-            Sequence sequence = Sequence.Create(useUnscaledTime: true);
+            Sequence sequence =
+                Sequence.Create(useUnscaledTime: true);
 
-            float featuredStartTime = _revealDelay;
-            float listStartTime = featuredStartTime;
+            float startTime = _revealDelay;
 
             if (tab == LeaderBoardTab.Weekly)
             {
-                sequence = InsertReveal(
+                sequence = InsertPodiumPlayers(
                     sequence,
-                    _weeklyPodiumRoot,
-                    _weeklyPodiumCanvasGroup,
-                    featuredStartTime,
-                    FeaturedOvershootScale);
+                    _weeklyPodiumPlayers,
+                    _weeklyPodiumPlayerCanvasGroups,
+                    startTime);
 
                 sequence = InsertRows(
                     sequence,
                     _weeklyRows,
                     _weeklyRowCanvasGroups,
-                    listStartTime);
+                    startTime);
             }
             else
             {
@@ -1650,33 +1711,60 @@ namespace FoodieMatch.UI.LeaderBoard
                     sequence,
                     _globalRows,
                     _globalRowCanvasGroups,
-                    listStartTime);
+                    startTime);
             }
 
             sequence = InsertReveal(
                 sequence,
                 _currentPlayerRow,
                 _currentPlayerCanvasGroup,
-                featuredStartTime,
-                FeaturedOvershootScale);
+                startTime,
+                _rowRevealDuration);
 
             _revealSequence = sequence;
+        }
+
+        private Sequence InsertPodiumPlayers(
+            Sequence sequence,
+            RectTransform[] players,
+            CanvasGroup[] canvasGroups,
+            float startTime)
+        {
+            int count = Mathf.Min(
+                players.Length,
+                canvasGroups.Length);
+
+            for (int i = 0; i < count; i++)
+            {
+                sequence = InsertReveal(
+                    sequence,
+                    players[i],
+                    canvasGroups[i],
+                    startTime,
+                    _podiumRevealDuration);
+            }
+
+            return sequence;
         }
 
         private Sequence InsertRows(
             Sequence sequence,
             RectTransform[] rows,
-            CanvasGroup[] rowCanvasGroups,
+            CanvasGroup[] canvasGroups,
             float startTime)
         {
-            for (int i = 0; i < rows.Length; i++)
+            int count = Mathf.Min(
+                rows.Length,
+                canvasGroups.Length);
+
+            for (int i = 0; i < count; i++)
             {
                 sequence = InsertReveal(
                     sequence,
                     rows[i],
-                    rowCanvasGroups[i],
+                    canvasGroups[i],
                     startTime + _rowStagger * i,
-                    ListOvershootScale);
+                    _rowRevealDuration);
             }
 
             return sequence;
@@ -1687,33 +1775,28 @@ namespace FoodieMatch.UI.LeaderBoard
             RectTransform target,
             CanvasGroup canvasGroup,
             float startTime,
-            float overshootScale)
+            float duration)
         {
-            float revealDuration =
-                _scaleUpDuration + _settleDuration;
+            if (target == null || canvasGroup == null)
+            {
+                return sequence;
+            }
 
             return sequence
                 .Insert(
                     startTime,
                     Tween.Scale(
                         target,
-                        Vector3.one * overshootScale,
-                        _scaleUpDuration,
-                        Ease.OutQuad))
-                .Insert(
-                    startTime + _scaleUpDuration,
-                    Tween.Scale(
-                        target,
                         Vector3.one,
-                        _settleDuration,
-                        Ease.OutBack))
+                        duration,
+                        Ease.OutQuad))
                 .Insert(
                     startTime,
                     Tween.Alpha(
                         canvasGroup,
                         0f,
                         1f,
-                        revealDuration,
+                        duration,
                         Ease.Linear));
         }
 
@@ -1721,9 +1804,9 @@ namespace FoodieMatch.UI.LeaderBoard
         {
             if (tab == LeaderBoardTab.Weekly)
             {
-                PrepareRevealTarget(
-                    _weeklyPodiumRoot,
-                    _weeklyPodiumCanvasGroup);
+                PrepareRows(
+                    _weeklyPodiumPlayers,
+                    _weeklyPodiumPlayerCanvasGroups);
                 PrepareRows(
                     _weeklyRows,
                     _weeklyRowCanvasGroups);
@@ -1744,7 +1827,16 @@ namespace FoodieMatch.UI.LeaderBoard
             RectTransform[] rows,
             CanvasGroup[] rowCanvasGroups)
         {
-            for (int i = 0; i < rows.Length; i++)
+            if (rows == null || rowCanvasGroups == null)
+            {
+                return;
+            }
+
+            int count = Mathf.Min(
+                rows.Length,
+                rowCanvasGroups.Length);
+
+            for (int i = 0; i < count; i++)
             {
                 PrepareRevealTarget(
                     rows[i],
@@ -1767,9 +1859,9 @@ namespace FoodieMatch.UI.LeaderBoard
 
         private void RestoreRevealTargets()
         {
-            RestoreRevealTarget(
-                _weeklyPodiumRoot,
-                _weeklyPodiumCanvasGroup);
+            RestoreRows(
+                _weeklyPodiumPlayers,
+                _weeklyPodiumPlayerCanvasGroups);
             RestoreRows(
                 _weeklyRows,
                 _weeklyRowCanvasGroups);
@@ -1785,7 +1877,16 @@ namespace FoodieMatch.UI.LeaderBoard
             RectTransform[] rows,
             CanvasGroup[] rowCanvasGroups)
         {
-            for (int i = 0; i < rows.Length; i++)
+            if (rows == null || rowCanvasGroups == null)
+            {
+                return;
+            }
+
+            int count = Mathf.Min(
+                rows.Length,
+                rowCanvasGroups.Length);
+
+            for (int i = 0; i < count; i++)
             {
                 RestoreRevealTarget(
                     rows[i],
