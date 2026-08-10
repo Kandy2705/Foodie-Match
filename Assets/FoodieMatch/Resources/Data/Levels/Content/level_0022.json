@@ -1,0 +1,522 @@
+{
+    "schemaVersion":  8,
+    "level":  {
+                  "id":  22,
+                  "difficulty":  "normal",
+                  "grillLayoutType":  "standard",
+                  "grillColumns":  [
+
+                                   ],
+                  "randomization":  {
+                                        "packageSeeds":  [
+                                                             2200001,
+                                                             2200002,
+                                                             2200003,
+                                                             2200004,
+                                                             2200005
+                                                         ],
+                                        "generatePackageSeedEachRun":  false,
+                                        "randomizeFoodVisualsEachRun":  true,
+                                        "fixedFoodVisualSeed":  9022
+                                    },
+                  "packageSelectionWeights":  {
+                                                  "early":  {
+                                                                "rackRescue":  23,
+                                                                "readyNow":  72,
+                                                                "topTray":  5
+                                                            },
+                                                  "middle":  {
+                                                                 "rackRescue":  25,
+                                                                 "readyNow":  65,
+                                                                 "topTray":  10
+                                                             },
+                                                  "late":  {
+                                                               "rackRescue":  37,
+                                                               "readyNow":  58,
+                                                               "topTray":  5
+                                                           }
+                                              },
+                  "movingGrillGroups":  [
+                                            {
+                                                "direction":  "right",
+                                                "grillIds":  [
+                                                                 1,
+                                                                 2,
+                                                                 3,
+                                                                 4,
+                                                                 5,
+                                                                 6
+                                                             ],
+                                                "movementSpeed":  1
+                                            }
+                                        ],
+                  "grills":  [
+                                 {
+                                     "id":  1,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  -7.5,
+                                                      "y":  1
+                                                  },
+                                     "foodIds":  [
+                                                     10,
+                                                     16,
+                                                     0
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       26,
+                                                                       31
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       41,
+                                                                       47,
+                                                                       53
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       57,
+                                                                       59,
+                                                                       0
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  2,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  -4.5,
+                                                      "y":  1
+                                                  },
+                                     "foodIds":  [
+                                                     22,
+                                                     11,
+                                                     16
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       37,
+                                                                       26,
+                                                                       0
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       41,
+                                                                       47
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       60,
+                                                                       57,
+                                                                       59
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  3,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  -1.5,
+                                                      "y":  1
+                                                  },
+                                     "foodIds":  [
+                                                     0,
+                                                     22,
+                                                     11
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       32,
+                                                                       38,
+                                                                       26
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       54,
+                                                                       42,
+                                                                       0
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       60,
+                                                                       58
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  4,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  1.5,
+                                                      "y":  1
+                                                  },
+                                     "foodIds":  [
+                                                     17,
+                                                     23,
+                                                     11
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       33,
+                                                                       38
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       48,
+                                                                       54,
+                                                                       42
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  5,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  4.5,
+                                                      "y":  1
+                                                  },
+                                     "foodIds":  [
+                                                     18,
+                                                     0,
+                                                     23
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       27,
+                                                                       33,
+                                                                       39
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       48,
+                                                                       54
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  6,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  7.5,
+                                                      "y":  1
+                                                  },
+                                     "foodIds":  [
+                                                     0,
+                                                     12,
+                                                     18
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       27,
+                                                                       0,
+                                                                       33
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       43,
+                                                                       49,
+                                                                       55
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  7,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  -2.65,
+                                                      "y":  3.8
+                                                  },
+                                     "foodIds":  [
+                                                     24,
+                                                     12,
+                                                     18
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       40,
+                                                                       28
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       44,
+                                                                       0,
+                                                                       49
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  8,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  2.65,
+                                                      "y":  3.8
+                                                  },
+                                     "foodIds":  [
+                                                     25,
+                                                     0,
+                                                     13
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       34,
+                                                                       40,
+                                                                       28
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       55,
+                                                                       44
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  9,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  -2.65,
+                                                      "y":  -1.8
+                                                  },
+                                     "foodIds":  [
+                                                     19,
+                                                     25,
+                                                     13
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       34,
+                                                                       0,
+                                                                       40
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       50,
+                                                                       56,
+                                                                       44
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  10,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  0,
+                                                      "y":  -1.8
+                                                  },
+                                     "foodIds":  [
+                                                     19,
+                                                     25,
+                                                     14
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       29,
+                                                                       35
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       51,
+                                                                       0,
+                                                                       45
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  11,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  -3.28,
+                                                      "y":  -4.6
+                                                  },
+                                     "foodIds":  [
+                                                     20,
+                                                     0,
+                                                     15
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       30,
+                                                                       35,
+                                                                       30
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       51,
+                                                                       45
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  12,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  3.28,
+                                                      "y":  -4.6
+                                                  },
+                                     "foodIds":  [
+                                                     20,
+                                                     15,
+                                                     21
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       36,
+                                                                       0,
+                                                                       30
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       51,
+                                                                       46,
+                                                                       52
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  13,
+                                     "type":  "single",
+                                     "position":  {
+                                                      "x":  0,
+                                                      "y":  3.8
+                                                  },
+                                     "foodIds":  [
+                                                     1
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       2
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       3
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       4
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       5
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  14,
+                                     "type":  "single",
+                                     "position":  {
+                                                      "x":  2.65,
+                                                      "y":  -1.8
+                                                  },
+                                     "foodIds":  [
+                                                     6
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       7
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       8
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       9
+                                                                   ]
+                                                   }
+                                               ]
+                                 },
+                                 {
+                                     "id":  15,
+                                     "type":  "standard",
+                                     "position":  {
+                                                      "x":  0,
+                                                      "y":  -4.6
+                                                  },
+                                     "foodIds":  [
+                                                     0,
+                                                     15,
+                                                     22
+                                                 ],
+                                     "trays":  [
+                                                   {
+                                                       "foodIds":  [
+                                                                       37,
+                                                                       31,
+                                                                       37
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       47,
+                                                                       52,
+                                                                       0
+                                                                   ]
+                                                   },
+                                                   {
+                                                       "foodIds":  [
+                                                                       0,
+                                                                       59,
+                                                                       61
+                                                                   ]
+                                                   }
+                                               ]
+                                 }
+                             ]
+              }
+}

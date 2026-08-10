@@ -6,8 +6,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class GrillMovementGroupValidator
     {
-        private const int MinimumMovingGrillCount = 8;
+        private const int MinimumMovingGrillCount = 4;
         private const int MaximumMovingGrillCount = 12;
+        private const int MaximumMovingGrillTrayCount = 3;
         private const float PositionTolerance = 0.001f;
 
         public void Validate(
@@ -227,9 +228,12 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 result.AddError($"{grillIdPath} must reference a standard grill.");
             }
 
-            if (grill.Trays != null && grill.Trays.Count > 0)
+            if (grill.Trays != null &&
+                grill.Trays.Count > MaximumMovingGrillTrayCount)
             {
-                result.AddError($"{grillIdPath} must reference a grill without trays.");
+                result.AddError(
+                    $"{grillIdPath} cannot reference a grill with more than " +
+                    $"{MaximumMovingGrillTrayCount} trays.");
             }
         }
 

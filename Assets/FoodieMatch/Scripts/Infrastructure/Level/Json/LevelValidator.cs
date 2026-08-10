@@ -5,6 +5,9 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class LevelValidator
     {
+        private const int FirstStandardLevelId = 3;
+        private const int MinimumStandardLevelGrillCount = 8;
+
         private readonly PackageSelectionSettingsValidator _packageSelectionValidator;
         private readonly LevelRandomSettingsValidator _randomSettingsValidator;
         private readonly GrillLayoutValidator _grillLayoutValidator;
@@ -39,12 +42,14 @@ namespace FoodieMatch.Infrastructure.Level.Json
             }
 
             ValidateIdentity(level, levelPath, result);
+            ValidateGrillCount(level, levelPath, result);
             GrillLayoutType? layoutType =
                 ValidateGrillLayoutSchema(level, levelPath, result);
             _randomSettingsValidator.Validate(level.RandomSettings, levelPath, result);
             _packageSelectionValidator.Validate(
                 level.PackageSelectionSettings,
                 levelPath,
+                level.Id >= FirstStandardLevelId,
                 result);
             _grillLayoutValidator.Validate(level.Grills, levelPath, result);
             LevelTutorialValidator.Validate(level, levelPath, result);
@@ -60,6 +65,25 @@ namespace FoodieMatch.Infrastructure.Level.Json
                 level.MovingGrillGroups,
                 levelPath,
                 result);
+        }
+
+        private static void ValidateGrillCount(
+            LevelDto level,
+            string levelPath,
+            LevelValidationResult result)
+        {
+            if (level.Id < FirstStandardLevelId || level.Grills == null)
+            {
+                return;
+            }
+
+            if (level.Grills.Count < MinimumStandardLevelGrillCount)
+            {
+                result.AddError(
+                    $"{levelPath}.grills must contain at least " +
+                    $"{MinimumStandardLevelGrillCount} grills from level " +
+                    $"{FirstStandardLevelId} onward.");
+            }
         }
 
         private static void ValidateIdentity(

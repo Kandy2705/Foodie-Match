@@ -135,7 +135,8 @@ namespace FoodieMatch.Features.Board
                     return false;
                 }
 
-                return singleGrillView.TrySetHiddenFoodCount(grillModel.TrayCount);
+                singleGrillView.SetupCounter(grillModel.TrayCount);
+                return true;
             }
 
             if (grillView is not GrillView standardGrillView)
@@ -655,11 +656,12 @@ namespace FoodieMatch.Features.Board
                 !_grillViews.TryGetValue(
                     grillModel.PositionIndex,
                     out GrillViewBase grillViewBase) ||
-                grillViewBase is not SingleGrillView singleGrillView ||
-                !singleGrillView.TrySetHiddenFoodCount(grillModel.TrayCount))
+                grillViewBase is not SingleGrillView singleGrillView)
             {
                 return false;
             }
+
+            singleGrillView.SetRemainingFoodCount(grillModel.TrayCount);
 
             List<FoodItemView> foodItems = SpawnFoodItems(
                 grillModel.PositionIndex,
