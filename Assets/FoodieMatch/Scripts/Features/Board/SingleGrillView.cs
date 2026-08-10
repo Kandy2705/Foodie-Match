@@ -26,11 +26,13 @@ namespace FoodieMatch.Features.Board
 
         public override void ResetForUse()
         {
+            StopIntroMotion();
             _counterView.ResetCounter();
         }
 
         public override void ResetForPool()
         {
+            StopIntroMotion();
             _counterView.ResetCounter();
         }
     }

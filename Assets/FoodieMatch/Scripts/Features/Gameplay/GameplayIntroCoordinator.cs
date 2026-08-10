@@ -39,6 +39,7 @@ namespace FoodieMatch.Features.Gameplay
         {
             _packageGroupView.StopInitialEnterMotion();
             _waitingRackView.StopIntroMotion();
+            _boardLayoutView.StopGrillIntroMotion();
             _session = null;
         }
 
@@ -55,9 +56,12 @@ namespace FoodieMatch.Features.Gameplay
                 _packageGroupView.PlayInitialEnterAsync();
             Task<MotionResult> waitingRackMotion =
                 _waitingRackView.PlayIntroAsync();
+            Task<MotionResult> grillMotion =
+                _boardLayoutView.PlayGrillIntroAsync();
             MotionResult[] results = await Task.WhenAll(
                 packageMotion,
-                waitingRackMotion);
+                waitingRackMotion,
+                grillMotion);
 
             if (CanContinue(session))
             {
