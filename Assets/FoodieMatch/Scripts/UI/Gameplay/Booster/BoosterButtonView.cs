@@ -28,6 +28,7 @@ namespace FoodieMatch.UI.Gameplay.Booster
         private int _currentCount;
         private int _unlockLevel = 1;
         private bool _isUnlocked = true;
+        private bool _isInputEnabled = true;
         private Sprite _lockedButtonSprite;
         private Sprite _lockedIconSprite;
         private Sprite _defaultButtonSprite;
@@ -82,6 +83,12 @@ namespace FoodieMatch.UI.Gameplay.Booster
         {
             _currentCount = Mathf.Max(0, count);
             RefreshBadgeVisuals();
+        }
+
+        public void SetInputEnabled(bool inputEnabled)
+        {
+            _isInputEnabled = inputEnabled;
+            RefreshButtonInteractable();
         }
 
         private void OnButtonClicked()
@@ -151,7 +158,13 @@ namespace FoodieMatch.UI.Gameplay.Booster
                 _levelLockedText.gameObject.SetActive(false);
             }
 
-            _button.interactable = _isUnlocked;
+            RefreshButtonInteractable();
+        }
+
+        private void RefreshButtonInteractable()
+        {
+            _button.interactable =
+                _isUnlocked && _isInputEnabled;
         }
 
         private void RefreshBadgeVisuals()

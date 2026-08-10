@@ -53,6 +53,7 @@ namespace FoodieMatch.Features.Gameplay
         private StorageBoosterCoordinator _storageBoosterCoordinator;
         private SwapBoosterCoordinator _swapBoosterCoordinator;
         private FridgeBoosterCoordinator _fridgeBoosterCoordinator;
+        private GameplayIntroCoordinator _gameplayIntroCoordinator;
         private GameplaySession _session;
         private GameplayNavigationActions _navigationActions;
         private bool _waitingRackFullResolutionPending;
@@ -68,6 +69,7 @@ namespace FoodieMatch.Features.Gameplay
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
             _boardLayoutView?.StopMotions();
+            _gameplayIntroCoordinator?.EndSession();
             UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
             _waitingRackAutoFillCoordinator?.EndSession();
@@ -126,8 +128,7 @@ namespace FoodieMatch.Features.Gameplay
 
         public void StartLevel(
             LevelDefinition level,
-            GameplayNavigationActions navigationActions,
-            bool enableInput)
+            GameplayNavigationActions navigationActions)
         {
             int levelNumber = level.Id;
 
@@ -196,24 +197,18 @@ namespace FoodieMatch.Features.Gameplay
             _foodSelectionTutorialCoordinator.Start(
                 _session.Level.Tutorial,
                 _session.Board);
-            StartTutorialPresentation();
             _waitingRackView.Clear();
             _packageDeliveryCoordinator.BeginSession(_session);
+            _gameplayIntroCoordinator.BeginSession(_session);
             SubscribeLockedPackages();
             _waitingRackAutoFillCoordinator.BeginSession(_session);
             _grillCompletionCoordinator.BeginSession(_session);
             _fridgeBoosterCoordinator?.BeginSession();
             _session.StartPlaying();
-
-            if (enableInput)
-            {
-                _gameplayWorldClickSfx.StartListening();
-            }
-            else
-            {
-                _session.DisableInput();
-                _boardLayoutView.SetRegisteredFoodInteractable(false);
-            }
+            _session.DisableInput();
+            _boardLayoutView.SetRegisteredFoodInteractable(false);
+            _requiredPackageGroupView.SetLockedPackagesInteractable(false);
+            _uiManager.SetGameplayControlsInteractable(false);
 
             Debug.Log(
                 $"Start Level {levelNumber} with package seed " +
@@ -227,7 +222,15 @@ namespace FoodieMatch.Features.Gameplay
 
         public void EnableGameplayInput()
         {
+            StartTutorialPresentation();
+            _requiredPackageGroupView.SetLockedPackagesInteractable(true);
+            _uiManager.SetGameplayControlsInteractable(true);
             ResumeGameplayInput(_session);
+        }
+
+        public Task<MotionResult> PlayIntroAsync()
+        {
+            return _gameplayIntroCoordinator.PlayAsync(_session);
         }
 
         public void SetPresentationActive(bool active)
@@ -241,6 +244,7 @@ namespace FoodieMatch.Features.Gameplay
             _sessionGuard.EndSession();
             _gameplayMotionPresenter?.CancelAllMotions();
             _boardLayoutView?.StopMotions();
+            _gameplayIntroCoordinator?.EndSession();
             _waitingRackFullResolutionPending = false;
             UnsubscribeLockedPackages();
             _packageDeliveryCoordinator?.EndSession();
@@ -498,6 +502,11 @@ namespace FoodieMatch.Features.Gameplay
 
         private void CreateCoordinators()
         {
+            _gameplayIntroCoordinator = new(
+                _sessionGuard,
+                _gameplayAudioPresenter,
+                _requiredPackageGroupView,
+                _boardLayoutView);
             _packageDeliveryCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _requiredPackageLifecycleUseCase,
                 _requiredPackageGroupView, _foodVisualResolver, _foodItemViewPool, _gameplayEvents);

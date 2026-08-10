@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Features.Effects;
 using FoodieMatch.Features.Motion;
@@ -165,6 +166,65 @@ namespace FoodieMatch.Features.RequiredPackage
             }
 
             locked.gameObject.SetActive(active);
+        }
+
+        public void SetLockedPackagesInteractable(bool interactable)
+        {
+            for (int i = 0; i < _lockedPackages.Length; i++)
+            {
+                LockedRequiredPackageView locked = _lockedPackages[i];
+
+                if (locked.gameObject.activeSelf)
+                {
+                    locked.SetInteractable(interactable);
+                }
+            }
+        }
+
+        public async Task<MotionResult> PlayInitialEnterAsync()
+        {
+            List<PackageLayoutItem> visibleItems =
+                GetVisibleLayoutItems();
+            List<Task<MotionResult>> motions =
+                new(visibleItems.Count);
+
+            for (int i = 0; i < visibleItems.Count; i++)
+            {
+                PackageLayoutItem item = visibleItems[i];
+                int slotIndex = item.SlotIndex;
+                bool lockedVisible =
+                    _lockedPackages[slotIndex].gameObject.activeSelf;
+                Transform motionTarget = lockedVisible
+                    ? item.Root
+                    : null;
+                bool enterFromRight =
+                    slotIndex >= LevelRules.ActivePackageCount;
+
+                motions.Add(
+                    _packages[slotIndex].PlayInitialEnterAsync(
+                        motionTarget,
+                        enterFromRight));
+            }
+
+            MotionResult[] results = await Task.WhenAll(motions);
+
+            for (int i = 0; i < results.Length; i++)
+            {
+                if (results[i] != MotionResult.Completed)
+                {
+                    return results[i];
+                }
+            }
+
+            return MotionResult.Completed;
+        }
+
+        public void StopInitialEnterMotion()
+        {
+            for (int i = 0; i < _packages.Length; i++)
+            {
+                _packages[i].StopMotion();
+            }
         }
 
         public RequiredPackageView GetPackageAt(int packageIndex)

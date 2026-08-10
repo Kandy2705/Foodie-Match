@@ -113,7 +113,7 @@ namespace FoodieMatch.Features.Board
             }
 
             StartStackedGrillLayout(board);
-            StartGrillMovement(
+            PrepareGrillMovement(
                 board,
                 movementGroups);
         }
@@ -176,6 +176,11 @@ namespace FoodieMatch.Features.Board
         {
             _grillMovementController?.StopMovement();
             _grillMovementController = null;
+        }
+
+        public void StartGrillMovement()
+        {
+            _grillMovementController?.StartMovement();
         }
 
         public bool TryCollectActiveFoodFromTopTrays(
@@ -1036,7 +1041,7 @@ namespace FoodieMatch.Features.Board
             _grillViews.Clear();
         }
 
-        private void StartGrillMovement(
+        private void PrepareGrillMovement(
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
                 movementGroups)
@@ -1056,7 +1061,6 @@ namespace FoodieMatch.Features.Board
                         board,
                         movementGroups,
                         _grillViews);
-                _grillMovementController.StartMovement();
             }
             catch (Exception exception)
             {
