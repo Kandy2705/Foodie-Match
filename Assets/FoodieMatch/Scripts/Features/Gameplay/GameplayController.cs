@@ -506,6 +506,7 @@ namespace FoodieMatch.Features.Gameplay
                 _sessionGuard,
                 _gameplayAudioPresenter,
                 _requiredPackageGroupView,
+                _waitingRackView,
                 _boardLayoutView);
             _packageDeliveryCoordinator = new(
                 _sessionGuard, _gameplayMotionPresenter, _gameplayAudioPresenter, _requiredPackageLifecycleUseCase,

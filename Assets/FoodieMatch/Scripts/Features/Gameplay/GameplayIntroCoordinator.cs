@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Features.Board;
 using FoodieMatch.Features.Motion;
 using FoodieMatch.Features.RequiredPackage;
+using FoodieMatch.Features.WaitingRack;
 
 namespace FoodieMatch.Features.Gameplay
 {
@@ -10,6 +11,7 @@ namespace FoodieMatch.Features.Gameplay
         private readonly GameplaySessionGuard _sessionGuard;
         private readonly GameplayAudioPresenter _audioPresenter;
         private readonly RequiredPackageGroupView _packageGroupView;
+        private readonly WaitingRackView _waitingRackView;
         private readonly BoardLayoutView _boardLayoutView;
 
         private GameplaySession _session;
@@ -18,11 +20,13 @@ namespace FoodieMatch.Features.Gameplay
             GameplaySessionGuard sessionGuard,
             GameplayAudioPresenter audioPresenter,
             RequiredPackageGroupView packageGroupView,
+            WaitingRackView waitingRackView,
             BoardLayoutView boardLayoutView)
         {
             _sessionGuard = sessionGuard;
             _audioPresenter = audioPresenter;
             _packageGroupView = packageGroupView;
+            _waitingRackView = waitingRackView;
             _boardLayoutView = boardLayoutView;
         }
 
@@ -34,6 +38,7 @@ namespace FoodieMatch.Features.Gameplay
         public void EndSession()
         {
             _packageGroupView.StopInitialEnterMotion();
+            _waitingRackView.StopIntroMotion();
             _session = null;
         }
 
@@ -46,15 +51,28 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             _audioPresenter.PlayPackageEntering();
-            MotionResult result =
-                await _packageGroupView.PlayInitialEnterAsync();
+            Task<MotionResult> packageMotion =
+                _packageGroupView.PlayInitialEnterAsync();
+            Task<MotionResult> waitingRackMotion =
+                _waitingRackView.PlayIntroAsync();
+            MotionResult[] results = await Task.WhenAll(
+                packageMotion,
+                waitingRackMotion);
 
             if (CanContinue(session))
             {
                 _boardLayoutView.StartGrillMovement();
             }
 
-            return result;
+            for (int i = 0; i < results.Length; i++)
+            {
+                if (results[i] != MotionResult.Completed)
+                {
+                    return results[i];
+                }
+            }
+
+            return MotionResult.Completed;
         }
 
         private bool CanContinue(GameplaySession session)
