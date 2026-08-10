@@ -282,13 +282,6 @@ namespace FoodieMatch.Core.Domain.Grill
                     nameof(activeFoodTokenIds));
             }
 
-            if (trays.Count > 3)
-            {
-                throw new ArgumentException(
-                    "Single grill cannot contain more than three hidden food trays.",
-                    nameof(trays));
-            }
-
             for (int i = 0; i < trays.Count; i++)
             {
                 if (trays[i].SlotCount != 1)

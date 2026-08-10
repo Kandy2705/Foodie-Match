@@ -35,19 +35,31 @@ namespace FoodieMatch.Infrastructure.Level
 
         public async Task<LevelDefinition> LoadLevelAsync(int levelNumber)
         {
-            if (TryLoadRemoteLevel(levelNumber, out LevelDefinition level))
+            if (TryLoadRemoteLevel(
+                    levelNumber,
+                    out LevelDefinition level,
+                    out string remoteError))
             {
                 return level;
             }
 
-            return await _resourcesRepository.LoadLevelAsync(levelNumber);
+            try
+            {
+                return await _resourcesRepository.LoadLevelAsync(levelNumber);
+            }
+            catch (InvalidOperationException) when (remoteError != null)
+            {
+                throw new InvalidOperationException(remoteError);
+            }
         }
 
         private bool TryLoadRemoteLevel(
             int levelNumber,
-            out LevelDefinition level)
+            out LevelDefinition level,
+            out string error)
         {
             level = null;
+            error = null;
 
             if (!_manifestLoader.TryGetManifest(
                     out RemoteLevelManifestDto manifest) ||
@@ -69,7 +81,8 @@ namespace FoodieMatch.Infrastructure.Level
                     out LevelContentDto content,
                     out string parseError))
             {
-                throw new InvalidOperationException(parseError);
+                error = parseError;
+                return false;
             }
 
             LevelValidationResult validationResult = new();
@@ -78,10 +91,10 @@ namespace FoodieMatch.Infrastructure.Level
 
             if (!validationResult.IsValid)
             {
-                throw new InvalidOperationException(
-                    string.Join(
-                        Environment.NewLine,
-                        validationResult.Errors));
+                error = string.Join(
+                    Environment.NewLine,
+                    validationResult.Errors);
+                return false;
             }
 
             level = _mapper.Map(content);
