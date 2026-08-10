@@ -6,7 +6,7 @@ namespace FoodieMatch.Infrastructure.Level.Json
 {
     public sealed class GrillMovementGroupValidator
     {
-        private const int MinimumMovingGrillCount = 8;
+        private const int MinimumMovingGrillCount = 4;
         private const int MaximumMovingGrillCount = 12;
         private const int MaximumMovingGrillTrayCount = 3;
         private const float PositionTolerance = 0.001f;

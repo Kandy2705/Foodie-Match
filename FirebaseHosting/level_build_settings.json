@@ -1,11 +1,11 @@
 {
-  "manifestVersion": 11,
+  "manifestVersion": 12,
   "packVersions": [
-    9,
-    7,
-    7,
-    3,
-    1,
-    1
+    10,
+    8,
+    8,
+    4,
+    2,
+    2
   ]
 }
