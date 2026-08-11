@@ -134,8 +134,7 @@ namespace FoodieMatch.Features.Gameplay
             if (!_boardLayoutView.CompleteTopTrayFoodMoveAt(
                     grillModel,
                     moveVisuals,
-                    foodItemIndex,
-                    session.CanSelectFood))
+                    foodItemIndex))
             {
                 Debug.LogError(
                     $"Could not complete top tray food {foodItemIndex} move " +

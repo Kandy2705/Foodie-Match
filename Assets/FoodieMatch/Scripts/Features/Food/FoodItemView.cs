@@ -87,6 +87,7 @@ namespace FoodieMatch.Features.Food
         public float TopTrayToGrillFlightDuration => _topTrayToGrillFlightDuration;
         public FoodItemVisualState VisualState { get; private set; }
         public Bounds ClickBounds => _clickCollider.bounds;
+        public float InteractionBottomY => _spriteRenderer.bounds.min.y;
 
         public event Action<FoodItemView> Selected;
 

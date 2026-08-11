@@ -75,8 +75,7 @@ namespace FoodieMatch.Features.Gameplay
 
             if (!_boardLayoutView.CompleteSingleGrillReveal(
                     grillModel,
-                    foodItemView,
-                    session.CanSelectFood))
+                    foodItemView))
             {
                 Debug.LogError($"Could not complete food reveal on single grill {grillModel.PositionIndex}.");
                 RevealFailed?.Invoke(session);

@@ -236,6 +236,7 @@ namespace FoodieMatch.App
                 appRoot.FridgeBoosterAnchors,
                 appRoot.GameplayMotionPresenter,
                 gameplayAudioPresenter,
+                gameplayPointerInput,
                 gameplayWorldClickSfx,
                 appRoot.FoodVisualResolver,
                 appRoot.GameplayPoolRoot.FoodItems,
