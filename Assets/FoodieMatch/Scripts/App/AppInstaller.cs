@@ -34,6 +34,7 @@ using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.AddressableAssets;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace FoodieMatch.App
 {
@@ -148,8 +149,13 @@ namespace FoodieMatch.App
             playerProfileService.SaveFailed += LogPlayerProfileSaveFailure;
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
+            GameplayPointerInput gameplayPointerInput =
+                appRoot.GameplayPointerInput;
+            gameplayPointerInput.Construct(EventSystem.current);
             GameplayWorldClickSfx gameplayWorldClickSfx = appRoot.GameplayWorldClickSfx;
-            gameplayWorldClickSfx.Construct(audioService);
+            gameplayWorldClickSfx.Construct(
+                audioService,
+                gameplayPointerInput);
             Camera worldCamera = Camera.main;
 
             worldCamera
