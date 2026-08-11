@@ -14,6 +14,14 @@ namespace FoodieMatch.UI.Navigation
         private static readonly int IsSelectedHash =
             Animator.StringToHash("IsSelected");
 
+        private static readonly int SelectedStateHash =
+            Animator.StringToHash(
+                "Base Layer.BottomNavTab_Selected");
+
+        private static readonly int ReturnStateHash =
+            Animator.StringToHash(
+                "Base Layer.BottomNavTab_Return");
+
         [Serializable]
         private sealed class TabBinding
         {
@@ -70,6 +78,9 @@ namespace FoodieMatch.UI.Navigation
         private RectTransform _selectionIndicator;
 
         [SerializeField]
+        private RectTransform _selectedBackground;
+
+        [SerializeField]
         private Animator _selectionAnimator;
 
         [SerializeField]
@@ -77,6 +88,16 @@ namespace FoodieMatch.UI.Navigation
 
         [SerializeField]
         private TMP_Text _selectionLabel;
+
+        [SerializeField, Min(0f)]
+        private float _deselectDuration = 0.1f;
+
+        [SerializeField, Min(0f)]
+        private float _backgroundSlideDuration = 0.1f;
+
+        [SerializeField]
+        private Ease _backgroundSlideEase =
+            Ease.OutCubic;
 
         [Header("Tabs")]
         [SerializeField]
@@ -97,6 +118,11 @@ namespace FoodieMatch.UI.Navigation
         private TabBinding _currentTab;
         private bool _isInitialized;
         private bool _isTransitioning;
+        private Tween _backgroundSlideTween;
+        private RectTransform _returnIndicator;
+        private Animator _returnAnimator;
+        private Image _returnIcon;
+        private TMP_Text _returnLabel;
         private Action<BottomNavigationTab> _tabPrepareHandler;
         private Func<BottomNavigationTab, Task> _tabLoadHandler;
 
@@ -241,6 +267,8 @@ namespace FoodieMatch.UI.Navigation
                 return;
             }
 
+            InitializeReturnIndicator();
+
             TabBinding initialBinding =
                 FindBinding(_initialTab);
 
@@ -354,17 +382,10 @@ namespace FoodieMatch.UI.Navigation
             TabBinding previousBinding =
                 _currentTab;
 
-            SetNormalIconVisible(
-                previousBinding,
-                true);
+            StartReturnAnimation(
+                previousBinding);
 
-            _selectionAnimator.SetBool(
-                IsSelectedHash,
-                false);
-
-            _selectionAnimator.Update(0f);
-
-            MoveIndicatorImmediately(
+            MoveIndicatorWithBackgroundSlide(
                 selectedBinding);
 
             UpdateIndicatorContent(
@@ -374,12 +395,15 @@ namespace FoodieMatch.UI.Navigation
                 selectedBinding,
                 false);
 
-            _selectionAnimator.SetBool(
-                IsSelectedHash,
-                true);
+            PlaySelectedAnimation();
 
             BringScreenToFront(
                 selectedBinding);
+
+            Task switchTask =
+                SwitchScreenAsync(
+                    previousBinding,
+                    selectedBinding);
 
             if (!requiresLoad)
             {
@@ -387,9 +411,20 @@ namespace FoodieMatch.UI.Navigation
                     selectedBinding.Tab);
             }
 
-            await SwitchScreenAsync(
+            await Tween.Delay(
+                _deselectDuration);
+
+            SetNormalIconVisible(
                 previousBinding,
-                selectedBinding);
+                true);
+
+            if (_returnIndicator != null)
+            {
+                _returnIndicator.gameObject.SetActive(
+                    false);
+            }
+
+            await switchTask;
 
             _currentTab =
                 selectedBinding;
@@ -400,6 +435,140 @@ namespace FoodieMatch.UI.Navigation
                 TabSelected?.Invoke(
                     selectedBinding.Tab);
             }
+        }
+
+        private void InitializeReturnIndicator()
+        {
+            if (_returnIndicator != null)
+            {
+                return;
+            }
+
+            _returnIndicator =
+                Instantiate(
+                    _selectionIndicator,
+                    _selectionIndicator.parent);
+
+            _returnIndicator.name =
+                "ReturnIndicator";
+
+            _returnIndicator.SetSiblingIndex(
+                _selectionIndicator.GetSiblingIndex());
+
+            Transform background =
+                _returnIndicator.Find(
+                    "SelectedBackground");
+
+            if (background != null)
+            {
+                background.gameObject.SetActive(
+                    false);
+            }
+
+            Button returnButton =
+                _returnIndicator.GetComponent<Button>();
+
+            if (returnButton != null)
+            {
+                returnButton.enabled = false;
+            }
+
+            Image returnRootImage =
+                _returnIndicator.GetComponent<Image>();
+
+            if (returnRootImage != null)
+            {
+                returnRootImage.raycastTarget = false;
+            }
+
+            _returnAnimator =
+                _returnIndicator.GetComponent<Animator>();
+
+            Transform iconTransform =
+                _returnIndicator.Find(
+                    "IconImage");
+
+            Transform labelTransform =
+                _returnIndicator.Find(
+                    "LabelText");
+
+            _returnIcon =
+                iconTransform != null
+                    ? iconTransform.GetComponent<Image>()
+                    : null;
+
+            _returnLabel =
+                labelTransform != null
+                    ? labelTransform.GetComponent<TMP_Text>()
+                    : null;
+
+            _returnIndicator.gameObject.SetActive(
+                false);
+        }
+
+        private void StartReturnAnimation(
+            TabBinding binding)
+        {
+            if (_returnIndicator == null ||
+                _returnAnimator == null ||
+                binding == null)
+            {
+                return;
+            }
+
+            _returnIndicator.anchoredPosition =
+                _selectionIndicator.anchoredPosition;
+
+            if (_returnIcon != null)
+            {
+                Sprite selectedIcon =
+                    binding.SelectedIcon;
+
+                _returnIcon.sprite =
+                    selectedIcon;
+
+                _returnIcon.enabled =
+                    selectedIcon != null;
+
+                if (selectedIcon != null)
+                {
+                    _returnIcon.SetNativeSize();
+                }
+            }
+
+            if (_returnLabel != null)
+            {
+                _returnLabel.text =
+                    binding.Label;
+            }
+
+            _returnIndicator.gameObject.SetActive(
+                true);
+
+            _returnAnimator.SetBool(
+                IsSelectedHash,
+                false);
+
+            _returnAnimator.Play(
+                ReturnStateHash,
+                0,
+                0f);
+
+            _returnAnimator.Update(0f);
+        }
+
+        private void PlaySelectedAnimation()
+        {
+            _selectionAnimator.SetBool(
+                IsSelectedHash,
+                true);
+
+            _selectionAnimator.Play(
+                SelectedStateHash,
+                0,
+                0f);
+
+            _selectionAnimator.Update(0f);
         }
 
         private void MoveIndicatorImmediately(
@@ -421,6 +590,66 @@ namespace FoodieMatch.UI.Navigation
             _selectionIndicator
                 .anchoredPosition =
                     anchoredPosition;
+
+            _backgroundSlideTween.Stop();
+
+            if (_selectedBackground != null)
+            {
+                Vector2 backgroundPosition =
+                    _selectedBackground
+                        .anchoredPosition;
+
+                backgroundPosition.x = 0f;
+
+                _selectedBackground
+                    .anchoredPosition =
+                        backgroundPosition;
+            }
+        }
+
+        private void MoveIndicatorWithBackgroundSlide(
+            TabBinding binding)
+        {
+            if (binding?.Target == null)
+            {
+                return;
+            }
+
+            Vector2 indicatorPosition =
+                _selectionIndicator.anchoredPosition;
+
+            float previousX =
+                indicatorPosition.x;
+
+            indicatorPosition.x =
+                GetIndicatorTargetX(
+                    binding.Target);
+
+            _selectionIndicator.anchoredPosition =
+                indicatorPosition;
+
+            _backgroundSlideTween.Stop();
+
+            if (_selectedBackground == null)
+            {
+                return;
+            }
+
+            Vector2 backgroundPosition =
+                _selectedBackground.anchoredPosition;
+
+            backgroundPosition.x =
+                previousX - indicatorPosition.x;
+
+            _selectedBackground.anchoredPosition =
+                backgroundPosition;
+
+            _backgroundSlideTween =
+                Tween.UIAnchoredPositionX(
+                    _selectedBackground,
+                    0f,
+                    _backgroundSlideDuration,
+                    _backgroundSlideEase);
         }
 
         private float GetIndicatorTargetX(
