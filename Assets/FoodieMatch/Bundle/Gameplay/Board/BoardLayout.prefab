@@ -135,7 +135,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _foodItemRoot: {fileID: 4706382025159141917}
   _foodInteractionTopBoundary: {fileID: 0}
+  _selectionSizeAtReferenceHeight: {x: 120, y: 220}
   _topTrayReleaseScaleDuration: 0.18
+  _grillIntroRowStagger: 0.06
+  _grillIntroMaxStagger: 0.2
 --- !u!1 &5211099872304265297
 GameObject:
   m_ObjectHideFlags: 0

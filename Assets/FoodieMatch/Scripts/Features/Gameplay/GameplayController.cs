@@ -80,7 +80,6 @@ namespace FoodieMatch.Features.Gameplay
 
             if (_boardLayoutView != null)
             {
-                _boardLayoutView.FoodSelected -= HandleFoodSelected;
                 _boardLayoutView.StackedGrillMotionFinished -=
                     HandleStackedGrillMotionFinished;
             }
@@ -97,6 +96,7 @@ namespace FoodieMatch.Features.Gameplay
             FridgeBoosterAnchors fridgeBoosterAnchors,
             GameplayMotionPresenter gameplayMotionPresenter,
             GameplayAudioPresenter gameplayAudioPresenter,
+            GameplayPointerInput gameplayPointerInput,
             GameplayWorldClickSfx gameplayWorldClickSfx,
             FoodVisualResolver foodVisualResolver,
             FoodItemViewPool foodItemViewPool,
@@ -107,6 +107,8 @@ namespace FoodieMatch.Features.Gameplay
             _uiManager = uiManager;
             _gameplayEvents = gameplayEvents;
             _boardLayoutView = boardLayoutView;
+            gameplayPointerInput.PrimaryPointerPressed +=
+                OnPrimaryPointerPressed;
             _requiredPackageGroupView = requiredPackageGroupView;
             _waitingRackView = waitingRackView;
             _fridgeBoosterAnchors = fridgeBoosterAnchors;
@@ -121,7 +123,6 @@ namespace FoodieMatch.Features.Gameplay
 
             CreateCoordinators();
             SubscribeCoordinatorEvents();
-            _boardLayoutView.FoodSelected += HandleFoodSelected;
             _boardLayoutView.StackedGrillMotionFinished +=
                 HandleStackedGrillMotionFinished;
         }
@@ -206,7 +207,6 @@ namespace FoodieMatch.Features.Gameplay
             _fridgeBoosterCoordinator?.BeginSession();
             _session.StartPlaying();
             _session.DisableInput();
-            _boardLayoutView.SetRegisteredFoodInteractable(false);
             _requiredPackageGroupView.SetLockedPackagesInteractable(false);
             _uiManager.SetGameplayControlsInteractable(false);
 
@@ -579,16 +579,31 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private void HandleFoodSelected(FoodSelectionContext context)
+        private void OnPrimaryPointerPressed(
+            GameplayPointerPress pointerPress)
         {
-            _ = ProcessFoodSelectionSafelyAsync(context);
+            GameplaySession session = _session;
+
+            if (pointerPress.IsOverUi ||
+                session == null ||
+                !session.CanSelectFood ||
+                !_boardLayoutView.TryGetFoodSelection(
+                    pointerPress.ScreenPosition,
+                    out FoodSelectionContext selection))
+            {
+                return;
+            }
+
+            _ = ProcessFoodSelectionSafelyAsync(selection, session);
         }
 
-        private async Task ProcessFoodSelectionSafelyAsync(FoodSelectionContext context)
+        private async Task ProcessFoodSelectionSafelyAsync(
+            FoodSelectionContext context,
+            GameplaySession session)
         {
             try
             {
-                await ProcessFoodSelectionAsync(context);
+                await ProcessFoodSelectionAsync(context, session);
             }
             catch (Exception exception)
             {
@@ -596,23 +611,12 @@ namespace FoodieMatch.Features.Gameplay
             }
         }
 
-        private async Task ProcessFoodSelectionAsync(FoodSelectionContext context)
+        private async Task ProcessFoodSelectionAsync(
+            FoodSelectionContext context,
+            GameplaySession session)
         {
-            GameplaySession session = _session;
-
-            if (session == null || context.FoodItemView == null)
-            {
-                return;
-            }
-
             if (!_foodSelectionTutorialCoordinator.CanSelect(context.Address))
             {
-                return;
-            }
-
-            if (!session.CanSelectFood)
-            {
-                _uiManager.ShowActionFeedback("Wait for the food to finish moving!");
                 return;
             }
 
@@ -856,9 +860,6 @@ namespace FoodieMatch.Features.Gameplay
             }
 
             session.StartPlaying();
-
-            _boardLayoutView?
-                .SetRegisteredFoodInteractable(true);
 
             _gameplayWorldClickSfx?
                 .StartListening();
