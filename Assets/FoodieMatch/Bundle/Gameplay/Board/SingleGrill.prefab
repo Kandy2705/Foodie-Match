@@ -793,6 +793,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2085ade8efd0bac488d777810ed38cc9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _introHorizontalOffset: 10
+  _introDuration: 0.6
+  _introEase: 9
   _foodAnchor: {fileID: 5590539011933219216}
   _counterView: {fileID: 891513162903081591}
 --- !u!1 &7613644019183133243

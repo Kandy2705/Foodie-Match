@@ -113,16 +113,8 @@ namespace FoodieMatch.App
 
             LevelDefinition level =
                 await _levelRepository.LoadLevelAsync(levelNumber);
-            await OpenLevelAsync(level, enableGameplayInput: false);
-
-            try
-            {
-                await _uiManager.PlayLevelWarningAsync(level.Difficulty);
-            }
-            finally
-            {
-                _gameplayController.EnableGameplayInput();
-            }
+            await OpenLevelAsync(level);
+            await CompleteLevelEntryAsync(level);
         }
 
         public void StartLevel(int levelNumber)
@@ -199,20 +191,9 @@ namespace FoodieMatch.App
                     LevelDefinition level = await levelTask;
 
                     _uiManager.SetLoadingProgress(0.94f);
-                    await OpenLevelAsync(
-                        level,
-                        enableGameplayInput: false);
+                    await OpenLevelAsync(level);
                     _uiManager.SetLoadingProgress(0.98f);
-
-                    try
-                    {
-                        await _uiManager.PlayLevelWarningAsync(
-                            level.Difficulty);
-                    }
-                    finally
-                    {
-                        _gameplayController.EnableGameplayInput();
-                    }
+                    await CompleteLevelEntryAsync(level);
                 }
                 else
                 {
@@ -344,8 +325,7 @@ namespace FoodieMatch.App
         }
 
         private async Task OpenLevelAsync(
-            LevelDefinition level,
-            bool enableGameplayInput)
+            LevelDefinition level)
         {
             int levelNumber = level.Id;
             _gameplayController.ClearLevel();
@@ -360,8 +340,23 @@ namespace FoodieMatch.App
             _activeLevelNumber = levelNumber;
             _gameplayController.StartLevel(
                 level,
-                _gameplayNavigationActions,
-                enableGameplayInput);
+                _gameplayNavigationActions);
+        }
+
+        private async Task CompleteLevelEntryAsync(LevelDefinition level)
+        {
+            await _uiManager.HideTransitionLoadingAsync();
+            await _gameplayController.PlayIntroAsync();
+
+            try
+            {
+                await _uiManager.PlayLevelWarningAsync(
+                    level.Difficulty);
+            }
+            finally
+            {
+                _gameplayController.EnableGameplayInput();
+            }
         }
 
         private async Task OpenHomeAsync(

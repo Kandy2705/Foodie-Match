@@ -5,6 +5,7 @@ using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Features.Food;
+using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
 
@@ -22,6 +23,11 @@ namespace FoodieMatch.Features.Board
         [SerializeField] private Transform _foodItemRoot;
         [SerializeField] private Transform _foodInteractionTopBoundary;
 
+        [Header("Food Selection")]
+        [SerializeField]
+        private Vector2 _selectionSizeAtReferenceHeight =
+            new(120f, 180f);
+
         private readonly Dictionary<FoodItemView, FoodBoardAddress>
             _foodAddresses = new();
         private readonly Dictionary<int, GrillViewBase> _grillViews = new();
@@ -37,10 +43,15 @@ namespace FoodieMatch.Features.Board
         private const float RevealOvershootScaleMultiplier = 1.2f;
         private const float RevealGrowDuration = 0.18f;
         private const float RevealSettleDuration = 0.08f;
+        private const float ReferenceScreenHeight = 1920f;
 
         [Header("Top Tray Release Animation")]
         [SerializeField, Min(0f)]
         private float _topTrayReleaseScaleDuration = 0.18f;
+
+        [Header("Grill Intro Motion")]
+        [SerializeField] private float _grillIntroRowStagger = 0.06f;
+        [SerializeField] private float _grillIntroMaxStagger = 0.2f;
 
         private FoodVisualResolver _foodVisualResolver;
         private FoodItemViewPool _foodItemViewPool;
@@ -49,11 +60,9 @@ namespace FoodieMatch.Features.Board
         private Camera _worldCamera;
         private GrillMovementController _grillMovementController;
         private StackedGrillLayoutController _stackedGrillLayoutController;
-        private bool _registeredFoodInputEnabled = true;
         private FoodInteractionMode _foodInteractionMode;
         private FoodBoardAddress _foodInteractionTarget;
 
-        public event Action<FoodSelectionContext> FoodSelected;
         public event Action StackedGrillMotionFinished;
 
         public bool HasActiveStackedGrillMotion =>
@@ -78,13 +87,35 @@ namespace FoodieMatch.Features.Board
             _grillMovementController?.Advance(Time.deltaTime);
         }
 
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (_worldCamera == null)
+            {
+                return;
+            }
+
+            Gizmos.color = Color.cyan;
+            Vector2 selectionSize = GetSelectionSize();
+
+            foreach (FoodItemView foodItemView in _foodAddresses.Keys)
+            {
+                if (IsFoodSelectable(foodItemView))
+                {
+                    Gizmos.DrawWireCube(
+                        foodItemView.transform.position,
+                        selectionSize);
+                }
+            }
+        }
+#endif
+
         public void Setup(
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
             movementGroups)
         {
             Clear();
-            _registeredFoodInputEnabled = true;
 
             for (int i = 0; i < board.GrillCount; i++)
             {
@@ -113,7 +144,7 @@ namespace FoodieMatch.Features.Board
             }
 
             StartStackedGrillLayout(board);
-            StartGrillMovement(
+            PrepareGrillMovement(
                 board,
                 movementGroups);
         }
@@ -168,14 +199,58 @@ namespace FoodieMatch.Features.Board
 
         public void StopMotions()
         {
+            StopGrillIntroMotion();
             StopGrillMovement();
             StopStackedGrillMotion();
+        }
+
+        public async Task<MotionResult> PlayGrillIntroAsync()
+        {
+            List<float> rowPositions = GetGrillRowPositions();
+            List<Task<MotionResult>> motions = new(_grillViews.Count);
+
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                int rowIndex = rowPositions.FindIndex(
+                    rowY => Mathf.Approximately(
+                        rowY,
+                        grillView.transform.localPosition.y));
+                float startDelay = Mathf.Min(
+                    rowIndex * _grillIntroRowStagger,
+                    _grillIntroMaxStagger);
+                motions.Add(grillView.PlayIntroAsync(startDelay));
+            }
+
+            MotionResult[] results = await Task.WhenAll(motions);
+
+            for (int i = 0; i < results.Length; i++)
+            {
+                if (results[i] != MotionResult.Completed)
+                {
+                    return results[i];
+                }
+            }
+
+            return MotionResult.Completed;
+        }
+
+        public void StopGrillIntroMotion()
+        {
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                grillView.StopIntroMotion();
+            }
         }
 
         public void StopGrillMovement()
         {
             _grillMovementController?.StopMovement();
             _grillMovementController = null;
+        }
+
+        public void StartGrillMovement()
+        {
+            _grillMovementController?.StartMovement();
         }
 
         public bool TryCollectActiveFoodFromTopTrays(
@@ -248,13 +323,6 @@ namespace FoodieMatch.Features.Board
                 Ease.OutCubic);
         }
 
-        public void SetRegisteredFoodInteractable(bool isInteractable)
-        {
-            _registeredFoodInputEnabled = isInteractable;
-
-            RefreshRegisteredFoodInteraction();
-        }
-
         public void RestrictFoodInteractionTo(FoodBoardAddress targetAddress)
         {
             _foodInteractionMode = FoodInteractionMode.TargetOnly;
@@ -290,8 +358,83 @@ namespace FoodieMatch.Features.Board
                 SetFoodInteractable(
                     foodItemView,
                     entry.Value,
-                    _registeredFoodInputEnabled);
+                    true);
             }
+        }
+
+        public bool TryGetFoodSelection(
+            Vector2 screenPosition,
+            out FoodSelectionContext selection)
+        {
+            Vector3 clickWorldPosition =
+                _worldCamera.ScreenToWorldPoint(screenPosition);
+            Vector2 clickPosition = clickWorldPosition;
+            Vector2 selectionHalfSize =
+                GetSelectionSize() * 0.5f;
+            float closestDistanceSquared = float.PositiveInfinity;
+            FoodItemView closestFood = null;
+            FoodBoardAddress closestAddress = default;
+
+            foreach (
+                KeyValuePair<FoodItemView, FoodBoardAddress> entry in
+                _foodAddresses)
+            {
+                FoodItemView foodItemView = entry.Key;
+
+                if (!IsFoodSelectable(foodItemView))
+                {
+                    continue;
+                }
+
+                Vector2 foodPosition = foodItemView.transform.position;
+                Vector2 offset = clickPosition - foodPosition;
+
+                if (Mathf.Abs(offset.x) > selectionHalfSize.x ||
+                    Mathf.Abs(offset.y) > selectionHalfSize.y)
+                {
+                    continue;
+                }
+
+                float distanceSquared = offset.sqrMagnitude;
+
+                if (distanceSquared >= closestDistanceSquared)
+                {
+                    continue;
+                }
+
+                closestDistanceSquared = distanceSquared;
+                closestFood = foodItemView;
+                closestAddress = entry.Value;
+            }
+
+            if (closestFood == null)
+            {
+                selection = default;
+                return false;
+            }
+
+            selection = new FoodSelectionContext(
+                closestFood,
+                closestAddress);
+            return true;
+        }
+
+        private Vector2 GetSelectionSize()
+        {
+            float worldScale =
+                _worldCamera.orthographicSize * 2f /
+                ReferenceScreenHeight;
+            return _selectionSizeAtReferenceHeight * worldScale;
+        }
+
+        private bool IsFoodSelectable(FoodItemView foodItemView)
+        {
+            return foodItemView != null &&
+                   foodItemView.IsInteractable &&
+                   !foodItemView.IsEmpty &&
+                   !foodItemView.IsFlying &&
+                   foodItemView.InteractionBottomY <=
+                   _foodInteractionTopBoundary.position.y;
         }
 
         public void RefreshStackedGrillLayout()
@@ -621,7 +764,6 @@ namespace FoodieMatch.Features.Board
                 return;
             }
 
-            foodItemView.Selected -= HandleFoodSelected;
             foodItemView.SetInteractable(false);
             _foodAddresses.Remove(foodItemView);
             foodItemView.transform.SetParent(
@@ -684,8 +826,7 @@ namespace FoodieMatch.Features.Board
 
         public bool CompleteSingleGrillReveal(
             GrillModel grillModel,
-            FoodItemView foodItemView,
-            bool makeInteractable)
+            FoodItemView foodItemView)
         {
             if (grillModel == null ||
                 grillModel.Type != GrillType.Single ||
@@ -717,9 +858,7 @@ namespace FoodieMatch.Features.Board
 
             FoodBoardAddress address = new(grillModel.PositionIndex, 0);
             _foodAddresses.Add(foodItemView, address);
-            foodItemView.Selected -= HandleFoodSelected;
-            foodItemView.Selected += HandleFoodSelected;
-            SetFoodInteractable(foodItemView, address, makeInteractable);
+            SetFoodInteractable(foodItemView, address, true);
             return true;
         }
 
@@ -752,11 +891,10 @@ namespace FoodieMatch.Features.Board
                 grillView,
                 foodAnchor);
             _foodAddresses.Add(foodItemView, address);
-            foodItemView.Selected += HandleFoodSelected;
             SetFoodInteractable(
                 foodItemView,
                 address,
-                _registeredFoodInputEnabled);
+                true);
         }
 
         public bool TryPrepareTopTrayFoodMove(
@@ -838,8 +976,7 @@ namespace FoodieMatch.Features.Board
         public bool CompleteTopTrayFoodMoveAt(
             GrillModel grillModel,
             TopTrayMoveVisuals moveVisuals,
-            int foodItemIndex,
-            bool makeInteractable)
+            int foodItemIndex)
         {
             IReadOnlyList<FoodItemView> foodItemViews = moveVisuals.MovingFoodItems;
 
@@ -878,10 +1015,7 @@ namespace FoodieMatch.Features.Board
 
             _foodAddresses.Add(foodItemView, address);
 
-            foodItemView.Selected -= HandleFoodSelected;
-            foodItemView.Selected += HandleFoodSelected;
-
-            SetFoodInteractable(foodItemView, address, makeInteractable);
+            SetFoodInteractable(foodItemView, address, true);
 
             return true;
         }
@@ -994,7 +1128,6 @@ namespace FoodieMatch.Features.Board
                     i);
 
                 _foodAddresses.Add(foodItemView, address);
-                foodItemView.Selected += HandleFoodSelected;
                 SetFoodInteractable(foodItemView, address, isInteractable);
             }
 
@@ -1004,23 +1137,6 @@ namespace FoodieMatch.Features.Board
         private void ClearFoodItems()
         {
             ReleaseTrackedFoodItems();
-        }
-
-        private void HandleFoodSelected(FoodItemView foodItemView)
-        {
-            if (!_foodAddresses.TryGetValue(
-                    foodItemView,
-                    out FoodBoardAddress address) ||
-                foodItemView.ClickBounds.min.y >
-                _foodInteractionTopBoundary.position.y)
-            {
-                return;
-            }
-
-            FoodSelected?.Invoke(
-                new FoodSelectionContext(
-                    foodItemView,
-                    address));
         }
 
         private void ClearGrills()
@@ -1036,7 +1152,7 @@ namespace FoodieMatch.Features.Board
             _grillViews.Clear();
         }
 
-        private void StartGrillMovement(
+        private void PrepareGrillMovement(
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
                 movementGroups)
@@ -1056,7 +1172,6 @@ namespace FoodieMatch.Features.Board
                         board,
                         movementGroups,
                         _grillViews);
-                _grillMovementController.StartMovement();
             }
             catch (Exception exception)
             {
@@ -1106,8 +1221,7 @@ namespace FoodieMatch.Features.Board
 
         private void HandleStackedGrillSlideStarted()
         {
-            SetRegisteredFoodInteractable(
-                _registeredFoodInputEnabled);
+            RefreshRegisteredFoodInteraction();
         }
 
         private bool IsGrillAccessible(int grillPositionIndex)
@@ -1156,6 +1270,26 @@ namespace FoodieMatch.Features.Board
                 worldPositionStays: true);
         }
 
+        private List<float> GetGrillRowPositions()
+        {
+            List<float> rowPositions = new();
+
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                float rowY = grillView.transform.localPosition.y;
+
+                if (!rowPositions.Exists(
+                        position => Mathf.Approximately(position, rowY)))
+                {
+                    rowPositions.Add(rowY);
+                }
+            }
+
+            rowPositions.Sort((first, second) =>
+                second.CompareTo(first));
+            return rowPositions;
+        }
+
         private static void AttachFoodToGrill(
             FoodItemView foodItemView,
             GrillViewBase grillView,
@@ -1182,7 +1316,6 @@ namespace FoodieMatch.Features.Board
                     continue;
                 }
 
-                entry.Key.Selected -= HandleFoodSelected;
                 foodItemViews.Add(entry.Key);
             }
 
@@ -1228,7 +1361,6 @@ namespace FoodieMatch.Features.Board
 
             foreach (FoodItemView foodItemView in foodItemViews)
             {
-                foodItemView.Selected -= HandleFoodSelected;
                 _foodItemViewPool.Release(foodItemView);
             }
 
