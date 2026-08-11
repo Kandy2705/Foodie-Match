@@ -33,8 +33,9 @@ namespace FoodieMatch.Features.Board
             HideLid();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             CancelMotion();
         }
 
@@ -147,12 +148,14 @@ namespace FoodieMatch.Features.Board
 
         public override void ResetForUse()
         {
+            StopIntroMotion();
             _reuseVersion++;
             CancelMotion();
         }
 
         public override void ResetForPool()
         {
+            StopIntroMotion();
             _reuseVersion++;
             CancelMotion();
             _trayStackView.Clear();

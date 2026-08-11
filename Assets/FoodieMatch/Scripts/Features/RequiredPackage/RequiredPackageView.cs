@@ -72,6 +72,9 @@ namespace FoodieMatch.Features.RequiredPackage
         private Color _lidVisibleColor;
         private Action _lidClosed;
         private ParticleEffectPool _completeBurstPool;
+        private Transform _enterMotionTarget;
+        private Vector3 _enterMotionRestPosition;
+        private Vector3 _enterMotionRestScale;
 
         public int FoodTokenId { get; private set; }
         public int RequiredAmount { get; private set; }
@@ -159,32 +162,69 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public async Task<MotionResult> PlayEnterAsync(Action onEnterStarted)
         {
-            if (IsEmpty ||
+            return await PlayEnterAsync(
+                _motionRoot,
+                _enterOffset,
+                onEnterStarted,
+                requireContent: true);
+        }
+
+        internal Task<MotionResult> PlayInitialEnterAsync(
+            Transform motionTarget,
+            bool enterFromRight)
+        {
+            float direction = enterFromRight ? 1f : -1f;
+            Vector3 enterOffset = _enterOffset;
+            enterOffset.x = Mathf.Abs(enterOffset.x) * direction;
+
+            return PlayEnterAsync(
+                motionTarget != null ? motionTarget : _motionRoot,
+                enterOffset,
+                onEnterStarted: null,
+                requireContent: false);
+        }
+
+        private async Task<MotionResult> PlayEnterAsync(
+            Transform motionTarget,
+            Vector3 enterOffset,
+            Action onEnterStarted,
+            bool requireContent)
+        {
+            if ((requireContent && IsEmpty) ||
                 _isMotionPlaying ||
                 !IsValidTime(_enterDuration) ||
                 !IsValidTime(_enterScaleStartDelay) ||
                 !IsValidTime(_enterNarrowScaleDuration) ||
                 !IsValidTime(_enterWideScaleDuration) ||
                 !IsValidTime(_enterRestoreScaleDuration) ||
-                !IsValidVector(_enterOffset) ||
+                !IsValidVector(enterOffset) ||
                 !IsValidScaleMultiplier(_enterNarrowScaleMultiplier) ||
                 !IsValidScaleMultiplier(_enterWideScaleMultiplier))
             {
                 return MotionResult.Failed;
             }
 
-            EnsureInitialMotionRootTransform();
-            ResetMotionRootTransform();
+            if (motionTarget == _motionRoot)
+            {
+                EnsureInitialMotionRootTransform();
+                ResetMotionRootTransform();
+            }
+
+            Vector3 restPosition = motionTarget.localPosition;
+            Vector3 restScale = motionTarget.localScale;
+            _enterMotionTarget = motionTarget;
+            _enterMotionRestPosition = restPosition;
+            _enterMotionRestScale = restScale;
             HideLid();
-            _motionRoot.localPosition = _initialMotionRootLocalPosition + _enterOffset;
+            motionTarget.localPosition = restPosition + enterOffset;
             _isMotionPlaying = true;
             _didMotionFinish = false;
 
             Vector3 narrowScale = Vector3.Scale(
-                _initialMotionRootLocalScale,
+                restScale,
                 _enterNarrowScaleMultiplier);
             Vector3 wideScale = Vector3.Scale(
-                _initialMotionRootLocalScale,
+                restScale,
                 _enterWideScaleMultiplier);
 
             try
@@ -192,28 +232,28 @@ namespace FoodieMatch.Features.RequiredPackage
                 Sequence scaleSequence = Sequence.Create()
                     .ChainDelay(_enterScaleStartDelay)
                     .Chain(Tween.Scale(
-                        _motionRoot,
+                        motionTarget,
                         narrowScale,
                         _enterNarrowScaleDuration,
                         _enterNarrowScaleEase))
                     .Chain(Tween.Scale(
-                        _motionRoot,
+                        motionTarget,
                         wideScale,
                         _enterWideScaleDuration,
                         _enterWideScaleEase))
                     .Chain(Tween.Scale(
-                        _motionRoot,
-                        _initialMotionRootLocalScale,
+                        motionTarget,
+                        restScale,
                         _enterRestoreScaleDuration,
                         _enterRestoreScaleEase));
 
                 _motionSequence = Sequence.Create(Tween.LocalPosition(
-                        _motionRoot,
-                        _initialMotionRootLocalPosition,
+                        motionTarget,
+                        restPosition,
                         _enterDuration,
                         _enterEase))
                     .Group(scaleSequence)
-                    .ChainCallback(this, target => target.MarkMotionFinished());
+                    .ChainCallback(MarkMotionFinished);
 
                 InvokeMotionCallback(onEnterStarted);
                 await _motionSequence;
@@ -222,6 +262,9 @@ namespace FoodieMatch.Features.RequiredPackage
             }
             finally
             {
+                motionTarget.localPosition = restPosition;
+                motionTarget.localScale = restScale;
+                _enterMotionTarget = null;
                 _motionSequence = default;
                 _isMotionPlaying = false;
             }
@@ -394,6 +437,15 @@ namespace FoodieMatch.Features.RequiredPackage
             }
 
             _motionSequence = default;
+
+            if (_enterMotionTarget != null)
+            {
+                _enterMotionTarget.localPosition =
+                    _enterMotionRestPosition;
+                _enterMotionTarget.localScale =
+                    _enterMotionRestScale;
+                _enterMotionTarget = null;
+            }
 
             if (resetTransform)
             {

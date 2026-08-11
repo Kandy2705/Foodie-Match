@@ -341,6 +341,11 @@ namespace FoodieMatch.UI
             }
         }
 
+        public void SetGameplayControlsInteractable(bool interactable)
+        {
+            _gameplayHudView.SetControlsInteractable(interactable);
+        }
+
         public void RefreshHomeLevel()
         {
             if (_popupManager.TryGetOpened(
@@ -507,6 +512,11 @@ namespace FoodieMatch.UI
             }
 
             await _levelWarningView.PlayAsync(difficulty);
+        }
+
+        public Task HideTransitionLoadingAsync()
+        {
+            return HideTransitionLoadingScreenAsync();
         }
 
         public void HideLoading()

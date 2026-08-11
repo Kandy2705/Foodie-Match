@@ -5,6 +5,7 @@ using FoodieMatch.Core.Domain.Board;
 using FoodieMatch.Core.Domain.Grill;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.Features.Food;
+using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
 
@@ -41,6 +42,10 @@ namespace FoodieMatch.Features.Board
         [Header("Top Tray Release Animation")]
         [SerializeField, Min(0f)]
         private float _topTrayReleaseScaleDuration = 0.18f;
+
+        [Header("Grill Intro Motion")]
+        [SerializeField] private float _grillIntroRowStagger = 0.06f;
+        [SerializeField] private float _grillIntroMaxStagger = 0.2f;
 
         private FoodVisualResolver _foodVisualResolver;
         private FoodItemViewPool _foodItemViewPool;
@@ -113,7 +118,7 @@ namespace FoodieMatch.Features.Board
             }
 
             StartStackedGrillLayout(board);
-            StartGrillMovement(
+            PrepareGrillMovement(
                 board,
                 movementGroups);
         }
@@ -168,14 +173,58 @@ namespace FoodieMatch.Features.Board
 
         public void StopMotions()
         {
+            StopGrillIntroMotion();
             StopGrillMovement();
             StopStackedGrillMotion();
+        }
+
+        public async Task<MotionResult> PlayGrillIntroAsync()
+        {
+            List<float> rowPositions = GetGrillRowPositions();
+            List<Task<MotionResult>> motions = new(_grillViews.Count);
+
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                int rowIndex = rowPositions.FindIndex(
+                    rowY => Mathf.Approximately(
+                        rowY,
+                        grillView.transform.localPosition.y));
+                float startDelay = Mathf.Min(
+                    rowIndex * _grillIntroRowStagger,
+                    _grillIntroMaxStagger);
+                motions.Add(grillView.PlayIntroAsync(startDelay));
+            }
+
+            MotionResult[] results = await Task.WhenAll(motions);
+
+            for (int i = 0; i < results.Length; i++)
+            {
+                if (results[i] != MotionResult.Completed)
+                {
+                    return results[i];
+                }
+            }
+
+            return MotionResult.Completed;
+        }
+
+        public void StopGrillIntroMotion()
+        {
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                grillView.StopIntroMotion();
+            }
         }
 
         public void StopGrillMovement()
         {
             _grillMovementController?.StopMovement();
             _grillMovementController = null;
+        }
+
+        public void StartGrillMovement()
+        {
+            _grillMovementController?.StartMovement();
         }
 
         public bool TryCollectActiveFoodFromTopTrays(
@@ -1036,7 +1085,7 @@ namespace FoodieMatch.Features.Board
             _grillViews.Clear();
         }
 
-        private void StartGrillMovement(
+        private void PrepareGrillMovement(
             BoardModel board,
             IReadOnlyList<GrillMovementGroupDefinition>
                 movementGroups)
@@ -1056,7 +1105,6 @@ namespace FoodieMatch.Features.Board
                         board,
                         movementGroups,
                         _grillViews);
-                _grillMovementController.StartMovement();
             }
             catch (Exception exception)
             {
@@ -1154,6 +1202,26 @@ namespace FoodieMatch.Features.Board
             foodItemView.transform.SetParent(
                 _foodItemRoot,
                 worldPositionStays: true);
+        }
+
+        private List<float> GetGrillRowPositions()
+        {
+            List<float> rowPositions = new();
+
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                float rowY = grillView.transform.localPosition.y;
+
+                if (!rowPositions.Exists(
+                        position => Mathf.Approximately(position, rowY)))
+                {
+                    rowPositions.Add(rowY);
+                }
+            }
+
+            rowPositions.Sort((first, second) =>
+                second.CompareTo(first));
+            return rowPositions;
         }
 
         private static void AttachFoodToGrill(

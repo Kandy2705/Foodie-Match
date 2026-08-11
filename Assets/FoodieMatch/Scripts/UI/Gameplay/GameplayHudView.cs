@@ -87,6 +87,16 @@ namespace FoodieMatch.UI.Gameplay
             _pauseButton.gameObject.SetActive(visible);
         }
 
+        public void SetControlsInteractable(bool interactable)
+        {
+            _pauseButton.interactable = interactable;
+
+            for (int i = 0; i < _boosterButtonViews.Length; i++)
+            {
+                _boosterButtonViews[i].SetInputEnabled(interactable);
+            }
+        }
+
         public void SetProgress(int servedCount, int totalCount)
         {
             _progressText.text = $"{servedCount}/{totalCount}";

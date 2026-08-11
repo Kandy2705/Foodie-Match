@@ -18,6 +18,14 @@ namespace FoodieMatch.Features.WaitingRack
         [Header("Layout")]
         [SerializeField] private float _slotSpacing = 1.3f;
 
+        [Header("Intro Motion")]
+        [SerializeField] private Transform _introOrigin;
+        [SerializeField] private float _introDuration = 0.45f;
+        [SerializeField] private float _introStagger = 0.1f;
+        [SerializeField] private float _introArcHeight = 1f;
+        [SerializeField] private float _introPeakProgress = 0.5f;
+        [SerializeField] private Ease _introScaleEase = Ease.OutCubic;
+
         [Header("Add Slot Motion")]
         [SerializeField] private float _addSlotDuration = 0.35f;
         [SerializeField] private float _newSlotEnterOffset = 2.5f;
@@ -25,9 +33,12 @@ namespace FoodieMatch.Features.WaitingRack
 
         private readonly List<WaitingRackSlotView> _slots = new();
         private readonly HashSet<WaitingRackSlotView> _runtimeSlots = new();
+        private readonly List<IntroSlotMotion> _introMotions = new();
         private FoodItemViewPool _foodItemViewPool;
         private Sequence _addSlotSequence;
+        private Sequence _introSequence;
         private bool _isAddSlotAnimating;
+        private bool _didIntroFinish;
 
         public int Capacity => _slots.Count;
         public bool IsAddSlotAnimating => _isAddSlotAnimating;
@@ -41,6 +52,7 @@ namespace FoodieMatch.Features.WaitingRack
 
         private void OnDestroy()
         {
+            StopIntroMotion();
             StopAddSlotMotion();
         }
 
@@ -51,6 +63,7 @@ namespace FoodieMatch.Features.WaitingRack
 
         public void ResetToCapacity(int capacity)
         {
+            StopIntroMotion();
             StopAddSlotMotion();
             Clear();
             RemoveRuntimeSlots();
@@ -80,6 +93,59 @@ namespace FoodieMatch.Features.WaitingRack
             }
 
             LayoutSlotsImmediately();
+        }
+
+        public async Task<MotionResult> PlayIntroAsync()
+        {
+            _didIntroFinish = false;
+            _introMotions.Clear();
+            Vector3 introPosition = _introOrigin.position;
+            _introSequence = Sequence.Create();
+
+            for (int slotIndex = _slots.Count - 1, launchIndex = 0; slotIndex >= 0; slotIndex--, launchIndex++)
+            {
+                IntroSlotMotion motion = new(
+                    _slots[slotIndex].transform,
+                    introPosition,
+                    _introArcHeight,
+                    _introPeakProgress,
+                    _introScaleEase);
+                _introMotions.Add(motion);
+
+                _ = _introSequence.Group(Tween.Custom(
+                    motion,
+                    0f,
+                    1f,
+                    _introDuration,
+                    (slotMotion, progress) => slotMotion.Update(progress),
+                    startDelay: launchIndex * _introStagger));
+            }
+
+            _ = _introSequence.ChainCallback(MarkIntroFinished);
+
+            try
+            {
+                await _introSequence;
+                return _didIntroFinish
+                    ? MotionResult.Completed
+                    : MotionResult.Cancelled;
+            }
+            finally
+            {
+                RestoreIntroSlots();
+                _introSequence = default;
+            }
+        }
+
+        public void StopIntroMotion()
+        {
+            if (_introSequence.isAlive)
+            {
+                _introSequence.Stop();
+            }
+
+            RestoreIntroSlots();
+            _introSequence = default;
         }
 
         public bool CanAddSlot()
@@ -357,6 +423,21 @@ namespace FoodieMatch.Features.WaitingRack
             _addSlotSequence = default;
         }
 
+        private void MarkIntroFinished()
+        {
+            _didIntroFinish = true;
+        }
+
+        private void RestoreIntroSlots()
+        {
+            for (int i = 0; i < _introMotions.Count; i++)
+            {
+                _introMotions[i].Restore();
+            }
+
+            _introMotions.Clear();
+        }
+
         private WaitingRackSlotView GetSlot(int index)
         {
             if (index < 0 || index >= _slots.Count)
@@ -365,6 +446,87 @@ namespace FoodieMatch.Features.WaitingRack
             }
 
             return _slots[index];
+        }
+
+        private sealed class IntroSlotMotion
+        {
+            private readonly Transform _slot;
+            private readonly Vector3 _startPosition;
+            private readonly Vector3 _targetPosition;
+            private readonly Vector3 _targetScale;
+            private readonly float _arcHeight;
+            private readonly float _peakProgress;
+            private readonly Ease _scaleEase;
+
+            public IntroSlotMotion(
+                Transform slot,
+                Vector3 startPosition,
+                float arcHeight,
+                float peakProgress,
+                Ease scaleEase)
+            {
+                _slot = slot;
+                _startPosition = startPosition;
+                _targetPosition = slot.position;
+                _targetScale = slot.localScale;
+                _arcHeight = arcHeight;
+                _peakProgress = peakProgress;
+                _scaleEase = scaleEase;
+
+                _slot.position = _startPosition;
+                _slot.localScale = Vector3.zero;
+            }
+
+            public void Update(float progress)
+            {
+                Vector3 position = Vector3.LerpUnclamped(
+                    _startPosition,
+                    _targetPosition,
+                    progress);
+                position.y = CalculatePositionY(progress);
+                _slot.position = position;
+
+                float scaleProgress = Easing.Evaluate(
+                    progress,
+                    _scaleEase);
+                _slot.localScale = Vector3.LerpUnclamped(
+                    Vector3.zero,
+                    _targetScale,
+                    scaleProgress);
+            }
+
+            public void Restore()
+            {
+                _slot.position = _targetPosition;
+                _slot.localScale = _targetScale;
+            }
+
+            private float CalculatePositionY(float progress)
+            {
+                float peakPositionY = Mathf.Max(
+                    _startPosition.y,
+                    _targetPosition.y) + _arcHeight;
+
+                if (progress <= _peakProgress)
+                {
+                    float risingProgress = progress / _peakProgress;
+                    float easedProgress = 1f -
+                        (1f - risingProgress) *
+                        (1f - risingProgress);
+                    return Mathf.LerpUnclamped(
+                        _startPosition.y,
+                        peakPositionY,
+                        easedProgress);
+                }
+
+                float fallingProgress =
+                    (progress - _peakProgress) /
+                    (1f - _peakProgress);
+                return Mathf.LerpUnclamped(
+                    peakPositionY,
+                    _targetPosition.y,
+                    fallingProgress * fallingProgress);
+            }
         }
     }
 }

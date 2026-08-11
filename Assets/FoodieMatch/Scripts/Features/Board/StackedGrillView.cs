@@ -26,8 +26,9 @@ namespace FoodieMatch.Features.Board
             _initialScale = transform.localScale;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             CancelMotion();
         }
 
@@ -60,11 +61,13 @@ namespace FoodieMatch.Features.Board
 
         public override void ResetForUse()
         {
+            StopIntroMotion();
             CancelMotion();
         }
 
         public override void ResetForPool()
         {
+            StopIntroMotion();
             CancelMotion();
         }
 
