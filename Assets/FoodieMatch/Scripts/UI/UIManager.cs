@@ -1100,6 +1100,10 @@ namespace FoodieMatch.UI
         private void BindShopView(ShopView shopView)
         {
             shopView.SetPurchaseHandler(ShopPurchaseHandler);
+            shopView.SetResourceRefreshHandler(
+                () => shopView.SetPlayerResources(
+                    _playerProfileService.CoinBalance,
+                    _playerProfileService.GetHeartStatus()));
             shopView.Bind(_shopConfig);
             shopView.SetPlayerResources(
                 _playerProfileService.CoinBalance,
