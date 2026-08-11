@@ -193,7 +193,8 @@ namespace FoodieMatch.App
                 shopConfig,
                 addressableUiFactory,
                 appRoot.GameplayPoolRoot.ComboFeedback,
-                appRoot.GameplayPoolRoot.ClickParticles);
+                appRoot.GameplayPoolRoot.ClickParticles,
+                appRoot.GameplayPointerInput);
             CreateAdServices(
                 appRoot,
                 advertisingRuntimeSettings,

@@ -48,6 +48,7 @@ namespace FoodieMatch.App
 
         [SerializeField] private FoodVisualResolver _foodVisualResolver;
         [SerializeField] private FridgeBoosterAnchors _fridgeBoosterAnchors;
+        [SerializeField] private GameplayPointerInput _gameplayPointerInput;
         [SerializeField] private GameplayWorldClickSfx _gameplayWorldClickSfx;
 
         private CancellationTokenSource _initializationCancellation;
@@ -66,6 +67,7 @@ namespace FoodieMatch.App
         public WaitingRackView WaitingRackView => _waitingRackView;
         public FoodVisualResolver FoodVisualResolver => _foodVisualResolver;
         public FridgeBoosterAnchors FridgeBoosterAnchors => _fridgeBoosterAnchors;
+        public GameplayPointerInput GameplayPointerInput => _gameplayPointerInput;
         public GameplayWorldClickSfx GameplayWorldClickSfx => _gameplayWorldClickSfx;
 
         private void OnDestroy()

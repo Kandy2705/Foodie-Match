@@ -3,31 +3,15 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-namespace FoodieMatch.UI.Effects
+namespace FoodieMatch.Features.Gameplay
 {
-    public sealed class GameplayClickParticleInput : MonoBehaviour
+    public sealed class GameplayPointerInput : MonoBehaviour
     {
-        private Action<Vector2> _pointerPressed;
-        private bool _isInputEnabled;
-
-        public void Construct(Action<Vector2> pointerPressed)
-        {
-            _pointerPressed = pointerPressed;
-        }
-
-        public void SetInputEnabled(bool inputEnabled)
-        {
-            _isInputEnabled = inputEnabled;
-        }
+        public event Action<Vector2> PointerPressed;
 
         private void Update()
         {
-            if (!_isInputEnabled)
-            {
-                return;
-            }
-
-            if (PlayTouchEffects())
+            if (DispatchTouchPresses())
             {
                 return;
             }
@@ -36,7 +20,7 @@ namespace FoodieMatch.UI.Effects
 
             if (mouse != null && mouse.leftButton.wasPressedThisFrame)
             {
-                _pointerPressed(mouse.position.ReadValue());
+                PointerPressed?.Invoke(mouse.position.ReadValue());
                 return;
             }
 
@@ -44,11 +28,11 @@ namespace FoodieMatch.UI.Effects
 
             if (pointer != null && pointer.press.wasPressedThisFrame)
             {
-                _pointerPressed(pointer.position.ReadValue());
+                PointerPressed?.Invoke(pointer.position.ReadValue());
             }
         }
 
-        private bool PlayTouchEffects()
+        private bool DispatchTouchPresses()
         {
             Touchscreen touchscreen = Touchscreen.current;
 
@@ -57,7 +41,7 @@ namespace FoodieMatch.UI.Effects
                 return false;
             }
 
-            bool playedEffect = false;
+            bool dispatched = false;
 
             foreach (TouchControl touch in touchscreen.touches)
             {
@@ -66,11 +50,11 @@ namespace FoodieMatch.UI.Effects
                     continue;
                 }
 
-                _pointerPressed(touch.position.ReadValue());
-                playedEffect = true;
+                PointerPressed?.Invoke(touch.position.ReadValue());
+                dispatched = true;
             }
 
-            return playedEffect;
+            return dispatched;
         }
     }
 }

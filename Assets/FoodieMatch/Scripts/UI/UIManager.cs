@@ -13,6 +13,7 @@ using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Level;
+using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Features.Motion;
 using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.AddressableAssets;
@@ -75,7 +76,7 @@ namespace FoodieMatch.UI
         [Header("Effect")]
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
         [SerializeField] private Transform _effectRoot;
-        [SerializeField] private GameplayClickParticleInput _clickParticleInput;
+        private GameplayClickParticleController _clickParticleController;
 
         [Header("Action Feedback")]
         [SerializeField] private ActionFeedbackView _actionFeedbackPrefab;
@@ -171,7 +172,8 @@ namespace FoodieMatch.UI
             IGameShopConfig shopConfig,
             IAddressableUiFactory addressableUiFactory,
             ComboFeedbackViewPool comboFeedbackViewPool,
-            ClickParticlePool clickParticlePool)
+            ClickParticlePool clickParticlePool,
+            GameplayPointerInput gameplayPointerInput)
         {
             _addressableUiFactory = addressableUiFactory ??
                 throw new ArgumentNullException(nameof(addressableUiFactory));
@@ -195,8 +197,10 @@ namespace FoodieMatch.UI
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
             _clickParticlePool = clickParticlePool;
-            _clickParticleInput.Construct(PlayClickParticle);
-            RefreshClickParticleInput();
+            _clickParticleController = new GameplayClickParticleController(
+                gameplayPointerInput,
+                PlayClickParticle);
+            RefreshClickParticleState();
             SubscribeEvents();
         }
 
@@ -216,7 +220,7 @@ namespace FoodieMatch.UI
         {
             _isAddressableUiLoading = isLoading;
             RefreshAddressableLoadingOverlay();
-            RefreshClickParticleInput();
+            RefreshClickParticleState();
         }
 
         private void RefreshAddressableLoadingOverlay()
@@ -391,7 +395,7 @@ namespace FoodieMatch.UI
             {
                 _gameplayHudView.gameObject.SetActive(true);
                 BindGameplayHudActions();
-                RefreshClickParticleInput();
+                RefreshClickParticleState();
                 _addressableUiFactory.ReleaseLabel(
                     UiAddressLabels.BootstrapCritical);
                 return;
@@ -414,13 +418,13 @@ namespace FoodieMatch.UI
             if (requestVersion != _gameplayHudRequestVersion)
             {
                 _gameplayHudView.gameObject.SetActive(false);
-                RefreshClickParticleInput();
+                RefreshClickParticleState();
                 return;
             }
 
             _gameplayHudView.gameObject.SetActive(true);
             BindGameplayHudActions();
-            RefreshClickParticleInput();
+            RefreshClickParticleState();
             _addressableUiFactory.ReleaseLabel(
                 UiAddressLabels.BootstrapCritical);
         }
@@ -435,7 +439,7 @@ namespace FoodieMatch.UI
             }
 
             ReleaseClickParticles();
-            RefreshClickParticleInput();
+            RefreshClickParticleState();
         }
 
         public void ShowComboFeedback(Vector3 worldPosition)
@@ -483,7 +487,7 @@ namespace FoodieMatch.UI
         {
             _isTransitionLoadingVisible = true;
             RefreshAddressableLoadingOverlay();
-            RefreshClickParticleInput();
+            RefreshClickParticleState();
             LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
             loadingScreen.Show();
             return Task.CompletedTask;
@@ -546,20 +550,20 @@ namespace FoodieMatch.UI
 
             _isTransitionLoadingVisible = false;
             RefreshAddressableLoadingOverlay();
-            RefreshClickParticleInput();
+            RefreshClickParticleState();
         }
 
-        private void RefreshClickParticleInput()
+        private void RefreshClickParticleState()
         {
             bool isGameplayHudVisible =
                 _gameplayHudView != null &&
                 _gameplayHudView.gameObject.activeSelf;
-            bool inputEnabled =
+            bool effectEnabled =
                 isGameplayHudVisible &&
                 !_isTransitionLoadingVisible &&
                 !_isAddressableUiLoading;
 
-            _clickParticleInput.SetInputEnabled(inputEnabled);
+            _clickParticleController.SetEffectEnabled(effectEnabled);
         }
 
         public void ShowSettingPopup()
