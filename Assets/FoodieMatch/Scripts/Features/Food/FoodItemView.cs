@@ -1,20 +1,17 @@
-using System;
 using System.Threading.Tasks;
 using FoodieMatch.Features.Effects;
 using FoodieMatch.Features.Motion;
 using PrimeTween;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace FoodieMatch.Features.Food
 {
-    public sealed class FoodItemView : MonoBehaviour, IPointerClickHandler
+    public sealed class FoodItemView : MonoBehaviour
     {
         private static bool _didWarnAboutMissingFlyingSortingLayer;
 
         [Header("References")]
         [SerializeField] private SpriteRenderer _spriteRenderer;
-        [SerializeField] private Collider2D _clickCollider;
 
         [Header("Grill")]
         [SerializeField] private Vector3 _grillScale = Vector3.one;
@@ -86,10 +83,7 @@ namespace FoodieMatch.Features.Food
         public bool IsFlying => _isFlying;
         public float TopTrayToGrillFlightDuration => _topTrayToGrillFlightDuration;
         public FoodItemVisualState VisualState { get; private set; }
-        public Bounds ClickBounds => _clickCollider.bounds;
         public float InteractionBottomY => _spriteRenderer.bounds.min.y;
-
-        public event Action<FoodItemView> Selected;
 
         public void Construct(ParticleEffectPool grillSmokePool)
         {
@@ -99,7 +93,6 @@ namespace FoodieMatch.Features.Food
         private void Awake()
         {
             FindFlyingSortingLayer();
-            ApplyColliderState();
             ApplyVisualState();
         }
 
@@ -148,7 +141,6 @@ namespace FoodieMatch.Features.Food
             _spriteRenderer.enabled = true;
             SetSpriteAlpha(1f);
 
-            ApplyColliderState();
             ApplyVisualState();
         }
 
@@ -584,7 +576,6 @@ namespace FoodieMatch.Features.Food
         public void SetInteractable(bool isInteractable)
         {
             IsInteractable = isInteractable;
-            ApplyColliderState();
         }
 
         public void SetVisualState(FoodItemVisualState visualState)
@@ -598,16 +589,6 @@ namespace FoodieMatch.Features.Food
         {
             SetSpriteAlpha(0f);
             transform.localScale = Vector3.zero;
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (IsEmpty || !IsInteractable)
-            {
-                return;
-            }
-
-            Selected?.Invoke(this);
         }
 
         private bool CanStartFlight(
@@ -763,7 +744,6 @@ namespace FoodieMatch.Features.Food
             FoodTokenId = 0;
             IsInteractable = false;
             VisualState = FoodItemVisualState.Empty;
-            Selected = null;
 
             _isFlying = false;
             _didFlightComplete = false;
@@ -782,8 +762,6 @@ namespace FoodieMatch.Features.Food
             SetSpriteAlpha(1f);
             transform.localScale = Vector3.one;
             transform.localRotation = Quaternion.identity;
-
-            ApplyColliderState();
         }
 
         private void StopLandingFeedback(bool resetScale)
@@ -916,11 +894,6 @@ namespace FoodieMatch.Features.Food
         private static bool IsValidScaleTargetValue(float value)
         {
             return value >= 0f && !float.IsNaN(value) && !float.IsInfinity(value);
-        }
-
-        private void ApplyColliderState()
-        {
-            _clickCollider.enabled = !IsEmpty && IsInteractable;
         }
 
         private void ApplyVisualState()
