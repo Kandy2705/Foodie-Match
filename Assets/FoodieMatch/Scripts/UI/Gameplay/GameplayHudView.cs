@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Threading.Tasks;
 using FoodieMatch.Features.Motion;
+using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Gameplay.Booster;
 using PrimeTween;
 using TMPro;
@@ -13,6 +14,9 @@ namespace FoodieMatch.UI.Gameplay
     public sealed class GameplayHudView : MonoBehaviour
     {
         private const int BoosterButtonCount = 4;
+
+        [Header("Motion")]
+        [SerializeField] private PopupAnimController _animController;
 
         [SerializeField] private Button _pauseButton;
         [SerializeField] private BoosterButtonView[] _boosterButtonViews;
@@ -41,6 +45,7 @@ namespace FoodieMatch.UI.Gameplay
         private int _lastComboCount;
         private Coroutine _breakClearCoroutine;
         private Tween _comboCountdownTween;
+        private TaskCompletionSource<bool> _motionCompletion;
 
         private void Awake()
         {
@@ -58,6 +63,7 @@ namespace FoodieMatch.UI.Gameplay
 
         private void OnDisable()
         {
+            CompleteMotion(false);
             HideTutorial();
             _boosterUnlockRewardView.StopAndHide();
             _comboFeedbackPool?.ReleaseAll();
@@ -67,6 +73,22 @@ namespace FoodieMatch.UI.Gameplay
             ComboFeedbackViewPool comboFeedbackPool)
         {
             _comboFeedbackPool = comboFeedbackPool;
+        }
+
+        public Task OpenAsync()
+        {
+            return PlayMotionAsync(_animController.Open);
+        }
+
+        public Task CloseAsync()
+        {
+            return PlayMotionAsync(_animController.Close);
+        }
+
+        public void HideInstantly()
+        {
+            CompleteMotion(false);
+            _animController.HideInstantly();
         }
 
         public void SetActions(GameplayHudViewActions actions)
@@ -422,6 +444,35 @@ namespace FoodieMatch.UI.Gameplay
         private static bool IsValidDuration(float duration)
         {
             return duration > 0f && !float.IsNaN(duration) && !float.IsInfinity(duration);
+        }
+
+        private Task PlayMotionAsync(Action<Action> playMotion)
+        {
+            CompleteMotion(false);
+
+            TaskCompletionSource<bool> completion = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            _motionCompletion = completion;
+            playMotion(() => CompleteMotion(completion));
+            return completion.Task;
+        }
+
+        private void CompleteMotion(
+            TaskCompletionSource<bool> completion)
+        {
+            if (_motionCompletion == completion)
+            {
+                _motionCompletion = null;
+            }
+
+            completion.TrySetResult(true);
+        }
+
+        private void CompleteMotion(bool completed)
+        {
+            TaskCompletionSource<bool> completion = _motionCompletion;
+            _motionCompletion = null;
+            completion?.TrySetResult(completed);
         }
 
         private bool TryGetComboFeedbackPosition(Vector3 screenPosition, out Vector2 localPosition)

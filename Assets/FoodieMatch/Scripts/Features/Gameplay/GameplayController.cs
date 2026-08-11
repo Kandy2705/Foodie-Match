@@ -228,6 +228,14 @@ namespace FoodieMatch.Features.Gameplay
             ResumeGameplayInput(_session);
         }
 
+        public void DisableGameplayInput()
+        {
+            _session.DisableInput();
+            _requiredPackageGroupView.SetLockedPackagesInteractable(false);
+            _uiManager.SetGameplayControlsInteractable(false);
+            _gameplayWorldClickSfx?.StopListening();
+        }
+
         public Task<MotionResult> PlayIntroAsync()
         {
             return _gameplayIntroCoordinator.PlayAsync(_session);

@@ -162,61 +162,50 @@ namespace FoodieMatch.Features.RequiredPackage
 
         public async Task<MotionResult> PlayEnterAsync(Action onEnterStarted)
         {
-            return await PlayEnterAsync(
-                _motionRoot,
-                _enterOffset,
-                onEnterStarted,
-                requireContent: true);
-        }
-
-        internal Task<MotionResult> PlayInitialEnterAsync(
-            Transform motionTarget,
-            bool enterFromRight)
-        {
-            float direction = enterFromRight ? 1f : -1f;
-            Vector3 enterOffset = _enterOffset;
-            enterOffset.x = Mathf.Abs(enterOffset.x) * direction;
-
-            return PlayEnterAsync(
-                motionTarget != null ? motionTarget : _motionRoot,
-                enterOffset,
-                onEnterStarted: null,
-                requireContent: false);
-        }
-
-        private async Task<MotionResult> PlayEnterAsync(
-            Transform motionTarget,
-            Vector3 enterOffset,
-            Action onEnterStarted,
-            bool requireContent)
-        {
-            if ((requireContent && IsEmpty) ||
-                _isMotionPlaying ||
-                !IsValidTime(_enterDuration) ||
-                !IsValidTime(_enterScaleStartDelay) ||
-                !IsValidTime(_enterNarrowScaleDuration) ||
-                !IsValidTime(_enterWideScaleDuration) ||
-                !IsValidTime(_enterRestoreScaleDuration) ||
-                !IsValidVector(enterOffset) ||
-                !IsValidScaleMultiplier(_enterNarrowScaleMultiplier) ||
-                !IsValidScaleMultiplier(_enterWideScaleMultiplier))
+            if (IsEmpty || !CanPrepareEnter(_enterOffset))
             {
                 return MotionResult.Failed;
             }
 
-            if (motionTarget == _motionRoot)
+            PrepareEnterMotion(_motionRoot, _enterOffset);
+            return await PlayPreparedEnterAsync(onEnterStarted);
+        }
+
+        internal void PrepareInitialEnter(
+            Transform motionTarget,
+            bool enterFromRight)
+        {
+            StopMotion();
+            float direction = enterFromRight ? 1f : -1f;
+            Vector3 enterOffset = _enterOffset;
+            enterOffset.x = Mathf.Abs(enterOffset.x) * direction;
+
+            if (!CanPrepareEnter(enterOffset))
             {
-                EnsureInitialMotionRootTransform();
-                ResetMotionRootTransform();
+                return;
             }
 
-            Vector3 restPosition = motionTarget.localPosition;
-            Vector3 restScale = motionTarget.localScale;
-            _enterMotionTarget = motionTarget;
-            _enterMotionRestPosition = restPosition;
-            _enterMotionRestScale = restScale;
-            HideLid();
-            motionTarget.localPosition = restPosition + enterOffset;
+            PrepareEnterMotion(
+                motionTarget != null ? motionTarget : _motionRoot,
+                enterOffset);
+        }
+
+        internal Task<MotionResult> PlayInitialEnterAsync()
+        {
+            return PlayPreparedEnterAsync(onEnterStarted: null);
+        }
+
+        private async Task<MotionResult> PlayPreparedEnterAsync(
+            Action onEnterStarted)
+        {
+            if (_enterMotionTarget == null)
+            {
+                return MotionResult.Failed;
+            }
+
+            Transform motionTarget = _enterMotionTarget;
+            Vector3 restPosition = _enterMotionRestPosition;
+            Vector3 restScale = _enterMotionRestScale;
             _isMotionPlaying = true;
             _didMotionFinish = false;
 
@@ -268,6 +257,37 @@ namespace FoodieMatch.Features.RequiredPackage
                 _motionSequence = default;
                 _isMotionPlaying = false;
             }
+        }
+
+        private bool CanPrepareEnter(Vector3 enterOffset)
+        {
+            return !_isMotionPlaying &&
+                   IsValidTime(_enterDuration) &&
+                   IsValidTime(_enterScaleStartDelay) &&
+                   IsValidTime(_enterNarrowScaleDuration) &&
+                   IsValidTime(_enterWideScaleDuration) &&
+                   IsValidTime(_enterRestoreScaleDuration) &&
+                   IsValidVector(enterOffset) &&
+                   IsValidScaleMultiplier(_enterNarrowScaleMultiplier) &&
+                   IsValidScaleMultiplier(_enterWideScaleMultiplier);
+        }
+
+        private void PrepareEnterMotion(
+            Transform motionTarget,
+            Vector3 enterOffset)
+        {
+            if (motionTarget == _motionRoot)
+            {
+                EnsureInitialMotionRootTransform();
+                ResetMotionRootTransform();
+            }
+
+            _enterMotionTarget = motionTarget;
+            _enterMotionRestPosition = motionTarget.localPosition;
+            _enterMotionRestScale = motionTarget.localScale;
+            HideLid();
+            motionTarget.localPosition =
+                _enterMotionRestPosition + enterOffset;
         }
 
         public async Task<MotionResult> PlayMatchAndExitAsync(
