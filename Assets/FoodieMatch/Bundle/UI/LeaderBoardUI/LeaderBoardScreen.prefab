@@ -93,12 +93,19 @@ MonoBehaviour:
   _shuffleRewardSprite: {fileID: -7647276179965007834, guid: f2d97e20fc3b34e3ea2d729008eb41f7, type: 3}
   _unlimitedHeartRewardSprite: {fileID: 5357528278273254606, guid: d60781aae7991413c8227c000d050b77, type: 3}
   _virtualizationBufferRows: 2
+  _scrollDragSpeedMultiplier: 0.7
+  _scrollRevealStartScale: 0.9
+  _scrollRevealScaleDuration: 0.45
+  _scrollRevealAlphaDuration: 0.38
+  _scrollRevealVisibleFraction: 0.2
+  _fastScrollEnterRowsPerSecond: 4
+  _fastScrollExitRowsPerSecond: 2
   _currentPlayerRow: {fileID: 683831995196233602}
   _currentPlayerCanvasGroup: {fileID: 9004894609278580672}
   _revealDelay: 0
   _podiumRevealDuration: 0.4
   _rowStagger: 0.08
-  _rowRevealDuration: 0.5
+  _rowRevealDuration: 0.4
 --- !u!1001 &4344828594166216676
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -354,14 +361,6 @@ PrefabInstance:
     - target: {fileID: 1999979106039294212, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
       propertyPath: m_Name
       value: LeaderBoardPageMotionRoot
-      objectReference: {fileID: 0}
-    - target: {fileID: 3122516963663996817, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6635860656310650852, guid: 0ac46f07427214e3b9bc416379dbece2, type: 3}
-      propertyPath: m_Enabled
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
