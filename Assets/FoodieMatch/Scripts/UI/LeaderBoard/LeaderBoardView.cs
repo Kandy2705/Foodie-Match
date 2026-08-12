@@ -178,6 +178,8 @@ namespace FoodieMatch.UI.LeaderBoard
         private Vector2 _currentPlayerStickySizeDelta;
         private Vector2 _currentPlayerStickyAnchoredPosition;
         private bool _isCurrentPlayerDocked;
+        private bool _currentPlayerRowWasVisible;
+        private Sequence _currentPlayerRowRevealSequence;
         private Sequence _revealSequence;
         private Tween _rewardPreviewHideTween;
         private Tween _rewardPreviewDeactivateTween;
@@ -477,8 +479,6 @@ namespace FoodieMatch.UI.LeaderBoard
             ResetListToTop(tab);
             EnsureListInitialized(tab);
             UpdateCurrentPlayerDock(tab);
-            BindCurrentPlayer(tab);
-            UpdateWeeklyTimeRemaining();
 
             PrepareRevealTargets(tab);
 
@@ -527,6 +527,9 @@ namespace FoodieMatch.UI.LeaderBoard
         private void ResetContentReferences(
             LeaderBoardTab tab)
         {
+            StopCurrentPlayerScrollReveal();
+            _currentPlayerRowWasVisible = false;
+
             VirtualizedListState list =
                 tab == LeaderBoardTab.Weekly
                     ? _weeklyList
@@ -623,16 +626,21 @@ namespace FoodieMatch.UI.LeaderBoard
                     list.NumberedRowWasVisible[i] = false;
                 }
 
-                if (list.MedalRowWasVisible != null)
+            }
+
+            if (list.MedalRowWasVisible != null)
+            {
+                for (int i = 0;
+                     i < list.MedalRowWasVisible.Length;
+                     i++)
                 {
-                    for (int i = 0;
-                         i < list.MedalRowWasVisible.Length;
-                         i++)
-                    {
-                        list.MedalRowWasVisible[i] = false;
-                    }
+                    list.MedalRowWasVisible[i] = false;
                 }
             }
+
+            _currentPlayerRowWasVisible = false;
+            StopCurrentPlayerScrollReveal();
+            ResetCurrentPlayerScrollRevealVisual();
         }
 
         private void SetButtonVisual(
@@ -988,6 +996,11 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnWeeklyScrolled(
             Vector2 normalizedPosition)
         {
+            if (!_revealSequence.isAlive)
+            {
+                HideRewardPreviewOnScroll();
+            }
+
             RefreshVirtualizedList(
                 LeaderBoardTab.Weekly,
                 _weeklyList);
@@ -996,6 +1009,11 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnGlobalScrolled(
             Vector2 normalizedPosition)
         {
+            if (!_revealSequence.isAlive)
+            {
+                HideRewardPreviewOnScroll();
+            }
+
             RefreshVirtualizedList(
                 LeaderBoardTab.Global,
                 _globalList);
@@ -1094,6 +1112,7 @@ namespace FoodieMatch.UI.LeaderBoard
             UpdateCurrentPlayerDock(tab);
             UpdateCurrentPlayerRowVisibility(list);
             UpdateScrollRevealAnimations(list, scrollRect);
+            UpdateCurrentPlayerScrollRevealAnimations(list, scrollRect);
         }
 
         private void RecycleRowsOutsideRange(
@@ -1347,28 +1366,123 @@ namespace FoodieMatch.UI.LeaderBoard
             }
         }
 
+
+        private void UpdateCurrentPlayerScrollRevealAnimations(
+            VirtualizedListState list,
+            ScrollRect scrollRect)
+        {
+            if (_currentPlayerRow == null ||
+                scrollRect == null ||
+                scrollRect.viewport == null)
+            {
+                return;
+            }
+
+            if (_revealSequence.isAlive)
+            {
+                _currentPlayerRowWasVisible = false;
+                return;
+            }
+
+            if (!_isCurrentPlayerDocked ||
+                !_currentPlayerRow.gameObject.activeInHierarchy)
+            {
+                _currentPlayerRowWasVisible = false;
+
+                if (_currentPlayerRowRevealSequence.isAlive)
+                {
+                    StopCurrentPlayerScrollReveal();
+                    ResetCurrentPlayerScrollRevealVisual();
+                }
+
+                return;
+            }
+
+            bool isVisible =
+                IsRectTransformVisible(
+                    _currentPlayerRow,
+                    scrollRect.viewport,
+                    list.RowHeight,
+                    _scrollRevealVisibleFraction);
+
+            if (isVisible &&
+                !_currentPlayerRowWasVisible)
+            {
+                if (list.IsFastScrolling)
+                {
+                    PlayCurrentPlayerScrollReveal();
+                }
+                else
+                {
+                    StopCurrentPlayerScrollReveal();
+                    ResetCurrentPlayerScrollRevealVisual();
+                }
+            }
+
+            _currentPlayerRowWasVisible = isVisible;
+        }
+
+
         private static bool IsRowVisible(
             LeaderBoardPlayerRowView row,
             RectTransform viewport,
             float rowHeight,
             float requiredVisibleFraction)
         {
-            RectTransform rowTransform =
-                (RectTransform)row.transform;
-            Vector3 center = viewport.InverseTransformPoint(
-                rowTransform.TransformPoint(Vector3.zero));
-            float halfHeight = rowHeight * 0.5f;
-            float rowMin = center.y - halfHeight;
-            float rowMax = center.y + halfHeight;
-            Rect viewportRect = viewport.rect;
-            float visibleHeight = Mathf.Max(
-                0f,
-                Mathf.Min(rowMax, viewportRect.yMax) -
-                Mathf.Max(rowMin, viewportRect.yMin));
-            float visibleFraction = visibleHeight /
-                Mathf.Max(rowHeight, 0.001f);
+            return IsRectTransformVisible(
+                (RectTransform)row.transform,
+                viewport,
+                rowHeight,
+                requiredVisibleFraction);
+        }
 
-            return visibleFraction >= requiredVisibleFraction;
+        private static bool IsRectTransformVisible(
+            RectTransform rowTransform,
+            RectTransform viewport,
+            float rowHeight,
+            float requiredVisibleFraction)
+        {
+            if (rowTransform == null ||
+                viewport == null)
+            {
+                return false;
+            }
+
+            Vector3 center =
+                viewport.InverseTransformPoint(
+                    rowTransform.TransformPoint(
+                        Vector3.zero));
+
+            float halfHeight =
+                rowHeight * 0.5f;
+
+            float rowMin =
+                center.y - halfHeight;
+
+            float rowMax =
+                center.y + halfHeight;
+
+            Rect viewportRect =
+                viewport.rect;
+
+            float visibleHeight =
+                Mathf.Max(
+                    0f,
+                    Mathf.Min(
+                        rowMax,
+                        viewportRect.yMax) -
+                    Mathf.Max(
+                        rowMin,
+                        viewportRect.yMin));
+
+            float visibleFraction =
+                visibleHeight /
+                Mathf.Max(
+                    rowHeight,
+                    0.001f);
+
+            return visibleFraction >=
+                requiredVisibleFraction;
         }
 
         private void PlayScrollReveal(
@@ -1493,6 +1607,95 @@ namespace FoodieMatch.UI.LeaderBoard
             list.MedalRowRevealSequences[slot] = default;
         }
 
+        private void PlayCurrentPlayerScrollReveal()
+        {
+            if (_currentPlayerRow == null)
+            {
+                return;
+            }
+
+            StopCurrentPlayerScrollReveal();
+
+            CanvasGroup canvasGroup =
+                _currentPlayerCanvasGroup;
+
+            if (canvasGroup == null)
+            {
+                canvasGroup =
+                    _currentPlayerRow.GetComponent<CanvasGroup>();
+
+                if (canvasGroup == null)
+                {
+                    canvasGroup =
+                        _currentPlayerRow.gameObject
+                            .AddComponent<CanvasGroup>();
+                }
+
+                _currentPlayerCanvasGroup = canvasGroup;
+            }
+
+            _currentPlayerRow.localScale =
+                Vector3.one * _scrollRevealStartScale;
+            canvasGroup.alpha = 0f;
+
+            Sequence sequence =
+                Sequence.Create(
+                    useUnscaledTime: true);
+
+            sequence = sequence.Insert(
+                0f,
+                Tween.Scale(
+                    _currentPlayerRow,
+                    Vector3.one,
+                    _scrollRevealScaleDuration,
+                    Ease.OutSine));
+
+            sequence = sequence.Insert(
+                0f,
+                Tween.Alpha(
+                    canvasGroup,
+                    0f,
+                    1f,
+                    _scrollRevealAlphaDuration,
+                    Ease.OutQuad));
+
+            _currentPlayerRowRevealSequence = sequence;
+        }
+
+        private void StopCurrentPlayerScrollReveal()
+        {
+            if (_currentPlayerRowRevealSequence.isAlive)
+            {
+                _currentPlayerRowRevealSequence.Stop();
+            }
+
+            _currentPlayerRowRevealSequence = default;
+        }
+
+        private void ResetCurrentPlayerScrollRevealVisual()
+        {
+            if (_currentPlayerRow == null)
+            {
+                return;
+            }
+
+            _currentPlayerRow.localScale = Vector3.one;
+
+            CanvasGroup canvasGroup =
+                _currentPlayerCanvasGroup;
+
+            if (canvasGroup == null)
+            {
+                canvasGroup =
+                    _currentPlayerRow.GetComponent<CanvasGroup>();
+            }
+
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+            }
+        }
+
         private static void StopScrollReveal(
             VirtualizedListState list,
             int slot)
@@ -1538,207 +1741,12 @@ namespace FoodieMatch.UI.LeaderBoard
             }
         }
 
-#if false
-        private void RefreshVirtualizedListLegacy(
-            LeaderBoardTab tab,
-            VirtualizedListState list)
-        {
-            if (!list.IsInitialized)
-            {
-                return;
-            }
-
-            ScrollRect scrollRect =
-                tab == LeaderBoardTab.Weekly
-                    ? _weeklyScrollRect
-                    : _globalScrollRect;
-            int rowCount =
-                Mathf.Min(
-                    list.Players.Length,
-                    MaximumDisplayedPlayers);
-            int firstVisibleIndex =
-                Mathf.FloorToInt(
-                    scrollRect.content.anchoredPosition.y /
-                    list.RowStride);
-            int firstNumberedIndex =
-                Mathf.Clamp(
-                    firstVisibleIndex -
-                    _virtualizationBufferRows,
-                    MedalRankCount,
-                    Mathf.Max(MedalRankCount, rowCount));
-
-            for (int i = 0; i < list.NumberedRows.Length; i++)
-            {
-                int playerIndex = firstNumberedIndex + i;
-                LeaderBoardNumberedPlayerRowView row =
-                    list.NumberedRows[i];
-                bool hasPlayer = playerIndex < rowCount;
-
-                if (!hasPlayer &&
-                    ReferenceEquals(_rewardPreviewSourceRow, row))
-                {
-                    HideRewardPreview();
-                }
-
-                row.gameObject.SetActive(hasPlayer);
-
-                if (!hasPlayer)
-                {
-                    list.NumberedRowIndices[i] = -1;
-                }
-
-                if (hasPlayer &&
-                    list.NumberedRowIndices[i] != playerIndex)
-                {
-                    PositionRow(
-                        row.transform,
-                        playerIndex,
-                        list.RowStride,
-                        list.RowHeight,
-                        list.TopPadding);
-                    BindRow(
-                        row,
-                        list.Players[playerIndex],
-                        tab);
-                    list.NumberedRowIndices[i] = playerIndex;
-                }
-            }
-
-            UpdateCurrentPlayerDock(tab);
-            UpdateCurrentPlayerRowVisibility(list);
-            ApplyScrollEdgeFade(list, scrollRect);
-        }
-
-        private void ApplyScrollEdgeFade(
-            VirtualizedListState list,
-            ScrollRect scrollRect)
-        {
-            if (scrollRect == null || scrollRect.viewport == null)
-            {
-                return;
-            }
-
-            float currentScrollY =
-                scrollRect.content.anchoredPosition.y;
-
-            if (list.HasPreviousScrollPosition)
-            {
-                float deltaY =
-                    currentScrollY - list.PreviousScrollY;
-
-                if (Mathf.Abs(deltaY) > 0.01f)
-                {
-                    list.ScrollDirection = deltaY > 0f ? 1 : -1;
-                }
-            }
-
-            list.PreviousScrollY = currentScrollY;
-            list.HasPreviousScrollPosition = true;
-
-            bool fadeTop = list.ScrollDirection > 0;
-            bool fadeBottom = list.ScrollDirection < 0;
-
-            ApplyRowsScrollEdgeFade(
-                list.MedalRows,
-                scrollRect.viewport,
-                fadeTop,
-                fadeBottom);
-            ApplyRowsScrollEdgeFade(
-                list.NumberedRows,
-                scrollRect.viewport,
-                fadeTop,
-                fadeBottom);
-        }
-
-        private void ApplyRowsScrollEdgeFade<T>(
-            T[] rows,
-            RectTransform viewport,
-            bool fadeTop,
-            bool fadeBottom)
-            where T : LeaderBoardPlayerRowView
-        {
-            if (rows == null || viewport == null)
-            {
-                return;
-            }
-
-            Rect viewportRect = viewport.rect;
-            float fadeDistance = Mathf.Min(
-                _scrollEdgeFadeDistance,
-                viewportRect.height * 0.5f);
-
-            if (fadeDistance <= 0f)
-            {
-                return;
-            }
-
-            for (int i = 0; i < rows.Length; i++)
-            {
-                T row = rows[i];
-
-                if (row == null || !row.gameObject.activeSelf)
-                {
-                    continue;
-                }
-
-                CanvasGroup canvasGroup = row.GetComponent<CanvasGroup>();
-
-                if (canvasGroup == null)
-                {
-                    canvasGroup = row.gameObject.AddComponent<CanvasGroup>();
-                }
-
-                RectTransform rowTransform =
-                    (RectTransform)row.transform;
-                Bounds rowBounds =
-                    RectTransformUtility.CalculateRelativeRectTransformBounds(
-                        viewport,
-                        rowTransform);
-
-                if (rowBounds.max.y <= viewportRect.yMin ||
-                    rowBounds.min.y >= viewportRect.yMax)
-                {
-                    canvasGroup.alpha = 0f;
-                    continue;
-                }
-
-                float alpha = 1f;
-
-                if (fadeTop)
-                {
-                    float visibleFromTop =
-                        viewportRect.yMax - rowBounds.min.y;
-                    float topFade = Mathf.Clamp01(
-                        visibleFromTop / fadeDistance);
-                    topFade = Mathf.Pow(
-                        topFade,
-                        _scrollEdgeFadePower);
-                    alpha = Mathf.SmoothStep(0f, 1f, topFade);
-                }
-                else if (fadeBottom)
-                {
-                    float visibleFromBottom =
-                        rowBounds.max.y - viewportRect.yMin;
-                    float bottomFade = Mathf.Clamp01(
-                        visibleFromBottom / fadeDistance);
-                    bottomFade = Mathf.Pow(
-                        bottomFade,
-                        _scrollEdgeFadePower);
-                    alpha = Mathf.SmoothStep(0f, 1f, bottomFade);
-                }
-
-                canvasGroup.alpha = alpha;
-            }
-        }
-
-#endif
-
         private void PositionRow(
-            Transform rowTransform,
-            int playerIndex,
-            float rowStride,
-            float rowHeight,
-            int topPadding)
+                    Transform rowTransform,
+                    int playerIndex,
+                    float rowStride,
+                    float rowHeight,
+                    int topPadding)
         {
             RectTransform row = (RectTransform)rowTransform;
             row.anchorMin = new Vector2(0.5f, 1f);
@@ -1781,8 +1789,6 @@ namespace FoodieMatch.UI.LeaderBoard
                 referenceRow != null
                     ? referenceRow.rect.width
                     : scrollRect.content.rect.width;
-
-            _currentPlayerRow.localScale = Vector3.one;
 
             _currentPlayerRow.SetSizeWithCurrentAnchors(
                 RectTransform.Axis.Horizontal,
@@ -1893,6 +1899,10 @@ namespace FoodieMatch.UI.LeaderBoard
             {
                 return;
             }
+
+            StopCurrentPlayerScrollReveal();
+            ResetCurrentPlayerScrollRevealVisual();
+            _currentPlayerRowWasVisible = false;
 
             _currentPlayerRow.SetParent(
                 _currentPlayerStickyParent,
