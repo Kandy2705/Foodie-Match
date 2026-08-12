@@ -97,7 +97,7 @@ MonoBehaviour:
   _scrollRevealStartScale: 0.9
   _scrollRevealScaleDuration: 0.45
   _scrollRevealAlphaDuration: 0.38
-  _scrollRevealVisibleFraction: 0.2
+  _scrollRevealVisibleFraction: 0.01
   _fastScrollEnterRowsPerSecond: 4
   _fastScrollExitRowsPerSecond: 2
   _currentPlayerRow: {fileID: 683831995196233602}

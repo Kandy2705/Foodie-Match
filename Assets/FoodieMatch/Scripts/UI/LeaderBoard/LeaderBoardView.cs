@@ -49,6 +49,8 @@ namespace FoodieMatch.UI.LeaderBoard
             public LeaderBoardMedalPlayerRowView MedalTemplate;
             public LeaderBoardNumberedPlayerRowView NumberedTemplate;
             public LeaderBoardMedalPlayerRowView[] MedalRows;
+            public bool[] MedalRowWasVisible;
+            public Sequence[] MedalRowRevealSequences;
             public LeaderBoardNumberedPlayerRowView[] NumberedRows;
             public int[] NumberedRowIndices;
             public bool[] NumberedRowWasVisible;
@@ -438,7 +440,8 @@ namespace FoodieMatch.UI.LeaderBoard
                     contentView.PodiumPlayers);
                 ConfigureListState(
                     _weeklyList,
-                    contentView.PlayerRows,
+                    contentView.MedalRowTemplate,
+                    contentView.NumberedRowTemplate,
                     _weeklyPlayers);
                 BindPodium(
                     contentView.PodiumPlayers,
@@ -456,7 +459,8 @@ namespace FoodieMatch.UI.LeaderBoard
                     contentView.ContentSizeFitter;
                 ConfigureListState(
                     _globalList,
-                    contentView.PlayerRows,
+                    contentView.MedalRowTemplate,
+                    contentView.NumberedRowTemplate,
                     _globalPlayers);
                 _globalScrollRect.onValueChanged.AddListener(
                     OnGlobalScrolled);
@@ -532,6 +536,8 @@ namespace FoodieMatch.UI.LeaderBoard
             list.MedalRows = null;
             list.NumberedRows = null;
             StopAllScrollRevealSequences(list);
+            list.MedalRowWasVisible = null;
+            list.MedalRowRevealSequences = null;
             list.NumberedRowIndices = null;
             list.NumberedRowWasVisible = null;
             list.NumberedRowVisibleIndices = null;
@@ -610,12 +616,22 @@ namespace FoodieMatch.UI.LeaderBoard
 
             if (list.NumberedRowWasVisible != null)
             {
+            for (int i = 0;
+                 i < list.NumberedRowWasVisible.Length;
+                 i++)
+            {
+                list.NumberedRowWasVisible[i] = false;
+            }
+
+            if (list.MedalRowWasVisible != null)
+            {
                 for (int i = 0;
-                     i < list.NumberedRowWasVisible.Length;
+                     i < list.MedalRowWasVisible.Length;
                      i++)
                 {
-                    list.NumberedRowWasVisible[i] = false;
+                    list.MedalRowWasVisible[i] = false;
                 }
+            }
             }
         }
 
@@ -791,25 +807,22 @@ namespace FoodieMatch.UI.LeaderBoard
 
         private static void ConfigureListState(
             VirtualizedListState list,
-            LeaderBoardPlayerRowView[] templates,
+            LeaderBoardMedalPlayerRowView medalTemplate,
+            LeaderBoardNumberedPlayerRowView numberedTemplate,
             LeaderBoardPlayerData[] players)
         {
             list.Players = players;
+            list.MedalTemplate = medalTemplate;
+            list.NumberedTemplate = numberedTemplate;
 
-            for (int i = 0; i < templates.Length; i++)
+            if (list.MedalTemplate != null)
             {
-                if (templates[i] is LeaderBoardMedalPlayerRowView medalRow)
-                {
-                    list.MedalTemplate = medalRow;
-                }
-                else if (
-                    templates[i] is LeaderBoardNumberedPlayerRowView
-                        numberedRow)
-                {
-                    list.NumberedTemplate = numberedRow;
-                }
+                list.MedalTemplate.gameObject.SetActive(false);
+            }
 
-                templates[i].gameObject.SetActive(false);
+            if (list.NumberedTemplate != null)
+            {
+                list.NumberedTemplate.gameObject.SetActive(false);
             }
         }
 
@@ -879,21 +892,43 @@ namespace FoodieMatch.UI.LeaderBoard
             list.MedalRows =
                 new LeaderBoardMedalPlayerRowView[medalRowCount];
 
+            list.MedalRowWasVisible =
+                new bool[medalRowCount];
+
+            list.MedalRowRevealSequences =
+                new Sequence[medalRowCount];
+
             for (int i = 0; i < medalRowCount; i++)
             {
                 LeaderBoardMedalPlayerRowView row =
                     Instantiate(
                         list.MedalTemplate,
                         scrollRect.content);
+
+                CanvasGroup canvasGroup =
+                    row.GetComponent<CanvasGroup>();
+
+                if (canvasGroup == null)
+                {
+                    canvasGroup =
+                        row.gameObject.AddComponent<CanvasGroup>();
+                }
+
+                row.transform.localScale = Vector3.one;
+                canvasGroup.alpha = 1f;
                 row.gameObject.SetActive(true);
+
                 PositionRow(
                     row.transform,
                     i,
                     list.RowStride,
                     list.RowHeight,
                     list.TopPadding);
+
                 BindRow(row, list.Players[i], tab);
+
                 list.MedalRows[i] = row;
+                list.MedalRowWasVisible[i] = false;
             }
 
             int visibleRowCount =
@@ -1208,6 +1243,10 @@ namespace FoodieMatch.UI.LeaderBoard
                 return;
             }
 
+            UpdateMedalScrollRevealAnimations(
+                list,
+                scrollRect);
+
             for (int i = 0; i < list.NumberedRows.Length; i++)
             {
                 LeaderBoardNumberedPlayerRowView row =
@@ -1247,6 +1286,64 @@ namespace FoodieMatch.UI.LeaderBoard
 
                 list.NumberedRowVisibleIndices[i] = playerIndex;
                 list.NumberedRowWasVisible[i] = isVisible;
+            }
+        }
+
+        private void UpdateMedalScrollRevealAnimations(
+            VirtualizedListState list,
+            ScrollRect scrollRect)
+        {
+            if (list.MedalRows == null ||
+                list.MedalRowWasVisible == null)
+            {
+                return;
+            }
+
+            for (int i = 0;
+                 i < list.MedalRows.Length;
+                 i++)
+            {
+                LeaderBoardMedalPlayerRowView row =
+                    list.MedalRows[i];
+
+                if (row == null ||
+                    !row.gameObject.activeSelf)
+                {
+                    list.MedalRowWasVisible[i] = false;
+                    continue;
+                }
+
+                bool isVisible =
+                    IsRowVisible(
+                        row,
+                        scrollRect.viewport,
+                        list.RowHeight,
+                        _scrollRevealVisibleFraction);
+
+                bool wasVisible =
+                    list.MedalRowWasVisible[i];
+
+                if (isVisible && !wasVisible)
+                {
+                    if (list.IsFastScrolling)
+                    {
+                        PlayMedalScrollReveal(
+                            list,
+                            i,
+                            row);
+                    }
+                    else
+                    {
+                        StopMedalScrollReveal(
+                            list,
+                            i);
+
+                        ResetScrollRevealVisual(row);
+                    }
+                }
+
+                list.MedalRowWasVisible[i] =
+                    isVisible;
             }
         }
 
@@ -1311,7 +1408,7 @@ namespace FoodieMatch.UI.LeaderBoard
         }
 
         private static void ResetScrollRevealVisual(
-            LeaderBoardNumberedPlayerRowView row)
+            LeaderBoardPlayerRowView row)
         {
             if (row == null)
             {
@@ -1325,6 +1422,75 @@ namespace FoodieMatch.UI.LeaderBoard
             {
                 canvasGroup.alpha = 1f;
             }
+        }
+
+        private void PlayMedalScrollReveal(
+            VirtualizedListState list,
+            int slot,
+            LeaderBoardMedalPlayerRowView row)
+        {
+            StopMedalScrollReveal(list, slot);
+
+            RectTransform target =
+                (RectTransform)row.transform;
+            CanvasGroup canvasGroup =
+                row.GetComponent<CanvasGroup>();
+
+            if (canvasGroup == null)
+            {
+                canvasGroup =
+                    row.gameObject.AddComponent<CanvasGroup>();
+            }
+
+            target.localScale =
+                Vector3.one * _scrollRevealStartScale;
+            canvasGroup.alpha = 0f;
+
+            Sequence sequence =
+                Sequence.Create(
+                    useUnscaledTime: true);
+
+            sequence = sequence.Insert(
+                0f,
+                Tween.Scale(
+                    target,
+                    Vector3.one,
+                    _scrollRevealScaleDuration,
+                    Ease.OutSine));
+
+            sequence = sequence.Insert(
+                0f,
+                Tween.Alpha(
+                    canvasGroup,
+                    0f,
+                    1f,
+                    _scrollRevealAlphaDuration,
+                    Ease.OutQuad));
+
+            list.MedalRowRevealSequences[slot] =
+                sequence;
+        }
+
+        private static void StopMedalScrollReveal(
+            VirtualizedListState list,
+            int slot)
+        {
+            if (list.MedalRowRevealSequences == null ||
+                slot < 0 ||
+                slot >= list.MedalRowRevealSequences.Length)
+            {
+                return;
+            }
+
+            Sequence sequence =
+                list.MedalRowRevealSequences[slot];
+
+            if (sequence.isAlive)
+            {
+                sequence.Stop();
+            }
+
+            list.MedalRowRevealSequences[slot] = default;
         }
 
         private static void StopScrollReveal(
@@ -1351,20 +1517,28 @@ namespace FoodieMatch.UI.LeaderBoard
         private static void StopAllScrollRevealSequences(
             VirtualizedListState list)
         {
-            if (list.NumberedRowRevealSequences == null)
+            if (list.MedalRowRevealSequences != null)
             {
-                return;
+                for (int i = 0;
+                     i < list.MedalRowRevealSequences.Length;
+                     i++)
+                {
+                    StopMedalScrollReveal(list, i);
+                }
             }
 
-            for (int i = 0;
-                 i < list.NumberedRowRevealSequences.Length;
-                 i++)
+            if (list.NumberedRowRevealSequences != null)
             {
-                StopScrollReveal(list, i);
+                for (int i = 0;
+                     i < list.NumberedRowRevealSequences.Length;
+                     i++)
+                {
+                    StopScrollReveal(list, i);
+                }
             }
         }
 
-        #if false
+#if false
         private void RefreshVirtualizedListLegacy(
             LeaderBoardTab tab,
             VirtualizedListState list)
@@ -1557,7 +1731,7 @@ namespace FoodieMatch.UI.LeaderBoard
             }
         }
 
-        #endif
+#endif
 
         private void PositionRow(
             Transform rowTransform,
