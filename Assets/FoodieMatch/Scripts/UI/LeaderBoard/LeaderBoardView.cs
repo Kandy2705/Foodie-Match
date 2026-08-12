@@ -51,9 +51,15 @@ namespace FoodieMatch.UI.LeaderBoard
             public LeaderBoardMedalPlayerRowView[] MedalRows;
             public LeaderBoardNumberedPlayerRowView[] NumberedRows;
             public int[] NumberedRowIndices;
+            public bool[] NumberedRowWasVisible;
+            public int[] NumberedRowVisibleIndices;
+            public Sequence[] NumberedRowRevealSequences;
             public float RowHeight;
             public float RowStride;
             public int TopPadding;
+            public float PreviousScrollY;
+            public bool HasPreviousScrollPosition;
+            public bool IsFastScrolling;
             public bool IsInitialized;
         }
 
@@ -90,6 +96,28 @@ namespace FoodieMatch.UI.LeaderBoard
 
         [Header("Virtualized Lists")]
         [SerializeField, Min(0)] private int _virtualizationBufferRows = 2;
+
+        [HideInInspector, SerializeField, Range(0.1f, 1f)]
+        private float _scrollDragSpeedMultiplier = 0.7f;
+
+        [Header("Scroll Reveal")]
+        [SerializeField, Range(0.5f, 1f)]
+        private float _scrollRevealStartScale = 0.9f;
+
+        [SerializeField, Min(0f)]
+        private float _scrollRevealScaleDuration = 0.45f;
+
+        [SerializeField, Min(0f)]
+        private float _scrollRevealAlphaDuration = 0.38f;
+
+        [SerializeField, Range(0.01f, 1f)]
+        private float _scrollRevealVisibleFraction = 0.2f;
+
+        [SerializeField, Min(0f)]
+        private float _fastScrollEnterRowsPerSecond = 4f;
+
+        [SerializeField, Min(0f)]
+        private float _fastScrollExitRowsPerSecond = 2f;
 
         [Header("Weekly Reveal")]
         private RectTransform[] _weeklyPodiumPlayers =
@@ -503,7 +531,14 @@ namespace FoodieMatch.UI.LeaderBoard
             list.NumberedTemplate = null;
             list.MedalRows = null;
             list.NumberedRows = null;
+            StopAllScrollRevealSequences(list);
             list.NumberedRowIndices = null;
+            list.NumberedRowWasVisible = null;
+            list.NumberedRowVisibleIndices = null;
+            list.NumberedRowRevealSequences = null;
+            list.PreviousScrollY = 0f;
+            list.HasPreviousScrollPosition = false;
+            list.IsFastScrolling = false;
             list.IsInitialized = false;
 
             if (tab == LeaderBoardTab.Weekly)
@@ -564,6 +599,24 @@ namespace FoodieMatch.UI.LeaderBoard
             scrollRect.StopMovement();
             contentPosition.y = 0f;
             scrollRect.content.anchoredPosition = contentPosition;
+
+            VirtualizedListState list =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyList
+                    : _globalList;
+            list.PreviousScrollY = 0f;
+            list.HasPreviousScrollPosition = false;
+            list.IsFastScrolling = false;
+
+            if (list.NumberedRowWasVisible != null)
+            {
+                for (int i = 0;
+                     i < list.NumberedRowWasVisible.Length;
+                     i++)
+                {
+                    list.NumberedRowWasVisible[i] = false;
+                }
+            }
         }
 
         private void SetButtonVisual(
@@ -851,15 +904,23 @@ namespace FoodieMatch.UI.LeaderBoard
                         list.RowStride));
             int numberedPlayerCount =
                 Mathf.Max(0, rowCount - MedalRankCount);
+            int requiredPoolCount =
+                visibleRowCount +
+                _virtualizationBufferRows * 2;
             int numberedPoolCount =
                 Mathf.Min(
                     numberedPlayerCount,
-                    visibleRowCount +
-                    _virtualizationBufferRows * 2);
+                    requiredPoolCount);
             list.NumberedRows =
                 new LeaderBoardNumberedPlayerRowView[
                     numberedPoolCount];
             list.NumberedRowIndices = new int[numberedPoolCount];
+            list.NumberedRowWasVisible =
+                new bool[numberedPoolCount];
+            list.NumberedRowVisibleIndices =
+                new int[numberedPoolCount];
+            list.NumberedRowRevealSequences =
+                new Sequence[numberedPoolCount];
 
             for (int i = 0; i < numberedPoolCount; i++)
             {
@@ -867,9 +928,21 @@ namespace FoodieMatch.UI.LeaderBoard
                     Instantiate(
                         list.NumberedTemplate,
                         scrollRect.content);
+                CanvasGroup canvasGroup =
+                    row.GetComponent<CanvasGroup>();
+
+                if (canvasGroup == null)
+                {
+                    canvasGroup =
+                        row.gameObject.AddComponent<CanvasGroup>();
+                }
+
+                row.transform.localScale = Vector3.one;
+                canvasGroup.alpha = 1f;
                 row.gameObject.SetActive(false);
                 list.NumberedRows[i] = row;
                 list.NumberedRowIndices[i] = -1;
+                list.NumberedRowVisibleIndices[i] = -1;
             }
 
             list.IsInitialized = true;
@@ -880,6 +953,7 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnWeeklyScrolled(
             Vector2 normalizedPosition)
         {
+            PrepareForScroll();
             RefreshVirtualizedList(
                 LeaderBoardTab.Weekly,
                 _weeklyList);
@@ -888,9 +962,22 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnGlobalScrolled(
             Vector2 normalizedPosition)
         {
+            PrepareForScroll();
             RefreshVirtualizedList(
                 LeaderBoardTab.Global,
                 _globalList);
+        }
+
+        private void PrepareForScroll()
+        {
+            if (!_revealSequence.isAlive)
+            {
+                return;
+            }
+
+            _revealSequence.Stop();
+            _revealSequence = default;
+            RestoreRevealTargets();
         }
 
         private LeaderBoardScrollDragRelay InitializeScrollDragRelay(
@@ -906,6 +993,9 @@ namespace FoodieMatch.UI.LeaderBoard
             }
 
             relay.SetBeginDragHandler(HideRewardPreviewOnScroll);
+            relay.Configure(
+                scrollRect,
+                _scrollDragSpeedMultiplier);
             return relay;
         }
 
@@ -920,6 +1010,362 @@ namespace FoodieMatch.UI.LeaderBoard
         }
 
         private void RefreshVirtualizedList(
+            LeaderBoardTab tab,
+            VirtualizedListState list)
+        {
+            if (!list.IsInitialized)
+            {
+                return;
+            }
+
+            ScrollRect scrollRect =
+                tab == LeaderBoardTab.Weekly
+                    ? _weeklyScrollRect
+                    : _globalScrollRect;
+            int rowCount = Mathf.Min(
+                list.Players.Length,
+                MaximumDisplayedPlayers);
+            int poolCount = list.NumberedRows.Length;
+
+            UpdateFastScrollState(list, scrollRect);
+
+            if (poolCount > 0)
+            {
+                int firstVisibleIndex = Mathf.FloorToInt(
+                    scrollRect.content.anchoredPosition.y /
+                    list.RowStride);
+                int maxFirstIndex = Mathf.Max(
+                    MedalRankCount,
+                    rowCount - poolCount);
+                int desiredFirstIndex = Mathf.Clamp(
+                    firstVisibleIndex - _virtualizationBufferRows,
+                    MedalRankCount,
+                    maxFirstIndex);
+                int desiredLastIndex = Mathf.Min(
+                    rowCount - 1,
+                    desiredFirstIndex + poolCount - 1);
+
+                RecycleRowsOutsideRange(
+                    list,
+                    desiredFirstIndex,
+                    desiredLastIndex);
+                FillMissingRows(
+                    tab,
+                    list,
+                    desiredFirstIndex,
+                    desiredLastIndex);
+            }
+
+            UpdateCurrentPlayerDock(tab);
+            UpdateCurrentPlayerRowVisibility(list);
+            UpdateScrollRevealAnimations(list, scrollRect);
+        }
+
+        private void RecycleRowsOutsideRange(
+            VirtualizedListState list,
+            int desiredFirstIndex,
+            int desiredLastIndex)
+        {
+            for (int i = 0; i < list.NumberedRows.Length; i++)
+            {
+                int playerIndex = list.NumberedRowIndices[i];
+
+                if (playerIndex < 0 ||
+                    (playerIndex >= desiredFirstIndex &&
+                     playerIndex <= desiredLastIndex))
+                {
+                    continue;
+                }
+
+                LeaderBoardNumberedPlayerRowView row =
+                    list.NumberedRows[i];
+
+                if (ReferenceEquals(_rewardPreviewSourceRow, row))
+                {
+                    HideRewardPreview();
+                }
+
+                StopScrollReveal(list, i);
+                ResetScrollRevealVisual(row);
+                row.gameObject.SetActive(false);
+                list.NumberedRowIndices[i] = -1;
+                list.NumberedRowVisibleIndices[i] = -1;
+                list.NumberedRowWasVisible[i] = false;
+            }
+        }
+
+        private void FillMissingRows(
+            LeaderBoardTab tab,
+            VirtualizedListState list,
+            int desiredFirstIndex,
+            int desiredLastIndex)
+        {
+            for (int playerIndex = desiredFirstIndex;
+                 playerIndex <= desiredLastIndex;
+                 playerIndex++)
+            {
+                if (FindSlotForPlayerIndex(list, playerIndex) >= 0)
+                {
+                    continue;
+                }
+
+                int freeSlot = FindFreeRowSlot(list);
+
+                if (freeSlot < 0)
+                {
+                    break;
+                }
+
+                LeaderBoardNumberedPlayerRowView row =
+                    list.NumberedRows[freeSlot];
+                StopScrollReveal(list, freeSlot);
+                PositionRow(
+                    row.transform,
+                    playerIndex,
+                    list.RowStride,
+                    list.RowHeight,
+                    list.TopPadding);
+                row.gameObject.SetActive(true);
+                BindRow(
+                    row,
+                    list.Players[playerIndex],
+                    tab);
+                ResetScrollRevealVisual(row);
+                list.NumberedRowIndices[freeSlot] = playerIndex;
+                list.NumberedRowVisibleIndices[freeSlot] = playerIndex;
+                list.NumberedRowWasVisible[freeSlot] = false;
+            }
+        }
+
+        private static int FindSlotForPlayerIndex(
+            VirtualizedListState list,
+            int playerIndex)
+        {
+            for (int i = 0; i < list.NumberedRowIndices.Length; i++)
+            {
+                if (list.NumberedRowIndices[i] == playerIndex)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static int FindFreeRowSlot(
+            VirtualizedListState list)
+        {
+            for (int i = 0; i < list.NumberedRowIndices.Length; i++)
+            {
+                if (list.NumberedRowIndices[i] < 0)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void UpdateFastScrollState(
+            VirtualizedListState list,
+            ScrollRect scrollRect)
+        {
+            float currentScrollY =
+                scrollRect.content.anchoredPosition.y;
+
+            if (list.HasPreviousScrollPosition)
+            {
+                float deltaY = currentScrollY - list.PreviousScrollY;
+                float deltaTime = Mathf.Max(
+                    Time.unscaledDeltaTime,
+                    0.0001f);
+                float rowsPerSecond = Mathf.Abs(deltaY) /
+                    Mathf.Max(list.RowStride, 0.001f) /
+                    deltaTime;
+
+                if (!list.IsFastScrolling &&
+                    rowsPerSecond >= _fastScrollEnterRowsPerSecond)
+                {
+                    list.IsFastScrolling = true;
+                }
+                else if (list.IsFastScrolling &&
+                         rowsPerSecond <= _fastScrollExitRowsPerSecond)
+                {
+                    list.IsFastScrolling = false;
+                }
+            }
+
+            list.PreviousScrollY = currentScrollY;
+            list.HasPreviousScrollPosition = true;
+        }
+
+        private void UpdateScrollRevealAnimations(
+            VirtualizedListState list,
+            ScrollRect scrollRect)
+        {
+            if (scrollRect.viewport == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < list.NumberedRows.Length; i++)
+            {
+                LeaderBoardNumberedPlayerRowView row =
+                    list.NumberedRows[i];
+                int playerIndex = list.NumberedRowIndices[i];
+
+                if (row == null ||
+                    playerIndex < 0 ||
+                    !row.gameObject.activeSelf)
+                {
+                    list.NumberedRowWasVisible[i] = false;
+                    continue;
+                }
+
+                bool isVisible = IsRowVisible(
+                    row,
+                    scrollRect.viewport,
+                    list.RowHeight,
+                    _scrollRevealVisibleFraction);
+                bool samePlayer =
+                    list.NumberedRowVisibleIndices[i] == playerIndex;
+                bool wasVisible = samePlayer &&
+                    list.NumberedRowWasVisible[i];
+
+                if (isVisible && !wasVisible)
+                {
+                    if (list.IsFastScrolling)
+                    {
+                        PlayScrollReveal(list, i, row);
+                    }
+                    else
+                    {
+                        StopScrollReveal(list, i);
+                        ResetScrollRevealVisual(row);
+                    }
+                }
+
+                list.NumberedRowVisibleIndices[i] = playerIndex;
+                list.NumberedRowWasVisible[i] = isVisible;
+            }
+        }
+
+        private static bool IsRowVisible(
+            LeaderBoardPlayerRowView row,
+            RectTransform viewport,
+            float rowHeight,
+            float requiredVisibleFraction)
+        {
+            RectTransform rowTransform =
+                (RectTransform)row.transform;
+            Vector3 center = viewport.InverseTransformPoint(
+                rowTransform.TransformPoint(Vector3.zero));
+            float halfHeight = rowHeight * 0.5f;
+            float rowMin = center.y - halfHeight;
+            float rowMax = center.y + halfHeight;
+            Rect viewportRect = viewport.rect;
+            float visibleHeight = Mathf.Max(
+                0f,
+                Mathf.Min(rowMax, viewportRect.yMax) -
+                Mathf.Max(rowMin, viewportRect.yMin));
+            float visibleFraction = visibleHeight /
+                Mathf.Max(rowHeight, 0.001f);
+
+            return visibleFraction >= requiredVisibleFraction;
+        }
+
+        private void PlayScrollReveal(
+            VirtualizedListState list,
+            int slot,
+            LeaderBoardNumberedPlayerRowView row)
+        {
+            StopScrollReveal(list, slot);
+            RectTransform target = (RectTransform)row.transform;
+            CanvasGroup canvasGroup = row.GetComponent<CanvasGroup>();
+
+            if (canvasGroup == null)
+            {
+                canvasGroup = row.gameObject.AddComponent<CanvasGroup>();
+            }
+
+            target.localScale = Vector3.one * _scrollRevealStartScale;
+            canvasGroup.alpha = 0f;
+            Sequence sequence = Sequence.Create(
+                useUnscaledTime: true);
+            sequence = sequence.Insert(
+                0f,
+                Tween.Scale(
+                    target,
+                    Vector3.one,
+                    _scrollRevealScaleDuration,
+                    Ease.OutSine));
+            sequence = sequence.Insert(
+                0f,
+                Tween.Alpha(
+                    canvasGroup,
+                    0f,
+                    1f,
+                    _scrollRevealAlphaDuration,
+                    Ease.OutQuad));
+            list.NumberedRowRevealSequences[slot] = sequence;
+        }
+
+        private static void ResetScrollRevealVisual(
+            LeaderBoardNumberedPlayerRowView row)
+        {
+            if (row == null)
+            {
+                return;
+            }
+
+            row.transform.localScale = Vector3.one;
+            CanvasGroup canvasGroup = row.GetComponent<CanvasGroup>();
+
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+            }
+        }
+
+        private static void StopScrollReveal(
+            VirtualizedListState list,
+            int slot)
+        {
+            if (list.NumberedRowRevealSequences == null ||
+                slot < 0 ||
+                slot >= list.NumberedRowRevealSequences.Length)
+            {
+                return;
+            }
+
+            Sequence sequence = list.NumberedRowRevealSequences[slot];
+
+            if (sequence.isAlive)
+            {
+                sequence.Stop();
+            }
+
+            list.NumberedRowRevealSequences[slot] = default;
+        }
+
+        private static void StopAllScrollRevealSequences(
+            VirtualizedListState list)
+        {
+            if (list.NumberedRowRevealSequences == null)
+            {
+                return;
+            }
+
+            for (int i = 0;
+                 i < list.NumberedRowRevealSequences.Length;
+                 i++)
+            {
+                StopScrollReveal(list, i);
+            }
+        }
+
+        #if false
+        private void RefreshVirtualizedListLegacy(
             LeaderBoardTab tab,
             VirtualizedListState list)
         {
@@ -986,7 +1432,132 @@ namespace FoodieMatch.UI.LeaderBoard
 
             UpdateCurrentPlayerDock(tab);
             UpdateCurrentPlayerRowVisibility(list);
+            ApplyScrollEdgeFade(list, scrollRect);
         }
+
+        private void ApplyScrollEdgeFade(
+            VirtualizedListState list,
+            ScrollRect scrollRect)
+        {
+            if (scrollRect == null || scrollRect.viewport == null)
+            {
+                return;
+            }
+
+            float currentScrollY =
+                scrollRect.content.anchoredPosition.y;
+
+            if (list.HasPreviousScrollPosition)
+            {
+                float deltaY =
+                    currentScrollY - list.PreviousScrollY;
+
+                if (Mathf.Abs(deltaY) > 0.01f)
+                {
+                    list.ScrollDirection = deltaY > 0f ? 1 : -1;
+                }
+            }
+
+            list.PreviousScrollY = currentScrollY;
+            list.HasPreviousScrollPosition = true;
+
+            bool fadeTop = list.ScrollDirection > 0;
+            bool fadeBottom = list.ScrollDirection < 0;
+
+            ApplyRowsScrollEdgeFade(
+                list.MedalRows,
+                scrollRect.viewport,
+                fadeTop,
+                fadeBottom);
+            ApplyRowsScrollEdgeFade(
+                list.NumberedRows,
+                scrollRect.viewport,
+                fadeTop,
+                fadeBottom);
+        }
+
+        private void ApplyRowsScrollEdgeFade<T>(
+            T[] rows,
+            RectTransform viewport,
+            bool fadeTop,
+            bool fadeBottom)
+            where T : LeaderBoardPlayerRowView
+        {
+            if (rows == null || viewport == null)
+            {
+                return;
+            }
+
+            Rect viewportRect = viewport.rect;
+            float fadeDistance = Mathf.Min(
+                _scrollEdgeFadeDistance,
+                viewportRect.height * 0.5f);
+
+            if (fadeDistance <= 0f)
+            {
+                return;
+            }
+
+            for (int i = 0; i < rows.Length; i++)
+            {
+                T row = rows[i];
+
+                if (row == null || !row.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                CanvasGroup canvasGroup = row.GetComponent<CanvasGroup>();
+
+                if (canvasGroup == null)
+                {
+                    canvasGroup = row.gameObject.AddComponent<CanvasGroup>();
+                }
+
+                RectTransform rowTransform =
+                    (RectTransform)row.transform;
+                Bounds rowBounds =
+                    RectTransformUtility.CalculateRelativeRectTransformBounds(
+                        viewport,
+                        rowTransform);
+
+                if (rowBounds.max.y <= viewportRect.yMin ||
+                    rowBounds.min.y >= viewportRect.yMax)
+                {
+                    canvasGroup.alpha = 0f;
+                    continue;
+                }
+
+                float alpha = 1f;
+
+                if (fadeTop)
+                {
+                    float visibleFromTop =
+                        viewportRect.yMax - rowBounds.min.y;
+                    float topFade = Mathf.Clamp01(
+                        visibleFromTop / fadeDistance);
+                    topFade = Mathf.Pow(
+                        topFade,
+                        _scrollEdgeFadePower);
+                    alpha = Mathf.SmoothStep(0f, 1f, topFade);
+                }
+                else if (fadeBottom)
+                {
+                    float visibleFromBottom =
+                        rowBounds.max.y - viewportRect.yMin;
+                    float bottomFade = Mathf.Clamp01(
+                        visibleFromBottom / fadeDistance);
+                    bottomFade = Mathf.Pow(
+                        bottomFade,
+                        _scrollEdgeFadePower);
+                    alpha = Mathf.SmoothStep(0f, 1f, bottomFade);
+                }
+
+                canvasGroup.alpha = alpha;
+            }
+        }
+
+        #endif
 
         private void PositionRow(
             Transform rowTransform,

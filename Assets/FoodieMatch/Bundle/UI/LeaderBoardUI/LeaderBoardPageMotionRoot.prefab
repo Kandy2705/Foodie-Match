@@ -771,9 +771,17 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 9.3
       objectReference: {fileID: 0}
+    - target: {fileID: 4353446727109960654, guid: be04a465363454fc9b004ae357d9dd41, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5123970691428099358, guid: be04a465363454fc9b004ae357d9dd41, type: 3}
       propertyPath: m_Name
       value: TabArea
+      objectReference: {fileID: 0}
+    - target: {fileID: 5415776473196266427, guid: be04a465363454fc9b004ae357d9dd41, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

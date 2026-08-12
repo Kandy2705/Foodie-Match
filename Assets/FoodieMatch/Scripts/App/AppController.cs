@@ -476,7 +476,7 @@ namespace FoodieMatch.App
 
                 if (!_boosterManager.TryPurchase(boosterType, coinPrice))
                 {
-                    _uiManager.ShowActionFeedback("Not enough coins.");
+                    _uiManager.ShowShopPopup();
                     return;
                 }
 
@@ -516,7 +516,7 @@ namespace FoodieMatch.App
 
                 if (!_playerProfileService.TrySpendCoins(coinPrice))
                 {
-                    _uiManager.ShowActionFeedback("Not enough coins.");
+                    _uiManager.ShowShopPopup();
                     return;
                 }
 
@@ -547,7 +547,7 @@ namespace FoodieMatch.App
 
             if (!_playerProfileService.TryFillHeartsWithCoins(coinPrice))
             {
-                _uiManager.ShowActionFeedback("Not enough coins.");
+                _uiManager.ShowShopPopup();
                 return;
             }
 

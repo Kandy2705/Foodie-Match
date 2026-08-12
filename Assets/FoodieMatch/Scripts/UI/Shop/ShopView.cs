@@ -44,6 +44,7 @@ namespace FoodieMatch.UI.Shop
             new(StringComparer.Ordinal);
         private IGameShopConfig _shopConfig;
         private Func<string, Task<ShopPurchaseResult>> _purchaseHandler;
+        private Action _refreshPlayerResources;
         private ShopRevealItemView[] _revealItems;
         private Sequence _itemRevealSequence;
         private bool _isInitialized;
@@ -102,6 +103,13 @@ namespace FoodieMatch.UI.Shop
             _purchaseHandler = purchaseHandler;
         }
 
+        public void SetResourceRefreshHandler(
+            Action refreshPlayerResources)
+        {
+            _refreshPlayerResources =
+                refreshPlayerResources;
+        }
+
         public void Bind(IGameShopConfig shopConfig)
         {
             _shopConfig = shopConfig ?? throw new ArgumentNullException(nameof(shopConfig));
@@ -130,6 +138,7 @@ namespace FoodieMatch.UI.Shop
 
         public void OnTabSelected()
         {
+            _refreshPlayerResources?.Invoke();
             PlayItemRevealAnimation();
         }
 
