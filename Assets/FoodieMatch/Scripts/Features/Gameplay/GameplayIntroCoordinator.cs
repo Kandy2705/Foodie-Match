@@ -33,6 +33,9 @@ namespace FoodieMatch.Features.Gameplay
         public void BeginSession(GameplaySession session)
         {
             _session = session;
+            _packageGroupView.PrepareInitialEnter();
+            _waitingRackView.PrepareIntro();
+            _boardLayoutView.PrepareGrillIntro();
         }
 
         public void EndSession()

@@ -95,14 +95,13 @@ namespace FoodieMatch.Features.WaitingRack
             LayoutSlotsImmediately();
         }
 
-        public async Task<MotionResult> PlayIntroAsync()
+        public void PrepareIntro()
         {
+            StopIntroMotion();
             _didIntroFinish = false;
-            _introMotions.Clear();
             Vector3 introPosition = _introOrigin.position;
-            _introSequence = Sequence.Create();
 
-            for (int slotIndex = _slots.Count - 1, launchIndex = 0; slotIndex >= 0; slotIndex--, launchIndex++)
+            for (int slotIndex = _slots.Count - 1; slotIndex >= 0; slotIndex--)
             {
                 IntroSlotMotion motion = new(
                     _slots[slotIndex].transform,
@@ -111,7 +110,21 @@ namespace FoodieMatch.Features.WaitingRack
                     _introPeakProgress,
                     _introScaleEase);
                 _introMotions.Add(motion);
+            }
+        }
 
+        public async Task<MotionResult> PlayIntroAsync()
+        {
+            if (_introMotions.Count != _slots.Count)
+            {
+                return MotionResult.Failed;
+            }
+
+            _introSequence = Sequence.Create();
+
+            for (int launchIndex = 0; launchIndex < _introMotions.Count; launchIndex++)
+            {
+                IntroSlotMotion motion = _introMotions[launchIndex];
                 _ = _introSequence.Group(Tween.Custom(
                     motion,
                     0f,

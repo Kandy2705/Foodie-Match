@@ -159,6 +159,7 @@ namespace FoodieMatch.App
 
             try
             {
+                await CloseGameplayHudBeforeLoadingAsync();
                 Task loadingTask = _uiManager.PlayLoadingAsync();
                 _uiManager.SetLoadingProgress(0.12f);
                 LevelLoadingProgressReporter levelProgress = new(
@@ -239,6 +240,7 @@ namespace FoodieMatch.App
 
             try
             {
+                await CloseGameplayHudBeforeLoadingAsync();
                 Task loadingTask = _uiManager.PlayLoadingAsync();
                 _uiManager.SetLoadingProgress(0.15f);
                 await SynchronizeUpcomingLevelsWithTimeoutAsync(
@@ -332,7 +334,7 @@ namespace FoodieMatch.App
             _uiManager.HideAllPopups();
             _uiManager.HideHome();
             _uiManager.SetCurrentLevelNumber(levelNumber);
-            await _uiManager.ShowGameplayHudAsync();
+            await _uiManager.PrepareGameplayHudAsync();
             _gameplayController.SetPresentationActive(true);
             _audioService.PlayMusic(AudioKeys.MusicIngame);
 
@@ -346,6 +348,7 @@ namespace FoodieMatch.App
         private async Task CompleteLevelEntryAsync(LevelDefinition level)
         {
             await _uiManager.HideTransitionLoadingAsync();
+            await _uiManager.OpenGameplayHudAsync();
             await _gameplayController.PlayIntroAsync();
 
             try
@@ -366,11 +369,23 @@ namespace FoodieMatch.App
             _gameplayController.ClearLevel();
             _gameplayController.SetPresentationActive(false);
             _uiManager.HideAllPopups();
-            _uiManager.HideGameplayHud();
+            _uiManager.HideGameplayHudInstantly();
             _uiManager.SetCurrentLevelNumber(levelNumber);
             await _uiManager.ShowHomeAsync(displayedCoinBalance);
             _audioService.PlayMusic(AudioKeys.MusicMenu);
             _activeLevelNumber = 0;
+        }
+
+        private async Task CloseGameplayHudBeforeLoadingAsync()
+        {
+            if (_activeLevelNumber <= 0)
+            {
+                return;
+            }
+
+            _gameplayController.DisableGameplayInput();
+            _uiManager.HideAllPopups();
+            await _uiManager.CloseGameplayHudAsync();
         }
 
         private bool TryBeginTransition()

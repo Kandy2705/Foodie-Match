@@ -181,12 +181,10 @@ namespace FoodieMatch.Features.RequiredPackage
             }
         }
 
-        public async Task<MotionResult> PlayInitialEnterAsync()
+        public void PrepareInitialEnter()
         {
             List<PackageLayoutItem> visibleItems =
                 GetVisibleLayoutItems();
-            List<Task<MotionResult>> motions =
-                new(visibleItems.Count);
 
             for (int i = 0; i < visibleItems.Count; i++)
             {
@@ -200,10 +198,24 @@ namespace FoodieMatch.Features.RequiredPackage
                 bool enterFromRight =
                     slotIndex >= LevelRules.ActivePackageCount;
 
+                _packages[slotIndex].PrepareInitialEnter(
+                    motionTarget,
+                    enterFromRight);
+            }
+        }
+
+        public async Task<MotionResult> PlayInitialEnterAsync()
+        {
+            List<PackageLayoutItem> visibleItems =
+                GetVisibleLayoutItems();
+            List<Task<MotionResult>> motions =
+                new(visibleItems.Count);
+
+            for (int i = 0; i < visibleItems.Count; i++)
+            {
+                int slotIndex = visibleItems[i].SlotIndex;
                 motions.Add(
-                    _packages[slotIndex].PlayInitialEnterAsync(
-                        motionTarget,
-                        enterFromRight));
+                    _packages[slotIndex].PlayInitialEnterAsync());
             }
 
             MotionResult[] results = await Task.WhenAll(motions);

@@ -367,14 +367,7 @@ namespace FoodieMatch.UI
             _popupManager.Hide<MainMenuView>();
         }
 
-        public void ShowGameplayHud()
-        {
-            RunUiTask(
-                ShowGameplayHudAsync(),
-                nameof(ShowGameplayHud));
-        }
-
-        public async Task ShowGameplayHudAsync()
+        public async Task PrepareGameplayHudAsync()
         {
             int requestVersion = ++_gameplayHudRequestVersion;
 
@@ -393,7 +386,7 @@ namespace FoodieMatch.UI
 
             if (_gameplayHudView != null)
             {
-                _gameplayHudView.gameObject.SetActive(true);
+                _gameplayHudView.HideInstantly();
                 BindGameplayHudActions();
                 RefreshClickParticleState();
                 _addressableUiFactory.ReleaseLabel(
@@ -417,25 +410,45 @@ namespace FoodieMatch.UI
 
             if (requestVersion != _gameplayHudRequestVersion)
             {
-                _gameplayHudView.gameObject.SetActive(false);
+                _gameplayHudView.HideInstantly();
                 RefreshClickParticleState();
                 return;
             }
 
-            _gameplayHudView.gameObject.SetActive(true);
+            _gameplayHudView.HideInstantly();
             BindGameplayHudActions();
             RefreshClickParticleState();
             _addressableUiFactory.ReleaseLabel(
                 UiAddressLabels.BootstrapCritical);
         }
 
-        public void HideGameplayHud()
+        public async Task OpenGameplayHudAsync()
+        {
+            Task openTask = _gameplayHudView.OpenAsync();
+            RefreshClickParticleState();
+            await openTask;
+        }
+
+        public async Task CloseGameplayHudAsync()
         {
             _gameplayHudRequestVersion++;
 
             if (_gameplayHudView != null)
             {
-                _gameplayHudView.gameObject.SetActive(false);
+                await _gameplayHudView.CloseAsync();
+            }
+
+            ReleaseClickParticles();
+            RefreshClickParticleState();
+        }
+
+        public void HideGameplayHudInstantly()
+        {
+            _gameplayHudRequestVersion++;
+
+            if (_gameplayHudView != null)
+            {
+                _gameplayHudView.HideInstantly();
             }
 
             ReleaseClickParticles();
