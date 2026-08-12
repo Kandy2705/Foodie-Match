@@ -616,22 +616,22 @@ namespace FoodieMatch.UI.LeaderBoard
 
             if (list.NumberedRowWasVisible != null)
             {
-            for (int i = 0;
-                 i < list.NumberedRowWasVisible.Length;
-                 i++)
-            {
-                list.NumberedRowWasVisible[i] = false;
-            }
-
-            if (list.MedalRowWasVisible != null)
-            {
                 for (int i = 0;
-                     i < list.MedalRowWasVisible.Length;
+                     i < list.NumberedRowWasVisible.Length;
                      i++)
                 {
-                    list.MedalRowWasVisible[i] = false;
+                    list.NumberedRowWasVisible[i] = false;
                 }
-            }
+
+                if (list.MedalRowWasVisible != null)
+                {
+                    for (int i = 0;
+                         i < list.MedalRowWasVisible.Length;
+                         i++)
+                    {
+                        list.MedalRowWasVisible[i] = false;
+                    }
+                }
             }
         }
 
@@ -988,7 +988,6 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnWeeklyScrolled(
             Vector2 normalizedPosition)
         {
-            PrepareForScroll();
             RefreshVirtualizedList(
                 LeaderBoardTab.Weekly,
                 _weeklyList);
@@ -997,7 +996,6 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnGlobalScrolled(
             Vector2 normalizedPosition)
         {
-            PrepareForScroll();
             RefreshVirtualizedList(
                 LeaderBoardTab.Global,
                 _globalList);
@@ -1036,6 +1034,8 @@ namespace FoodieMatch.UI.LeaderBoard
 
         private void HideRewardPreviewOnScroll()
         {
+            PrepareForScroll();
+
             if (_rewardPreviewPanel != null &&
                 _rewardPreviewPanel.gameObject.activeSelf &&
                 !_rewardPreviewIsClosing)
