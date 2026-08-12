@@ -204,6 +204,14 @@ namespace FoodieMatch.Features.Board
             StopStackedGrillMotion();
         }
 
+        public void PrepareGrillIntro()
+        {
+            foreach (GrillViewBase grillView in _grillViews.Values)
+            {
+                grillView.PrepareIntro();
+            }
+        }
+
         public async Task<MotionResult> PlayGrillIntroAsync()
         {
             List<float> rowPositions = GetGrillRowPositions();

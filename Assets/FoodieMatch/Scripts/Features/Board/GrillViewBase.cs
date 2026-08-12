@@ -24,14 +24,23 @@ namespace FoodieMatch.Features.Board
             StopIntroMotion();
         }
 
-        public async Task<MotionResult> PlayIntroAsync(float startDelay)
+        public void PrepareIntro()
         {
+            StopIntroMotion();
             _introTargetPosition = transform.localPosition;
             _hasIntroTargetPosition = true;
             float direction = _introTargetPosition.x > 0f ? 1f : -1f;
             transform.localPosition = _introTargetPosition +
                                       Vector3.right * Mathf.Abs(_introHorizontalOffset) * direction;
             _didIntroFinish = false;
+        }
+
+        public async Task<MotionResult> PlayIntroAsync(float startDelay)
+        {
+            if (!_hasIntroTargetPosition)
+            {
+                return MotionResult.Failed;
+            }
 
             try
             {
