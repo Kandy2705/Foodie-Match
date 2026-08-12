@@ -246,14 +246,14 @@ namespace FoodieMatch.App
                 await SynchronizeUpcomingLevelsWithTimeoutAsync(
                     levelNumber);
                 _uiManager.SetLoadingProgress(0.9f);
+                await loadingTask;
+
                 long displayedCoinBalance = coinRewardPresentation == null
                     ? _playerProfileService.CoinBalance
                     : coinRewardPresentation.StartingCoinBalance;
                 await OpenHomeAsync(levelNumber, displayedCoinBalance);
                 _uiManager.SetLoadingProgress(0.97f);
                 shouldPlayCoinReward = coinRewardPresentation != null;
-
-                await loadingTask;
             }
             catch (Exception exception)
             {
