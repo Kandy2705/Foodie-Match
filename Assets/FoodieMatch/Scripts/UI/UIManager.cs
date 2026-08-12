@@ -502,8 +502,7 @@ namespace FoodieMatch.UI
             RefreshAddressableLoadingOverlay();
             RefreshClickParticleState();
             LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
-            loadingScreen.Show();
-            return Task.CompletedTask;
+            return loadingScreen.ShowAsync();
         }
 
         public void SetLoadingProgress(float progress)

@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using FoodieMatch.UI.Common;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,9 +15,11 @@ namespace FoodieMatch.UI.Loading
         private const float MaximumFrameDelta = 0.05f;
 
         [SerializeField] private Slider _progressSlider;
+        [SerializeField] private PopupAnimController _animController;
 
         private float _targetProgress;
         private int _showVersion;
+        private TaskCompletionSource<bool> _motionCompletion;
 
         private void Update()
         {
@@ -37,13 +41,13 @@ namespace FoodieMatch.UI.Loading
             _progressSlider.SetValueWithoutNotify(visibleProgress);
         }
 
-        public void Show()
+        public Task ShowAsync()
         {
             _showVersion++;
             _targetProgress = InitialProgress;
-            gameObject.SetActive(true);
             transform.SetAsLastSibling();
             _progressSlider.SetValueWithoutNotify(0f);
+            return PlayMotionAsync(_animController.Open);
         }
 
         public void SetProgress(float progress)
@@ -76,14 +80,44 @@ namespace FoodieMatch.UI.Loading
             }
 
             _progressSlider.SetValueWithoutNotify(1f);
-            gameObject.SetActive(false);
+            await PlayMotionAsync(_animController.Close);
         }
 
         public void HideImmediately()
         {
+            _showVersion++;
+            CompleteMotion();
             _targetProgress = 0f;
             _progressSlider.SetValueWithoutNotify(0f);
-            gameObject.SetActive(false);
+            _animController.HideInstantly();
+        }
+
+        private Task PlayMotionAsync(Action<Action> playMotion)
+        {
+            CompleteMotion();
+
+            TaskCompletionSource<bool> completion = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            _motionCompletion = completion;
+            playMotion(() => CompleteMotion(completion));
+            return completion.Task;
+        }
+
+        private void CompleteMotion(TaskCompletionSource<bool> completion)
+        {
+            if (_motionCompletion == completion)
+            {
+                _motionCompletion = null;
+            }
+
+            completion.TrySetResult(true);
+        }
+
+        private void CompleteMotion()
+        {
+            TaskCompletionSource<bool> completion = _motionCompletion;
+            _motionCompletion = null;
+            completion?.TrySetResult(true);
         }
     }
 }
