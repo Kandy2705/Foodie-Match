@@ -14,8 +14,12 @@ namespace FoodieMatch.UI.LeaderBoard
         private Action _beginDrag;
         private ScrollRect _scrollRect;
         private Vector2 _contentStartPosition;
+        private Vector2 _pointerStartPosition;
         private float _dragSpeedMultiplier = 0.5f;
         private bool _isDragging;
+        private bool _hasMoved;
+
+        private const float ScrollStartThreshold = 8f;
 
         public void Configure(
             ScrollRect scrollRect,
@@ -41,9 +45,10 @@ namespace FoodieMatch.UI.LeaderBoard
                 _contentStartPosition =
                     _scrollRect.content.anchoredPosition;
                 _isDragging = true;
+                _hasMoved = false;
             }
 
-            _beginDrag?.Invoke();
+            _pointerStartPosition = eventData.position;
         }
 
         public void OnDrag(
@@ -54,6 +59,14 @@ namespace FoodieMatch.UI.LeaderBoard
                 _scrollRect.content == null)
             {
                 return;
+            }
+
+            if (!_hasMoved &&
+                (eventData.position - _pointerStartPosition).sqrMagnitude >=
+                ScrollStartThreshold * ScrollStartThreshold)
+            {
+                _hasMoved = true;
+                _beginDrag?.Invoke();
             }
 
             Vector2 draggedPosition =
@@ -69,6 +82,7 @@ namespace FoodieMatch.UI.LeaderBoard
             PointerEventData eventData)
         {
             _isDragging = false;
+            _hasMoved = false;
 
             if (_scrollRect != null)
             {
