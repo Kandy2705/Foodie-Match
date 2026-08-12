@@ -43,11 +43,15 @@ namespace FoodieMatch.UI.Loading
 
         public Task ShowAsync()
         {
-            _showVersion++;
-            _targetProgress = InitialProgress;
-            transform.SetAsLastSibling();
-            _progressSlider.SetValueWithoutNotify(0f);
+            PrepareToShow();
             return PlayMotionAsync(_animController.Open);
+        }
+
+        public void ShowImmediately()
+        {
+            PrepareToShow();
+            CompleteMotion();
+            _animController.ShowInstantly();
         }
 
         public void SetProgress(float progress)
@@ -90,6 +94,14 @@ namespace FoodieMatch.UI.Loading
             _targetProgress = 0f;
             _progressSlider.SetValueWithoutNotify(0f);
             _animController.HideInstantly();
+        }
+
+        private void PrepareToShow()
+        {
+            _showVersion++;
+            _targetProgress = InitialProgress;
+            transform.SetAsLastSibling();
+            _progressSlider.SetValueWithoutNotify(0f);
         }
 
         private Task PlayMotionAsync(Action<Action> playMotion)

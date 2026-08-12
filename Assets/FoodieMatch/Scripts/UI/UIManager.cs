@@ -498,11 +498,12 @@ namespace FoodieMatch.UI
 
         public Task PlayLoadingAsync()
         {
-            _isTransitionLoadingVisible = true;
-            RefreshAddressableLoadingOverlay();
-            RefreshClickParticleState();
-            LoadingScreenView loadingScreen = GetOrCreateLoadingScreen();
-            return loadingScreen.ShowAsync();
+            return BeginLoading().ShowAsync();
+        }
+
+        public void ShowLoadingImmediately()
+        {
+            BeginLoading().ShowImmediately();
         }
 
         public void SetLoadingProgress(float progress)
@@ -1231,6 +1232,14 @@ namespace FoodieMatch.UI
             _loadingScreenView.gameObject.name =
                 _loadingScreenPrefab.gameObject.name;
             return _loadingScreenView;
+        }
+
+        private LoadingScreenView BeginLoading()
+        {
+            _isTransitionLoadingVisible = true;
+            RefreshAddressableLoadingOverlay();
+            RefreshClickParticleState();
+            return GetOrCreateLoadingScreen();
         }
 
         private void SubscribeEvents()

@@ -93,7 +93,7 @@ namespace FoodieMatch.App
             try
             {
                 Stopwatch startupTimer = Stopwatch.StartNew();
-                Task loadingTask = _uiManager.PlayLoadingAsync();
+                _uiManager.ShowLoadingImmediately();
                 _uiManager.SetLoadingProgress(0.2f);
                 await _appInstaller.GameConfigurationLoader.RefreshAsync(
                     cancellationToken);
@@ -124,7 +124,6 @@ namespace FoodieMatch.App
                     cancellationToken);
                 levelProgress.Stop();
                 _uiManager.SetLoadingProgress(0.92f);
-                await loadingTask;
 
                 if (!result.IsSuccess)
                 {

@@ -513,7 +513,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 9811898e0c7cd204a88055d3b8e984fe, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -552,6 +552,7 @@ MonoBehaviour:
   _openTrigger: Open
   _closeTrigger: Close
   _hiddenState: Hidden
+  _shownState: Shown
   _openState: Open
   _closeState: Close
   _waitForAnimatorStates: 1
