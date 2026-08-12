@@ -456,6 +456,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4801088610987949860}
   - component: {fileID: 7440178564741621615}
+  - component: {fileID: 1787977916165292472}
+  - component: {fileID: 992176274240273116}
+  - component: {fileID: 1070742884779401023}
   m_Layer: 0
   m_Name: LoadingScreenRoot
   m_TagString: Untagged
@@ -497,6 +500,62 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _progressSlider: {fileID: 500911299170875234}
+  _animController: {fileID: 1070742884779401023}
+--- !u!95 &1787977916165292472
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7174926809512683428}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9811898e0c7cd204a88055d3b8e984fe, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!225 &992176274240273116
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7174926809512683428}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1070742884779401023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7174926809512683428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea521fc68aed40e5a00ad1b5eefba31f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 1787977916165292472}
+  _canvasGroup: {fileID: 992176274240273116}
+  _openTrigger: Open
+  _closeTrigger: Close
+  _hiddenState: Hidden
+  _shownState: Shown
+  _openState: Open
+  _closeState: Close
+  _waitForAnimatorStates: 1
 --- !u!1 &8021857236127680304
 GameObject:
   m_ObjectHideFlags: 0

@@ -26,6 +26,9 @@ namespace FoodieMatch.UI.Common
         [SerializeField]
         private string _hiddenState = "Hidden";
 
+        [SerializeField]
+        private string _shownState = "Shown";
+
         [Header("Animator States")]
         [SerializeField]
         private string _openState = "Open";
@@ -39,6 +42,7 @@ namespace FoodieMatch.UI.Common
         private int _openTriggerHash;
         private int _closeTriggerHash;
         private int _hiddenStateHash;
+        private int _shownStateHash;
         private Coroutine _waitCoroutine;
         private PopupMotionState _state;
 
@@ -136,25 +140,46 @@ namespace FoodieMatch.UI.Common
             Open();
         }
 
+        public void ShowInstantly()
+        {
+            StopWaiting();
+            gameObject.SetActive(true);
+
+            if (_animator != null)
+            {
+                _animator.ResetTrigger(_openTriggerHash);
+                _animator.ResetTrigger(_closeTriggerHash);
+                SampleStateIfPossible(_shownState, _shownStateHash);
+            }
+
+            _state = PopupMotionState.Open;
+            SetInteractable(true);
+        }
+
         public void HideInstantly()
         {
             StopWaiting();
             _state = PopupMotionState.Closed;
-            SampleHiddenStateIfPossible();
+            SampleStateIfPossible(_hiddenState, _hiddenStateHash);
             SetInteractable(false);
             gameObject.SetActive(false);
         }
 
         private void SampleHiddenStateIfPossible()
         {
+            SampleStateIfPossible(_hiddenState, _hiddenStateHash);
+        }
+
+        private void SampleStateIfPossible(string stateName, int stateHash)
+        {
             if (_animator == null ||
-                string.IsNullOrEmpty(_hiddenState) ||
+                string.IsNullOrEmpty(stateName) ||
                 !_animator.isInitialized)
             {
                 return;
             }
 
-            _animator.Play(_hiddenStateHash, 0, 1f);
+            _animator.Play(stateHash, 0, 1f);
 
             if (_animator.isActiveAndEnabled && gameObject.activeInHierarchy)
             {
@@ -186,6 +211,7 @@ namespace FoodieMatch.UI.Common
             _openTriggerHash = Animator.StringToHash(_openTrigger);
             _closeTriggerHash = Animator.StringToHash(_closeTrigger);
             _hiddenStateHash = Animator.StringToHash(_hiddenState);
+            _shownStateHash = Animator.StringToHash(_shownState);
         }
 
         private void SetInteractable(bool interactable)
