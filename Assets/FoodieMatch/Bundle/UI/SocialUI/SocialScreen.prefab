@@ -74,9 +74,9 @@ MonoBehaviour:
   _shareMessage: Check out Foodie-Match!
   _inviteFriendsMessage: Join me in Foodie-Match!
   _storeUrl: https://play.google.com/store/games
-  _buttonRevealDelay: 0.1
-  _buttonScaleUpDuration: 0.2
-  _buttonSettleDuration: 0.2
+  _buttonRevealDelay: 0.15
+  _buttonScaleUpDuration: 0.3
+  _buttonSettleDuration: 0.1
 --- !u!1001 &4628225213305017623
 PrefabInstance:
   m_ObjectHideFlags: 0
