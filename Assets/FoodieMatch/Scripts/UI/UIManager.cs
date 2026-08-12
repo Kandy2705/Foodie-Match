@@ -1292,7 +1292,7 @@ namespace FoodieMatch.UI
             ShowFillHeartPopup();
         }
 
-        private void ShowShopPopup()
+        public void ShowShopPopup()
         {
             RunUiTask(
                 ShowShopPopupAsync(),
