@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Configuration.Shop;
+using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Time;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.GoldPass;
 using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 
@@ -495,6 +498,141 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public GoldPassState RefreshGoldPassSeason(string seasonId)
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState currentState = currentProfile.GoldPassState;
+
+                if (currentState.SeasonId == seasonId)
+                {
+                    return currentState;
+                }
+
+                GoldPassState updatedState =
+                    GoldPassState.CreateForSeason(seasonId);
+                QueueProfileChange(
+                    currentProfile.WithGoldPassState(updatedState));
+                return updatedState;
+            }
+        }
+
+        public void AddGoldPassSpoons(string seasonId, int amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            }
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState currentState = GetGoldPassStateForSeason(
+                    currentProfile,
+                    seasonId);
+                QueueProfileChange(
+                    currentProfile.WithGoldPassState(
+                        currentState.WithAddedSpoons(amount)));
+            }
+        }
+
+        public bool TryActivateGoldPassSeasonPass(string seasonId)
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState currentState = GetGoldPassStateForSeason(
+                    currentProfile,
+                    seasonId);
+
+                if (currentState.IsSeasonPassPurchased)
+                {
+                    return false;
+                }
+
+                QueueProfileChange(
+                    currentProfile.WithGoldPassState(
+                        currentState.WithSeasonPassPurchased()));
+                return true;
+            }
+        }
+
+        public GoldPassClaimResult TryClaimGoldPassReward(
+            string seasonId,
+            GoldPassMilestoneDefinition milestone,
+            GoldPassTrack track)
+        {
+            if (!Enum.IsDefined(typeof(GoldPassTrack), track))
+            {
+                throw new ArgumentOutOfRangeException(nameof(track));
+            }
+
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState currentState = GetGoldPassStateForSeason(
+                    currentProfile,
+                    seasonId);
+                bool seasonChanged = !ReferenceEquals(
+                    currentProfile.GoldPassState,
+                    currentState);
+
+                if (seasonChanged)
+                {
+                    currentProfile = currentProfile.WithGoldPassState(
+                        currentState);
+                }
+
+                if (currentState.SpoonCount < milestone.RequiredSpoons)
+                {
+                    return CompleteGoldPassClaimFailure(
+                        currentProfile,
+                        seasonChanged,
+                        GoldPassClaimResult.MilestoneLocked);
+                }
+
+                if (track == GoldPassTrack.Season &&
+                    !currentState.IsSeasonPassPurchased)
+                {
+                    return CompleteGoldPassClaimFailure(
+                        currentProfile,
+                        seasonChanged,
+                        GoldPassClaimResult.SeasonPassRequired);
+                }
+
+                bool alreadyClaimed = track == GoldPassTrack.Free
+                    ? currentState.HasClaimedFreeMilestone(milestone.Level)
+                    : currentState.HasClaimedSeasonMilestone(milestone.Level);
+
+                if (alreadyClaimed)
+                {
+                    return CompleteGoldPassClaimFailure(
+                        currentProfile,
+                        seasonChanged,
+                        GoldPassClaimResult.AlreadyClaimed);
+                }
+
+                GoldPassRewardDefinition reward = track == GoldPassTrack.Free
+                    ? milestone.FreeReward
+                    : milestone.SeasonReward;
+                GoldPassState updatedState = track == GoldPassTrack.Free
+                    ? currentState.WithClaimedFreeMilestone(milestone.Level)
+                    : currentState.WithClaimedSeasonMilestone(milestone.Level);
+                PlayerProfile updatedProfile = ApplyGoldPassReward(
+                    currentProfile,
+                    reward,
+                    updatedState);
+
+                QueueProfileChange(updatedProfile);
+                return GoldPassClaimResult.Succeeded;
+            }
+        }
+
         public async Task<ShopRewardApplyResult> ApplyShopRewardsAsync(
             ShopRewardDefinition rewards)
         {
@@ -542,7 +680,7 @@ namespace FoodieMatch.Core.Application.Player
                         baseEnd + rewards.UnlimitedHeartSeconds);
                 }
 
-                updatedProfile = currentProfile.WithShopState(
+                updatedProfile = currentProfile.WithResourceState(
                     updatedCoinBalance,
                     updatedBoosterCounts,
                     updatedHeartState,
@@ -563,6 +701,131 @@ namespace FoodieMatch.Core.Application.Player
                 updatedProfile.UnlimitedHeartEndUnixSeconds,
                 updatedProfile.AdsRemoved,
                 updatedProfile.BoosterCounts);
+        }
+
+        private PlayerProfile ApplyGoldPassReward(
+            PlayerProfile currentProfile,
+            GoldPassRewardDefinition reward,
+            GoldPassState updatedGoldPassState)
+        {
+            long coinReward = 0;
+            long unlimitedHeartSeconds = 0;
+            Dictionary<BoosterType, int> boosterRewards = new();
+            CollectGoldPassReward(
+                reward,
+                ref coinReward,
+                ref unlimitedHeartSeconds,
+                boosterRewards);
+
+            long updatedCoinBalance = checked(
+                currentProfile.CoinBalance + coinReward);
+            Dictionary<BoosterType, int> updatedBoosterCounts = new(
+                currentProfile.BoosterCounts);
+
+            foreach (KeyValuePair<BoosterType, int> boosterReward in boosterRewards)
+            {
+                updatedBoosterCounts[boosterReward.Key] = checked(
+                    currentProfile.GetBoosterCount(boosterReward.Key) +
+                    boosterReward.Value);
+            }
+
+            DateTimeOffset currentUtc = _clock.UtcNow;
+            HeartState updatedHeartState =
+                HasUnlimitedHearts(currentProfile, currentUtc)
+                    ? currentProfile.HeartState
+                    : GetRefreshedHeartState(currentProfile, currentUtc);
+            long updatedUnlimitedHeartEnd =
+                currentProfile.UnlimitedHeartEndUnixSeconds;
+
+            if (unlimitedHeartSeconds > 0)
+            {
+                updatedHeartState = ShiftHeartRecovery(
+                    updatedHeartState,
+                    unlimitedHeartSeconds);
+                long baseEnd = Math.Max(
+                    currentUtc.ToUnixTimeSeconds(),
+                    currentProfile.UnlimitedHeartEndUnixSeconds);
+                updatedUnlimitedHeartEnd = checked(
+                    baseEnd + unlimitedHeartSeconds);
+            }
+
+            return currentProfile
+                .WithResourceState(
+                    updatedCoinBalance,
+                    updatedBoosterCounts,
+                    updatedHeartState,
+                    currentProfile.AdsRemoved,
+                    updatedUnlimitedHeartEnd)
+                .WithGoldPassState(updatedGoldPassState);
+        }
+
+        private static void CollectGoldPassReward(
+            GoldPassRewardDefinition reward,
+            ref long coinReward,
+            ref long unlimitedHeartSeconds,
+            Dictionary<BoosterType, int> boosterRewards)
+        {
+            switch (reward.Type)
+            {
+                case GoldPassRewardType.Coin:
+                    coinReward = checked(coinReward + reward.Amount);
+                    return;
+
+                case GoldPassRewardType.UnlimitedHeart:
+                    unlimitedHeartSeconds = checked(
+                        unlimitedHeartSeconds + reward.UnlimitedHeartSeconds);
+                    return;
+
+                case GoldPassRewardType.Booster:
+                    BoosterType boosterType = reward.BoosterType.Value;
+                    int currentAmount = boosterRewards.TryGetValue(
+                        boosterType,
+                        out int amount)
+                            ? amount
+                            : 0;
+                    boosterRewards[boosterType] = checked(
+                        currentAmount + (int)reward.Amount);
+                    return;
+
+                case GoldPassRewardType.Treasure1:
+                case GoldPassRewardType.Treasure2:
+                case GoldPassRewardType.Treasure3:
+                    for (int i = 0; i < reward.Contents.Count; i++)
+                    {
+                        CollectGoldPassReward(
+                            reward.Contents[i],
+                            ref coinReward,
+                            ref unlimitedHeartSeconds,
+                            boosterRewards);
+                    }
+
+                    return;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(reward));
+            }
+        }
+
+        private static GoldPassState GetGoldPassStateForSeason(
+            PlayerProfile profile,
+            string seasonId)
+        {
+            return profile.GoldPassState.SeasonId == seasonId
+                ? profile.GoldPassState
+                : GoldPassState.CreateForSeason(seasonId);
+        }
+
+        private GoldPassClaimResult CompleteGoldPassClaimFailure(
+            PlayerProfile currentProfile,
+            bool seasonChanged,
+            GoldPassClaimResult result)
+        {
+            if (seasonChanged)
+            {
+                QueueProfileChange(currentProfile);
+            }
+
+            return result;
         }
 
         private HeartState GetRefreshedHeartState(

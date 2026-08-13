@@ -210,7 +210,7 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds);
         }
 
-        public PlayerProfile WithShopState(
+        public PlayerProfile WithResourceState(
             long coinBalance,
             IReadOnlyDictionary<BoosterType, int> boosterCounts,
             HeartState heartState,

@@ -56,6 +56,103 @@ namespace FoodieMatch.Core.Domain.GoldPass
             Array.Empty<int>(),
             Array.Empty<int>());
 
+        public static GoldPassState CreateForSeason(string seasonId)
+        {
+            if (string.IsNullOrWhiteSpace(seasonId))
+            {
+                throw new ArgumentException(
+                    "Gold Pass season id is required.",
+                    nameof(seasonId));
+            }
+
+            return new GoldPassState(
+                seasonId,
+                0,
+                false,
+                Array.Empty<int>(),
+                Array.Empty<int>());
+        }
+
+        public GoldPassState WithAddedSpoons(int amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            }
+
+            return new GoldPassState(
+                SeasonId,
+                checked(SpoonCount + amount),
+                IsSeasonPassPurchased,
+                _claimedFreeMilestoneLevels,
+                _claimedSeasonMilestoneLevels);
+        }
+
+        public GoldPassState WithSeasonPassPurchased()
+        {
+            if (IsSeasonPassPurchased)
+            {
+                return this;
+            }
+
+            return new GoldPassState(
+                SeasonId,
+                SpoonCount,
+                true,
+                _claimedFreeMilestoneLevels,
+                _claimedSeasonMilestoneLevels);
+        }
+
+        public bool HasClaimedFreeMilestone(int level)
+        {
+            return _claimedFreeMilestoneLevels.Contains(level);
+        }
+
+        public bool HasClaimedSeasonMilestone(int level)
+        {
+            return _claimedSeasonMilestoneLevels.Contains(level);
+        }
+
+        public GoldPassState WithClaimedFreeMilestone(int level)
+        {
+            if (HasClaimedFreeMilestone(level))
+            {
+                return this;
+            }
+
+            List<int> claimedLevels = new(_claimedFreeMilestoneLevels)
+            {
+                level
+            };
+
+            return new GoldPassState(
+                SeasonId,
+                SpoonCount,
+                IsSeasonPassPurchased,
+                claimedLevels,
+                _claimedSeasonMilestoneLevels);
+        }
+
+        public GoldPassState WithClaimedSeasonMilestone(int level)
+        {
+            if (HasClaimedSeasonMilestone(level))
+            {
+                return this;
+            }
+
+            List<int> claimedLevels = new(_claimedSeasonMilestoneLevels)
+            {
+                level
+            };
+
+            return new GoldPassState(
+                SeasonId,
+                SpoonCount,
+                IsSeasonPassPurchased,
+                _claimedFreeMilestoneLevels,
+                claimedLevels);
+        }
+
         private static ReadOnlyCollection<int> CopyClaimedLevels(
             IReadOnlyCollection<int> claimedLevels,
             string parameterName)
