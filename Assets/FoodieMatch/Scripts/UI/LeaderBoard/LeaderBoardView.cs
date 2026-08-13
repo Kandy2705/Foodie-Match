@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FoodieMatch.UI.AddressableAssets;
 using FoodieMatch.UI.MainMenu;
 using PrimeTween;
 using TMPro;
@@ -79,6 +80,7 @@ namespace FoodieMatch.UI.LeaderBoard
         [Header("Content")]
         [SerializeField] private RectTransform _contentRoot;
         [SerializeField] private TMP_Text _weeklyTimeRemainingText;
+        [SerializeField] private WeeklyContestIntroPopupView _weeklyContestIntroPopupView;
 
         [Header("Data Views")]
         [SerializeField] private LeaderBoardCurrentPlayerView _currentPlayerView;
@@ -164,6 +166,9 @@ namespace FoodieMatch.UI.LeaderBoard
         private VerticalLayoutGroup _globalLayoutGroup;
         private ContentSizeFitter _globalContentSizeFitter;
         private AsyncOperationHandle<GameObject> _activeContentHandle;
+        private AsyncOperationHandle<GameObject> _weeklyPopupHandle;
+        private bool _hasWeeklyPopupHandle;
+        private bool _isWeeklyPopupLoading;
         private bool _hasActiveContentHandle;
         private bool _isContentLoading;
         private bool _isDestroyed;
@@ -189,6 +194,7 @@ namespace FoodieMatch.UI.LeaderBoard
         private HorizontalLayoutGroup _rewardItemsLayoutGroup;
         private LeaderBoardScrollDragRelay _weeklyScrollDragRelay;
         private LeaderBoardScrollDragRelay _globalScrollDragRelay;
+        private Button _weeklyInfoButton;
         private float _rewardPanelHorizontalPadding;
         private bool _rewardPreviewIsClosing;
         private float _nextTimerRefreshTime;
@@ -223,6 +229,7 @@ namespace FoodieMatch.UI.LeaderBoard
             _contentRequestVersion++;
             _isContentLoading = false;
             ReleaseActiveContent();
+            ReleaseWeeklyPopup();
         }
 
         private void Update()
@@ -261,6 +268,7 @@ namespace FoodieMatch.UI.LeaderBoard
             StopRevealAnimation();
             HideRewardPreview();
             ReleaseActiveContent();
+            ReleaseWeeklyPopup();
             _weeklyButton.onClick.RemoveListener(OnWeeklyButtonClicked);
             _globalButton.onClick.RemoveListener(OnGlobalButtonClicked);
         }
@@ -270,6 +278,126 @@ namespace FoodieMatch.UI.LeaderBoard
             _ = EnsureTabContentLoadedAsync(
                 _selectedTab,
                 true);
+        }
+
+        private void OnInfoButtonClicked()
+        {
+            _ = OpenWeeklyContestIntroPopupAsync();
+        }
+
+        private async Task OpenWeeklyContestIntroPopupAsync()
+        {
+            if (_isDestroyed || _isWeeklyPopupLoading)
+            {
+                return;
+            }
+
+            if (_weeklyContestIntroPopupView != null)
+            {
+                if (!_weeklyContestIntroPopupView.gameObject.activeSelf)
+                {
+                    _weeklyContestIntroPopupView.gameObject.SetActive(true);
+                }
+
+                _weeklyContestIntroPopupView.Open();
+                return;
+            }
+
+            _isWeeklyPopupLoading = true;
+            Transform popupParent = FindMainMenuSiblingParent();
+            AsyncOperationHandle<GameObject> handle =
+                Addressables.InstantiateAsync(
+                    UiAddressKeys.WeeklyContestIntroPopup,
+                    popupParent,
+                    instantiateInWorldSpace: false,
+                    trackHandle: true);
+
+            try
+            {
+                GameObject instance = await handle.Task;
+                if (_isDestroyed || !isActiveAndEnabled)
+                {
+                    if (handle.IsValid())
+                    {
+                        Addressables.ReleaseInstance(handle);
+                    }
+
+                    return;
+                }
+
+                if (handle.Status != AsyncOperationStatus.Succeeded ||
+                    instance == null)
+                {
+                    throw handle.OperationException ??
+                        new InvalidOperationException(
+                            $"Weekly contest intro popup could not load: " +
+                            UiAddressKeys.WeeklyContestIntroPopup);
+                }
+
+                WeeklyContestIntroPopupView popupView =
+                    instance.GetComponent<WeeklyContestIntroPopupView>();
+                if (popupView == null)
+                {
+                    throw new MissingComponentException(
+                        $"{instance.name} needs " +
+                        $"{nameof(WeeklyContestIntroPopupView)}.");
+                }
+
+                _weeklyPopupHandle = handle;
+                _hasWeeklyPopupHandle = true;
+                _weeklyContestIntroPopupView = popupView;
+                instance.SetActive(true);
+                instance.transform.SetAsLastSibling();
+                _weeklyContestIntroPopupView.Open();
+            }
+            catch (Exception exception)
+            {
+                if (handle.IsValid() && !_hasWeeklyPopupHandle)
+                {
+                    Addressables.ReleaseInstance(handle);
+                }
+
+                Debug.LogError(
+                    $"Failed to load weekly contest intro popup: {exception}");
+            }
+            finally
+            {
+                _isWeeklyPopupLoading = false;
+            }
+        }
+
+        private void ReleaseWeeklyPopup()
+        {
+            _weeklyContestIntroPopupView = null;
+            _isWeeklyPopupLoading = false;
+
+            if (_hasWeeklyPopupHandle && _weeklyPopupHandle.IsValid())
+            {
+                Addressables.ReleaseInstance(_weeklyPopupHandle);
+            }
+
+            _hasWeeklyPopupHandle = false;
+            _weeklyPopupHandle = default;
+        }
+
+        private Transform FindMainMenuSiblingParent()
+        {
+            Transform current = transform;
+            while (current != null)
+            {
+                if (current.name == "MainMenuRoot" ||
+                    current.name.StartsWith("MainMenuRoot(",
+                        StringComparison.Ordinal))
+                {
+                    return current.parent != null
+                        ? current.parent
+                        : current;
+                }
+
+                current = current.parent;
+            }
+
+            return transform.root;
         }
 
         private async void OnWeeklyButtonClicked()
@@ -434,6 +562,13 @@ namespace FoodieMatch.UI.LeaderBoard
 
             if (tab == LeaderBoardTab.Weekly)
             {
+                _weeklyInfoButton = contentView.InfoButton;
+                if (_weeklyInfoButton != null)
+                {
+                    _weeklyInfoButton.onClick.RemoveListener(OnInfoButtonClicked);
+                    _weeklyInfoButton.onClick.AddListener(OnInfoButtonClicked);
+                }
+
                 _weeklyScrollRect = contentView.ScrollRect;
                 _weeklyLayoutGroup = contentView.LayoutGroup;
                 _weeklyContentSizeFitter =
@@ -498,6 +633,12 @@ namespace FoodieMatch.UI.LeaderBoard
 
             if (_loadedContentTab == LeaderBoardTab.Weekly)
             {
+                if (_weeklyInfoButton != null)
+                {
+                    _weeklyInfoButton.onClick.RemoveListener(
+                        OnInfoButtonClicked);
+                }
+
                 if (_weeklyScrollRect != null)
                 {
                     _weeklyScrollRect.onValueChanged.RemoveListener(
