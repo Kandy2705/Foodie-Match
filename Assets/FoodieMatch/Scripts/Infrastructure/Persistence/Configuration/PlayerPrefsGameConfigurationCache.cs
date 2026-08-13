@@ -4,6 +4,7 @@ using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Infrastructure.Persistence.Save;
@@ -14,7 +15,7 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
     public sealed class PlayerPrefsGameConfigurationCache
     {
         private const string CacheKey = "GameConfiguration";
-        private const int CurrentSchemaVersion = 2;
+        private const int CurrentSchemaVersion = 3;
 
         private readonly ISaveService _saveService;
 
@@ -107,7 +108,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                     unlockLevels,
                     dto.Booster.UnlockRewardAmount),
                 new GameAdsConfigSnapshot(
-                    TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)));
+                    TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)),
+                new GameGoldPassProgressionConfigSnapshot(
+                    dto.GoldPassProgression.SpoonsPerCompletedLevel));
         }
 
         private static GameConfigurationCacheDto CreateDto(
@@ -162,6 +165,12 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 {
                     PostLevelIntervalMinutes =
                         checked((int)configuration.Ads.PostLevelAdInterval.TotalMinutes)
+                },
+                GoldPassProgression = new GoldPassProgressionConfigDto
+                {
+                    SpoonsPerCompletedLevel = configuration
+                        .GoldPassProgression
+                        .SpoonsPerCompletedLevel
                 }
             };
         }

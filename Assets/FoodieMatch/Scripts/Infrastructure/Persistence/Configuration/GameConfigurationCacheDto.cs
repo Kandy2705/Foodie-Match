@@ -18,6 +18,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
 
         [JsonProperty("ads", Required = Required.Always)]
         public AdsConfigDto Ads { get; set; }
+
+        [JsonProperty("goldPassProgression", Required = Required.Always)]
+        public GoldPassProgressionConfigDto GoldPassProgression { get; set; }
     }
 
     internal sealed class EconomyConfigDto
@@ -84,5 +87,11 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
     {
         [JsonProperty("postLevelIntervalMinutes", Required = Required.Always)]
         public int PostLevelIntervalMinutes { get; set; }
+    }
+
+    internal sealed class GoldPassProgressionConfigDto
+    {
+        [JsonProperty("spoonsPerCompletedLevel", Required = Required.Always)]
+        public int SpoonsPerCompletedLevel { get; set; }
     }
 }

@@ -133,6 +133,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     defaults.Booster.GetUnlockLevel(BoosterType.Box),
                 [FirebaseRemoteConfigKeys.BoosterUnlockRewardAmount] =
                     defaults.Booster.UnlockRewardAmount,
+                [FirebaseRemoteConfigKeys.GoldPassSpoonsPerCompletedLevel] =
+                    defaults.GoldPassProgression.SpoonsPerCompletedLevel,
                 [FirebaseRemoteConfigKeys.PostLevelAdIntervalMinutes] =
                     checked((int)defaults.Ads.PostLevelAdInterval.TotalMinutes),
                 [FirebaseRemoteConfigKeys.LevelManifestVersion] = 0,

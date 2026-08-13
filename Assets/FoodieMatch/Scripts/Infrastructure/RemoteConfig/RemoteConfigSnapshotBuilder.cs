@@ -5,6 +5,7 @@ using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Domain.Booster;
 using UnityEngine;
@@ -104,7 +105,12 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                         ReadPositiveInt(
                             remoteConfig,
                             FirebaseRemoteConfigKeys.PostLevelAdIntervalMinutes,
-                            checked((int)fallback.Ads.PostLevelAdInterval.TotalMinutes)))));
+                            checked((int)fallback.Ads.PostLevelAdInterval.TotalMinutes)))),
+                new GameGoldPassProgressionConfigSnapshot(
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.GoldPassSpoonsPerCompletedLevel,
+                        fallback.GoldPassProgression.SpoonsPerCompletedLevel)));
         }
 
         private static int ReadPositiveInt(

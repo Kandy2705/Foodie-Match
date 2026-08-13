@@ -6,6 +6,8 @@ using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
+using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
@@ -25,6 +27,8 @@ namespace FoodieMatch.App
         private UIManager _uiManager;
         private GameplayController _gameplayController;
         private PlayerProfileService _playerProfileService;
+        private GoldPassService _goldPassService;
+        private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private BoosterManager _boosterManager;
         private IGameEconomyConfig _economyConfig;
         private ShopPurchaseService _shopPurchaseService;
@@ -42,6 +46,8 @@ namespace FoodieMatch.App
             UIManager uiManager,
             GameplayController gameplayController,
             PlayerProfileService playerProfileService,
+            GoldPassService goldPassService,
+            IGameGoldPassProgressionConfig goldPassProgressionConfig,
             BoosterManager boosterManager,
             IGameEconomyConfig economyConfig,
             ShopPurchaseService shopPurchaseService,
@@ -55,6 +61,8 @@ namespace FoodieMatch.App
             _uiManager = uiManager;
             _gameplayController = gameplayController;
             _playerProfileService = playerProfileService;
+            _goldPassService = goldPassService;
+            _goldPassProgressionConfig = goldPassProgressionConfig;
             _boosterManager = boosterManager;
             _economyConfig = economyConfig;
             _shopPurchaseService = shopPurchaseService;
@@ -753,6 +761,8 @@ namespace FoodieMatch.App
                 _playerProfileService.ApplyLevelCompletionReward(
                     homeLevelNumber,
                     coinReward);
+                _goldPassService.AddSpoons(
+                    _goldPassProgressionConfig.SpoonsPerCompletedLevel);
                 HomeCoinRewardPresentation coinRewardPresentation = new(
                     startingCoinBalance,
                     _playerProfileService.CoinBalance,

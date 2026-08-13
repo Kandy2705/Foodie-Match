@@ -2,6 +2,7 @@ using System;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Domain.Booster;
 
@@ -11,7 +12,8 @@ namespace FoodieMatch.Core.Application.Configuration
         IGameEconomyConfig,
         IGameHeartConfig,
         IGameBoosterConfig,
-        IGameAdsConfig
+        IGameAdsConfig,
+        IGameGoldPassProgressionConfig
     {
         private GameConfigurationSnapshotSet _current;
 
@@ -37,6 +39,9 @@ namespace FoodieMatch.Core.Application.Configuration
         public TimeSpan PostLevelAdInterval => _current.Ads.PostLevelAdInterval;
 
         public int UnlockRewardAmount => _current.Booster.UnlockRewardAmount;
+
+        public int SpoonsPerCompletedLevel =>
+            _current.GoldPassProgression.SpoonsPerCompletedLevel;
 
         public int GetBoosterPrice(BoosterType boosterType)
         {
