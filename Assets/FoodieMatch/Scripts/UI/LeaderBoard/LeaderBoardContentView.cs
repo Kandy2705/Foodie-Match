@@ -8,6 +8,7 @@ namespace FoodieMatch.UI.LeaderBoard
         [SerializeField] private ScrollRect _scrollRect;
         [SerializeField] private VerticalLayoutGroup _layoutGroup;
         [SerializeField] private ContentSizeFitter _contentSizeFitter;
+        [SerializeField] private Button _infoButton;
 
         [Header("Row Templates")]
         [SerializeField]
@@ -33,6 +34,8 @@ namespace FoodieMatch.UI.LeaderBoard
 
         public ContentSizeFitter ContentSizeFitter =>
             _contentSizeFitter;
+
+        public Button InfoButton => _infoButton;
 
         public LeaderBoardMedalPlayerRowView MedalRowTemplate =>
             _medalRowTemplate;

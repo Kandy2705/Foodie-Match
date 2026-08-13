@@ -43,7 +43,9 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(StarterPackPopupView)] =
                     UiAddressKeys.StarterPackPopup,
                 [typeof(ShopView)] = UiAddressKeys.ShopScreen,
-                [typeof(LeaderBoardView)] = UiAddressKeys.LeaderBoardScreen
+                [typeof(LeaderBoardView)] = UiAddressKeys.LeaderBoardScreen,
+                [typeof(WeeklyContestIntroPopupView)] =
+                    UiAddressKeys.WeeklyContestIntroPopup
             };
 
         public static bool TryGetAddress(Type uiType, out string address)
