@@ -19,17 +19,33 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
 
                 while (version < PlayerProfileDataVersions.Current)
                 {
-                    if (version != 3)
+                    switch (version)
                     {
-                        migratedJson = null;
-                        errorMessage =
-                            $"Player profile schema version {version} cannot be migrated.";
-                        return false;
+                        case 3:
+                            profileObject["adsRemoved"] = false;
+                            profileObject["unlimitedHeartEndUnixSeconds"] = 0;
+                            version = 4;
+                            break;
+
+                        case 4:
+                            profileObject["goldPass"] = new JObject
+                            {
+                                ["seasonId"] = string.Empty,
+                                ["spoonCount"] = 0,
+                                ["isSeasonPassPurchased"] = false,
+                                ["claimedFreeMilestoneLevels"] = new JArray(),
+                                ["claimedSeasonMilestoneLevels"] = new JArray()
+                            };
+                            version = 5;
+                            break;
+
+                        default:
+                            migratedJson = null;
+                            errorMessage =
+                                $"Player profile schema version {version} cannot be migrated.";
+                            return false;
                     }
 
-                    profileObject["adsRemoved"] = false;
-                    profileObject["unlimitedHeartEndUnixSeconds"] = 0;
-                    version = 4;
                     profileObject["schemaVersion"] = version;
                 }
 

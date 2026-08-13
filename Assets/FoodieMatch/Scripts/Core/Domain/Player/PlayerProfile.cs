@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.GoldPass;
 using FoodieMatch.Core.Domain.Heart;
 
 namespace FoodieMatch.Core.Domain.Player
@@ -18,6 +19,7 @@ namespace FoodieMatch.Core.Domain.Player
             IReadOnlyDictionary<BoosterType, int> boosterCounts,
             IReadOnlyCollection<BoosterType> seenBoosterGuides,
             HeartState heartState,
+            GoldPassState goldPassState,
             bool adsRemoved = false,
             long unlimitedHeartEndUnixSeconds = 0)
         {
@@ -51,6 +53,8 @@ namespace FoodieMatch.Core.Domain.Player
             UnlimitedHeartEndUnixSeconds = unlimitedHeartEndUnixSeconds;
             HeartState = heartState ??
                 throw new ArgumentNullException(nameof(heartState));
+            GoldPassState = goldPassState ??
+                throw new ArgumentNullException(nameof(goldPassState));
             _boosterCounts = CopyBoosterCounts(boosterCounts);
             _seenBoosterGuideSet = CopySeenBoosterGuides(seenBoosterGuides);
             _seenBoosterGuides = new ReadOnlyCollection<BoosterType>(
@@ -66,6 +70,8 @@ namespace FoodieMatch.Core.Domain.Player
         public long UnlimitedHeartEndUnixSeconds { get; }
 
         public HeartState HeartState { get; }
+
+        public GoldPassState GoldPassState { get; }
 
         public IReadOnlyDictionary<BoosterType, int> BoosterCounts => _boosterCounts;
 
@@ -98,6 +104,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds);
         }
@@ -115,6 +122,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds);
         }
@@ -149,6 +157,7 @@ namespace FoodieMatch.Core.Domain.Player
                 boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds);
         }
@@ -173,6 +182,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds);
         }
@@ -195,6 +205,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 heartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds);
         }
@@ -212,8 +223,27 @@ namespace FoodieMatch.Core.Domain.Player
                 boosterCounts,
                 _seenBoosterGuides,
                 heartState,
+                GoldPassState,
                 adsRemoved,
                 unlimitedHeartEndUnixSeconds);
+        }
+
+        public PlayerProfile WithGoldPassState(GoldPassState goldPassState)
+        {
+            if (ReferenceEquals(GoldPassState, goldPassState))
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                goldPassState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds);
         }
 
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(

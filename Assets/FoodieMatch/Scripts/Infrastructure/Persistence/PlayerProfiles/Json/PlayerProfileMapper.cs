@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.GoldPass;
 using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 
@@ -38,6 +39,10 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 !TryMapHeartState(
                     profileDto,
                     out HeartState heartState,
+                    out errorMessage) ||
+                !TryMapGoldPassState(
+                    profileDto.GoldPass,
+                    out GoldPassState goldPassState,
                     out errorMessage))
             {
                 record = null;
@@ -52,6 +57,7 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                     boosterCounts,
                     seenBoosterGuides,
                     heartState,
+                    goldPassState,
                     profileDto.AdsRemoved,
                     profileDto.UnlimitedHeartEndUnixSeconds);
                 record = new PlayerProfileRecord(profile, profileDto.Revision);
@@ -106,8 +112,54 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                     .ToList(),
                 AdsRemoved = profile.AdsRemoved,
                 UnlimitedHeartEndUnixSeconds =
-                    profile.UnlimitedHeartEndUnixSeconds
+                    profile.UnlimitedHeartEndUnixSeconds,
+                GoldPass = new GoldPassStateDto
+                {
+                    SeasonId = profile.GoldPassState.SeasonId,
+                    SpoonCount = profile.GoldPassState.SpoonCount,
+                    IsSeasonPassPurchased =
+                        profile.GoldPassState.IsSeasonPassPurchased,
+                    ClaimedFreeMilestoneLevels = profile.GoldPassState
+                        .ClaimedFreeMilestoneLevels
+                        .OrderBy(level => level)
+                        .ToList(),
+                    ClaimedSeasonMilestoneLevels = profile.GoldPassState
+                        .ClaimedSeasonMilestoneLevels
+                        .OrderBy(level => level)
+                        .ToList()
+                }
             };
+        }
+
+        private static bool TryMapGoldPassState(
+            GoldPassStateDto goldPassDto,
+            out GoldPassState goldPassState,
+            out string errorMessage)
+        {
+            if (goldPassDto == null)
+            {
+                goldPassState = null;
+                errorMessage = "Player profile Gold Pass state is missing.";
+                return false;
+            }
+
+            try
+            {
+                goldPassState = new GoldPassState(
+                    goldPassDto.SeasonId,
+                    goldPassDto.SpoonCount,
+                    goldPassDto.IsSeasonPassPurchased,
+                    goldPassDto.ClaimedFreeMilestoneLevels,
+                    goldPassDto.ClaimedSeasonMilestoneLevels);
+                errorMessage = null;
+                return true;
+            }
+            catch (ArgumentException exception)
+            {
+                goldPassState = null;
+                errorMessage = exception.Message;
+                return false;
+            }
         }
 
         private static bool TryMapBoosterCounts(
