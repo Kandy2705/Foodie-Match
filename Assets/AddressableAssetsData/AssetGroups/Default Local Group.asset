@@ -141,6 +141,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ed73c0f7618c4a5ab31808d6b69083e
+    m_Address: Assets/FoodieMatch/Bundle/UI/ProfilePopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 5922fa340034640ad9cf95706f0e4aed, type: 2}
   m_SchemaSet:

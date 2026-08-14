@@ -33,6 +33,7 @@ using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Navigation;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
+using FoodieMatch.UI.Profile;
 using FoodieMatch.UI.Reward;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
@@ -602,6 +603,32 @@ namespace FoodieMatch.UI
         public void HideSettingPopup()
         {
             _popupManager.Hide<SettingPopupView>();
+        }
+
+        public void ShowProfilePopup()
+        {
+            RunUiTask(
+                ShowPopupAsync<ProfilePopupView>(
+                    data: null,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new ProfilePopupViewActions(
+                                OnProfileCloseClicked));
+                        popup.SetData(
+                            _playerProfileService.CurrentLevelNumber);
+                    }),
+                nameof(ShowProfilePopup));
+        }
+
+        public void HideProfilePopup()
+        {
+            _popupManager.Hide<ProfilePopupView>();
+        }
+
+        private void OnProfileCloseClicked()
+        {
+            HideProfilePopup();
         }
 
         private void ShowPlayerDebugPopup()
@@ -1176,7 +1203,8 @@ namespace FoodieMatch.UI
                     OnHomeSettingRequested,
                     OnHomeStarterPackRequested,
                     OnHomeCoinClicked,
-                    OnHomeHeartClicked));
+                    OnHomeHeartClicked,
+                    OnHomeAvatarRequested));
             SetHomePlayLevel(homeView);
             homeView.SetPlayerResources(
                 displayedCoinBalance,
@@ -1298,6 +1326,11 @@ namespace FoodieMatch.UI
         private void OnHomeHeartClicked()
         {
             ShowFillHeartPopup();
+        }
+
+        private void OnHomeAvatarRequested()
+        {
+            ShowProfilePopup();
         }
 
         public void ShowShopPopup()
