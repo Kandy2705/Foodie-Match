@@ -210,6 +210,7 @@ namespace FoodieMatch.App
                 economyConfig,
                 advertisingRuntimeSettings,
                 playerProfileService,
+                goldPassService,
                 levelCatalogRepository,
                 shopConfig,
                 addressableUiFactory,

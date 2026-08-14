@@ -18,6 +18,7 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
         [SerializeField] private Button _starterPackButton;
+        [SerializeField] private Button _goldPassButton;
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
@@ -30,6 +31,7 @@ namespace FoodieMatch.UI.Home
         private Action _playClicked;
         private Action _settingClicked;
         private Action _starterPackClicked;
+        private Action _goldPassClicked;
         private Sprite _normalPlayButtonSprite;
         private Vector4 _normalPlayLevelMargin;
 
@@ -43,6 +45,7 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
             _starterPackButton.onClick.AddListener(
                 OnStarterPackButtonClicked);
+            _goldPassButton.onClick.AddListener(OnGoldPassButtonClicked);
         }
 
         private void OnDestroy()
@@ -51,6 +54,7 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.RemoveListener(OnSettingButtonClicked);
             _starterPackButton.onClick.RemoveListener(
                 OnStarterPackButtonClicked);
+            _goldPassButton.onClick.RemoveListener(OnGoldPassButtonClicked);
             Clear();
         }
 
@@ -59,6 +63,7 @@ namespace FoodieMatch.UI.Home
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
             _starterPackClicked = actions.StarterPackClicked;
+            _goldPassClicked = actions.GoldPassClicked;
             _resourceBarView.SetResourceClickActions(
                 actions.CoinClicked,
                 actions.HeartClicked);
@@ -127,6 +132,7 @@ namespace FoodieMatch.UI.Home
             _playClicked = null;
             _settingClicked = null;
             _starterPackClicked = null;
+            _goldPassClicked = null;
             _resourceBarView.Clear();
         }
 
@@ -159,6 +165,11 @@ namespace FoodieMatch.UI.Home
         private void OnStarterPackButtonClicked()
         {
             _starterPackClicked?.Invoke();
+        }
+
+        private void OnGoldPassButtonClicked()
+        {
+            _goldPassClicked?.Invoke();
         }
 
     }

@@ -8,6 +8,7 @@ using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
@@ -24,6 +25,7 @@ using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Effects;
 using FoodieMatch.UI.Gameplay;
+using FoodieMatch.UI.GoldPass;
 using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
@@ -91,6 +93,7 @@ namespace FoodieMatch.UI
         private IGameEconomyConfig _economyConfig;
         private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
+        private GoldPassService _goldPassService;
         private ILevelCatalogRepository _levelCatalogRepository;
         private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
@@ -168,6 +171,7 @@ namespace FoodieMatch.UI
             IGameEconomyConfig economyConfig,
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
+            GoldPassService goldPassService,
             ILevelCatalogRepository levelCatalogRepository,
             IGameShopConfig shopConfig,
             IAddressableUiFactory addressableUiFactory,
@@ -193,6 +197,7 @@ namespace FoodieMatch.UI
             _economyConfig = economyConfig;
             _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
+            _goldPassService = goldPassService;
             _levelCatalogRepository = levelCatalogRepository;
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
@@ -1175,6 +1180,7 @@ namespace FoodieMatch.UI
                     OnHomePlayRequested,
                     OnHomeSettingRequested,
                     OnHomeStarterPackRequested,
+                    OnHomeGoldPassRequested,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked));
             SetHomePlayLevel(homeView);
@@ -1280,6 +1286,86 @@ namespace FoodieMatch.UI
                         new StarterPackPopupViewActions(
                             OnStarterPackBuyRequestedAsync))),
                 nameof(OnHomeStarterPackRequested));
+        }
+
+        private void OnHomeGoldPassRequested()
+        {
+            if (_currentLevelNumber < 15)
+            {
+                return;
+            }
+
+            RunUiTask(
+                ShowGoldPassAsync(),
+                nameof(OnHomeGoldPassRequested));
+        }
+
+        private async Task ShowGoldPassAsync()
+        {
+            GoldPassView goldPassView =
+                await _popupManager.ShowAsync<GoldPassView>();
+
+            if (this == null)
+            {
+                return;
+            }
+
+            BindGoldPassView(goldPassView);
+        }
+
+        private void BindGoldPassView(GoldPassView goldPassView)
+        {
+            goldPassView.SetActions(
+                new GoldPassViewActions(
+                    OnGoldPassCloseClicked,
+                    OnGoldPassInformationClicked,
+                    OnGoldPassPurchaseClicked,
+                    OnGoldPassClaimClicked,
+                    OnGoldPassSeasonExpired));
+            goldPassView.Bind(_goldPassService.GetStatus());
+        }
+
+        private void OnGoldPassCloseClicked()
+        {
+            _popupManager.Hide<GoldPassView>();
+        }
+
+        private static void OnGoldPassInformationClicked()
+        {
+            Debug.Log("Gold Pass information is not available yet.");
+        }
+
+        private static void OnGoldPassPurchaseClicked()
+        {
+            Debug.Log("Gold Pass purchase is not available yet.");
+        }
+
+        private void OnGoldPassClaimClicked(
+            int milestoneLevel,
+            GoldPassTrack track)
+        {
+            GoldPassClaimResult result =
+                _goldPassService.TryClaim(milestoneLevel, track);
+
+            if (result == GoldPassClaimResult.Succeeded)
+            {
+                RefreshAllPlayerResources();
+            }
+
+            RefreshOpenedGoldPass();
+        }
+
+        private void OnGoldPassSeasonExpired()
+        {
+            RefreshOpenedGoldPass();
+        }
+
+        private void RefreshOpenedGoldPass()
+        {
+            if (_popupManager.TryGetOpened(out GoldPassView goldPassView))
+            {
+                goldPassView.Bind(_goldPassService.GetStatus());
+            }
         }
 
         private Task<ShopPurchaseResult> OnStarterPackBuyRequestedAsync()

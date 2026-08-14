@@ -52,6 +52,7 @@ MonoBehaviour:
   _playButton: {fileID: 4632995642553308059}
   _settingButton: {fileID: 1105202278278857296}
   _starterPackButton: {fileID: 1917479886176093094}
+  _goldPassButton: {fileID: 8265935261691576485}
   _playLevelText: {fileID: 3725143549059234066}
   _resourceBarView: {fileID: 4250100812085702141}
   _hardPlayButtonSprite: {fileID: 7158726796229424830, guid: 4f4c6305170cf4f2db6ea4496ba431ee, type: 3}
@@ -147,6 +148,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7713945347293942556, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9200749560868768972, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
       propertyPath: m_Name
       value: HomePageMotionRoot
@@ -216,3 +221,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2590666401522517991, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
   m_PrefabInstance: {fileID: 8821646492971716820}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8265935261691576485 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 637902477456756849, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+  m_PrefabInstance: {fileID: 8821646492971716820}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

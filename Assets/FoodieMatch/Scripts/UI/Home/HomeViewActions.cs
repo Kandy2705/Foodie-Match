@@ -8,6 +8,7 @@ namespace FoodieMatch.UI.Home
             Action playClicked,
             Action settingClicked,
             Action starterPackClicked,
+            Action goldPassClicked,
             Action coinClicked,
             Action heartClicked)
         {
@@ -17,6 +18,8 @@ namespace FoodieMatch.UI.Home
                 throw new ArgumentNullException(nameof(settingClicked));
             StarterPackClicked = starterPackClicked ??
                 throw new ArgumentNullException(nameof(starterPackClicked));
+            GoldPassClicked = goldPassClicked ??
+                throw new ArgumentNullException(nameof(goldPassClicked));
             CoinClicked = coinClicked ??
                 throw new ArgumentNullException(nameof(coinClicked));
             HeartClicked = heartClicked ??
@@ -28,6 +31,8 @@ namespace FoodieMatch.UI.Home
         public Action SettingClicked { get; }
 
         public Action StarterPackClicked { get; }
+
+        public Action GoldPassClicked { get; }
 
         public Action CoinClicked { get; }
 

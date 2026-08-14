@@ -504,8 +504,8 @@ MonoBehaviour:
   _verticalColumn: {fileID: 8043354359220837398}
   _breakLine: {fileID: 5680590285430949646}
   _boldBreakLine: {fileID: 9004043450986570229}
-  _freeRewardView: {fileID: 0}
-  _seasonRewardView: {fileID: 0}
+  _freeRewardView: {fileID: 2981722230291474987}
+  _seasonRewardView: {fileID: 8936719047317386721}
 --- !u!1 &3340842592555931831
 GameObject:
   m_ObjectHideFlags: 0

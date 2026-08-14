@@ -1417,8 +1417,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea521fc68aed40e5a00ad1b5eefba31f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _animator: {fileID: 0}
-  _canvasGroup: {fileID: 0}
+  _animator: {fileID: 2656619127571610090}
+  _canvasGroup: {fileID: 328629897049297274}
   _openTrigger: Open
   _closeTrigger: Close
   _hiddenState: Hidden
@@ -3642,7 +3642,7 @@ GameObject:
   - component: {fileID: 9064949634753029788}
   - component: {fileID: 8922501221314698569}
   m_Layer: 5
-  m_Name: GoldPassPageMotionRoot
+  m_Name: PopupRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
