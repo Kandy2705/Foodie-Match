@@ -88,6 +88,41 @@ namespace FoodieMatch.Core.Domain.GoldPass
                 _claimedSeasonMilestoneLevels);
         }
 
+        public GoldPassState WithSpoonCount(int spoonCount)
+        {
+            if (spoonCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(spoonCount));
+            }
+
+            return new GoldPassState(
+                SeasonId,
+                spoonCount,
+                IsSeasonPassPurchased,
+                _claimedFreeMilestoneLevels,
+                _claimedSeasonMilestoneLevels);
+        }
+
+        public GoldPassState WithSeasonPassPurchaseStatus(bool isPurchased)
+        {
+            return new GoldPassState(
+                SeasonId,
+                SpoonCount,
+                isPurchased,
+                _claimedFreeMilestoneLevels,
+                _claimedSeasonMilestoneLevels);
+        }
+
+        public GoldPassState WithoutClaimedMilestones()
+        {
+            return new GoldPassState(
+                SeasonId,
+                SpoonCount,
+                IsSeasonPassPurchased,
+                Array.Empty<int>(),
+                Array.Empty<int>());
+        }
+
         public GoldPassState WithSeasonPassPurchased()
         {
             if (IsSeasonPassPurchased)

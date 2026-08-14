@@ -17,26 +17,34 @@ namespace FoodieMatch.UI.Debugging
         [SerializeField] private TMP_InputField _storageBoosterCountInput;
         [SerializeField] private TMP_InputField _swapBoosterCountInput;
         [SerializeField] private TMP_InputField _fridgeBoosterCountInput;
+        [SerializeField] private TMP_InputField _goldPassSpoonCountInput;
+        [SerializeField] private Toggle _seasonPassPurchasedToggle;
         [SerializeField] private Toggle _postLevelAdsToggle;
         [SerializeField] private Toggle _useLevelPlayAdsToggle;
         [SerializeField] private TMP_Text _statusText;
         [SerializeField] private Button _applyButton;
+        [SerializeField] private Button _resetGoldPassClaimHistoryButton;
         [SerializeField] private Button _closeButton;
         [SerializeField] private PopupAnimController _popupAnimController;
 
         private Action _closeClicked;
         private Action<DebugMenuValues> _applyClicked;
+        private Action _resetGoldPassClaimHistoryClicked;
         private int _maxHeartCount;
 
         private void Awake()
         {
             _applyButton.onClick.AddListener(OnApplyButtonClicked);
+            _resetGoldPassClaimHistoryButton.onClick.AddListener(
+                OnResetGoldPassClaimHistoryButtonClicked);
             _closeButton.onClick.AddListener(OnCloseButtonClicked);
         }
 
         private void OnDestroy()
         {
             _applyButton.onClick.RemoveListener(OnApplyButtonClicked);
+            _resetGoldPassClaimHistoryButton.onClick.RemoveListener(
+                OnResetGoldPassClaimHistoryButtonClicked);
             _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
         }
 
@@ -44,6 +52,8 @@ namespace FoodieMatch.UI.Debugging
         {
             _closeClicked = actions.CloseClicked;
             _applyClicked = actions.ApplyClicked;
+            _resetGoldPassClaimHistoryClicked =
+                actions.ResetGoldPassClaimHistoryClicked;
         }
 
         public override void Show()
@@ -74,6 +84,10 @@ namespace FoodieMatch.UI.Debugging
             _storageBoosterCountInput.SetTextWithoutNotify(playerProfile.StorageBoosterCount.ToString());
             _swapBoosterCountInput.SetTextWithoutNotify(playerProfile.SwapBoosterCount.ToString());
             _fridgeBoosterCountInput.SetTextWithoutNotify(playerProfile.FridgeBoosterCount.ToString());
+            _goldPassSpoonCountInput.SetTextWithoutNotify(
+                values.GoldPassSpoonCount.ToString());
+            _seasonPassPurchasedToggle.SetIsOnWithoutNotify(
+                values.IsSeasonPassPurchased);
             _postLevelAdsToggle.SetIsOnWithoutNotify(
                 values.PostLevelAdsEnabled);
             _useLevelPlayAdsToggle.SetIsOnWithoutNotify(
@@ -90,6 +104,7 @@ namespace FoodieMatch.UI.Debugging
         {
             _closeClicked = null;
             _applyClicked = null;
+            _resetGoldPassClaimHistoryClicked = null;
 
             base.Dispose();
         }
@@ -107,6 +122,11 @@ namespace FoodieMatch.UI.Debugging
         private void OnCloseButtonClicked()
         {
             _closeClicked();
+        }
+
+        private void OnResetGoldPassClaimHistoryButtonClicked()
+        {
+            _resetGoldPassClaimHistoryClicked();
         }
 
         private void OnCloseAnimationFinished()
@@ -136,7 +156,8 @@ namespace FoodieMatch.UI.Debugging
                 !TryGetBoosterCount(_plateBoosterCountInput, "Plate", out int plateBoosterCount) ||
                 !TryGetBoosterCount(_storageBoosterCountInput, "Storage", out int storageBoosterCount) ||
                 !TryGetBoosterCount(_swapBoosterCountInput, "Swap", out int swapBoosterCount) ||
-                !TryGetBoosterCount(_fridgeBoosterCountInput, "Fridge", out int fridgeBoosterCount))
+                !TryGetBoosterCount(_fridgeBoosterCountInput, "Fridge", out int fridgeBoosterCount) ||
+                !TryGetGoldPassSpoonCount(out int goldPassSpoonCount))
             {
                 return false;
             }
@@ -151,10 +172,25 @@ namespace FoodieMatch.UI.Debugging
                 fridgeBoosterCount);
             values = new DebugMenuValues(
                 playerProfile,
+                goldPassSpoonCount,
+                _seasonPassPurchasedToggle.isOn,
                 _postLevelAdsToggle.isOn,
                 _useLevelPlayAdsToggle.isOn);
 
             return true;
+        }
+
+        private bool TryGetGoldPassSpoonCount(out int spoonCount)
+        {
+            if (int.TryParse(_goldPassSpoonCountInput.text, out spoonCount) &&
+                spoonCount >= 0)
+            {
+                return true;
+            }
+
+            ShowStatus(
+                "Gold Pass spoon count must be a non-negative whole number.");
+            return false;
         }
 
         private bool TryGetHeartCount(out int heartCount)

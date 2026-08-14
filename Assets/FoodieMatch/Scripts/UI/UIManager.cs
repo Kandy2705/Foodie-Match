@@ -613,6 +613,7 @@ namespace FoodieMatch.UI
         {
             HeartStatus heartStatus =
                 _playerProfileService.GetHeartStatus();
+            GoldPassStatus goldPassStatus = _goldPassService.GetStatus();
 
             PlayerProfileDebugUpdate playerProfile = new(
                 _playerProfileService.CurrentLevelNumber,
@@ -624,6 +625,8 @@ namespace FoodieMatch.UI
                 _boosterManager.GetCount(BoosterType.Fridge));
             DebugMenuValues values = new(
                 playerProfile,
+                goldPassStatus.SpoonCount,
+                goldPassStatus.IsSeasonPassPurchased,
                 _advertisingRuntimeSettings.PostLevelAdsEnabled,
                 _advertisingRuntimeSettings.UseLevelPlayAds);
 
@@ -635,7 +638,8 @@ namespace FoodieMatch.UI
                         popup.SetActions(
                             new PlayerDebugPopupViewActions(
                                 HidePlayerDebugPopup,
-                                OnPlayerDebugApplyClicked));
+                                OnPlayerDebugApplyClicked,
+                                OnResetGoldPassClaimHistoryClicked));
                         popup.SetValues(values, heartStatus.MaxHeartCount);
                     }),
                 nameof(ShowPlayerDebugPopup));
@@ -1551,6 +1555,9 @@ namespace FoodieMatch.UI
                 values.UseLevelPlayAds;
             CompleteCoinRewardImmediately();
             _playerProfileService.ApplyDebugUpdate(playerProfile);
+            _goldPassService.ApplyDebugUpdate(
+                values.GoldPassSpoonCount,
+                values.IsSeasonPassPurchased);
             _advertisingRuntimeSettings.Update(
                 values.PostLevelAdsEnabled,
                 values.UseLevelPlayAds);
@@ -1560,6 +1567,12 @@ namespace FoodieMatch.UI
                 adServiceChanged
                     ? "Applied. Restart to change ad service."
                     : "Applied");
+        }
+
+        private void OnResetGoldPassClaimHistoryClicked()
+        {
+            _goldPassService.ResetClaimHistory();
+            ShowPlayerDebugStatus("Gold Pass claim history reset.");
         }
 
         private void RefreshHomePlayerData()

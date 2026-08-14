@@ -561,6 +561,42 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public void ApplyGoldPassDebugUpdate(
+            string seasonId,
+            int spoonCount,
+            bool isSeasonPassPurchased)
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState updatedState = GetGoldPassStateForSeason(
+                        currentProfile,
+                        seasonId)
+                    .WithSpoonCount(spoonCount)
+                    .WithSeasonPassPurchaseStatus(isSeasonPassPurchased);
+
+                QueueProfileChange(
+                    currentProfile.WithGoldPassState(updatedState));
+            }
+        }
+
+        public void ResetGoldPassClaimHistory(string seasonId)
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState updatedState = GetGoldPassStateForSeason(
+                        currentProfile,
+                        seasonId)
+                    .WithoutClaimedMilestones();
+
+                QueueProfileChange(
+                    currentProfile.WithGoldPassState(updatedState));
+            }
+        }
+
         public GoldPassClaimResult TryClaimGoldPassReward(
             string seasonId,
             GoldPassMilestoneDefinition milestone,

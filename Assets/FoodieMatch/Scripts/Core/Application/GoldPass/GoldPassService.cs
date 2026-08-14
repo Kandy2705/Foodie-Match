@@ -91,6 +91,22 @@ namespace FoodieMatch.Core.Application.GoldPass
                 GetCurrentSeason().SeasonId);
         }
 
+        public void ApplyDebugUpdate(
+            int spoonCount,
+            bool isSeasonPassPurchased)
+        {
+            _playerProfileService.ApplyGoldPassDebugUpdate(
+                GetCurrentSeason().SeasonId,
+                spoonCount,
+                isSeasonPassPurchased);
+        }
+
+        public void ResetClaimHistory()
+        {
+            _playerProfileService.ResetGoldPassClaimHistory(
+                GetCurrentSeason().SeasonId);
+        }
+
         public GoldPassClaimResult TryClaim(
             int milestoneLevel,
             GoldPassTrack track)
