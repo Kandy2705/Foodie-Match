@@ -90,18 +90,31 @@ namespace FoodieMatch.UI.GoldPass
             BindProgress(status);
             BindMilestones(status);
             BindSeasonPass(status.IsSeasonPassPurchased);
-
-            if (IsOpened)
-            {
-                ScrollToTargetMilestone();
-            }
         }
 
         public override void Show()
         {
             base.Show();
             _animController.ShowInstantly();
-            ScrollToTargetMilestone();
+        }
+
+        public void ScrollToCurrentMilestone()
+        {
+            if (_milestoneViews.Count == 0)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_milestoneContent);
+
+            float normalizedPosition = _milestoneViews.Count == 1
+                ? 1f
+                : 1f -
+                  (float)_scrollTargetIndex /
+                  (_milestoneViews.Count - 1);
+            _rewardsScrollView.verticalNormalizedPosition =
+                normalizedPosition;
         }
 
         public override void Hide()
@@ -204,25 +217,6 @@ namespace FoodieMatch.UI.GoldPass
         {
             _activateButton.gameObject.SetActive(!isPurchased);
             _seasonPassButton.interactable = !isPurchased;
-        }
-
-        private void ScrollToTargetMilestone()
-        {
-            if (_milestoneViews.Count == 0)
-            {
-                return;
-            }
-
-            Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_milestoneContent);
-
-            float normalizedPosition = _milestoneViews.Count == 1
-                ? 1f
-                : 1f -
-                  (float)_scrollTargetIndex /
-                  (_milestoneViews.Count - 1);
-            _rewardsScrollView.verticalNormalizedPosition =
-                normalizedPosition;
         }
 
         private void UpdateCountdown(DateTimeOffset currentUtc)

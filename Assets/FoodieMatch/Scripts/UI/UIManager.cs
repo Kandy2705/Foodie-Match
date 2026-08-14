@@ -1327,6 +1327,7 @@ namespace FoodieMatch.UI
                     OnGoldPassClaimClicked,
                     OnGoldPassSeasonExpired));
             goldPassView.Bind(_goldPassService.GetStatus());
+            goldPassView.ScrollToCurrentMilestone();
         }
 
         private void OnGoldPassCloseClicked()
