@@ -21,6 +21,7 @@ namespace FoodieMatch.UI.GoldPass
         [Header("Status")]
         [SerializeField] private TMP_Text _timeText;
         [SerializeField] private TMP_Text _progressText;
+        [SerializeField] private SlicedProgressBarView _progressBar;
         [SerializeField] private GameObject _nextLevelPanel;
         [SerializeField] private TMP_Text _nextLevelText;
 
@@ -133,11 +134,15 @@ namespace FoodieMatch.UI.GoldPass
         {
             if (status.IsComplete)
             {
+                _progressBar.SetProgress(1f);
                 _progressText.text = "FULL";
                 _nextLevelPanel.SetActive(false);
                 return;
             }
 
+            _progressBar.SetProgress(
+                (float)status.CurrentSegmentSpoons /
+                status.RequiredSegmentSpoons);
             _progressText.text =
                 $"{status.CurrentSegmentSpoons}/{status.RequiredSegmentSpoons}";
             _nextLevelText.text = status.NextMilestoneLevel.Value.ToString();
