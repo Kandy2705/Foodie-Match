@@ -19,6 +19,7 @@ namespace FoodieMatch.UI.Profile
         [SerializeField] private TMP_Text _joinDateText;
         [SerializeField] private TMP_Text _levelValueText;
         [SerializeField] private Image _avatarImage;
+        [SerializeField] private Image _frameImage;
 
         [Header("Stats Cards")]
         [SerializeField] private TMP_Text _firstTryWinsText;
@@ -94,6 +95,11 @@ namespace FoodieMatch.UI.Profile
                 _avatarImage.sprite = profileData.AvatarSprite;
             }
 
+            if (_frameImage != null && profileData.FrameSprite != null)
+            {
+                _frameImage.sprite = profileData.FrameSprite;
+            }
+
             if (_firstTryWinsText != null)
             {
                 _firstTryWinsText.text = profileData.FirstTryWins.ToString();
@@ -107,6 +113,35 @@ namespace FoodieMatch.UI.Profile
             if (_towerTrialText != null)
             {
                 _towerTrialText.text = profileData.TowerTrial.ToString();
+            }
+        }
+
+        public void UpdateCustomization(
+            string playerName,
+            Sprite avatarSprite,
+            Sprite frameSprite)
+        {
+            if (_playerNameText != null && !string.IsNullOrWhiteSpace(playerName))
+            {
+                _playerNameText.text = playerName;
+            }
+
+            if (_avatarImage != null && avatarSprite != null)
+            {
+                _avatarImage.sprite = avatarSprite;
+            }
+
+            if (_frameImage != null && frameSprite != null)
+            {
+                _frameImage.sprite = frameSprite;
+            }
+        }
+
+        public void SetEditAvatarInteractable(bool interactable)
+        {
+            if (_editAvatarButton != null)
+            {
+                _editAvatarButton.interactable = interactable;
             }
         }
 

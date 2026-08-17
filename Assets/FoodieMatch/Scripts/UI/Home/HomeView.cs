@@ -20,6 +20,9 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _settingButton;
         [SerializeField] private Button _starterPackButton;
         [SerializeField] private Button _avatarButton;
+        [Header("Customization")]
+        [SerializeField] private Image _avatarImage;
+        [SerializeField] private Image _avatarFrameImage;
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
@@ -73,6 +76,19 @@ namespace FoodieMatch.UI.Home
             _resourceBarView.SetResourceClickActions(
                 actions.CoinClicked,
                 actions.HeartClicked);
+        }
+
+        public void SetCustomization(Sprite avatarSprite, Sprite frameSprite)
+        {
+            if (_avatarImage != null && avatarSprite != null)
+            {
+                _avatarImage.sprite = avatarSprite;
+            }
+
+            if (_avatarFrameImage != null && frameSprite != null)
+            {
+                _avatarFrameImage.sprite = frameSprite;
+            }
         }
 
         public void SetPlayLevel(int levelNumber, LevelDifficulty difficulty)
@@ -177,6 +193,5 @@ namespace FoodieMatch.UI.Home
         {
             _avatarClicked?.Invoke();
         }
-
     }
 }
