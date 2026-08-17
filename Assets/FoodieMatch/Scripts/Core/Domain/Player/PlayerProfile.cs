@@ -19,7 +19,9 @@ namespace FoodieMatch.Core.Domain.Player
             IReadOnlyCollection<BoosterType> seenBoosterGuides,
             HeartState heartState,
             bool adsRemoved = false,
-            long unlimitedHeartEndUnixSeconds = 0)
+            long unlimitedHeartEndUnixSeconds = 0,
+            int firstTryWins = 0,
+            bool hasFailedCurrentLevel = false)
         {
             if (currentLevelNumber < 1)
             {
@@ -45,10 +47,20 @@ namespace FoodieMatch.Core.Domain.Player
                     "Unlimited heart end time cannot be negative.");
             }
 
+            if (firstTryWins < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(firstTryWins),
+                    firstTryWins,
+                    "First try wins cannot be negative.");
+            }
+
             CurrentLevelNumber = currentLevelNumber;
             CoinBalance = coinBalance;
             AdsRemoved = adsRemoved;
             UnlimitedHeartEndUnixSeconds = unlimitedHeartEndUnixSeconds;
+            FirstTryWins = firstTryWins;
+            HasFailedCurrentLevel = hasFailedCurrentLevel;
             HeartState = heartState ??
                 throw new ArgumentNullException(nameof(heartState));
             _boosterCounts = CopyBoosterCounts(boosterCounts);
@@ -64,6 +76,10 @@ namespace FoodieMatch.Core.Domain.Player
         public bool AdsRemoved { get; }
 
         public long UnlimitedHeartEndUnixSeconds { get; }
+
+        public int FirstTryWins { get; }
+
+        public bool HasFailedCurrentLevel { get; }
 
         public HeartState HeartState { get; }
 
@@ -99,7 +115,9 @@ namespace FoodieMatch.Core.Domain.Player
                 _seenBoosterGuides,
                 HeartState,
                 AdsRemoved,
-                UnlimitedHeartEndUnixSeconds);
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                hasFailedCurrentLevel: false);
         }
 
         public PlayerProfile WithCoinBalance(long coinBalance)
@@ -116,7 +134,9 @@ namespace FoodieMatch.Core.Domain.Player
                 _seenBoosterGuides,
                 HeartState,
                 AdsRemoved,
-                UnlimitedHeartEndUnixSeconds);
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel);
         }
 
         public PlayerProfile WithBoosterCount(
@@ -150,7 +170,9 @@ namespace FoodieMatch.Core.Domain.Player
                 _seenBoosterGuides,
                 HeartState,
                 AdsRemoved,
-                UnlimitedHeartEndUnixSeconds);
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel);
         }
 
         public PlayerProfile WithSeenBoosterGuide(BoosterType boosterType)
@@ -174,7 +196,9 @@ namespace FoodieMatch.Core.Domain.Player
                 seenBoosterGuides,
                 HeartState,
                 AdsRemoved,
-                UnlimitedHeartEndUnixSeconds);
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel);
         }
 
         public PlayerProfile WithHeartState(HeartState heartState)
@@ -196,7 +220,9 @@ namespace FoodieMatch.Core.Domain.Player
                 _seenBoosterGuides,
                 heartState,
                 AdsRemoved,
-                UnlimitedHeartEndUnixSeconds);
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel);
         }
 
         public PlayerProfile WithShopState(
@@ -213,7 +239,66 @@ namespace FoodieMatch.Core.Domain.Player
                 _seenBoosterGuides,
                 heartState,
                 adsRemoved,
-                unlimitedHeartEndUnixSeconds);
+                unlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel);
+        }
+
+        public PlayerProfile WithFirstTryWins(int firstTryWins)
+        {
+            if (firstTryWins == FirstTryWins)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                firstTryWins,
+                HasFailedCurrentLevel);
+        }
+
+        public PlayerProfile WithFailedCurrentLevel()
+        {
+            if (HasFailedCurrentLevel)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                hasFailedCurrentLevel: true);
+        }
+
+        public PlayerProfile WithResetFailedCurrentLevel()
+        {
+            if (!HasFailedCurrentLevel)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                hasFailedCurrentLevel: false);
         }
 
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(

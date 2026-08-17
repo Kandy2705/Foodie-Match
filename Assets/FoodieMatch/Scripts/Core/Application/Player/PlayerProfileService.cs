@@ -74,6 +74,17 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public int FirstTryWins
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.FirstTryWins;
+                }
+            }
+        }
+
         public HeartState RefreshHeartState()
         {
             lock (_stateLock)
@@ -213,11 +224,31 @@ namespace FoodieMatch.Core.Application.Player
                     _profileSession.CurrentRecord.Profile;
                 long updatedCoinBalance = checked(
                     currentProfile.CoinBalance + coinReward);
+                int updatedFirstTryWins = !currentProfile.HasFailedCurrentLevel
+                    ? checked(currentProfile.FirstTryWins + 1)
+                    : currentProfile.FirstTryWins;
                 PlayerProfile updatedProfile = currentProfile
                     .WithCurrentLevelNumber(currentLevelNumber)
-                    .WithCoinBalance(updatedCoinBalance);
+                    .WithCoinBalance(updatedCoinBalance)
+                    .WithFirstTryWins(updatedFirstTryWins)
+                    .WithResetFailedCurrentLevel();
 
                 QueueProfileChange(updatedProfile);
+            }
+        }
+
+        public void RecordCurrentLevelFailed()
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                if (currentProfile.HasFailedCurrentLevel)
+                {
+                    return;
+                }
+
+                QueueProfileChange(currentProfile.WithFailedCurrentLevel());
             }
         }
 
