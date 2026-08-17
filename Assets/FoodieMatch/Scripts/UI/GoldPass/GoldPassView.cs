@@ -261,13 +261,15 @@ namespace FoodieMatch.UI.GoldPass
         private void OnTreasureClicked(
             int milestoneLevel,
             GoldPassTrack track,
-            GoldPassRewardDefinition treasure)
+            GoldPassRewardDefinition treasure,
+            RectTransform source)
         {
             _rewardPreview.Toggle(
                 milestoneLevel,
                 track,
                 treasure,
-                _visualCatalog);
+                _visualCatalog,
+                source);
         }
 
         private void OnCloseButtonClicked()
@@ -289,5 +291,6 @@ namespace FoodieMatch.UI.GoldPass
         {
             _claimClicked(milestoneLevel, track);
         }
+
     }
 }

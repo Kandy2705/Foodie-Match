@@ -19,7 +19,7 @@ namespace FoodieMatch.UI.GoldPass
         [SerializeField] private GameObject _claimedTick;
 
         private Action _claimClicked;
-        private Action _treasureClicked;
+        private Action<RectTransform> _treasureClicked;
 
         private void Awake()
         {
@@ -40,7 +40,7 @@ namespace FoodieMatch.UI.GoldPass
             bool isTrackAvailable,
             bool isClaimed,
             Action claimClicked,
-            Action treasureClicked)
+            Action<RectTransform> treasureClicked)
         {
             _rewardIconImage.sprite = visualCatalog.GetIcon(reward);
             _rewardIconImage.preserveAspect = true;
@@ -71,7 +71,7 @@ namespace FoodieMatch.UI.GoldPass
 
         private void OnRewardIconClicked()
         {
-            _treasureClicked();
+            _treasureClicked(_rewardIconImage.rectTransform);
         }
 
         private void OnClaimButtonClicked()

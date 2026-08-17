@@ -23,6 +23,8 @@ namespace FoodieMatch.UI.GoldPass
 
         private Tween _hideTween;
         private Tween _deactivateTween;
+        private readonly Vector3[] _sourceCorners = new Vector3[4];
+        private RectTransform _source;
         private int _sourceMilestoneLevel;
         private GoldPassTrack _sourceTrack;
         private bool _isVisible;
@@ -32,7 +34,8 @@ namespace FoodieMatch.UI.GoldPass
             int milestoneLevel,
             GoldPassTrack track,
             GoldPassRewardDefinition treasure,
-            GoldPassRewardVisualCatalogSO visualCatalog)
+            GoldPassRewardVisualCatalogSO visualCatalog,
+            RectTransform source)
         {
             if (_isVisible &&
                 !_isClosing &&
@@ -45,6 +48,7 @@ namespace FoodieMatch.UI.GoldPass
 
             StopHideTimer();
             StopDeactivateTimer();
+            _source = source;
             _sourceMilestoneLevel = milestoneLevel;
             _sourceTrack = track;
             _isVisible = true;
@@ -71,12 +75,42 @@ namespace FoodieMatch.UI.GoldPass
 
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
+            transform.localScale = Vector3.one;
+            FollowSource();
             PlayOpenAnimation();
             _hideTween = Tween.Delay(
                 this,
                 _visibleDuration,
                 view => view.BeginHide(),
                 useUnscaledTime: true);
+        }
+
+        private void OnEnable()
+        {
+            Canvas.preWillRenderCanvases += FollowSource;
+        }
+
+        private void OnDisable()
+        {
+            Canvas.preWillRenderCanvases -= FollowSource;
+        }
+
+        private void FollowSource()
+        {
+            if (!_isVisible)
+            {
+                return;
+            }
+
+            _source.GetWorldCorners(_sourceCorners);
+
+            Vector3 sourceTopCenter =
+                (_sourceCorners[1] + _sourceCorners[2]) * 0.5f;
+            Vector3 pointerTip = _pointerImage.TransformPoint(
+                new Vector3(
+                    _pointerImage.rect.center.x,
+                    _pointerImage.rect.yMin));
+            transform.position += sourceTopCenter - pointerTip;
         }
 
         private void PlayOpenAnimation()
@@ -92,7 +126,7 @@ namespace FoodieMatch.UI.GoldPass
         {
             StopHideTimer();
 
-            if (_isClosing)
+            if (!_isVisible || _isClosing)
             {
                 return;
             }
@@ -114,6 +148,7 @@ namespace FoodieMatch.UI.GoldPass
             StopDeactivateTimer();
             _isVisible = false;
             _isClosing = false;
+            _source = null;
             _animator.ResetTrigger(OpenTrigger);
             _animator.ResetTrigger(CloseTrigger);
             gameObject.SetActive(false);
