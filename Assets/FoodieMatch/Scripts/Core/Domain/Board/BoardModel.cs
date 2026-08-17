@@ -104,7 +104,6 @@ namespace FoodieMatch.Core.Domain.Board
             int expectedFoodTokenId)
         {
             return address.IsValid &&
-                   IsGrillAccessible(address.GrillPositionIndex) &&
                    TryGetGrill(
                        address.GrillPositionIndex,
                        out GrillModel grill) &&
@@ -118,7 +117,6 @@ namespace FoodieMatch.Core.Domain.Board
             int expectedFoodTokenId)
         {
             if (!address.IsValid ||
-                !IsGrillAccessible(address.GrillPositionIndex) ||
                 !TryGetGrill(
                     address.GrillPositionIndex,
                     out GrillModel grill))
@@ -161,7 +159,7 @@ namespace FoodieMatch.Core.Domain.Board
                 foodTokenId);
         }
 
-        public bool IsGrillAccessible(int grillPositionIndex)
+        public bool IsGrillInActiveRows(int grillPositionIndex)
         {
             if (!TryGetGrill(grillPositionIndex, out _))
             {
@@ -177,7 +175,7 @@ namespace FoodieMatch.Core.Domain.Board
                        grillPositionIndex,
                        out _,
                        out int rowIndex) &&
-                   rowIndex < StackedGrillRules.AccessibleGrillCount;
+                   rowIndex < StackedGrillRules.ActiveGrillCount;
         }
 
         public bool IsGrillVisible(int grillPositionIndex)
