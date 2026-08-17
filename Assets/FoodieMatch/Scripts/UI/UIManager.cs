@@ -777,10 +777,20 @@ namespace FoodieMatch.UI
                     frameSprite);
             }
 
-            if (_popupManager.TryGetOpened(out MainMenuView mainMenuView) &&
-                mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+            if (_popupManager.TryGetOpened(out MainMenuView mainMenuView))
             {
-                homeView.SetCustomization(avatarSprite, frameSprite);
+                if (mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+                {
+                    homeView.SetCustomization(avatarSprite, frameSprite);
+                }
+
+                if (mainMenuView.TryGetView<LeaderBoardView>(out LeaderBoardView leaderBoardView))
+                {
+                    leaderBoardView.SetCustomization(
+                        _playerProfileService.PlayerName,
+                        avatarSprite,
+                        frameSprite);
+                }
             }
         }
 
@@ -1334,11 +1344,13 @@ namespace FoodieMatch.UI
                             mainMenuView.ViewContainer);
 
                 case BottomNavigationTab.LeaderBoard:
-                    return await _addressableUiFactory
+                    LeaderBoardView leaderBoardView = await _addressableUiFactory
                         .GetOrCreateAsync<LeaderBoardView>(
                             UiAddressKeys.LeaderBoardScreen,
                             MainMenuLeaderBoardInstanceKey,
                             mainMenuView.ViewContainer);
+                    ConfigureLeaderBoardView(leaderBoardView);
+                    return leaderBoardView;
 
                 default:
                     throw new InvalidOperationException(
@@ -1380,6 +1392,33 @@ namespace FoodieMatch.UI
                 : null;
 
             homeView.SetCustomization(avatarSprite, frameSprite);
+        }
+
+        private void ConfigureLeaderBoardView(
+            LeaderBoardView leaderBoardView)
+        {
+            RefreshLeaderBoardCustomization(leaderBoardView);
+        }
+
+        private void RefreshLeaderBoardCustomization(
+            LeaderBoardView leaderBoardView)
+        {
+            if (leaderBoardView == null)
+            {
+                return;
+            }
+
+            Sprite avatarSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetAvatarSpriteOrDefault(_playerProfileService.AvatarId)
+                : null;
+            Sprite frameSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetFrameSpriteOrDefault(_playerProfileService.FrameId)
+                : null;
+
+            leaderBoardView.SetCustomization(
+                _playerProfileService.PlayerName,
+                avatarSprite,
+                frameSprite);
         }
 
         private void ReleaseMainMenuViews()
