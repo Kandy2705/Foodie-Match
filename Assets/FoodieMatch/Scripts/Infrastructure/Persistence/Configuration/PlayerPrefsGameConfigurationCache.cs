@@ -112,6 +112,7 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 new GameAdsConfigSnapshot(
                     TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)),
                 new GameGoldPassProgressionConfigSnapshot(
+                    dto.GoldPassProgression.UnlockLevel,
                     dto.GoldPassProgression.NormalSpoonsPerCompletedLevel,
                     dto.GoldPassProgression.HardSpoonsPerCompletedLevel,
                     dto.GoldPassProgression.SuperHardSpoonsPerCompletedLevel));
@@ -176,6 +177,8 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 },
                 GoldPassProgression = new GoldPassProgressionConfigDto
                 {
+                    UnlockLevel =
+                        configuration.GoldPassProgression.UnlockLevel,
                     NormalSpoonsPerCompletedLevel = configuration
                         .GoldPassProgression
                         .NormalSpoonsPerCompletedLevel,

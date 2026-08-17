@@ -7,10 +7,12 @@ namespace FoodieMatch.Core.Application.Configuration.GoldPass
         IGameGoldPassProgressionConfig
     {
         public GameGoldPassProgressionConfigSnapshot(
+            int unlockLevel,
             int normalSpoonsPerCompletedLevel,
             int hardSpoonsPerCompletedLevel,
             int superHardSpoonsPerCompletedLevel)
         {
+            ValidatePositiveValue(unlockLevel, nameof(unlockLevel));
             ValidatePositiveValue(
                 normalSpoonsPerCompletedLevel,
                 nameof(normalSpoonsPerCompletedLevel));
@@ -21,11 +23,14 @@ namespace FoodieMatch.Core.Application.Configuration.GoldPass
                 superHardSpoonsPerCompletedLevel,
                 nameof(superHardSpoonsPerCompletedLevel));
 
+            UnlockLevel = unlockLevel;
             NormalSpoonsPerCompletedLevel = normalSpoonsPerCompletedLevel;
             HardSpoonsPerCompletedLevel = hardSpoonsPerCompletedLevel;
             SuperHardSpoonsPerCompletedLevel =
                 superHardSpoonsPerCompletedLevel;
         }
+
+        public int UnlockLevel { get; }
 
         public int NormalSpoonsPerCompletedLevel { get; }
 

@@ -137,6 +137,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     defaults.Booster.GetUnlockLevel(BoosterType.Box),
                 [FirebaseRemoteConfigKeys.BoosterUnlockRewardAmount] =
                     defaults.Booster.UnlockRewardAmount,
+                [FirebaseRemoteConfigKeys.GoldPassUnlockLevel] =
+                    defaults.GoldPassProgression.UnlockLevel,
                 [FirebaseRemoteConfigKeys.GoldPassNormalSpoonsPerCompletedLevel] =
                     defaults.GoldPassProgression.NormalSpoonsPerCompletedLevel,
                 [FirebaseRemoteConfigKeys.GoldPassHardSpoonsPerCompletedLevel] =

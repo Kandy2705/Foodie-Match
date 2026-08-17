@@ -208,6 +208,7 @@ namespace FoodieMatch.App
                 boosterManager,
                 boosterConfig,
                 economyConfig,
+                goldPassProgressionConfig,
                 advertisingRuntimeSettings,
                 playerProfileService,
                 goldPassService,

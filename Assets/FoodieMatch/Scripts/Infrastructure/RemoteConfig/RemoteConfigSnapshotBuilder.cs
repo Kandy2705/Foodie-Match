@@ -117,6 +117,10 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                 new GameGoldPassProgressionConfigSnapshot(
                     ReadPositiveInt(
                         remoteConfig,
+                        FirebaseRemoteConfigKeys.GoldPassUnlockLevel,
+                        fallback.GoldPassProgression.UnlockLevel),
+                    ReadPositiveInt(
+                        remoteConfig,
                         FirebaseRemoteConfigKeys.GoldPassNormalSpoonsPerCompletedLevel,
                         fallback.GoldPassProgression.NormalSpoonsPerCompletedLevel),
                     ReadPositiveInt(

@@ -97,6 +97,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
 
     internal sealed class GoldPassProgressionConfigDto
     {
+        [JsonProperty("unlockLevel", Required = Required.Always)]
+        public int UnlockLevel { get; set; }
+
         [JsonProperty("normalSpoonsPerCompletedLevel", Required = Required.Always)]
         public int NormalSpoonsPerCompletedLevel { get; set; }
 

@@ -39,6 +39,8 @@ namespace FoodieMatch.Core.Application.Configuration
 
         public int UnlockRewardAmount => _current.Booster.UnlockRewardAmount;
 
+        public int UnlockLevel => _current.GoldPassProgression.UnlockLevel;
+
         public int GetLevelCompleteCoinReward(LevelDifficulty difficulty)
         {
             return _current.Economy.GetLevelCompleteCoinReward(difficulty);

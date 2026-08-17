@@ -54,6 +54,7 @@ MonoBehaviour:
   _starterPackButton: {fileID: 1917479886176093094}
   _goldPassButton: {fileID: 8265935261691576485}
   _playLevelText: {fileID: 3725143549059234066}
+  _goldPassUnlockLevelText: {fileID: 7490937324689109998}
   _resourceBarView: {fileID: 4250100812085702141}
   _hardPlayButtonSprite: {fileID: 7158726796229424830, guid: 4f4c6305170cf4f2db6ea4496ba431ee, type: 3}
   _superHardPlayButtonSprite: {fileID: 5815313891412978213, guid: 881b3a9fd349e4be0a6ea67a07a69334, type: 3}
@@ -221,6 +222,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2590666401522517991, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
   m_PrefabInstance: {fileID: 8821646492971716820}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7490937324689109998 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2132999171096535866, guid: 9dad24b794c154daba710c5a0600c302, type: 3}
+  m_PrefabInstance: {fileID: 8821646492971716820}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &8265935261691576485 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 637902477456756849, guid: 9dad24b794c154daba710c5a0600c302, type: 3}

@@ -675,8 +675,11 @@ namespace FoodieMatch.App
                 _economyConfig.GetLevelCompleteCoinReward(difficulty);
             long doubleCoinReward = checked(
                 regularCoinReward * _economyConfig.RewardedAdCoinMultiplier);
-            int spoonCount = _goldPassProgressionConfig
-                .GetSpoonsPerCompletedLevel(difficulty);
+            int spoonCount = completedLevelNumber >=
+                _goldPassProgressionConfig.UnlockLevel
+                    ? _goldPassProgressionConfig
+                        .GetSpoonsPerCompletedLevel(difficulty)
+                    : 0;
 
             _uiManager.ShowWinPopup(
                 () => OnRegularWinRewardSelected(
@@ -773,7 +776,10 @@ namespace FoodieMatch.App
                 _playerProfileService.ApplyLevelCompletionReward(
                     homeLevelNumber,
                     coinReward);
-                _goldPassService.AddSpoons(spoonCount);
+                if (spoonCount > 0)
+                {
+                    _goldPassService.AddSpoons(spoonCount);
+                }
                 HomeRewardPresentation rewardPresentation = new(
                     startingCoinBalance,
                     _playerProfileService.CoinBalance,

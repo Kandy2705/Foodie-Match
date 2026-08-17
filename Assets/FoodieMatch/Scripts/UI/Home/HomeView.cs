@@ -21,6 +21,7 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _goldPassButton;
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
+        [SerializeField] private TMP_Text _goldPassUnlockLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
         [SerializeField] private Sprite _hardPlayButtonSprite;
         [SerializeField] private Sprite _superHardPlayButtonSprite;
@@ -94,6 +95,11 @@ namespace FoodieMatch.UI.Home
                 margin.y = 48f;
             }
             _playLevelText.margin = margin;
+        }
+
+        public void SetGoldPassUnlockLevel(int unlockLevel)
+        {
+            _goldPassUnlockLevelText.text = $"Level {unlockLevel}";
         }
 
         public void SetCoinBalance(long coinBalance)

@@ -39,6 +39,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             "booster_box_unlock_level";
         public const string BoosterUnlockRewardAmount =
             "booster_unlock_reward_amount";
+        public const string GoldPassUnlockLevel =
+            "gold_pass_unlock_level";
         public const string GoldPassNormalSpoonsPerCompletedLevel =
             "gold_pass_spoons_per_completed_level_normal";
         public const string GoldPassHardSpoonsPerCompletedLevel =

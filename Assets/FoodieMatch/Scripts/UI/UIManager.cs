@@ -6,6 +6,7 @@ using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GoldPass;
@@ -92,6 +93,7 @@ namespace FoodieMatch.UI
         private BoosterManager _boosterManager;
         private IGameBoosterConfig _boosterConfig;
         private IGameEconomyConfig _economyConfig;
+        private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
         private GoldPassService _goldPassService;
@@ -171,6 +173,7 @@ namespace FoodieMatch.UI
             BoosterManager boosterManager,
             IGameBoosterConfig boosterConfig,
             IGameEconomyConfig economyConfig,
+            IGameGoldPassProgressionConfig goldPassProgressionConfig,
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
             GoldPassService goldPassService,
@@ -197,6 +200,7 @@ namespace FoodieMatch.UI
             _boosterManager = boosterManager;
             _boosterConfig = boosterConfig;
             _economyConfig = economyConfig;
+            _goldPassProgressionConfig = goldPassProgressionConfig;
             _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
             _goldPassService = goldPassService;
@@ -339,6 +343,11 @@ namespace FoodieMatch.UI
 
         public void PlayHomeSpoonReward(int spoonCount)
         {
+            if (spoonCount == 0)
+            {
+                return;
+            }
+
             if (!_popupManager.TryGetOpened(out MainMenuView mainMenuView))
             {
                 return;
@@ -1212,6 +1221,8 @@ namespace FoodieMatch.UI
                     OnHomeCoinClicked,
                     OnHomeHeartClicked));
             SetHomePlayLevel(homeView);
+            homeView.SetGoldPassUnlockLevel(
+                _goldPassProgressionConfig.UnlockLevel);
             homeView.SetPlayerResources(
                 displayedCoinBalance,
                 _playerProfileService.GetHeartStatus());
@@ -1341,7 +1352,7 @@ namespace FoodieMatch.UI
 
         private void OnHomeGoldPassRequested()
         {
-            if (_currentLevelNumber < 15)
+            if (_currentLevelNumber < _goldPassProgressionConfig.UnlockLevel)
             {
                 return;
             }
