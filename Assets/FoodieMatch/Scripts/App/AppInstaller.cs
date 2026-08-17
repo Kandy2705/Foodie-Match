@@ -140,7 +140,8 @@ namespace FoodieMatch.App
                 profileRepository,
                 invalidProfileRecovery,
                 profileSession,
-                heartConfig);
+                heartConfig,
+                clock);
             PlayerProfileService playerProfileService = new(
                 profileRepository,
                 profileSession,

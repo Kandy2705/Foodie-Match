@@ -85,6 +85,17 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public long CreatedAtUnixSeconds
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.CreatedAtUnixSeconds;
+                }
+            }
+        }
+
         public HeartState RefreshHeartState()
         {
             lock (_stateLock)

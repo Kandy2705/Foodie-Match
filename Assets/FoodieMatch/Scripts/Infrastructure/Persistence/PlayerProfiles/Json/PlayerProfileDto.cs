@@ -24,6 +24,9 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
         [JsonProperty("hasFailedCurrentLevel")]
         public bool HasFailedCurrentLevel { get; set; }
 
+        [JsonProperty("createdAtUnixSeconds")]
+        public long CreatedAtUnixSeconds { get; set; }
+
         [JsonProperty("heartCount", Required = Required.Always)]
         public int HeartCount { get; set; }
 

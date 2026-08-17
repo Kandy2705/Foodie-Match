@@ -21,7 +21,8 @@ namespace FoodieMatch.Core.Domain.Player
             bool adsRemoved = false,
             long unlimitedHeartEndUnixSeconds = 0,
             int firstTryWins = 0,
-            bool hasFailedCurrentLevel = false)
+            bool hasFailedCurrentLevel = false,
+            long createdAtUnixSeconds = 0)
         {
             if (currentLevelNumber < 1)
             {
@@ -55,12 +56,21 @@ namespace FoodieMatch.Core.Domain.Player
                     "First try wins cannot be negative.");
             }
 
+            if (createdAtUnixSeconds < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(createdAtUnixSeconds),
+                    createdAtUnixSeconds,
+                    "Created at timestamp cannot be negative.");
+            }
+
             CurrentLevelNumber = currentLevelNumber;
             CoinBalance = coinBalance;
             AdsRemoved = adsRemoved;
             UnlimitedHeartEndUnixSeconds = unlimitedHeartEndUnixSeconds;
             FirstTryWins = firstTryWins;
             HasFailedCurrentLevel = hasFailedCurrentLevel;
+            CreatedAtUnixSeconds = createdAtUnixSeconds;
             HeartState = heartState ??
                 throw new ArgumentNullException(nameof(heartState));
             _boosterCounts = CopyBoosterCounts(boosterCounts);
@@ -80,6 +90,8 @@ namespace FoodieMatch.Core.Domain.Player
         public int FirstTryWins { get; }
 
         public bool HasFailedCurrentLevel { get; }
+
+        public long CreatedAtUnixSeconds { get; }
 
         public HeartState HeartState { get; }
 
@@ -117,7 +129,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                hasFailedCurrentLevel: false);
+                hasFailedCurrentLevel: false,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithCoinBalance(long coinBalance)
@@ -136,7 +149,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                HasFailedCurrentLevel);
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithBoosterCount(
@@ -172,7 +186,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                HasFailedCurrentLevel);
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithSeenBoosterGuide(BoosterType boosterType)
@@ -198,7 +213,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                HasFailedCurrentLevel);
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithHeartState(HeartState heartState)
@@ -222,7 +238,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                HasFailedCurrentLevel);
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithShopState(
@@ -241,7 +258,8 @@ namespace FoodieMatch.Core.Domain.Player
                 adsRemoved,
                 unlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                HasFailedCurrentLevel);
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithFirstTryWins(int firstTryWins)
@@ -260,7 +278,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 firstTryWins,
-                HasFailedCurrentLevel);
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithFailedCurrentLevel()
@@ -279,7 +298,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                hasFailedCurrentLevel: true);
+                hasFailedCurrentLevel: true,
+                CreatedAtUnixSeconds);
         }
 
         public PlayerProfile WithResetFailedCurrentLevel()
@@ -298,7 +318,8 @@ namespace FoodieMatch.Core.Domain.Player
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
-                hasFailedCurrentLevel: false);
+                hasFailedCurrentLevel: false,
+                CreatedAtUnixSeconds);
         }
 
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(
