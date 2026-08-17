@@ -8,6 +8,10 @@ namespace FoodieMatch.Core.Domain.Player
 {
     public sealed class PlayerProfile
     {
+        private const string DefaultPlayerName = "Kandy";
+        private const string DefaultAvatarId = "avatar_01";
+        private const string DefaultFrameId = "frame_01";
+
         private readonly ReadOnlyDictionary<BoosterType, int> _boosterCounts;
         private readonly ReadOnlyCollection<BoosterType> _seenBoosterGuides;
         private readonly HashSet<BoosterType> _seenBoosterGuideSet;
@@ -22,7 +26,10 @@ namespace FoodieMatch.Core.Domain.Player
             long unlimitedHeartEndUnixSeconds = 0,
             int firstTryWins = 0,
             bool hasFailedCurrentLevel = false,
-            long createdAtUnixSeconds = 0)
+            long createdAtUnixSeconds = 0,
+            string playerName = null,
+            string avatarId = null,
+            string frameId = null)
         {
             if (currentLevelNumber < 1)
             {
@@ -71,6 +78,9 @@ namespace FoodieMatch.Core.Domain.Player
             FirstTryWins = firstTryWins;
             HasFailedCurrentLevel = hasFailedCurrentLevel;
             CreatedAtUnixSeconds = createdAtUnixSeconds;
+            PlayerName = string.IsNullOrWhiteSpace(playerName) ? DefaultPlayerName : playerName.Trim();
+            AvatarId = string.IsNullOrWhiteSpace(avatarId) ? DefaultAvatarId : avatarId.Trim();
+            FrameId = string.IsNullOrWhiteSpace(frameId) ? DefaultFrameId : frameId.Trim();
             HeartState = heartState ??
                 throw new ArgumentNullException(nameof(heartState));
             _boosterCounts = CopyBoosterCounts(boosterCounts);
@@ -92,6 +102,12 @@ namespace FoodieMatch.Core.Domain.Player
         public bool HasFailedCurrentLevel { get; }
 
         public long CreatedAtUnixSeconds { get; }
+
+        public string PlayerName { get; }
+
+        public string AvatarId { get; }
+
+        public string FrameId { get; }
 
         public HeartState HeartState { get; }
 
@@ -130,7 +146,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 hasFailedCurrentLevel: false,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithCoinBalance(long coinBalance)
@@ -150,7 +169,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 HasFailedCurrentLevel,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithBoosterCount(
@@ -187,7 +209,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 HasFailedCurrentLevel,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithSeenBoosterGuide(BoosterType boosterType)
@@ -214,7 +239,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 HasFailedCurrentLevel,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithHeartState(HeartState heartState)
@@ -239,7 +267,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 HasFailedCurrentLevel,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithShopState(
@@ -259,7 +290,10 @@ namespace FoodieMatch.Core.Domain.Player
                 unlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 HasFailedCurrentLevel,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithFirstTryWins(int firstTryWins)
@@ -279,7 +313,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 firstTryWins,
                 HasFailedCurrentLevel,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithFailedCurrentLevel()
@@ -299,7 +336,10 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 hasFailedCurrentLevel: true,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         public PlayerProfile WithResetFailedCurrentLevel()
@@ -319,7 +359,114 @@ namespace FoodieMatch.Core.Domain.Player
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
                 hasFailedCurrentLevel: false,
-                CreatedAtUnixSeconds);
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
+        }
+
+        public PlayerProfile WithPlayerName(string playerName)
+        {
+            string resolvedName = string.IsNullOrWhiteSpace(playerName) ? DefaultPlayerName : playerName.Trim();
+            if (resolvedName == PlayerName)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds,
+                resolvedName,
+                AvatarId,
+                FrameId);
+        }
+
+        public PlayerProfile WithAvatarId(string avatarId)
+        {
+            string resolvedAvatarId = string.IsNullOrWhiteSpace(avatarId) ? DefaultAvatarId : avatarId.Trim();
+            if (resolvedAvatarId == AvatarId)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds,
+                PlayerName,
+                resolvedAvatarId,
+                FrameId);
+        }
+
+        public PlayerProfile WithFrameId(string frameId)
+        {
+            string resolvedFrameId = string.IsNullOrWhiteSpace(frameId) ? DefaultFrameId : frameId.Trim();
+            if (resolvedFrameId == FrameId)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                resolvedFrameId);
+        }
+
+        public PlayerProfile WithCustomization(
+            string playerName,
+            string avatarId,
+            string frameId)
+        {
+            string resolvedName = string.IsNullOrWhiteSpace(playerName) ? DefaultPlayerName : playerName.Trim();
+            string resolvedAvatarId = string.IsNullOrWhiteSpace(avatarId) ? DefaultAvatarId : avatarId.Trim();
+            string resolvedFrameId = string.IsNullOrWhiteSpace(frameId) ? DefaultFrameId : frameId.Trim();
+
+            if (resolvedName == PlayerName &&
+                resolvedAvatarId == AvatarId &&
+                resolvedFrameId == FrameId)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds,
+                resolvedName,
+                resolvedAvatarId,
+                resolvedFrameId);
         }
 
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(

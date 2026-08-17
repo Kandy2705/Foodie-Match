@@ -96,6 +96,39 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
+        public string PlayerName
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.PlayerName;
+                }
+            }
+        }
+
+        public string AvatarId
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.AvatarId;
+                }
+            }
+        }
+
+        public string FrameId
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _profileSession.CurrentRecord.Profile.FrameId;
+                }
+            }
+        }
+
         public HeartState RefreshHeartState()
         {
             lock (_stateLock)
@@ -260,6 +293,29 @@ namespace FoodieMatch.Core.Application.Player
                 }
 
                 QueueProfileChange(currentProfile.WithFailedCurrentLevel());
+            }
+        }
+
+        public void UpdateCustomization(
+            string playerName,
+            string avatarId,
+            string frameId)
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                PlayerProfile updatedProfile = currentProfile.WithCustomization(
+                    playerName,
+                    avatarId,
+                    frameId);
+
+                if (ReferenceEquals(currentProfile, updatedProfile))
+                {
+                    return;
+                }
+
+                QueueProfileChange(updatedProfile);
             }
         }
 

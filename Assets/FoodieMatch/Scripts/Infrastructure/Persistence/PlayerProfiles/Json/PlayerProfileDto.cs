@@ -27,6 +27,15 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
         [JsonProperty("createdAtUnixSeconds")]
         public long CreatedAtUnixSeconds { get; set; }
 
+        [JsonProperty("playerName")]
+        public string PlayerName { get; set; }
+
+        [JsonProperty("avatarId")]
+        public string AvatarId { get; set; }
+
+        [JsonProperty("frameId")]
+        public string FrameId { get; set; }
+
         [JsonProperty("heartCount", Required = Required.Always)]
         public int HeartCount { get; set; }
 
