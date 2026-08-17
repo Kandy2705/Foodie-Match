@@ -9,11 +9,7 @@ namespace FoodieMatch.UI.Booster
         menuName = "FoodieMatch/Booster/Booster Guide Catalog")]
     public sealed class BoosterBuyCatalogSO : ScriptableObject
     {
-        [SerializeField] private Sprite _lockedButtonSprite;
-
         [SerializeField] private List<BoosterBuyContentEntry> _entries = new();
-
-        public Sprite LockedButtonSprite => _lockedButtonSprite;
 
         public IReadOnlyList<BoosterBuyContentEntry> Entries => _entries;
 

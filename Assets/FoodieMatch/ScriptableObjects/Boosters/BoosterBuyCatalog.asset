@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6220105f36599475c810b39b358a3c74, type: 3}
   m_Name: BoosterBuyCatalog
   m_EditorClassIdentifier: 
-  _lockedButtonSprite: {fileID: 8843225534474778812, guid: 9b5dfc4af510142b5b76722fa7537064, type: 3}
   _entries:
   - _boosterType: 0
     _title: Plate

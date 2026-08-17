@@ -1948,15 +1948,16 @@ namespace FoodieMatch.UI
                 int unlockLevel = GetBoosterUnlockLevel(boosterType);
                 unlockedStates[i] = _currentLevelNumber >= unlockLevel &&
                     HasSeenBoosterGuide(boosterType);
-                _gameplayHudView.SetBoosterUnlockLevel(i, unlockLevel);
 
                 if (_boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
                 {
-                    _gameplayHudView.SetBoosterLockedSprites(
+                    _gameplayHudView.SetBoosterIconSprites(
                         i,
-                        _boosterBuyCatalog.LockedButtonSprite,
+                        entry.Icon,
                         entry.LockedIconSprite);
                 }
+
+                _gameplayHudView.SetBoosterUnlockLevel(i, unlockLevel);
             }
 
             _gameplayHudView.SetBoosterUnlockedStates(unlockedStates);
