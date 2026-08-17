@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace FoodieMatch.UI.Profile
@@ -61,6 +63,8 @@ namespace FoodieMatch.UI.Profile
             CustomizationTab.Avatar;
 
         private bool _isEditingName;
+        private Coroutine _focusNameInputCoroutine;
+
 
         private void Awake()
         {
@@ -591,6 +595,7 @@ namespace FoodieMatch.UI.Profile
             }
 
             _isEditingName = true;
+            _workingPlayerName ??= string.Empty;
 
             if (_playerNameText != null)
             {
@@ -602,27 +607,50 @@ namespace FoodieMatch.UI.Profile
             _nameInputField.readOnly = false;
             _nameInputField.SetTextWithoutNotify(_workingPlayerName);
 
-            StartCoroutine(FocusInputFieldNextFrame());
+            if (_focusNameInputCoroutine != null)
+            {
+                StopCoroutine(_focusNameInputCoroutine);
+            }
+
+            _focusNameInputCoroutine =
+                StartCoroutine(FocusNameInputField());
         }
 
-        private System.Collections.IEnumerator FocusInputFieldNextFrame()
+        private IEnumerator FocusNameInputField()
         {
             yield return null;
 
             if (_nameInputField == null ||
                 !_nameInputField.gameObject.activeInHierarchy)
             {
+                _focusNameInputCoroutine = null;
                 yield break;
             }
 
-            _nameInputField.Select();
-            _nameInputField.ActivateInputField();
-            _nameInputField.caretPosition =
-                _nameInputField.text.Length;
+            _nameInputField.ForceLabelUpdate();
 
-            UnityEngine.EventSystems.EventSystem.current
-                ?.SetSelectedGameObject(
+            if (_nameInputField.textComponent != null)
+            {
+                _nameInputField.textComponent.ForceMeshUpdate();
+            }
+
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(
                     _nameInputField.gameObject);
+            }
+
+            _nameInputField.ActivateInputField();
+
+            yield return null;
+
+            if (_nameInputField != null &&
+                _nameInputField.isFocused)
+            {
+                _nameInputField.MoveTextEnd(false);
+            }
+
+            _focusNameInputCoroutine = null;
         }
 
         private void OnNameInputEndEdit(string text)
