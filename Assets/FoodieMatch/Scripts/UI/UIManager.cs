@@ -607,16 +607,18 @@ namespace FoodieMatch.UI
 
         public void ShowProfilePopup()
         {
+            ProfilePopupData data = new(
+                _playerProfileService.CurrentLevelNumber,
+                firstTryWins: _playerProfileService.FirstTryWins);
+
             RunUiTask(
                 ShowPopupAsync<ProfilePopupView>(
-                    data: null,
+                    data: data,
                     popup =>
                     {
                         popup.SetActions(
                             new ProfilePopupViewActions(
                                 OnProfileCloseClicked));
-                        popup.SetData(
-                            _playerProfileService.CurrentLevelNumber);
                     }),
                 nameof(ShowProfilePopup));
         }

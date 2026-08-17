@@ -30,8 +30,6 @@ namespace FoodieMatch.UI.Profile
 
         private void Awake()
         {
-            ResolveReferencesIfMissing();
-
             if (_closeButton != null)
             {
                 _closeButton.onClick.AddListener(OnCloseButtonClicked);
@@ -69,50 +67,46 @@ namespace FoodieMatch.UI.Profile
             _editAvatarClicked = actions.EditAvatarClicked;
         }
 
-        public void SetData(
-            int currentLevel,
-            string playerName = null,
-            string joinDate = null,
-            Sprite avatarSprite = null,
-            int firstTryWins = 0,
-            int hotPotWins = 0,
-            int towerTrial = 0)
+        public override void Setup(IPopupData data)
         {
-            ResolveReferencesIfMissing();
+            if (data is not ProfilePopupData profileData)
+            {
+                return;
+            }
 
             if (_levelValueText != null)
             {
-                _levelValueText.text = currentLevel.ToString();
+                _levelValueText.text = profileData.CurrentLevel.ToString();
             }
 
-            if (_playerNameText != null && !string.IsNullOrEmpty(playerName))
+            if (_playerNameText != null && !string.IsNullOrEmpty(profileData.PlayerName))
             {
-                _playerNameText.text = playerName;
+                _playerNameText.text = profileData.PlayerName;
             }
 
-            if (_joinDateText != null && !string.IsNullOrEmpty(joinDate))
+            if (_joinDateText != null && !string.IsNullOrEmpty(profileData.JoinDate))
             {
-                _joinDateText.text = joinDate;
+                _joinDateText.text = profileData.JoinDate;
             }
 
-            if (_avatarImage != null && avatarSprite != null)
+            if (_avatarImage != null && profileData.AvatarSprite != null)
             {
-                _avatarImage.sprite = avatarSprite;
+                _avatarImage.sprite = profileData.AvatarSprite;
             }
 
             if (_firstTryWinsText != null)
             {
-                _firstTryWinsText.text = firstTryWins.ToString();
+                _firstTryWinsText.text = profileData.FirstTryWins.ToString();
             }
 
             if (_hotPotWinsText != null)
             {
-                _hotPotWinsText.text = hotPotWins.ToString();
+                _hotPotWinsText.text = profileData.HotPotWins.ToString();
             }
 
             if (_towerTrialText != null)
             {
-                _towerTrialText.text = towerTrial.ToString();
+                _towerTrialText.text = profileData.TowerTrial.ToString();
             }
         }
 
@@ -158,91 +152,6 @@ namespace FoodieMatch.UI.Profile
         private void OnCloseAnimationFinished()
         {
             base.Hide();
-        }
-
-        private void ResolveReferencesIfMissing()
-        {
-            _popupAnimController ??= GetComponent<PopupAnimController>();
-
-            if (_closeButton == null)
-            {
-                _closeButton = FindChildComponentByName<Button>("CloseButton");
-            }
-
-            if (_playerNameText == null)
-            {
-                _playerNameText = FindChildComponentByName<TMP_Text>("PlayerNameText");
-            }
-
-            if (_joinDateText == null)
-            {
-                _joinDateText = FindChildComponentByName<TMP_Text>("JoinDateText");
-            }
-
-            if (_levelValueText == null)
-            {
-                _levelValueText = FindChildComponentByName<TMP_Text>("LevelValue");
-            }
-
-            if (_avatarImage == null)
-            {
-                _avatarImage = FindChildComponentByName<Image>("AvatarImage");
-            }
-
-            if (_firstTryWinsText == null)
-            {
-                _firstTryWinsText = FindCardValueText("FirstTryWinsCard");
-            }
-
-            if (_hotPotWinsText == null)
-            {
-                _hotPotWinsText = FindCardValueText("HotPotWinsCard");
-            }
-
-            if (_towerTrialText == null)
-            {
-                _towerTrialText = FindCardValueText("TowerTrialCard");
-            }
-        }
-
-        private T FindChildComponentByName<T>(string objectName) where T : Component
-        {
-            T[] components = GetComponentsInChildren<T>(true);
-            for (int i = 0; i < components.Length; i++)
-            {
-                if (components[i].name == objectName || components[i].gameObject.name == objectName)
-                {
-                    return components[i];
-                }
-            }
-
-            return null;
-        }
-
-        private TMP_Text FindCardValueText(string cardName)
-        {
-            Transform[] transforms = GetComponentsInChildren<Transform>(true);
-            for (int i = 0; i < transforms.Length; i++)
-            {
-                if (transforms[i].name == cardName)
-                {
-                    TMP_Text[] texts = transforms[i].GetComponentsInChildren<TMP_Text>(true);
-                    for (int j = 0; j < texts.Length; j++)
-                    {
-                        if (texts[j].name == "ValueText")
-                        {
-                            return texts[j];
-                        }
-                    }
-
-                    if (texts.Length > 0)
-                    {
-                        return texts[texts.Length - 1];
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }
