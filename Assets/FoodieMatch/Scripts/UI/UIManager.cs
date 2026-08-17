@@ -77,6 +77,7 @@ namespace FoodieMatch.UI
 
         [Header("Effect")]
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
+        [SerializeField] private SpoonRewardOverlayView _spoonRewardOverlayPrefab;
         [SerializeField] private Transform _effectRoot;
         private GameplayClickParticleController _clickParticleController;
 
@@ -106,6 +107,7 @@ namespace FoodieMatch.UI
         private AddressableLoadingOverlayView _addressableLoadingOverlay;
         private WarningLevelView _levelWarningView;
         private CoinRewardOverlayView _coinRewardOverlayView;
+        private SpoonRewardOverlayView _spoonRewardOverlayView;
         private readonly List<ActionFeedbackView> _actionFeedbackViews = new();
         private BoosterGuideFlowState _boosterGuideFlowState;
         private AddBoxFlowSource _addBoxFlowSource;
@@ -148,7 +150,7 @@ namespace FoodieMatch.UI
 
         private void OnDestroy()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             _loadingScreenView?.HideImmediately();
 
             if (_addressableUiFactory != null)
@@ -263,7 +265,7 @@ namespace FoodieMatch.UI
 
         public async Task ShowHomeAsync(long displayedCoinBalance)
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
 
             await _addressableUiFactory.PreloadLabelAsync(
                 UiAddressLabels.BootstrapCritical);
@@ -278,6 +280,7 @@ namespace FoodieMatch.UI
 
             mainMenuView.SetViewLoader(
                 tab => LoadMainMenuViewAsync(mainMenuView, tab));
+            mainMenuView.SetTabSelectedAction(OnMainMenuTabSelected);
 
             HomeView homeView =
                 (HomeView)await LoadMainMenuViewAsync(
@@ -334,9 +337,30 @@ namespace FoodieMatch.UI
                 coinArrived);
         }
 
-        public void CompleteCoinRewardImmediately()
+        public void PlayHomeSpoonReward(int spoonCount)
+        {
+            if (!_popupManager.TryGetOpened(out MainMenuView mainMenuView))
+            {
+                return;
+            }
+
+            if (!mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+            {
+                return;
+            }
+
+            SpoonRewardOverlayView spoonRewardOverlay =
+                GetOrCreateSpoonRewardOverlay();
+            spoonRewardOverlay.PlaySpoonReward(
+                spoonCount,
+                homeView.GetGoldPassRewardTarget(),
+                OnHomeSpoonArrived);
+        }
+
+        public void CompleteHomeRewardPresentationImmediately()
         {
             _coinRewardOverlayView?.CompleteRewardImmediately();
+            _spoonRewardOverlayView?.StopReward();
         }
 
         public void SetCurrentLevelNumber(int levelNumber)
@@ -367,7 +391,7 @@ namespace FoodieMatch.UI
 
         public void HideHome()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
 
             _popupManager.Hide<MainMenuView>();
         }
@@ -897,7 +921,7 @@ namespace FoodieMatch.UI
 
         public void HideAllPopups()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             _pendingBoosterGuides.Clear();
             _boosterGuideFlowState = BoosterGuideFlowState.Idle;
             _gameplayHudView?.StopBoosterUnlockReward();
@@ -1218,6 +1242,21 @@ namespace FoodieMatch.UI
             return _coinRewardOverlayView;
         }
 
+        private SpoonRewardOverlayView GetOrCreateSpoonRewardOverlay()
+        {
+            if (_spoonRewardOverlayView != null)
+            {
+                return _spoonRewardOverlayView;
+            }
+
+            _spoonRewardOverlayView = Instantiate(
+                _spoonRewardOverlayPrefab,
+                _effectRoot);
+            _spoonRewardOverlayView.gameObject.name =
+                _spoonRewardOverlayPrefab.gameObject.name;
+            return _spoonRewardOverlayView;
+        }
+
         private void OnActionFeedbackHidden(ActionFeedbackView actionFeedback)
         {
             _actionFeedbackViews.Remove(actionFeedback);
@@ -1272,8 +1311,16 @@ namespace FoodieMatch.UI
 
         private void OnHomePlayRequested()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             PlayGameRequested?.Invoke();
+        }
+
+        private void OnMainMenuTabSelected(BottomNavigationTab tab)
+        {
+            if (tab != BottomNavigationTab.Home)
+            {
+                _spoonRewardOverlayView?.StopReward();
+            }
         }
 
         private void OnHomeSettingRequested()
@@ -1455,6 +1502,11 @@ namespace FoodieMatch.UI
             _audioService.PlaySfx(AudioKeys.SfxCoinReceive);
         }
 
+        private void OnHomeSpoonArrived()
+        {
+            _audioService.PlaySfx(AudioKeys.SfxClaim);
+        }
+
         private void OnGameplayPauseRequested()
         {
             ShowPausePopup();
@@ -1554,7 +1606,7 @@ namespace FoodieMatch.UI
             bool adServiceChanged =
                 _advertisingRuntimeSettings.UseLevelPlayAds !=
                 values.UseLevelPlayAds;
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             _playerProfileService.ApplyDebugUpdate(playerProfile);
             _goldPassService.ApplyDebugUpdate(
                 values.GoldPassSpoonCount,

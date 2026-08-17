@@ -127,6 +127,11 @@ namespace FoodieMatch.UI.Home
             return _resourceBarView.CoinCounterView;
         }
 
+        public RectTransform GetGoldPassRewardTarget()
+        {
+            return (RectTransform)_goldPassButton.transform;
+        }
+
         public void Clear()
         {
             _playClicked = null;
