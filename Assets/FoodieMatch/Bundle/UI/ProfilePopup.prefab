@@ -110,11 +110,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _closeButton: {fileID: 7540329202547937374}
   _editAvatarButton: {fileID: 1676381277205675781}
+  _editNameButton: {fileID: 0}
+  _nameInputField: {fileID: 0}
   _popupAnimController: {fileID: 1365995192828837838}
   _playerNameText: {fileID: 769228415404325486}
   _joinDateText: {fileID: 131089140025156177}
   _levelValueText: {fileID: 5433327380896173438}
   _avatarImage: {fileID: 8973542040245026707}
+  _frameImage: {fileID: 8269911745560608997}
   _firstTryWinsText: {fileID: 6076783884632277500}
   _hotPotWinsText: {fileID: 1188053926256973875}
   _towerTrialText: {fileID: 6024824670830318493}
@@ -310,6 +313,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5655105345013007812, guid: 4b8134270aa0446af83d16ea875236bf, type: 3}
+      propertyPath: m_Name
+      value: FrameImage
+      objectReference: {fileID: 0}
     - target: {fileID: 7406121498857528449, guid: 4b8134270aa0446af83d16ea875236bf, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -501,6 +508,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8269911745560608997 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7805720640577810221, guid: 4b8134270aa0446af83d16ea875236bf, type: 3}
+  m_PrefabInstance: {fileID: 2204474059757694920}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &8669439426572776265 stripped

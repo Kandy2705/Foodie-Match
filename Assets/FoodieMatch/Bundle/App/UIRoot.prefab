@@ -58,6 +58,7 @@ MonoBehaviour:
   _effectRoot: {fileID: 6443555530003102396}
   _actionFeedbackPrefab: {fileID: 970213579789557558, guid: a510e4ff824994d8eb7d6d8193512769, type: 3}
   _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
+  _profileCustomizationCatalog: {fileID: 11400000, guid: 84a7e937d10f4438bfa76f59c8d0e722, type: 2}
 --- !u!114 &2571854868624730069
 MonoBehaviour:
   m_ObjectHideFlags: 0
