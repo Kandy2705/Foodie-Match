@@ -110,8 +110,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _closeButton: {fileID: 7540329202547937374}
   _editAvatarButton: {fileID: 1676381277205675781}
-  _editNameButton: {fileID: 0}
-  _nameInputField: {fileID: 0}
   _popupAnimController: {fileID: 1365995192828837838}
   _playerNameText: {fileID: 769228415404325486}
   _joinDateText: {fileID: 131089140025156177}
@@ -293,6 +291,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4289781052928703395}
     m_Modifications:
+    - target: {fileID: 1457763651718223270, guid: 4b8134270aa0446af83d16ea875236bf, type: 3}
+      propertyPath: m_TextWrappingMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1747753755123898981, guid: 4b8134270aa0446af83d16ea875236bf, type: 3}
       propertyPath: m_Name
       value: EditButton
