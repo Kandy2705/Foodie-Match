@@ -607,8 +607,15 @@ namespace FoodieMatch.UI
 
         public void ShowProfilePopup()
         {
+            long createdAtUnixSeconds = _playerProfileService.CreatedAtUnixSeconds;
+            DateTimeOffset joinDateTime = createdAtUnixSeconds > 0
+                ? DateTimeOffset.FromUnixTimeSeconds(createdAtUnixSeconds)
+                : DateTimeOffset.UtcNow;
+            string joinDate = joinDateTime.ToString("M/yyyy");
+
             ProfilePopupData data = new(
                 _playerProfileService.CurrentLevelNumber,
+                joinDate: joinDate,
                 firstTryWins: _playerProfileService.FirstTryWins);
 
             RunUiTask(
