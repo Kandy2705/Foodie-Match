@@ -60,6 +60,8 @@ namespace FoodieMatch.UI.Profile
         private CustomizationTab _currentTab =
             CustomizationTab.Avatar;
 
+        private bool _isEditingName;
+
         private void Awake()
         {
             if (_closeButton != null)
@@ -190,10 +192,17 @@ namespace FoodieMatch.UI.Profile
                 }
             }
 
+            if (_playerNameText != null)
+            {
+                _playerNameText.gameObject.SetActive(true);
+            }
+
             if (_nameInputField != null)
             {
                 _nameInputField.gameObject.SetActive(false);
             }
+
+            _isEditingName = false;
 
             PopulateAvatarItems();
             PopulateFrameItems();
@@ -521,20 +530,23 @@ namespace FoodieMatch.UI.Profile
 
         private void UpdatePreview()
         {
-            if (_playerNameText != null &&
-                !string.IsNullOrEmpty(
-                    _workingPlayerName))
+            if (!_isEditingName)
             {
-                _playerNameText.text =
-                    _workingPlayerName;
-            }
+                if (_playerNameText != null &&
+                    !string.IsNullOrEmpty(
+                        _workingPlayerName))
+                {
+                    _playerNameText.text =
+                        _workingPlayerName;
+                }
 
-            if (_nameInputField != null &&
-                !string.IsNullOrEmpty(
-                    _workingPlayerName))
-            {
-                _nameInputField.SetTextWithoutNotify(
-                    _workingPlayerName);
+                if (_nameInputField != null &&
+                    !string.IsNullOrEmpty(
+                        _workingPlayerName))
+                {
+                    _nameInputField.SetTextWithoutNotify(
+                        _workingPlayerName);
+                }
             }
 
             if (_catalog == null)
@@ -573,8 +585,12 @@ namespace FoodieMatch.UI.Profile
         {
             if (_nameInputField == null)
             {
+                Debug.LogError(
+                    "[ProfileCustomizationPopupView] _nameInputField is null. Assign it in the Inspector.");
                 return;
             }
+
+            _isEditingName = true;
 
             if (_playerNameText != null)
             {
@@ -582,9 +598,31 @@ namespace FoodieMatch.UI.Profile
             }
 
             _nameInputField.gameObject.SetActive(true);
+            _nameInputField.interactable = true;
+            _nameInputField.readOnly = false;
             _nameInputField.SetTextWithoutNotify(_workingPlayerName);
-            _nameInputField.ActivateInputField();
+
+            StartCoroutine(FocusInputFieldNextFrame());
+        }
+
+        private System.Collections.IEnumerator FocusInputFieldNextFrame()
+        {
+            yield return null;
+
+            if (_nameInputField == null ||
+                !_nameInputField.gameObject.activeInHierarchy)
+            {
+                yield break;
+            }
+
             _nameInputField.Select();
+            _nameInputField.ActivateInputField();
+            _nameInputField.caretPosition =
+                _nameInputField.text.Length;
+
+            UnityEngine.EventSystems.EventSystem.current
+                ?.SetSelectedGameObject(
+                    _nameInputField.gameObject);
         }
 
         private void OnNameInputEndEdit(string text)
@@ -592,21 +630,16 @@ namespace FoodieMatch.UI.Profile
             if (!string.IsNullOrWhiteSpace(text))
             {
                 _workingPlayerName = text.Trim();
-
-                if (_playerNameText != null)
-                {
-                    _playerNameText.text = _workingPlayerName;
-                }
             }
 
-            if (_nameInputField != null)
-            {
-                _nameInputField.gameObject.SetActive(false);
-            }
+            _isEditingName = false;
+
+            _nameInputField.gameObject.SetActive(false);
 
             if (_playerNameText != null)
             {
                 _playerNameText.gameObject.SetActive(true);
+                _playerNameText.text = _workingPlayerName;
             }
         }
 
