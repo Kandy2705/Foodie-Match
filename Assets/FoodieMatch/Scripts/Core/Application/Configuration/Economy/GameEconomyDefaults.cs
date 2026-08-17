@@ -5,7 +5,9 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
 {
     public static class GameEconomyDefaults
     {
-        private const int DefaultLevelCompleteCoinReward = 40;
+        private const int DefaultNormalLevelCompleteCoinReward = 40;
+        private const int DefaultHardLevelCompleteCoinReward = 60;
+        private const int DefaultSuperHardLevelCompleteCoinReward = 80;
         private const int DefaultRewardedAdCoinMultiplier = 2;
         private const int DefaultCoinValuePerRewardImage = 5;
         private const int DefaultFullHeartCoinPrice = 800;
@@ -27,7 +29,9 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
             };
 
             return new GameEconomyConfigSnapshot(
-                DefaultLevelCompleteCoinReward,
+                DefaultNormalLevelCompleteCoinReward,
+                DefaultHardLevelCompleteCoinReward,
+                DefaultSuperHardLevelCompleteCoinReward,
                 DefaultRewardedAdCoinMultiplier,
                 DefaultCoinValuePerRewardImage,
                 DefaultFullHeartCoinPrice,

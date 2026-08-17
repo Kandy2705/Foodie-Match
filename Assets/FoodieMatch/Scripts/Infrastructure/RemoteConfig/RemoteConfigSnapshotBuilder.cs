@@ -69,8 +69,16 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                 new GameEconomyConfigSnapshot(
                     ReadPositiveInt(
                         remoteConfig,
-                        FirebaseRemoteConfigKeys.LevelCompleteCoinReward,
-                        fallback.Economy.LevelCompleteCoinReward),
+                        FirebaseRemoteConfigKeys.NormalLevelCompleteCoinReward,
+                        fallback.Economy.NormalLevelCompleteCoinReward),
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.HardLevelCompleteCoinReward,
+                        fallback.Economy.HardLevelCompleteCoinReward),
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.SuperHardLevelCompleteCoinReward,
+                        fallback.Economy.SuperHardLevelCompleteCoinReward),
                     ReadIntGreaterThanOne(
                         remoteConfig,
                         FirebaseRemoteConfigKeys.RewardedAdCoinMultiplier,
@@ -109,8 +117,16 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                 new GameGoldPassProgressionConfigSnapshot(
                     ReadPositiveInt(
                         remoteConfig,
-                        FirebaseRemoteConfigKeys.GoldPassSpoonsPerCompletedLevel,
-                        fallback.GoldPassProgression.SpoonsPerCompletedLevel)));
+                        FirebaseRemoteConfigKeys.GoldPassNormalSpoonsPerCompletedLevel,
+                        fallback.GoldPassProgression.NormalSpoonsPerCompletedLevel),
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.GoldPassHardSpoonsPerCompletedLevel,
+                        fallback.GoldPassProgression.HardSpoonsPerCompletedLevel),
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.GoldPassSuperHardSpoonsPerCompletedLevel,
+                        fallback.GoldPassProgression.SuperHardSpoonsPerCompletedLevel)));
         }
 
         private static int ReadPositiveInt(

@@ -662,36 +662,52 @@ namespace FoodieMatch.App
             _playerProfileService.TrySpendHeart();
         }
 
-        private void OnGameplayLevelWon(int completedLevelNumber)
+        private void OnGameplayLevelWon(
+            int completedLevelNumber,
+            LevelDifficulty difficulty)
         {
             if (completedLevelNumber != _activeLevelNumber)
             {
                 return;
             }
 
-            long regularCoinReward = _economyConfig.LevelCompleteCoinReward;
+            long regularCoinReward =
+                _economyConfig.GetLevelCompleteCoinReward(difficulty);
             long doubleCoinReward = checked(
                 regularCoinReward * _economyConfig.RewardedAdCoinMultiplier);
+            int spoonCount = _goldPassProgressionConfig
+                .GetSpoonsPerCompletedLevel(difficulty);
 
             _uiManager.ShowWinPopup(
-                OnRegularWinRewardSelected,
-                OnRewardedAdWinRewardSelected,
+                () => OnRegularWinRewardSelected(
+                    regularCoinReward,
+                    spoonCount),
+                () => OnRewardedAdWinRewardSelected(
+                    doubleCoinReward,
+                    spoonCount),
                 regularCoinReward,
                 doubleCoinReward);
         }
 
-        private void OnRegularWinRewardSelected()
+        private void OnRegularWinRewardSelected(
+            long coinReward,
+            int spoonCount)
         {
             _postLevelAdCoordinator.RunAfterPostLevelAd(
                 () => CompleteWinReward(
-                    _economyConfig.LevelCompleteCoinReward));
+                    coinReward,
+                    spoonCount));
         }
 
-        private void OnRewardedAdWinRewardSelected()
+        private void OnRewardedAdWinRewardSelected(
+            long coinReward,
+            int spoonCount)
         {
             TryShowRewardedAd(
                 RewardedAdPlacement.DoubleCoin,
-                OnRewardedAdRewarded);
+                () => CompleteWinReward(
+                    coinReward,
+                    spoonCount));
         }
 
         private void TryShowRewardedAd(
@@ -733,15 +749,9 @@ namespace FoodieMatch.App
             };
         }
 
-        private void OnRewardedAdRewarded()
-        {
-            long coinReward = checked(
-                (long)_economyConfig.LevelCompleteCoinReward *
-                _economyConfig.RewardedAdCoinMultiplier);
-            CompleteWinReward(coinReward);
-        }
-
-        private void CompleteWinReward(long coinReward)
+        private void CompleteWinReward(
+            long coinReward,
+            int spoonCount)
         {
             if (!TryBeginTransition())
             {
@@ -763,8 +773,6 @@ namespace FoodieMatch.App
                 _playerProfileService.ApplyLevelCompletionReward(
                     homeLevelNumber,
                     coinReward);
-                int spoonCount =
-                    _goldPassProgressionConfig.SpoonsPerCompletedLevel;
                 _goldPassService.AddSpoons(spoonCount);
                 HomeRewardPresentation rewardPresentation = new(
                     startingCoinBalance,

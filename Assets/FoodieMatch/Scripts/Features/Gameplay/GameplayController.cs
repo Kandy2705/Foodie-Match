@@ -828,7 +828,9 @@ namespace FoodieMatch.Features.Gameplay
 
             _gameplayWorldClickSfx.StopListening();
             _boardLayoutView.StopMotions();
-            _navigationActions?.LevelWon.Invoke(session.LevelNumber);
+            _navigationActions?.LevelWon.Invoke(
+                session.LevelNumber,
+                session.Level.Difficulty);
         }
 
         private void ShowReviveFlow(GameplaySession session)

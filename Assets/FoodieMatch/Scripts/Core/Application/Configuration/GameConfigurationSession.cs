@@ -5,6 +5,7 @@ using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Core.Application.Configuration
 {
@@ -24,8 +25,6 @@ namespace FoodieMatch.Core.Application.Configuration
 
         public GameConfigurationSnapshotSet Current => _current;
 
-        public int LevelCompleteCoinReward => _current.Economy.LevelCompleteCoinReward;
-
         public int RewardedAdCoinMultiplier => _current.Economy.RewardedAdCoinMultiplier;
 
         public int CoinValuePerRewardImage => _current.Economy.CoinValuePerRewardImage;
@@ -40,8 +39,16 @@ namespace FoodieMatch.Core.Application.Configuration
 
         public int UnlockRewardAmount => _current.Booster.UnlockRewardAmount;
 
-        public int SpoonsPerCompletedLevel =>
-            _current.GoldPassProgression.SpoonsPerCompletedLevel;
+        public int GetLevelCompleteCoinReward(LevelDifficulty difficulty)
+        {
+            return _current.Economy.GetLevelCompleteCoinReward(difficulty);
+        }
+
+        public int GetSpoonsPerCompletedLevel(LevelDifficulty difficulty)
+        {
+            return _current.GoldPassProgression
+                .GetSpoonsPerCompletedLevel(difficulty);
+        }
 
         public int GetBoosterPrice(BoosterType boosterType)
         {
