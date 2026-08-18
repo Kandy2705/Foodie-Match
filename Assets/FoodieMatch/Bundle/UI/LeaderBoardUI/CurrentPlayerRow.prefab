@@ -882,6 +882,7 @@ MonoBehaviour:
   _valueLabelText: {fileID: 5174890800737208126}
   _valueText: {fileID: 5102163030693526409}
   _avatarImage: {fileID: 6120501432433193522}
+  _avatarFrameImage: {fileID: 8662733715176912517}
 --- !u!1 &8875372717301558659
 GameObject:
   m_ObjectHideFlags: 0

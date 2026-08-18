@@ -600,6 +600,7 @@ namespace FoodieMatch.App
 
         private void OnLeaveGameRequested()
         {
+            _playerProfileService.RecordCurrentLevelFailed();
             _playerProfileService.TrySpendHeart();
             BackToHome();
         }
@@ -619,6 +620,7 @@ namespace FoodieMatch.App
                 return false;
             }
 
+            _playerProfileService.RecordCurrentLevelFailed();
             _ = EnterLevelWithLoadingSafelyAsync(_activeLevelNumber);
             return true;
         }
@@ -638,6 +640,7 @@ namespace FoodieMatch.App
 
         private void OnGameplayRetryRequested(int levelNumber)
         {
+            _playerProfileService.RecordCurrentLevelFailed();
             _postLevelAdCoordinator.RunAfterPostLevelAd(
                 () => StartLevel(levelNumber));
         }
@@ -649,6 +652,7 @@ namespace FoodieMatch.App
                 return;
             }
 
+            _playerProfileService.RecordCurrentLevelFailed();
             _playerProfileService.TrySpendHeart();
         }
 

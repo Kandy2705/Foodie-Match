@@ -44,5 +44,9 @@ namespace FoodieMatch.UI.AddressableAssets
             "Assets/FoodieMatch/Bundle/UI/SettingsPopup.prefab";
         public const string StarterPackPopup =
             "Assets/FoodieMatch/Bundle/UI/StarterPackPopup.prefab";
+        public const string ProfilePopup =
+            "Assets/FoodieMatch/Bundle/UI/ProfilePopup.prefab";
+        public const string ProfileCustomizationPopup =
+            "Assets/FoodieMatch/Bundle/UI/ProfileCustomizationPopup.prefab";
     }
 }

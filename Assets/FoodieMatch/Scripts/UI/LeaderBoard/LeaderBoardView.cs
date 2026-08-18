@@ -155,6 +155,9 @@ namespace FoodieMatch.UI.LeaderBoard
         private readonly Dictionary<string, Sprite> _avatarsById =
             new(StringComparer.Ordinal);
         private LeaderBoardPlayerData _currentPlayer;
+        private string _currentPlayerName;
+        private Sprite _currentPlayerAvatarSprite;
+        private Sprite _currentPlayerFrameSprite;
         private LeaderBoardPlayerData[] _weeklyPlayers;
         private LeaderBoardPlayerData[] _globalPlayers;
         private readonly VirtualizedListState _weeklyList = new();
@@ -278,6 +281,29 @@ namespace FoodieMatch.UI.LeaderBoard
             _ = EnsureTabContentLoadedAsync(
                 _selectedTab,
                 true);
+        }
+
+        public void SetCustomization(
+            string playerName,
+            Sprite avatarSprite,
+            Sprite frameSprite)
+        {
+            _currentPlayerName = playerName;
+            _currentPlayerAvatarSprite = avatarSprite;
+            _currentPlayerFrameSprite = frameSprite;
+
+            if (_currentPlayer != null && !string.IsNullOrEmpty(playerName))
+            {
+                _currentPlayer.displayName = playerName;
+            }
+
+            if (_currentPlayerView != null)
+            {
+                _currentPlayerView.SetCustomization(
+                    playerName,
+                    avatarSprite,
+                    frameSprite);
+            }
         }
 
         private void OnInfoButtonClicked()
@@ -813,6 +839,10 @@ namespace FoodieMatch.UI.LeaderBoard
             LeaderBoardDataLoader loader = new();
             LeaderBoardDatabase database = loader.Load();
             _currentPlayer = loader.FindCurrentPlayer(database);
+            if (_currentPlayer != null && !string.IsNullOrEmpty(_currentPlayerName))
+            {
+                _currentPlayer.displayName = _currentPlayerName;
+            }
 
             _weeklyPlayers =
                 GetRankedPlayers(
@@ -900,9 +930,21 @@ namespace FoodieMatch.UI.LeaderBoard
                 if (hasPlayer)
                 {
                     LeaderBoardPlayerData player = weeklyPlayers[i];
+                    if (player.playerId == _currentPlayer?.playerId &&
+                        !string.IsNullOrEmpty(_currentPlayerName))
+                    {
+                        player.displayName = _currentPlayerName;
+                    }
+
+                    Sprite avatar =
+                        player.playerId == _currentPlayer?.playerId &&
+                        _currentPlayerAvatarSprite != null
+                            ? _currentPlayerAvatarSprite
+                            : GetAvatar(player.avatarId);
+
                     podiumPlayers[i].Bind(
                         player,
-                        GetAvatar(player.avatarId));
+                        avatar);
                 }
             }
         }
@@ -2136,6 +2178,18 @@ namespace FoodieMatch.UI.LeaderBoard
 
             row.gameObject.name = $"{tab}RankRow_{rank}";
             row.SetGiftClickHandler(OnGiftClicked);
+            if (player.playerId == _currentPlayer?.playerId &&
+                !string.IsNullOrEmpty(_currentPlayerName))
+            {
+                player.displayName = _currentPlayerName;
+            }
+
+            Sprite avatar =
+                player.playerId == _currentPlayer?.playerId &&
+                _currentPlayerAvatarSprite != null
+                    ? _currentPlayerAvatarSprite
+                    : GetAvatar(player.avatarId);
+
             row.Bind(
                 player,
                 rank,
@@ -2145,7 +2199,7 @@ namespace FoodieMatch.UI.LeaderBoard
                 isWeekly
                     ? player.weeklyScore
                     : player.level,
-                GetAvatar(player.avatarId));
+                avatar);
 
             row.HideGift();
 
@@ -2553,6 +2607,15 @@ namespace FoodieMatch.UI.LeaderBoard
         {
             bool isWeekly = tab == LeaderBoardTab.Weekly;
 
+            if (_currentPlayer != null && !string.IsNullOrEmpty(_currentPlayerName))
+            {
+                _currentPlayer.displayName = _currentPlayerName;
+            }
+
+            Sprite avatarSprite = _currentPlayerAvatarSprite != null
+                ? _currentPlayerAvatarSprite
+                : GetAvatar(_currentPlayer?.avatarId);
+
             _currentPlayerView.Bind(
                 _currentPlayer,
                 isWeekly
@@ -2564,13 +2627,20 @@ namespace FoodieMatch.UI.LeaderBoard
                 isWeekly
                     ? _currentPlayer.weeklyScore
                     : _currentPlayer.level,
-                GetAvatar(_currentPlayer.avatarId));
+                avatarSprite,
+                _currentPlayerFrameSprite);
         }
 
         private Sprite GetAvatar(
             string avatarId)
         {
-            return _avatarsById[avatarId];
+            if (!string.IsNullOrEmpty(avatarId) &&
+                _avatarsById.TryGetValue(avatarId, out Sprite sprite))
+            {
+                return sprite;
+            }
+
+            return null;
         }
 
         private void PlayRevealAnimation(

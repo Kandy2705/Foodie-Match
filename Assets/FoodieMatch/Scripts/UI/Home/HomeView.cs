@@ -13,11 +13,16 @@ namespace FoodieMatch.UI.Home
     public sealed class HomeView : MonoBehaviour, IPlayerResourceView, IMainMenuViewLifecycle
     {
         private const string StarterPackButtonName = "StarterPackButton";
+        private const string AvatarButtonName = "AvatarButton";
 
         [Header("Actions")]
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
         [SerializeField] private Button _starterPackButton;
+        [SerializeField] private Button _avatarButton;
+        [Header("Customization")]
+        [SerializeField] private Image _avatarImage;
+        [SerializeField] private Image _avatarFrameImage;
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
@@ -30,6 +35,7 @@ namespace FoodieMatch.UI.Home
         private Action _playClicked;
         private Action _settingClicked;
         private Action _starterPackClicked;
+        private Action _avatarClicked;
         private Sprite _normalPlayButtonSprite;
         private Vector4 _normalPlayLevelMargin;
 
@@ -37,12 +43,15 @@ namespace FoodieMatch.UI.Home
         {
             _starterPackButton ??=
                 FindRequiredButton(StarterPackButtonName);
+            _avatarButton ??=
+                FindRequiredButton(AvatarButtonName);
             _normalPlayButtonSprite = _playButton.image.sprite;
             _normalPlayLevelMargin = _playLevelText.margin;
             _playButton.onClick.AddListener(OnPlayButtonClicked);
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
             _starterPackButton.onClick.AddListener(
                 OnStarterPackButtonClicked);
+            _avatarButton.onClick.AddListener(OnAvatarButtonClicked);
         }
 
         private void OnDestroy()
@@ -51,6 +60,10 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.RemoveListener(OnSettingButtonClicked);
             _starterPackButton.onClick.RemoveListener(
                 OnStarterPackButtonClicked);
+            if (_avatarButton != null)
+            {
+                _avatarButton.onClick.RemoveListener(OnAvatarButtonClicked);
+            }
             Clear();
         }
 
@@ -59,9 +72,23 @@ namespace FoodieMatch.UI.Home
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
             _starterPackClicked = actions.StarterPackClicked;
+            _avatarClicked = actions.AvatarClicked;
             _resourceBarView.SetResourceClickActions(
                 actions.CoinClicked,
                 actions.HeartClicked);
+        }
+
+        public void SetCustomization(Sprite avatarSprite, Sprite frameSprite)
+        {
+            if (_avatarImage != null && avatarSprite != null)
+            {
+                _avatarImage.sprite = avatarSprite;
+            }
+
+            if (_avatarFrameImage != null && frameSprite != null)
+            {
+                _avatarFrameImage.sprite = frameSprite;
+            }
         }
 
         public void SetPlayLevel(int levelNumber, LevelDifficulty difficulty)
@@ -127,6 +154,7 @@ namespace FoodieMatch.UI.Home
             _playClicked = null;
             _settingClicked = null;
             _starterPackClicked = null;
+            _avatarClicked = null;
             _resourceBarView.Clear();
         }
 
@@ -161,5 +189,9 @@ namespace FoodieMatch.UI.Home
             _starterPackClicked?.Invoke();
         }
 
+        private void OnAvatarButtonClicked()
+        {
+            _avatarClicked?.Invoke();
+        }
     }
 }

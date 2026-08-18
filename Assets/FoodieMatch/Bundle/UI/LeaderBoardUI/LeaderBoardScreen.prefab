@@ -74,7 +74,6 @@ MonoBehaviour:
   _initialTab: 0
   _contentRoot: {fileID: 6145215795159785124}
   _weeklyTimeRemainingText: {fileID: 7441107143783027684}
-  _infoButton: {fileID: 0}
   _weeklyContestIntroPopupView: {fileID: 0}
   _currentPlayerView: {fileID: 4788303410615952760}
   _avatarBindings:
