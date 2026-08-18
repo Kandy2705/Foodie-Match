@@ -1,0 +1,99 @@
+{
+  "resetDayUtc": "Monday",
+  "resetHourUtc": 0,
+  "milestones": [
+    {
+      "level": 0,
+      "requiredSpoons": 0,
+      "freeReward": {
+        "type": "Coin",
+        "amount": 100
+      },
+      "seasonReward": {
+        "type": "Treasure1",
+        "contents": [
+          {
+            "type": "Coin",
+            "amount": 300
+          },
+          {
+            "type": "Booster",
+            "boosterType": "Plate",
+            "amount": 1
+          }
+        ]
+      }
+    },
+    {
+      "level": 1,
+      "requiredSpoons": 1,
+      "freeReward": {
+        "type": "Booster",
+        "boosterType": "Storage",
+        "amount": 1
+      },
+      "seasonReward": {
+        "type": "UnlimitedHeart",
+        "durationMinutes": 15
+      }
+    },
+    {
+      "level": 2,
+      "requiredSpoons": 3,
+      "freeReward": {
+        "type": "Treasure1",
+        "contents": [
+          {
+            "type": "Coin",
+            "amount": 200
+          },
+          {
+            "type": "Booster",
+            "boosterType": "Swap",
+            "amount": 1
+          }
+        ]
+      },
+      "seasonReward": {
+        "type": "Treasure2",
+        "contents": [
+          {
+            "type": "Coin",
+            "amount": 500
+          },
+          {
+            "type": "UnlimitedHeart",
+            "durationMinutes": 30
+          }
+        ]
+      }
+    },
+    {
+      "level": 3,
+      "requiredSpoons": 6,
+      "freeReward": {
+        "type": "Booster",
+        "boosterType": "Fridge",
+        "amount": 1
+      },
+      "seasonReward": {
+        "type": "Treasure3",
+        "contents": [
+          {
+            "type": "Coin",
+            "amount": 1000
+          },
+          {
+            "type": "Booster",
+            "boosterType": "Plate",
+            "amount": 2
+          },
+          {
+            "type": "UnlimitedHeart",
+            "durationMinutes": 60
+          }
+        ]
+      }
+    }
+  ]
+}

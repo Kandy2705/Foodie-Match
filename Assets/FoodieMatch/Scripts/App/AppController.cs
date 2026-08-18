@@ -6,6 +6,8 @@ using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
+using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
@@ -25,6 +27,8 @@ namespace FoodieMatch.App
         private UIManager _uiManager;
         private GameplayController _gameplayController;
         private PlayerProfileService _playerProfileService;
+        private GoldPassService _goldPassService;
+        private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private BoosterManager _boosterManager;
         private IGameEconomyConfig _economyConfig;
         private ShopPurchaseService _shopPurchaseService;
@@ -42,6 +46,8 @@ namespace FoodieMatch.App
             UIManager uiManager,
             GameplayController gameplayController,
             PlayerProfileService playerProfileService,
+            GoldPassService goldPassService,
+            IGameGoldPassProgressionConfig goldPassProgressionConfig,
             BoosterManager boosterManager,
             IGameEconomyConfig economyConfig,
             ShopPurchaseService shopPurchaseService,
@@ -55,6 +61,8 @@ namespace FoodieMatch.App
             _uiManager = uiManager;
             _gameplayController = gameplayController;
             _playerProfileService = playerProfileService;
+            _goldPassService = goldPassService;
+            _goldPassProgressionConfig = goldPassProgressionConfig;
             _boosterManager = boosterManager;
             _economyConfig = economyConfig;
             _shopPurchaseService = shopPurchaseService;
@@ -220,7 +228,7 @@ namespace FoodieMatch.App
 
         private async Task EnterHomeWithLoadingSafelyAsync(
             int levelNumber,
-            HomeCoinRewardPresentation coinRewardPresentation = null)
+            HomeRewardPresentation rewardPresentation = null)
         {
             if (!TryBeginTransition())
             {
@@ -229,14 +237,14 @@ namespace FoodieMatch.App
 
             await RunHomeTransitionSafelyAsync(
                 levelNumber,
-                coinRewardPresentation);
+                rewardPresentation);
         }
 
         private async Task RunHomeTransitionSafelyAsync(
             int levelNumber,
-            HomeCoinRewardPresentation coinRewardPresentation)
+            HomeRewardPresentation rewardPresentation)
         {
-            bool shouldPlayCoinReward = false;
+            bool shouldPlayRewards = false;
 
             try
             {
@@ -248,12 +256,12 @@ namespace FoodieMatch.App
                 _uiManager.SetLoadingProgress(0.9f);
                 await loadingTask;
 
-                long displayedCoinBalance = coinRewardPresentation == null
+                long displayedCoinBalance = rewardPresentation == null
                     ? _playerProfileService.CoinBalance
-                    : coinRewardPresentation.StartingCoinBalance;
+                    : rewardPresentation.StartingCoinBalance;
                 await OpenHomeAsync(levelNumber, displayedCoinBalance);
                 _uiManager.SetLoadingProgress(0.97f);
-                shouldPlayCoinReward = coinRewardPresentation != null;
+                shouldPlayRewards = rewardPresentation != null;
             }
             catch (Exception exception)
             {
@@ -264,12 +272,14 @@ namespace FoodieMatch.App
                 await FinishTransitionAsync();
             }
 
-            if (shouldPlayCoinReward)
+            if (shouldPlayRewards)
             {
                 _uiManager.PlayHomeCoinReward(
-                    coinRewardPresentation.StartingCoinBalance,
-                    coinRewardPresentation.TargetCoinBalance,
-                    coinRewardPresentation.CoinValuePerImage);
+                    rewardPresentation.StartingCoinBalance,
+                    rewardPresentation.TargetCoinBalance,
+                    rewardPresentation.CoinValuePerImage);
+                _uiManager.PlayHomeSpoonReward(
+                    rewardPresentation.SpoonCount);
             }
         }
 
@@ -656,36 +666,55 @@ namespace FoodieMatch.App
             _playerProfileService.TrySpendHeart();
         }
 
-        private void OnGameplayLevelWon(int completedLevelNumber)
+        private void OnGameplayLevelWon(
+            int completedLevelNumber,
+            LevelDifficulty difficulty)
         {
             if (completedLevelNumber != _activeLevelNumber)
             {
                 return;
             }
 
-            long regularCoinReward = _economyConfig.LevelCompleteCoinReward;
+            long regularCoinReward =
+                _economyConfig.GetLevelCompleteCoinReward(difficulty);
             long doubleCoinReward = checked(
                 regularCoinReward * _economyConfig.RewardedAdCoinMultiplier);
+            int spoonCount = completedLevelNumber >=
+                _goldPassProgressionConfig.UnlockLevel
+                    ? _goldPassProgressionConfig
+                        .GetSpoonsPerCompletedLevel(difficulty)
+                    : 0;
 
             _uiManager.ShowWinPopup(
-                OnRegularWinRewardSelected,
-                OnRewardedAdWinRewardSelected,
+                () => OnRegularWinRewardSelected(
+                    regularCoinReward,
+                    spoonCount),
+                () => OnRewardedAdWinRewardSelected(
+                    doubleCoinReward,
+                    spoonCount),
                 regularCoinReward,
                 doubleCoinReward);
         }
 
-        private void OnRegularWinRewardSelected()
+        private void OnRegularWinRewardSelected(
+            long coinReward,
+            int spoonCount)
         {
             _postLevelAdCoordinator.RunAfterPostLevelAd(
                 () => CompleteWinReward(
-                    _economyConfig.LevelCompleteCoinReward));
+                    coinReward,
+                    spoonCount));
         }
 
-        private void OnRewardedAdWinRewardSelected()
+        private void OnRewardedAdWinRewardSelected(
+            long coinReward,
+            int spoonCount)
         {
             TryShowRewardedAd(
                 RewardedAdPlacement.DoubleCoin,
-                OnRewardedAdRewarded);
+                () => CompleteWinReward(
+                    coinReward,
+                    spoonCount));
         }
 
         private void TryShowRewardedAd(
@@ -727,15 +756,9 @@ namespace FoodieMatch.App
             };
         }
 
-        private void OnRewardedAdRewarded()
-        {
-            long coinReward = checked(
-                (long)_economyConfig.LevelCompleteCoinReward *
-                _economyConfig.RewardedAdCoinMultiplier);
-            CompleteWinReward(coinReward);
-        }
-
-        private void CompleteWinReward(long coinReward)
+        private void CompleteWinReward(
+            long coinReward,
+            int spoonCount)
         {
             if (!TryBeginTransition())
             {
@@ -757,13 +780,18 @@ namespace FoodieMatch.App
                 _playerProfileService.ApplyLevelCompletionReward(
                     homeLevelNumber,
                     coinReward);
-                HomeCoinRewardPresentation coinRewardPresentation = new(
+                if (spoonCount > 0)
+                {
+                    _goldPassService.AddSpoons(spoonCount);
+                }
+                HomeRewardPresentation rewardPresentation = new(
                     startingCoinBalance,
                     _playerProfileService.CoinBalance,
-                    _economyConfig.CoinValuePerRewardImage);
+                    _economyConfig.CoinValuePerRewardImage,
+                    spoonCount);
                 _ = RunHomeTransitionSafelyAsync(
                     homeLevelNumber,
-                    coinRewardPresentation);
+                    rewardPresentation);
             }
             catch (Exception exception)
             {
@@ -772,16 +800,18 @@ namespace FoodieMatch.App
             }
         }
 
-        private sealed class HomeCoinRewardPresentation
+        private sealed class HomeRewardPresentation
         {
-            public HomeCoinRewardPresentation(
+            public HomeRewardPresentation(
                 long startingCoinBalance,
                 long targetCoinBalance,
-                int coinValuePerImage)
+                int coinValuePerImage,
+                int spoonCount)
             {
                 StartingCoinBalance = startingCoinBalance;
                 TargetCoinBalance = targetCoinBalance;
                 CoinValuePerImage = coinValuePerImage;
+                SpoonCount = spoonCount;
             }
 
             public long StartingCoinBalance { get; }
@@ -789,6 +819,8 @@ namespace FoodieMatch.App
             public long TargetCoinBalance { get; }
 
             public int CoinValuePerImage { get; }
+
+            public int SpoonCount { get; }
         }
     }
 }

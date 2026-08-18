@@ -135,8 +135,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca4f08c6edcda7d42a70dfadc2c499a0
+    m_Address: Assets/FoodieMatch/Bundle/UI/GoldPassUI/GoldPassScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d9af11fced6b448c0ab1919ce139b903
     m_Address: Assets/FoodieMatch/Bundle/UI/LeaderBoardUI/LeaderBoardScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd54e4441b3ecea4e98ae1dd64121bcc
+    m_Address: Assets/FoodieMatch/Bundle/UI/ClaimReward/ClaimRewardScreen.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -16,7 +16,7 @@ namespace FoodieMatch.Editor.LevelDesign
             {
                 GrillModel grill = simulation.Board.GetGrillAt(grillIndex);
 
-                if (!simulation.Board.IsGrillAccessible(grill.PositionIndex))
+                if (!simulation.Board.IsGrillInActiveRows(grill.PositionIndex))
                 {
                     continue;
                 }

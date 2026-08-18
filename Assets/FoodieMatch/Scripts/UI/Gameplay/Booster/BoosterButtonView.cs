@@ -23,23 +23,24 @@ namespace FoodieMatch.UI.Gameplay.Booster
         [SerializeField] private Image _lockedButtonImage;
         [SerializeField] private Image _lockedIconImage;
 
+        [Header("Visual Sprites")]
+        [SerializeField] private Sprite _unlockedButtonSprite;
+        [SerializeField] private Sprite _lockedButtonSprite;
+
         private Action _useBoosterClicked;
         private Action _addBoosterClicked;
         private int _currentCount;
         private int _unlockLevel = 1;
         private bool _isUnlocked = true;
         private bool _isInputEnabled = true;
-        private Sprite _lockedButtonSprite;
+        private Sprite _unlockedIconSprite;
         private Sprite _lockedIconSprite;
-        private Sprite _defaultButtonSprite;
-        private Sprite _defaultIconSprite;
         public bool IsUnlocked => _isUnlocked;
         public RectTransform RewardTarget => (RectTransform)transform;
 
         private void Awake()
         {
             _button.onClick.AddListener(OnButtonClicked);
-            CacheDefaultSprites();
             ApplyLockedVisuals();
         }
 
@@ -59,9 +60,11 @@ namespace FoodieMatch.UI.Gameplay.Booster
             _addBoosterClicked = addBoosterClicked;
         }
 
-        public void SetLockedSprites(Sprite lockedButtonSprite, Sprite lockedIconSprite)
+        public void SetIconSprites(
+            Sprite unlockedIconSprite,
+            Sprite lockedIconSprite)
         {
-            _lockedButtonSprite = lockedButtonSprite;
+            _unlockedIconSprite = unlockedIconSprite;
             _lockedIconSprite = lockedIconSprite;
             ApplyLockedVisuals();
         }
@@ -107,46 +110,14 @@ namespace FoodieMatch.UI.Gameplay.Booster
             _useBoosterClicked?.Invoke();
         }
 
-        private void CacheDefaultSprites()
-        {
-            _defaultButtonSprite = _lockedButtonImage.sprite;
-            _defaultIconSprite = _lockedIconImage.sprite;
-        }
-
         private void ApplyLockedVisuals()
         {
-            Sprite buttonSprite = !_isUnlocked && _lockedButtonSprite != null
-                ? _lockedButtonSprite
-                : _defaultButtonSprite;
-
-            if (buttonSprite != null)
-            {
-                _lockedButtonImage.sprite = buttonSprite;
-            }
-
-            _lockedButtonImage.enabled = buttonSprite != null;
-
-            if (!_isUnlocked)
-            {
-                if (_lockedIconSprite != null)
-                {
-                    _lockedIconImage.sprite = _lockedIconSprite;
-                    _lockedIconImage.enabled = true;
-                }
-                else
-                {
-                    _lockedIconImage.enabled = false;
-                }
-            }
-            else
-            {
-                if (_defaultIconSprite != null)
-                {
-                    _lockedIconImage.sprite = _defaultIconSprite;
-                }
-
-                _lockedIconImage.enabled = _defaultIconSprite != null;
-            }
+            _lockedButtonImage.sprite = _isUnlocked
+                ? _unlockedButtonSprite
+                : _lockedButtonSprite;
+            _lockedIconImage.sprite = _isUnlocked
+                ? _unlockedIconSprite
+                : _lockedIconSprite;
 
             if (!_isUnlocked)
             {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.GoldPass;
 using FoodieMatch.Core.Domain.Heart;
 
 namespace FoodieMatch.Core.Domain.Player
@@ -22,6 +23,7 @@ namespace FoodieMatch.Core.Domain.Player
             IReadOnlyDictionary<BoosterType, int> boosterCounts,
             IReadOnlyCollection<BoosterType> seenBoosterGuides,
             HeartState heartState,
+            GoldPassState goldPassState,
             bool adsRemoved = false,
             long unlimitedHeartEndUnixSeconds = 0,
             int firstTryWins = 0,
@@ -83,6 +85,8 @@ namespace FoodieMatch.Core.Domain.Player
             FrameId = string.IsNullOrWhiteSpace(frameId) ? DefaultFrameId : frameId.Trim();
             HeartState = heartState ??
                 throw new ArgumentNullException(nameof(heartState));
+            GoldPassState = goldPassState ??
+                throw new ArgumentNullException(nameof(goldPassState));
             _boosterCounts = CopyBoosterCounts(boosterCounts);
             _seenBoosterGuideSet = CopySeenBoosterGuides(seenBoosterGuides);
             _seenBoosterGuides = new ReadOnlyCollection<BoosterType>(
@@ -110,6 +114,8 @@ namespace FoodieMatch.Core.Domain.Player
         public string FrameId { get; }
 
         public HeartState HeartState { get; }
+
+        public GoldPassState GoldPassState { get; }
 
         public IReadOnlyDictionary<BoosterType, int> BoosterCounts => _boosterCounts;
 
@@ -142,6 +148,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -165,6 +172,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -205,6 +213,7 @@ namespace FoodieMatch.Core.Domain.Player
                 boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -235,6 +244,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -263,6 +273,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 heartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -273,7 +284,7 @@ namespace FoodieMatch.Core.Domain.Player
                 FrameId);
         }
 
-        public PlayerProfile WithShopState(
+        public PlayerProfile WithResourceState(
             long coinBalance,
             IReadOnlyDictionary<BoosterType, int> boosterCounts,
             HeartState heartState,
@@ -286,6 +297,7 @@ namespace FoodieMatch.Core.Domain.Player
                 boosterCounts,
                 _seenBoosterGuides,
                 heartState,
+                GoldPassState,
                 adsRemoved,
                 unlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -309,6 +321,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 firstTryWins,
@@ -332,6 +345,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -355,6 +369,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -379,6 +394,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -403,6 +419,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -427,6 +444,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -459,6 +477,7 @@ namespace FoodieMatch.Core.Domain.Player
                 _boosterCounts,
                 _seenBoosterGuides,
                 HeartState,
+                GoldPassState,
                 AdsRemoved,
                 UnlimitedHeartEndUnixSeconds,
                 FirstTryWins,
@@ -467,6 +486,30 @@ namespace FoodieMatch.Core.Domain.Player
                 resolvedName,
                 resolvedAvatarId,
                 resolvedFrameId);
+        }
+
+        public PlayerProfile WithGoldPassState(GoldPassState goldPassState)
+        {
+            if (ReferenceEquals(GoldPassState, goldPassState))
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                goldPassState,
+                AdsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
         }
 
         private static ReadOnlyDictionary<BoosterType, int> CopyBoosterCounts(

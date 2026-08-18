@@ -7,9 +7,11 @@ using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
@@ -22,6 +24,7 @@ using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
+using FoodieMatch.Infrastructure.GoldPass;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Level.Remote;
@@ -65,6 +68,12 @@ namespace FoodieMatch.App
             }
 
             if (!TryCreateShopConfig(out IGameShopConfig shopConfig))
+            {
+                return false;
+            }
+
+            if (!TryCreateGoldPassConfig(
+                    out IGameGoldPassConfig goldPassConfig))
             {
                 return false;
             }
@@ -147,6 +156,12 @@ namespace FoodieMatch.App
                 profileSession,
                 heartConfig,
                 clock);
+            GoldPassService goldPassService = new(
+                goldPassConfig,
+                playerProfileService,
+                clock);
+            IGameGoldPassProgressionConfig goldPassProgressionConfig =
+                configurationSession;
             playerProfileService.SaveFailed += LogPlayerProfileSaveFailure;
             IAudioService audioService = CreateAudioService(appRoot, saveService);
             GameplayAudioPresenter gameplayAudioPresenter = new(audioService);
@@ -194,8 +209,10 @@ namespace FoodieMatch.App
                 boosterManager,
                 boosterConfig,
                 economyConfig,
+                goldPassProgressionConfig,
                 advertisingRuntimeSettings,
                 playerProfileService,
+                goldPassService,
                 levelCatalogRepository,
                 shopConfig,
                 addressableUiFactory,
@@ -248,6 +265,8 @@ namespace FoodieMatch.App
                 appRoot.UIManager,
                 appRoot.GameplayController,
                 playerProfileService,
+                goldPassService,
+                goldPassProgressionConfig,
                 boosterManager,
                 economyConfig,
                 shopPurchaseService,
@@ -313,6 +332,23 @@ namespace FoodieMatch.App
 
             Debug.LogError($"Cannot install app because shop config is invalid: {errorMessage}");
             shopConfig = null;
+            return false;
+        }
+
+        private static bool TryCreateGoldPassConfig(
+            out IGameGoldPassConfig goldPassConfig)
+        {
+            ResourcesGameGoldPassConfigLoader loader = new();
+
+            if (loader.TryLoad(out goldPassConfig, out string errorMessage))
+            {
+                return true;
+            }
+
+            Debug.LogError(
+                $"Cannot install app because Gold Pass config is invalid: " +
+                errorMessage);
+            goldPassConfig = null;
             return false;
         }
 

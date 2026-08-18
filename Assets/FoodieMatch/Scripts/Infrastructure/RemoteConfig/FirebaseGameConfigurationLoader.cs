@@ -99,8 +99,12 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
         {
             return new Dictionary<string, object>
             {
-                [FirebaseRemoteConfigKeys.LevelCompleteCoinReward] =
-                    defaults.Economy.LevelCompleteCoinReward,
+                [FirebaseRemoteConfigKeys.NormalLevelCompleteCoinReward] =
+                    defaults.Economy.NormalLevelCompleteCoinReward,
+                [FirebaseRemoteConfigKeys.HardLevelCompleteCoinReward] =
+                    defaults.Economy.HardLevelCompleteCoinReward,
+                [FirebaseRemoteConfigKeys.SuperHardLevelCompleteCoinReward] =
+                    defaults.Economy.SuperHardLevelCompleteCoinReward,
                 [FirebaseRemoteConfigKeys.RewardedAdCoinMultiplier] =
                     defaults.Economy.RewardedAdCoinMultiplier,
                 [FirebaseRemoteConfigKeys.CoinValuePerRewardImage] =
@@ -133,6 +137,14 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     defaults.Booster.GetUnlockLevel(BoosterType.Box),
                 [FirebaseRemoteConfigKeys.BoosterUnlockRewardAmount] =
                     defaults.Booster.UnlockRewardAmount,
+                [FirebaseRemoteConfigKeys.GoldPassUnlockLevel] =
+                    defaults.GoldPassProgression.UnlockLevel,
+                [FirebaseRemoteConfigKeys.GoldPassNormalSpoonsPerCompletedLevel] =
+                    defaults.GoldPassProgression.NormalSpoonsPerCompletedLevel,
+                [FirebaseRemoteConfigKeys.GoldPassHardSpoonsPerCompletedLevel] =
+                    defaults.GoldPassProgression.HardSpoonsPerCompletedLevel,
+                [FirebaseRemoteConfigKeys.GoldPassSuperHardSpoonsPerCompletedLevel] =
+                    defaults.GoldPassProgression.SuperHardSpoonsPerCompletedLevel,
                 [FirebaseRemoteConfigKeys.PostLevelAdIntervalMinutes] =
                     checked((int)defaults.Ads.PostLevelAdInterval.TotalMinutes),
                 [FirebaseRemoteConfigKeys.LevelManifestVersion] = 0,

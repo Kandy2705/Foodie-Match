@@ -22,6 +22,7 @@ namespace FoodieMatch.UI.MainMenu
         private readonly Dictionary<BottomNavigationTab, MonoBehaviour> _viewsByTab = new();
         private readonly Dictionary<BottomNavigationTab, RectTransform> _screenRootsByTab = new();
         private Func<BottomNavigationTab, Task<MonoBehaviour>> _viewLoader;
+        private Action<BottomNavigationTab> _tabSelected;
 
         public bool IsVisible =>
             gameObject.activeInHierarchy &&
@@ -113,6 +114,12 @@ namespace FoodieMatch.UI.MainMenu
             _viewLoader = viewLoader;
         }
 
+        public void SetTabSelectedAction(
+            Action<BottomNavigationTab> tabSelected)
+        {
+            _tabSelected = tabSelected;
+        }
+
         public void RegisterView(
             BottomNavigationTab tab,
             MonoBehaviour view)
@@ -143,6 +150,7 @@ namespace FoodieMatch.UI.MainMenu
             _viewsByType.Clear();
             _viewsByTab.Clear();
             _screenRootsByTab.Clear();
+            _tabSelected = null;
             base.Dispose();
         }
 
@@ -230,6 +238,8 @@ namespace FoodieMatch.UI.MainMenu
 
         private void OnTabSelected(BottomNavigationTab tab)
         {
+            _tabSelected?.Invoke(tab);
+
             if (_viewsByTab.TryGetValue(tab, out MonoBehaviour view) &&
                 view is IMainMenuTabSelectionHandler selectionHandler)
             {

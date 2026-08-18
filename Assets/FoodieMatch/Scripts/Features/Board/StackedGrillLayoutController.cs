@@ -31,16 +31,10 @@ namespace FoodieMatch.Features.Board
         }
 
         public event Action MotionFinished;
-        public event Action SlideStarted;
 
         public bool HasActiveMotion =>
             _activeExitMotions.Count > 0 ||
             _activeMoveMotions.Count > 0;
-
-        public bool IsGrillAccessible(int grillPositionIndex)
-        {
-            return _board.IsGrillAccessible(grillPositionIndex);
-        }
 
         public void RefreshLayout()
         {
@@ -181,7 +175,6 @@ namespace FoodieMatch.Features.Board
         private void StartSlideMotions()
         {
             _layoutRefreshPending = false;
-            SlideStarted?.Invoke();
 
             for (int columnIndex = 0;
                  columnIndex < _board.StackedGrillColumnCount;

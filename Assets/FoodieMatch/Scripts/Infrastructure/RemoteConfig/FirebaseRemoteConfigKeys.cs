@@ -2,8 +2,12 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
 {
     internal static class FirebaseRemoteConfigKeys
     {
-        public const string LevelCompleteCoinReward =
-            "economy_level_complete_coin_reward";
+        public const string NormalLevelCompleteCoinReward =
+            "economy_level_complete_coin_reward_normal";
+        public const string HardLevelCompleteCoinReward =
+            "economy_level_complete_coin_reward_hard";
+        public const string SuperHardLevelCompleteCoinReward =
+            "economy_level_complete_coin_reward_super_hard";
         public const string RewardedAdCoinMultiplier =
             "economy_rewarded_ad_coin_multiplier";
         public const string CoinValuePerRewardImage =
@@ -35,6 +39,14 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             "booster_box_unlock_level";
         public const string BoosterUnlockRewardAmount =
             "booster_unlock_reward_amount";
+        public const string GoldPassUnlockLevel =
+            "gold_pass_unlock_level";
+        public const string GoldPassNormalSpoonsPerCompletedLevel =
+            "gold_pass_spoons_per_completed_level_normal";
+        public const string GoldPassHardSpoonsPerCompletedLevel =
+            "gold_pass_spoons_per_completed_level_hard";
+        public const string GoldPassSuperHardSpoonsPerCompletedLevel =
+            "gold_pass_spoons_per_completed_level_super_hard";
         public const string PostLevelAdIntervalMinutes =
             "ads_post_level_interval_minutes";
         public const string LevelManifestVersion =

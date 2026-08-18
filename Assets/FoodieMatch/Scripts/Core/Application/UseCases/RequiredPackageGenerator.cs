@@ -161,13 +161,8 @@ namespace FoodieMatch.Core.Application.UseCases
             BoardModel board,
             int grillPositionIndex)
         {
-            if (board.IsGrillAccessible(grillPositionIndex))
-            {
-                return FoodLocation.Grill;
-            }
-
-            return board.IsGrillVisible(grillPositionIndex)
-                ? FoodLocation.TopTray
+            return board.IsGrillInActiveRows(grillPositionIndex)
+                ? FoodLocation.Grill
                 : FoodLocation.DeepTray;
         }
 
@@ -392,7 +387,7 @@ namespace FoodieMatch.Core.Application.UseCases
             {
                 GrillModel grill = board.GetGrillAt(grillIndex);
 
-                if (!board.IsGrillAccessible(grill.PositionIndex))
+                if (!board.IsGrillInActiveRows(grill.PositionIndex))
                 {
                     continue;
                 }
@@ -529,7 +524,7 @@ namespace FoodieMatch.Core.Application.UseCases
             {
                 GrillModel grill = board.GetGrillAt(grillIndex);
 
-                if (board.IsGrillVisible(grill.PositionIndex))
+                if (board.IsGrillInActiveRows(grill.PositionIndex))
                 {
                     continue;
                 }

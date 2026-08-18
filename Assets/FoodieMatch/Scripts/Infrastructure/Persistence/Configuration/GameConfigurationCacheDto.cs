@@ -18,12 +18,21 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
 
         [JsonProperty("ads", Required = Required.Always)]
         public AdsConfigDto Ads { get; set; }
+
+        [JsonProperty("goldPassProgression", Required = Required.Always)]
+        public GoldPassProgressionConfigDto GoldPassProgression { get; set; }
     }
 
     internal sealed class EconomyConfigDto
     {
-        [JsonProperty("levelCompleteCoinReward", Required = Required.Always)]
-        public int LevelCompleteCoinReward { get; set; }
+        [JsonProperty("normalLevelCompleteCoinReward", Required = Required.Always)]
+        public int NormalLevelCompleteCoinReward { get; set; }
+
+        [JsonProperty("hardLevelCompleteCoinReward", Required = Required.Always)]
+        public int HardLevelCompleteCoinReward { get; set; }
+
+        [JsonProperty("superHardLevelCompleteCoinReward", Required = Required.Always)]
+        public int SuperHardLevelCompleteCoinReward { get; set; }
 
         [JsonProperty("rewardedAdCoinMultiplier", Required = Required.Always)]
         public int RewardedAdCoinMultiplier { get; set; }
@@ -84,5 +93,20 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
     {
         [JsonProperty("postLevelIntervalMinutes", Required = Required.Always)]
         public int PostLevelIntervalMinutes { get; set; }
+    }
+
+    internal sealed class GoldPassProgressionConfigDto
+    {
+        [JsonProperty("unlockLevel", Required = Required.Always)]
+        public int UnlockLevel { get; set; }
+
+        [JsonProperty("normalSpoonsPerCompletedLevel", Required = Required.Always)]
+        public int NormalSpoonsPerCompletedLevel { get; set; }
+
+        [JsonProperty("hardSpoonsPerCompletedLevel", Required = Required.Always)]
+        public int HardSpoonsPerCompletedLevel { get; set; }
+
+        [JsonProperty("superHardSpoonsPerCompletedLevel", Required = Required.Always)]
+        public int SuperHardSpoonsPerCompletedLevel { get; set; }
     }
 }

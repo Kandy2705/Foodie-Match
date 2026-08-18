@@ -6,15 +6,23 @@ namespace FoodieMatch.UI.Debugging
     {
         public DebugMenuValues(
             PlayerProfileDebugUpdate playerProfile,
+            int goldPassSpoonCount,
+            bool isSeasonPassPurchased,
             bool postLevelAdsEnabled,
             bool useLevelPlayAds)
         {
             PlayerProfile = playerProfile;
+            GoldPassSpoonCount = goldPassSpoonCount;
+            IsSeasonPassPurchased = isSeasonPassPurchased;
             PostLevelAdsEnabled = postLevelAdsEnabled;
             UseLevelPlayAds = useLevelPlayAds;
         }
 
         public PlayerProfileDebugUpdate PlayerProfile { get; }
+
+        public int GoldPassSpoonCount { get; }
+
+        public bool IsSeasonPassPurchased { get; }
 
         public bool PostLevelAdsEnabled { get; }
 
