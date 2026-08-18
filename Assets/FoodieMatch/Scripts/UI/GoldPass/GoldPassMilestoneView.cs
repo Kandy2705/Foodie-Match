@@ -22,7 +22,8 @@ namespace FoodieMatch.UI.GoldPass
         [SerializeField] private GoldPassRewardTrackView _freeRewardView;
         [SerializeField] private GoldPassRewardTrackView _seasonRewardView;
 
-        private Action<int, GoldPassTrack> _claimClicked;
+        private Action<int, GoldPassTrack, GoldPassRewardDefinition>
+            _claimClicked;
         private Action<int, GoldPassTrack, GoldPassRewardDefinition,
                 RectTransform>
             _treasureClicked;
@@ -33,7 +34,7 @@ namespace FoodieMatch.UI.GoldPass
             bool isSeasonPassPurchased,
             bool isCurrentMilestone,
             GoldPassRewardVisualCatalogSO visualCatalog,
-            Action<int, GoldPassTrack> claimClicked,
+            Action<int, GoldPassTrack, GoldPassRewardDefinition> claimClicked,
             Action<int, GoldPassTrack, GoldPassRewardDefinition,
                     RectTransform>
                 treasureClicked)
@@ -82,12 +83,18 @@ namespace FoodieMatch.UI.GoldPass
 
         private void OnFreeRewardClaimed()
         {
-            _claimClicked(_definition.Level, GoldPassTrack.Free);
+            _claimClicked(
+                _definition.Level,
+                GoldPassTrack.Free,
+                _definition.FreeReward);
         }
 
         private void OnSeasonRewardClaimed()
         {
-            _claimClicked(_definition.Level, GoldPassTrack.Season);
+            _claimClicked(
+                _definition.Level,
+                GoldPassTrack.Season,
+                _definition.SeasonReward);
         }
 
         private void OnFreeTreasureClicked(RectTransform source)

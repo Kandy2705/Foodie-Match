@@ -169,17 +169,17 @@ MonoBehaviour:
   _rewardItemPrefab: {fileID: 1102897963159399949, guid: 0226d2b6f98c73d45876025d7b258a09, type: 3}
   _tapToContinueText: {fileID: 5935481576654382484}
   _tapToContinueAnimator: {fileID: 180265308430767666}
-  _titleStartOffset: {x: 0, y: -80}
-  _titleStartScaleMultiplier: 0.9
-  _titleRevealDelay: 0.1
-  _titleRevealDuration: 0.3
+  _titleStartOffset: {x: 0, y: -300}
+  _titleStartScaleMultiplier: 0.3
+  _titleRevealDelay: 0
+  _titleRevealDuration: 0.4
   _titleMoveEase: 27
   _titleScaleEase: 27
   _titleFadeEase: 9
-  _rewardRevealDuration: 0.3
-  _rewardRevealInterval: 0.1
+  _rewardRevealDuration: 0.4
+  _rewardRevealInterval: 0.2
   _rewardRevealEase: 27
-  _continueRevealDuration: 0.3
+  _continueRevealDuration: 0.4
   _continueScaleEase: 27
   _continueFadeEase: 9
 --- !u!1 &8172163112520424342

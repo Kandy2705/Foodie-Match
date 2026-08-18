@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.GoldPass;
+using FoodieMatch.UI.ClaimReward;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using TMPro;
@@ -39,7 +40,7 @@ namespace FoodieMatch.UI.GoldPass
         private Action _closeClicked;
         private Action _informationClicked;
         private Action _purchaseClicked;
-        private Action<int, GoldPassTrack> _claimClicked;
+        private Action<int, GoldPassTrack, ClaimRewardPopupData> _claimClicked;
         private Action _seasonExpired;
         private DateTimeOffset _seasonEndUtc;
         private int _scrollTargetIndex;
@@ -287,9 +288,18 @@ namespace FoodieMatch.UI.GoldPass
             _purchaseClicked();
         }
 
-        private void OnClaimClicked(int milestoneLevel, GoldPassTrack track)
+        private void OnClaimClicked(
+            int milestoneLevel,
+            GoldPassTrack track,
+            GoldPassRewardDefinition reward)
         {
-            _claimClicked(milestoneLevel, track);
+            _rewardPreview.Hide();
+            _claimClicked(
+                milestoneLevel,
+                track,
+                GoldPassRewardPresentation.CreateClaimPopupData(
+                    reward,
+                    _visualCatalog));
         }
 
     }

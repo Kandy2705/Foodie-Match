@@ -1,5 +1,6 @@
 using System;
 using FoodieMatch.Core.Application.GoldPass;
+using FoodieMatch.UI.ClaimReward;
 
 namespace FoodieMatch.UI.GoldPass
 {
@@ -9,7 +10,7 @@ namespace FoodieMatch.UI.GoldPass
             Action closeClicked,
             Action informationClicked,
             Action purchaseClicked,
-            Action<int, GoldPassTrack> claimClicked,
+            Action<int, GoldPassTrack, ClaimRewardPopupData> claimClicked,
             Action seasonExpired)
         {
             CloseClicked = closeClicked;
@@ -25,7 +26,10 @@ namespace FoodieMatch.UI.GoldPass
 
         public Action PurchaseClicked { get; }
 
-        public Action<int, GoldPassTrack> ClaimClicked { get; }
+        public Action<int, GoldPassTrack, ClaimRewardPopupData> ClaimClicked
+        {
+            get;
+        }
 
         public Action SeasonExpired { get; }
     }

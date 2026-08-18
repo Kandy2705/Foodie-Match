@@ -22,6 +22,7 @@ using FoodieMatch.UI.AddressableAssets;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
+using FoodieMatch.UI.ClaimReward;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Effects;
@@ -1405,17 +1406,23 @@ namespace FoodieMatch.UI
 
         private void OnGoldPassClaimClicked(
             int milestoneLevel,
-            GoldPassTrack track)
+            GoldPassTrack track,
+            ClaimRewardPopupData rewardPopupData)
         {
             GoldPassClaimResult result =
                 _goldPassService.TryClaim(milestoneLevel, track);
 
-            if (result == GoldPassClaimResult.Succeeded)
+            if (result != GoldPassClaimResult.Succeeded)
             {
-                RefreshAllPlayerResources();
+                RefreshOpenedGoldPass();
+                return;
             }
 
+            RefreshAllPlayerResources();
             RefreshOpenedGoldPass();
+            RunUiTask(
+                _popupManager.ShowAsync<ClaimRewardView>(rewardPopupData),
+                nameof(OnGoldPassClaimClicked));
         }
 
         private void OnGoldPassSeasonExpired()
