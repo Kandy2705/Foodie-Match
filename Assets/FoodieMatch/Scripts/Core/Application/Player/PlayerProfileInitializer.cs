@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.GoldPass;
 using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 
@@ -135,6 +136,7 @@ namespace FoodieMatch.Core.Application.Player
                 new HeartState(
                     _heartConfig.MaxHeartCount,
                     recoveryStartedAtUtc: null),
+                GoldPassState.Empty,
                 createdAtUnixSeconds: _clock.UtcNow.ToUnixTimeSeconds());
         }
 

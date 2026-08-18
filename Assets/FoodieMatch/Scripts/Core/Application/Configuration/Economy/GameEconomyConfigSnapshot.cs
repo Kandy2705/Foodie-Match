@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Core.Application.Configuration.Economy
 {
@@ -13,15 +14,23 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
         private readonly ReadOnlyDictionary<BoosterType, int> _boosterPrices;
 
         public GameEconomyConfigSnapshot(
-            int levelCompleteCoinReward,
+            int normalLevelCompleteCoinReward,
+            int hardLevelCompleteCoinReward,
+            int superHardLevelCompleteCoinReward,
             int rewardedAdCoinMultiplier,
             int coinValuePerRewardImage,
             int fullHeartCoinPrice,
             IReadOnlyDictionary<BoosterType, int> boosterPrices)
         {
             ValidatePositiveValue(
-                levelCompleteCoinReward,
-                nameof(levelCompleteCoinReward));
+                normalLevelCompleteCoinReward,
+                nameof(normalLevelCompleteCoinReward));
+            ValidatePositiveValue(
+                hardLevelCompleteCoinReward,
+                nameof(hardLevelCompleteCoinReward));
+            ValidatePositiveValue(
+                superHardLevelCompleteCoinReward,
+                nameof(superHardLevelCompleteCoinReward));
 
             if (rewardedAdCoinMultiplier <= 1)
             {
@@ -38,20 +47,41 @@ namespace FoodieMatch.Core.Application.Configuration.Economy
                 fullHeartCoinPrice,
                 nameof(fullHeartCoinPrice));
 
-            LevelCompleteCoinReward = levelCompleteCoinReward;
+            NormalLevelCompleteCoinReward = normalLevelCompleteCoinReward;
+            HardLevelCompleteCoinReward = hardLevelCompleteCoinReward;
+            SuperHardLevelCompleteCoinReward =
+                superHardLevelCompleteCoinReward;
             RewardedAdCoinMultiplier = rewardedAdCoinMultiplier;
             CoinValuePerRewardImage = coinValuePerRewardImage;
             FullHeartCoinPrice = fullHeartCoinPrice;
             _boosterPrices = CopyBoosterPrices(boosterPrices);
         }
 
-        public int LevelCompleteCoinReward { get; }
+        public int NormalLevelCompleteCoinReward { get; }
+
+        public int HardLevelCompleteCoinReward { get; }
+
+        public int SuperHardLevelCompleteCoinReward { get; }
 
         public int RewardedAdCoinMultiplier { get; }
 
         public int CoinValuePerRewardImage { get; }
 
         public int FullHeartCoinPrice { get; }
+
+        public int GetLevelCompleteCoinReward(LevelDifficulty difficulty)
+        {
+            return difficulty switch
+            {
+                LevelDifficulty.Normal => NormalLevelCompleteCoinReward,
+                LevelDifficulty.Hard => HardLevelCompleteCoinReward,
+                LevelDifficulty.SuperHard => SuperHardLevelCompleteCoinReward,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(difficulty),
+                    difficulty,
+                    "Level difficulty is not defined.")
+            };
+        }
 
         public int GetBoosterPrice(BoosterType boosterType)
         {

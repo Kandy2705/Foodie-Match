@@ -109,7 +109,7 @@ namespace FoodieMatch.Features.Gameplay
                 FoodBoardEntry entry = entries[i];
 
                 if (entry.FoodItemView.FoodTokenId != foodTokenId ||
-                    !session.Board.IsGrillAccessible(
+                    !session.Board.IsGrillInActiveRows(
                         entry.Address.GrillPositionIndex))
                 {
                     continue;
@@ -182,7 +182,7 @@ namespace FoodieMatch.Features.Gameplay
             {
                 GrillModel grill = session.Board.GetGrillAt(grillIndex);
 
-                if (!session.Board.IsGrillAccessible(grill.PositionIndex))
+                if (!session.Board.IsGrillInActiveRows(grill.PositionIndex))
                 {
                     continue;
                 }

@@ -143,7 +143,8 @@ namespace FoodieMatch.Features.Gameplay
             {
                 FoodBoardEntry entry = entries[i];
 
-                if (session.Board.IsGrillVisible(entry.Address.GrillPositionIndex))
+                if (session.Board.IsGrillVisible(
+                        entry.Address.GrillPositionIndex))
                 {
                     views.Add(entry.FoodItemView);
                 }
@@ -166,7 +167,7 @@ namespace FoodieMatch.Features.Gameplay
                     continue;
                 }
 
-                if (!board.IsGrillVisible(grill.PositionIndex))
+                if (!board.IsGrillInActiveRows(grill.PositionIndex))
                 {
                     continue;
                 }
@@ -211,7 +212,7 @@ namespace FoodieMatch.Features.Gameplay
                 GrillModel grill = board.GetGrillAt(g);
                 if (grill == null) continue;
 
-                if (!board.IsGrillVisible(grill.PositionIndex))
+                if (!board.IsGrillInActiveRows(grill.PositionIndex))
                 {
                     continue;
                 }

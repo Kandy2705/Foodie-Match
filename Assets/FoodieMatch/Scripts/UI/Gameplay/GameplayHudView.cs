@@ -348,9 +348,9 @@ namespace FoodieMatch.UI.Gameplay
             _boosterButtonViews[boosterIndex].SetUnlocked(isUnlocked);
         }
 
-        public void SetBoosterLockedSprites(
+        public void SetBoosterIconSprites(
             int boosterIndex,
-            Sprite lockedButtonSprite,
+            Sprite unlockedIconSprite,
             Sprite lockedIconSprite)
         {
             if (boosterIndex < 0 || boosterIndex >= _boosterButtonViews.Length)
@@ -358,8 +358,8 @@ namespace FoodieMatch.UI.Gameplay
                 return;
             }
 
-            _boosterButtonViews[boosterIndex].SetLockedSprites(
-                lockedButtonSprite,
+            _boosterButtonViews[boosterIndex].SetIconSprites(
+                unlockedIconSprite,
                 lockedIconSprite);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.GoldPass;
 using FoodieMatch.Core.Domain.Heart;
 using FoodieMatch.Core.Domain.Player;
 using FoodieMatch.UI.Profile;
@@ -20,6 +21,7 @@ namespace FoodieMatch.Editor.Player
                 boosterCounts: new Dictionary<BoosterType, int>(),
                 seenBoosterGuides: new List<BoosterType>(),
                 heartState: new HeartState(5, null),
+                goldPassState: GoldPassState.Empty,
                 playerName: null,
                 avatarId: null,
                 frameId: null);
@@ -38,6 +40,7 @@ namespace FoodieMatch.Editor.Player
                 boosterCounts: new Dictionary<BoosterType, int>(),
                 seenBoosterGuides: new List<BoosterType>(),
                 heartState: new HeartState(5, null),
+                goldPassState: GoldPassState.Empty,
                 playerName: "GourmetChef",
                 avatarId: "avatar_03",
                 frameId: "frame_02");
@@ -55,7 +58,8 @@ namespace FoodieMatch.Editor.Player
                 coinBalance: 50,
                 boosterCounts: new Dictionary<BoosterType, int>(),
                 seenBoosterGuides: new List<BoosterType>(),
-                heartState: new HeartState(5, null));
+                heartState: new HeartState(5, null),
+                goldPassState: GoldPassState.Empty);
 
             PlayerProfile updated = original.WithCustomization(
                 "NewName",

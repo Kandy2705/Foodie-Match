@@ -690,8 +690,7 @@ namespace FoodieMatch.Features.Board
                     grillView.GetFoodAnchor,
                     FoodItemVisualState.OnGrill,
                     registerSelection: true,
-                    isInteractable: board.IsGrillAccessible(
-                        grillModel.PositionIndex));
+                    isInteractable: true);
 
                 AppendNonNullViews(allViews, grillViews);
                 AppendNonNullViews(allViews, trayViews);
@@ -1083,8 +1082,7 @@ namespace FoodieMatch.Features.Board
                 grillView.GetFoodAnchor,
                 FoodItemVisualState.OnGrill,
                 registerSelection: true,
-                isInteractable: board.IsGrillAccessible(
-                    grillModel.PositionIndex));
+                isInteractable: true);
         }
 
         private Sprite ResolveFoodSprite(int foodTokenId)
@@ -1203,8 +1201,6 @@ namespace FoodieMatch.Features.Board
                     _grillViews);
             _stackedGrillLayoutController.MotionFinished +=
                 HandleStackedGrillMotionFinished;
-            _stackedGrillLayoutController.SlideStarted +=
-                HandleStackedGrillSlideStarted;
         }
 
         private void StopStackedGrillMotion()
@@ -1216,8 +1212,6 @@ namespace FoodieMatch.Features.Board
 
             _stackedGrillLayoutController.MotionFinished -=
                 HandleStackedGrillMotionFinished;
-            _stackedGrillLayoutController.SlideStarted -=
-                HandleStackedGrillSlideStarted;
             _stackedGrillLayoutController.Stop();
             _stackedGrillLayoutController = null;
         }
@@ -1227,18 +1221,6 @@ namespace FoodieMatch.Features.Board
             StackedGrillMotionFinished?.Invoke();
         }
 
-        private void HandleStackedGrillSlideStarted()
-        {
-            RefreshRegisteredFoodInteraction();
-        }
-
-        private bool IsGrillAccessible(int grillPositionIndex)
-        {
-            return _stackedGrillLayoutController?
-                       .IsGrillAccessible(grillPositionIndex) ??
-                   true;
-        }
-
         private void SetFoodInteractable(
             FoodItemView foodItemView,
             FoodBoardAddress address,
@@ -1246,7 +1228,6 @@ namespace FoodieMatch.Features.Board
         {
             foodItemView.SetInteractable(
                 isInteractable &&
-                IsGrillAccessible(address.GrillPositionIndex) &&
                 IsFoodInteractionAllowed(address));
         }
 

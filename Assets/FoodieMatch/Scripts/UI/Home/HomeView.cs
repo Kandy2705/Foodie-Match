@@ -19,12 +19,16 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
         [SerializeField] private Button _starterPackButton;
+        [SerializeField] private Button _goldPassButton;
         [SerializeField] private Button _avatarButton;
+
         [Header("Customization")]
         [SerializeField] private Image _avatarImage;
         [SerializeField] private Image _avatarFrameImage;
+
         [Header("Content")]
         [SerializeField] private TMP_Text _playLevelText;
+        [SerializeField] private TMP_Text _goldPassUnlockLevelText;
         [SerializeField] private ResourceBarView _resourceBarView;
         [SerializeField] private Sprite _hardPlayButtonSprite;
         [SerializeField] private Sprite _superHardPlayButtonSprite;
@@ -35,6 +39,7 @@ namespace FoodieMatch.UI.Home
         private Action _playClicked;
         private Action _settingClicked;
         private Action _starterPackClicked;
+        private Action _goldPassClicked;
         private Action _avatarClicked;
         private Sprite _normalPlayButtonSprite;
         private Vector4 _normalPlayLevelMargin;
@@ -51,6 +56,7 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
             _starterPackButton.onClick.AddListener(
                 OnStarterPackButtonClicked);
+            _goldPassButton.onClick.AddListener(OnGoldPassButtonClicked);
             _avatarButton.onClick.AddListener(OnAvatarButtonClicked);
         }
 
@@ -60,10 +66,8 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.RemoveListener(OnSettingButtonClicked);
             _starterPackButton.onClick.RemoveListener(
                 OnStarterPackButtonClicked);
-            if (_avatarButton != null)
-            {
-                _avatarButton.onClick.RemoveListener(OnAvatarButtonClicked);
-            }
+            _goldPassButton.onClick.RemoveListener(OnGoldPassButtonClicked);
+            _avatarButton.onClick.RemoveListener(OnAvatarButtonClicked);
             Clear();
         }
 
@@ -72,6 +76,7 @@ namespace FoodieMatch.UI.Home
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
             _starterPackClicked = actions.StarterPackClicked;
+            _goldPassClicked = actions.GoldPassClicked;
             _avatarClicked = actions.AvatarClicked;
             _resourceBarView.SetResourceClickActions(
                 actions.CoinClicked,
@@ -118,6 +123,11 @@ namespace FoodieMatch.UI.Home
             _playLevelText.margin = margin;
         }
 
+        public void SetGoldPassUnlockLevel(int unlockLevel)
+        {
+            _goldPassUnlockLevelText.text = $"Level {unlockLevel}";
+        }
+
         public void SetCoinBalance(long coinBalance)
         {
             _resourceBarView.SetCoinBalance(coinBalance);
@@ -149,11 +159,17 @@ namespace FoodieMatch.UI.Home
             return _resourceBarView.CoinCounterView;
         }
 
+        public RectTransform GetGoldPassRewardTarget()
+        {
+            return (RectTransform)_goldPassButton.transform;
+        }
+
         public void Clear()
         {
             _playClicked = null;
             _settingClicked = null;
             _starterPackClicked = null;
+            _goldPassClicked = null;
             _avatarClicked = null;
             _resourceBarView.Clear();
         }
@@ -187,6 +203,11 @@ namespace FoodieMatch.UI.Home
         private void OnStarterPackButtonClicked()
         {
             _starterPackClicked?.Invoke();
+        }
+
+        private void OnGoldPassButtonClicked()
+        {
+            _goldPassClicked?.Invoke();
         }
 
         private void OnAvatarButtonClicked()

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0de23186d4b1436e863b756fa400bc1b, type: 3}
+  m_Name: GoldPassRewardVisualCatalog
+  m_EditorClassIdentifier: 
+  _coinIcon: {fileID: 3886443268029631212, guid: e0572befbc57c484e8a3ebf2ae6b6660, type: 3}
+  _unlimitedHeartIcon: {fileID: -1569679998611747871, guid: 0485652d5de6c48c4a213b829877d3b9, type: 3}
+  _plateIcon: {fileID: 347840636878216627, guid: fe0141235759c4523974356e826a9b19, type: 3}
+  _storageIcon: {fileID: -1625834913553564709, guid: 3aae3ad16a8634f03aa9089ef736f32d, type: 3}
+  _swapIcon: {fileID: -7647276179965007834, guid: f2d97e20fc3b34e3ea2d729008eb41f7, type: 3}
+  _fridgeIcon: {fileID: -4709088927621829093, guid: 4581619a9f2bf47798a0511b658ddffc, type: 3}
+  _treasure1Icon: {fileID: 4712621872768784848, guid: fa2f5e0a41ba040749c43ce90dd99bed, type: 3}
+  _treasure2Icon: {fileID: 9187989530343087046, guid: 9a199ab5f48794838b14893b23b88663, type: 3}
+  _treasure3Icon: {fileID: 6988592762577634133, guid: a58c9d78471d440f5abd836d77b55430, type: 3}

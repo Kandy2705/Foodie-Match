@@ -2,8 +2,10 @@ using System;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Core.Application.Configuration
 {
@@ -11,7 +13,8 @@ namespace FoodieMatch.Core.Application.Configuration
         IGameEconomyConfig,
         IGameHeartConfig,
         IGameBoosterConfig,
-        IGameAdsConfig
+        IGameAdsConfig,
+        IGameGoldPassProgressionConfig
     {
         private GameConfigurationSnapshotSet _current;
 
@@ -21,8 +24,6 @@ namespace FoodieMatch.Core.Application.Configuration
         }
 
         public GameConfigurationSnapshotSet Current => _current;
-
-        public int LevelCompleteCoinReward => _current.Economy.LevelCompleteCoinReward;
 
         public int RewardedAdCoinMultiplier => _current.Economy.RewardedAdCoinMultiplier;
 
@@ -37,6 +38,19 @@ namespace FoodieMatch.Core.Application.Configuration
         public TimeSpan PostLevelAdInterval => _current.Ads.PostLevelAdInterval;
 
         public int UnlockRewardAmount => _current.Booster.UnlockRewardAmount;
+
+        public int UnlockLevel => _current.GoldPassProgression.UnlockLevel;
+
+        public int GetLevelCompleteCoinReward(LevelDifficulty difficulty)
+        {
+            return _current.Economy.GetLevelCompleteCoinReward(difficulty);
+        }
+
+        public int GetSpoonsPerCompletedLevel(LevelDifficulty difficulty)
+        {
+            return _current.GoldPassProgression
+                .GetSpoonsPerCompletedLevel(difficulty);
+        }
 
         public int GetBoosterPrice(BoosterType boosterType)
         {

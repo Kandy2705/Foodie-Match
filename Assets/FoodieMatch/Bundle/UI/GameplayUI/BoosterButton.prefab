@@ -277,6 +277,8 @@ MonoBehaviour:
   _addBadgeSprite: {fileID: 8230488904728474184, guid: 4ea3c9891d75f421c91d3c44b387b528, type: 3}
   _lockedButtonImage: {fileID: 4026014687293689344}
   _lockedIconImage: {fileID: 5720184394135076817}
+  _unlockedButtonSprite: {fileID: -2132956935838155565, guid: de5bba7fe6882484886d0df17f66dbff, type: 3}
+  _lockedButtonSprite: {fileID: 8843225534474778812, guid: 9b5dfc4af510142b5b76722fa7537064, type: 3}
 --- !u!1 &3541319830321125130
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,6 +4,7 @@ using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.Advertising;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Heart;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Infrastructure.Persistence.Save;
@@ -14,7 +15,7 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
     public sealed class PlayerPrefsGameConfigurationCache
     {
         private const string CacheKey = "GameConfiguration";
-        private const int CurrentSchemaVersion = 2;
+        private const int CurrentSchemaVersion = 4;
 
         private readonly ISaveService _saveService;
 
@@ -95,7 +96,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
 
             return new GameConfigurationSnapshotSet(
                 new GameEconomyConfigSnapshot(
-                    dto.Economy.LevelCompleteCoinReward,
+                    dto.Economy.NormalLevelCompleteCoinReward,
+                    dto.Economy.HardLevelCompleteCoinReward,
+                    dto.Economy.SuperHardLevelCompleteCoinReward,
                     dto.Economy.RewardedAdCoinMultiplier,
                     dto.Economy.CoinValuePerRewardImage,
                     dto.Economy.FullHeartCoinPrice,
@@ -107,7 +110,12 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                     unlockLevels,
                     dto.Booster.UnlockRewardAmount),
                 new GameAdsConfigSnapshot(
-                    TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)));
+                    TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)),
+                new GameGoldPassProgressionConfigSnapshot(
+                    dto.GoldPassProgression.UnlockLevel,
+                    dto.GoldPassProgression.NormalSpoonsPerCompletedLevel,
+                    dto.GoldPassProgression.HardSpoonsPerCompletedLevel,
+                    dto.GoldPassProgression.SuperHardSpoonsPerCompletedLevel));
         }
 
         private static GameConfigurationCacheDto CreateDto(
@@ -118,8 +126,12 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 SchemaVersion = CurrentSchemaVersion,
                 Economy = new EconomyConfigDto
                 {
-                    LevelCompleteCoinReward =
-                        configuration.Economy.LevelCompleteCoinReward,
+                    NormalLevelCompleteCoinReward =
+                        configuration.Economy.NormalLevelCompleteCoinReward,
+                    HardLevelCompleteCoinReward =
+                        configuration.Economy.HardLevelCompleteCoinReward,
+                    SuperHardLevelCompleteCoinReward =
+                        configuration.Economy.SuperHardLevelCompleteCoinReward,
                     RewardedAdCoinMultiplier =
                         configuration.Economy.RewardedAdCoinMultiplier,
                     CoinValuePerRewardImage =
@@ -162,6 +174,20 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 {
                     PostLevelIntervalMinutes =
                         checked((int)configuration.Ads.PostLevelAdInterval.TotalMinutes)
+                },
+                GoldPassProgression = new GoldPassProgressionConfigDto
+                {
+                    UnlockLevel =
+                        configuration.GoldPassProgression.UnlockLevel,
+                    NormalSpoonsPerCompletedLevel = configuration
+                        .GoldPassProgression
+                        .NormalSpoonsPerCompletedLevel,
+                    HardSpoonsPerCompletedLevel = configuration
+                        .GoldPassProgression
+                        .HardSpoonsPerCompletedLevel,
+                    SuperHardSpoonsPerCompletedLevel = configuration
+                        .GoldPassProgression
+                        .SuperHardSpoonsPerCompletedLevel
                 }
             };
         }

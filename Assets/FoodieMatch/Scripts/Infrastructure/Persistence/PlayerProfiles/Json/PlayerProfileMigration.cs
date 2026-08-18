@@ -19,40 +19,28 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
 
                 while (version < PlayerProfileDataVersions.Current)
                 {
-                    if (version == 3)
+                    switch (version)
                     {
-                        profileObject["adsRemoved"] = false;
-                        profileObject["unlimitedHeartEndUnixSeconds"] = 0;
-                        version = 4;
-                        profileObject["schemaVersion"] = version;
-                    }
-                    else if (version == 4)
-                    {
-                        if (profileObject["playerName"] == null)
-                        {
-                            profileObject["playerName"] = "Kandy";
-                        }
+                        case 3:
+                            profileObject["adsRemoved"] = false;
+                            profileObject["unlimitedHeartEndUnixSeconds"] = 0;
+                            version = 4;
+                            break;
 
-                        if (profileObject["avatarId"] == null)
-                        {
-                            profileObject["avatarId"] = "avatar_01";
-                        }
+                        case 4:
+                        case 5:
+                            AddMissingVersionSixFields(profileObject);
+                            version = 6;
+                            break;
 
-                        if (profileObject["frameId"] == null)
-                        {
-                            profileObject["frameId"] = "frame_01";
-                        }
+                        default:
+                            migratedJson = null;
+                            errorMessage =
+                                $"Player profile schema version {version} cannot be migrated.";
+                            return false;
+                    }
 
-                        version = 5;
-                        profileObject["schemaVersion"] = version;
-                    }
-                    else
-                    {
-                        migratedJson = null;
-                        errorMessage =
-                            $"Player profile schema version {version} cannot be migrated.";
-                        return false;
-                    }
+                    profileObject["schemaVersion"] = version;
                 }
 
                 migratedJson = profileObject.ToString(Formatting.None);
@@ -65,6 +53,21 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 errorMessage = exception.Message;
                 return false;
             }
+        }
+
+        private static void AddMissingVersionSixFields(JObject profileObject)
+        {
+            profileObject["goldPass"] ??= new JObject
+            {
+                ["seasonId"] = string.Empty,
+                ["spoonCount"] = 0,
+                ["isSeasonPassPurchased"] = false,
+                ["claimedFreeMilestoneLevels"] = new JArray(),
+                ["claimedSeasonMilestoneLevels"] = new JArray()
+            };
+            profileObject["playerName"] ??= "Kandy";
+            profileObject["avatarId"] ??= "avatar_01";
+            profileObject["frameId"] ??= "frame_01";
         }
     }
 }

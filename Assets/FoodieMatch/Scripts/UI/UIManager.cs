@@ -6,8 +6,10 @@ using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration.Booster;
 using FoodieMatch.Core.Application.Configuration.Economy;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
+using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
@@ -20,10 +22,12 @@ using FoodieMatch.UI.AddressableAssets;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
+using FoodieMatch.UI.ClaimReward;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Effects;
 using FoodieMatch.UI.Gameplay;
+using FoodieMatch.UI.GoldPass;
 using FoodieMatch.UI.Heart;
 using FoodieMatch.UI.Home;
 using FoodieMatch.UI.LeaveGame;
@@ -76,6 +80,7 @@ namespace FoodieMatch.UI
 
         [Header("Effect")]
         [SerializeField] private CoinRewardOverlayView _coinRewardOverlayPrefab;
+        [SerializeField] private SpoonRewardOverlayView _spoonRewardOverlayPrefab;
         [SerializeField] private Transform _effectRoot;
         private GameplayClickParticleController _clickParticleController;
 
@@ -93,8 +98,10 @@ namespace FoodieMatch.UI
         private BoosterManager _boosterManager;
         private IGameBoosterConfig _boosterConfig;
         private IGameEconomyConfig _economyConfig;
+        private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
+        private GoldPassService _goldPassService;
         private ILevelCatalogRepository _levelCatalogRepository;
         private IGameShopConfig _shopConfig;
         private IAudioService _audioService;
@@ -107,6 +114,7 @@ namespace FoodieMatch.UI
         private AddressableLoadingOverlayView _addressableLoadingOverlay;
         private WarningLevelView _levelWarningView;
         private CoinRewardOverlayView _coinRewardOverlayView;
+        private SpoonRewardOverlayView _spoonRewardOverlayView;
         private readonly List<ActionFeedbackView> _actionFeedbackViews = new();
         private BoosterGuideFlowState _boosterGuideFlowState;
         private AddBoxFlowSource _addBoxFlowSource;
@@ -149,7 +157,7 @@ namespace FoodieMatch.UI
 
         private void OnDestroy()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             _loadingScreenView?.HideImmediately();
 
             if (_addressableUiFactory != null)
@@ -170,8 +178,10 @@ namespace FoodieMatch.UI
             BoosterManager boosterManager,
             IGameBoosterConfig boosterConfig,
             IGameEconomyConfig economyConfig,
+            IGameGoldPassProgressionConfig goldPassProgressionConfig,
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
+            GoldPassService goldPassService,
             ILevelCatalogRepository levelCatalogRepository,
             IGameShopConfig shopConfig,
             IAddressableUiFactory addressableUiFactory,
@@ -195,8 +205,10 @@ namespace FoodieMatch.UI
             _boosterManager = boosterManager;
             _boosterConfig = boosterConfig;
             _economyConfig = economyConfig;
+            _goldPassProgressionConfig = goldPassProgressionConfig;
             _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
+            _goldPassService = goldPassService;
             _levelCatalogRepository = levelCatalogRepository;
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
@@ -262,7 +274,7 @@ namespace FoodieMatch.UI
 
         public async Task ShowHomeAsync(long displayedCoinBalance)
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
 
             await _addressableUiFactory.PreloadLabelAsync(
                 UiAddressLabels.BootstrapCritical);
@@ -277,6 +289,7 @@ namespace FoodieMatch.UI
 
             mainMenuView.SetViewLoader(
                 tab => LoadMainMenuViewAsync(mainMenuView, tab));
+            mainMenuView.SetTabSelectedAction(OnMainMenuTabSelected);
 
             HomeView homeView =
                 (HomeView)await LoadMainMenuViewAsync(
@@ -333,9 +346,35 @@ namespace FoodieMatch.UI
                 coinArrived);
         }
 
-        public void CompleteCoinRewardImmediately()
+        public void PlayHomeSpoonReward(int spoonCount)
+        {
+            if (spoonCount == 0)
+            {
+                return;
+            }
+
+            if (!_popupManager.TryGetOpened(out MainMenuView mainMenuView))
+            {
+                return;
+            }
+
+            if (!mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+            {
+                return;
+            }
+
+            SpoonRewardOverlayView spoonRewardOverlay =
+                GetOrCreateSpoonRewardOverlay();
+            spoonRewardOverlay.PlaySpoonReward(
+                spoonCount,
+                homeView.GetGoldPassRewardTarget(),
+                OnHomeSpoonArrived);
+        }
+
+        public void CompleteHomeRewardPresentationImmediately()
         {
             _coinRewardOverlayView?.CompleteRewardImmediately();
+            _spoonRewardOverlayView?.StopReward();
         }
 
         public void SetCurrentLevelNumber(int levelNumber)
@@ -366,7 +405,7 @@ namespace FoodieMatch.UI
 
         public void HideHome()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
 
             _popupManager.Hide<MainMenuView>();
         }
@@ -806,6 +845,7 @@ namespace FoodieMatch.UI
         {
             HeartStatus heartStatus =
                 _playerProfileService.GetHeartStatus();
+            GoldPassStatus goldPassStatus = _goldPassService.GetStatus();
 
             PlayerProfileDebugUpdate playerProfile = new(
                 _playerProfileService.CurrentLevelNumber,
@@ -817,6 +857,8 @@ namespace FoodieMatch.UI
                 _boosterManager.GetCount(BoosterType.Fridge));
             DebugMenuValues values = new(
                 playerProfile,
+                goldPassStatus.SpoonCount,
+                goldPassStatus.IsSeasonPassPurchased,
                 _advertisingRuntimeSettings.PostLevelAdsEnabled,
                 _advertisingRuntimeSettings.UseLevelPlayAds);
 
@@ -828,7 +870,8 @@ namespace FoodieMatch.UI
                         popup.SetActions(
                             new PlayerDebugPopupViewActions(
                                 HidePlayerDebugPopup,
-                                OnPlayerDebugApplyClicked));
+                                OnPlayerDebugApplyClicked,
+                                OnResetGoldPassClaimHistoryClicked));
                         popup.SetValues(values, heartStatus.MaxHeartCount);
                     }),
                 nameof(ShowPlayerDebugPopup));
@@ -1086,7 +1129,7 @@ namespace FoodieMatch.UI
 
         public void HideAllPopups()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             _pendingBoosterGuides.Clear();
             _boosterGuideFlowState = BoosterGuideFlowState.Idle;
             _gameplayHudView?.StopBoosterUnlockReward();
@@ -1375,10 +1418,13 @@ namespace FoodieMatch.UI
                     OnHomePlayRequested,
                     OnHomeSettingRequested,
                     OnHomeStarterPackRequested,
+                    OnHomeGoldPassRequested,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked,
                     OnHomeAvatarRequested));
             SetHomePlayLevel(homeView);
+            homeView.SetGoldPassUnlockLevel(
+                _goldPassProgressionConfig.UnlockLevel);
             homeView.SetPlayerResources(
                 displayedCoinBalance,
                 _playerProfileService.GetHeartStatus());
@@ -1454,6 +1500,21 @@ namespace FoodieMatch.UI
             return _coinRewardOverlayView;
         }
 
+        private SpoonRewardOverlayView GetOrCreateSpoonRewardOverlay()
+        {
+            if (_spoonRewardOverlayView != null)
+            {
+                return _spoonRewardOverlayView;
+            }
+
+            _spoonRewardOverlayView = Instantiate(
+                _spoonRewardOverlayPrefab,
+                _effectRoot);
+            _spoonRewardOverlayView.gameObject.name =
+                _spoonRewardOverlayPrefab.gameObject.name;
+            return _spoonRewardOverlayView;
+        }
+
         private void OnActionFeedbackHidden(ActionFeedbackView actionFeedback)
         {
             _actionFeedbackViews.Remove(actionFeedback);
@@ -1508,8 +1569,16 @@ namespace FoodieMatch.UI
 
         private void OnHomePlayRequested()
         {
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             PlayGameRequested?.Invoke();
+        }
+
+        private void OnMainMenuTabSelected(BottomNavigationTab tab)
+        {
+            if (tab != BottomNavigationTab.Home)
+            {
+                _spoonRewardOverlayView?.StopReward();
+            }
         }
 
         private void OnHomeSettingRequested()
@@ -1526,6 +1595,93 @@ namespace FoodieMatch.UI
                         new StarterPackPopupViewActions(
                             OnStarterPackBuyRequestedAsync))),
                 nameof(OnHomeStarterPackRequested));
+        }
+
+        private void OnHomeGoldPassRequested()
+        {
+            if (_currentLevelNumber < _goldPassProgressionConfig.UnlockLevel)
+            {
+                return;
+            }
+
+            RunUiTask(
+                ShowGoldPassAsync(),
+                nameof(OnHomeGoldPassRequested));
+        }
+
+        private async Task ShowGoldPassAsync()
+        {
+            GoldPassView goldPassView =
+                await _popupManager.ShowAsync<GoldPassView>();
+
+            if (this == null)
+            {
+                return;
+            }
+
+            BindGoldPassView(goldPassView);
+        }
+
+        private void BindGoldPassView(GoldPassView goldPassView)
+        {
+            goldPassView.SetActions(
+                new GoldPassViewActions(
+                    OnGoldPassCloseClicked,
+                    OnGoldPassInformationClicked,
+                    OnGoldPassPurchaseClicked,
+                    OnGoldPassClaimClicked,
+                    OnGoldPassSeasonExpired));
+            goldPassView.Bind(_goldPassService.GetStatus());
+            goldPassView.ScrollToCurrentMilestone();
+        }
+
+        private void OnGoldPassCloseClicked()
+        {
+            _popupManager.Hide<GoldPassView>();
+        }
+
+        private static void OnGoldPassInformationClicked()
+        {
+            Debug.Log("Gold Pass information is not available yet.");
+        }
+
+        private static void OnGoldPassPurchaseClicked()
+        {
+            Debug.Log("Gold Pass purchase is not available yet.");
+        }
+
+        private void OnGoldPassClaimClicked(
+            int milestoneLevel,
+            GoldPassTrack track,
+            ClaimRewardPopupData rewardPopupData)
+        {
+            GoldPassClaimResult result =
+                _goldPassService.TryClaim(milestoneLevel, track);
+
+            if (result != GoldPassClaimResult.Succeeded)
+            {
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            RefreshAllPlayerResources();
+            RefreshOpenedGoldPass();
+            RunUiTask(
+                _popupManager.ShowAsync<ClaimRewardView>(rewardPopupData),
+                nameof(OnGoldPassClaimClicked));
+        }
+
+        private void OnGoldPassSeasonExpired()
+        {
+            RefreshOpenedGoldPass();
+        }
+
+        private void RefreshOpenedGoldPass()
+        {
+            if (_popupManager.TryGetOpened(out GoldPassView goldPassView))
+            {
+                goldPassView.Bind(_goldPassService.GetStatus());
+            }
         }
 
         private Task<ShopPurchaseResult> OnStarterPackBuyRequestedAsync()
@@ -1613,6 +1769,11 @@ namespace FoodieMatch.UI
         private void OnHomeCoinArrived()
         {
             _audioService.PlaySfx(AudioKeys.SfxCoinReceive);
+        }
+
+        private void OnHomeSpoonArrived()
+        {
+            _audioService.PlaySfx(AudioKeys.SfxClaim);
         }
 
         private void OnGameplayPauseRequested()
@@ -1714,8 +1875,11 @@ namespace FoodieMatch.UI
             bool adServiceChanged =
                 _advertisingRuntimeSettings.UseLevelPlayAds !=
                 values.UseLevelPlayAds;
-            CompleteCoinRewardImmediately();
+            CompleteHomeRewardPresentationImmediately();
             _playerProfileService.ApplyDebugUpdate(playerProfile);
+            _goldPassService.ApplyDebugUpdate(
+                values.GoldPassSpoonCount,
+                values.IsSeasonPassPurchased);
             _advertisingRuntimeSettings.Update(
                 values.PostLevelAdsEnabled,
                 values.UseLevelPlayAds);
@@ -1725,6 +1889,12 @@ namespace FoodieMatch.UI
                 adServiceChanged
                     ? "Applied. Restart to change ad service."
                     : "Applied");
+        }
+
+        private void OnResetGoldPassClaimHistoryClicked()
+        {
+            _goldPassService.ResetClaimHistory();
+            ShowPlayerDebugStatus("Gold Pass claim history reset.");
         }
 
         private void RefreshHomePlayerData()
@@ -2047,15 +2217,16 @@ namespace FoodieMatch.UI
                 int unlockLevel = GetBoosterUnlockLevel(boosterType);
                 unlockedStates[i] = _currentLevelNumber >= unlockLevel &&
                     HasSeenBoosterGuide(boosterType);
-                _gameplayHudView.SetBoosterUnlockLevel(i, unlockLevel);
 
                 if (_boosterBuyCatalog.TryGet(boosterType, out BoosterBuyContentEntry entry))
                 {
-                    _gameplayHudView.SetBoosterLockedSprites(
+                    _gameplayHudView.SetBoosterIconSprites(
                         i,
-                        _boosterBuyCatalog.LockedButtonSprite,
+                        entry.Icon,
                         entry.LockedIconSprite);
                 }
+
+                _gameplayHudView.SetBoosterUnlockLevel(i, unlockLevel);
             }
 
             _gameplayHudView.SetBoosterUnlockedStates(unlockedStates);

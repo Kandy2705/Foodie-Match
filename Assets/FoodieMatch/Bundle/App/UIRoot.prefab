@@ -55,6 +55,7 @@ MonoBehaviour:
   _addressableLoadingTexture: {fileID: 2800000, guid: 8adfa78f64ea542c2b7f446fdb7c2c4b, type: 3}
   _levelWarningPrefab: {fileID: 918528150111377311, guid: b5723d20ac5db4e2fb1098fcc97a593b, type: 3}
   _coinRewardOverlayPrefab: {fileID: 796654897352748538, guid: 682972031a027134a9375906f5c06ab3, type: 3}
+  _spoonRewardOverlayPrefab: {fileID: 7826830663553115032, guid: 73898e78f107ea943b3ddf4315a6650e, type: 3}
   _effectRoot: {fileID: 6443555530003102396}
   _actionFeedbackPrefab: {fileID: 970213579789557558, guid: a510e4ff824994d8eb7d6d8193512769, type: 3}
   _boosterBuyCatalog: {fileID: 11400000, guid: 77980d9c3efc04b5aa3c5d371810dec6, type: 2}
@@ -181,6 +182,8 @@ MonoBehaviour:
   - _prefab: {fileID: 6600928880084009889, guid: 05e41bb18918301438f9de19b55f2acd, type: 3}
     _cacheAfterHide: 1
   - _prefab: {fileID: 6282366507674538793, guid: a7b7bb13549a3469cb486efacba92cb4, type: 3}
+    _cacheAfterHide: 1
+  - _prefab: {fileID: 7436669307908657585, guid: dd54e4441b3ecea4e98ae1dd64121bcc, type: 3}
     _cacheAfterHide: 1
 --- !u!1 &5414341360215047437
 GameObject:

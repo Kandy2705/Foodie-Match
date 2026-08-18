@@ -1,4 +1,5 @@
 using System;
+using FoodieMatch.Core.Domain.Level;
 
 namespace FoodieMatch.Features.Gameplay
 {
@@ -8,7 +9,7 @@ namespace FoodieMatch.Features.Gameplay
             Action homeRequested,
             Action<int> retryRequested,
             Action<int> levelLost,
-            Action<int> levelWon)
+            Action<int, LevelDifficulty> levelWon)
         {
             HomeRequested = homeRequested ??
                 throw new ArgumentNullException(nameof(homeRequested));
@@ -26,6 +27,6 @@ namespace FoodieMatch.Features.Gameplay
 
         public Action<int> LevelLost { get; }
 
-        public Action<int> LevelWon { get; }
+        public Action<int, LevelDifficulty> LevelWon { get; }
     }
 }

@@ -53,5 +53,8 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
 
         [JsonProperty("unlimitedHeartEndUnixSeconds", Required = Required.Always)]
         public long UnlimitedHeartEndUnixSeconds { get; set; }
+
+        [JsonProperty("goldPass", Required = Required.Always)]
+        public GoldPassStateDto GoldPass { get; set; }
     }
 }
