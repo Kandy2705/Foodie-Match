@@ -6616,6 +6616,10 @@ PrefabInstance:
       propertyPath: meshGenerator.settings.canvasGroupCompatible
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6801236787668856120, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7444170770903607390, guid: 3e93e4bab75704e9eb13c1223344d6f7, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

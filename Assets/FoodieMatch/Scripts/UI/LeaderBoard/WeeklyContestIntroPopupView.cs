@@ -27,7 +27,6 @@ namespace FoodieMatch.UI.LeaderBoard
         private static readonly int PopupCloseTriggerHash =
             Animator.StringToHash(PopupCloseTriggerName);
 
-        [SerializeField] private Button _infoButton;
         [SerializeField] private GameObject _popupRoot;
         [SerializeField] private Animator _popupAnimator;
         [SerializeField] private Button _tapCatcher;
@@ -57,21 +56,6 @@ namespace FoodieMatch.UI.LeaderBoard
         private void OnDestroy()
         {
             RemoveListeners();
-        }
-
-        public void BindInfoButton(Button infoButton)
-        {
-            if (_infoButton == infoButton)
-            {
-                AddInfoButtonListener();
-                return;
-            }
-
-            RemoveInfoButtonListener();
-
-            _infoButton = infoButton;
-
-            AddInfoButtonListener();
         }
 
         public void Open()
@@ -157,11 +141,6 @@ namespace FoodieMatch.UI.LeaderBoard
                     WaitForHiddenComplete());
         }
 
-        public void OnInfoButtonClicked()
-        {
-            Open();
-        }
-
         public void OnTapCatcherClicked()
         {
             if (!_canClose)
@@ -214,8 +193,6 @@ namespace FoodieMatch.UI.LeaderBoard
 
         private void AddListeners()
         {
-            AddInfoButtonListener();
-
             if (_tapCatcher == null)
             {
                 return;
@@ -230,35 +207,10 @@ namespace FoodieMatch.UI.LeaderBoard
 
         private void RemoveListeners()
         {
-            RemoveInfoButtonListener();
-
             if (_tapCatcher != null)
             {
                 _tapCatcher.onClick.RemoveListener(
                     OnTapCatcherClicked);
-            }
-        }
-
-        private void AddInfoButtonListener()
-        {
-            if (_infoButton == null)
-            {
-                return;
-            }
-
-            _infoButton.onClick.RemoveListener(
-                OnInfoButtonClicked);
-
-            _infoButton.onClick.AddListener(
-                OnInfoButtonClicked);
-        }
-
-        private void RemoveInfoButtonListener()
-        {
-            if (_infoButton != null)
-            {
-                _infoButton.onClick.RemoveListener(
-                    OnInfoButtonClicked);
             }
         }
 

@@ -651,6 +651,13 @@ namespace FoodieMatch.UI
 
         public void ShowProfilePopup()
         {
+            RunUiTask(
+                ShowProfilePopupAsync(),
+                nameof(ShowProfilePopup));
+        }
+
+        private async Task ShowProfilePopupAsync()
+        {
             long createdAtUnixSeconds = _playerProfileService.CreatedAtUnixSeconds;
             DateTimeOffset joinDateTime = createdAtUnixSeconds > 0
                 ? DateTimeOffset.FromUnixTimeSeconds(createdAtUnixSeconds)
@@ -672,17 +679,18 @@ namespace FoodieMatch.UI
                 frameSprite: frameSprite,
                 firstTryWins: _playerProfileService.FirstTryWins);
 
-            RunUiTask(
-                ShowPopupAsync<ProfilePopupView>(
-                    data: data,
-                    popup =>
-                    {
-                        popup.SetActions(
-                            new ProfilePopupViewActions(
-                                OnProfileCloseClicked,
-                                OnProfileEditAvatarClicked));
-                    }),
-                nameof(ShowProfilePopup));
+            await _addressableUiFactory.PreloadLabelAsync(
+                UiAddressLabels.Profile);
+
+            await ShowPopupAsync<ProfilePopupView>(
+                data: data,
+                popup =>
+                {
+                    popup.SetActions(
+                        new ProfilePopupViewActions(
+                            OnProfileCloseClicked,
+                            OnProfileEditAvatarClicked));
+                });
         }
 
         public void HideProfilePopup()

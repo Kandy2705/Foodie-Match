@@ -4,5 +4,6 @@ namespace FoodieMatch.UI.AddressableAssets
     {
         public const string BootstrapCritical = "ui_bootstrap_critical";
         public const string GameplayCritical = "ui_gameplay_critical";
+        public const string Profile = "ui_profile";
     }
 }
