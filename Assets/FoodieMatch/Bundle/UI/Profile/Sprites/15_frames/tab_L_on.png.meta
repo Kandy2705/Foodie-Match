@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: edb84cd98f8034c16b4dc8f6b80de0fa
+guid: 883292769a6fd4d74be2212ab8c93500
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3177897939504650734
-    second: bg_txt_editname_prf_0
+      213: 7513354033987079490
+    second: tab_L_on_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bg_txt_editname_prf_0
+      name: tab_L_on_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 99
-        height: 126
+        width: 60
+        height: 113
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 32, y: 32, z: 10, w: 32}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ee9de98b6592a1c20800000000000000
-      internalID: 3177897939504650734
+      spriteID: 24d4c8bbfabc44860800000000000000
+      internalID: 7513354033987079490
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 508044e9e2ca248b0a8f1bd209a249dd
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bg_txt_editname_prf_0: 3177897939504650734
+      tab_L_on_0: 7513354033987079490
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

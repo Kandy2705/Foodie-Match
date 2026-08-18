@@ -59,7 +59,13 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                     heartState,
                     goldPassState,
                     profileDto.AdsRemoved,
-                    profileDto.UnlimitedHeartEndUnixSeconds);
+                    profileDto.UnlimitedHeartEndUnixSeconds,
+                    profileDto.FirstTryWins,
+                    profileDto.HasFailedCurrentLevel,
+                    profileDto.CreatedAtUnixSeconds,
+                    profileDto.PlayerName,
+                    profileDto.AvatarId,
+                    profileDto.FrameId);
                 record = new PlayerProfileRecord(profile, profileDto.Revision);
                 errorMessage = null;
                 return true;
@@ -93,6 +99,12 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 Revision = revision,
                 CurrentLevelNumber = profile.CurrentLevelNumber,
                 CoinBalance = profile.CoinBalance,
+                FirstTryWins = profile.FirstTryWins,
+                HasFailedCurrentLevel = profile.HasFailedCurrentLevel,
+                CreatedAtUnixSeconds = profile.CreatedAtUnixSeconds,
+                PlayerName = profile.PlayerName,
+                AvatarId = profile.AvatarId,
+                FrameId = profile.FrameId,
                 HeartCount = profile.HeartState.HeartCount,
                 HeartRecoveryStartedAtUtcUnixSeconds =
                     profile.HeartState.RecoveryStartedAtUtc?

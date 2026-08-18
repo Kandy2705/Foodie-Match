@@ -2,6 +2,6 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles
 {
     internal static class PlayerProfileDataVersions
     {
-        public const int Current = 5;
+        public const int Current = 6;
     }
 }

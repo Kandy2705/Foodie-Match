@@ -20,12 +20,14 @@ namespace FoodieMatch.Core.Application.Player
         private readonly IInvalidPlayerProfileRecovery _invalidProfileRecovery;
         private readonly PlayerProfileSession _profileSession;
         private readonly IGameHeartConfig _heartConfig;
+        private readonly FoodieMatch.Core.Application.Time.IClock _clock;
 
         public PlayerProfileInitializer(
             IPlayerProfileRepository profileRepository,
             IInvalidPlayerProfileRecovery invalidProfileRecovery,
             PlayerProfileSession profileSession,
-            IGameHeartConfig heartConfig)
+            IGameHeartConfig heartConfig,
+            FoodieMatch.Core.Application.Time.IClock clock)
         {
             _profileRepository = profileRepository ??
                 throw new ArgumentNullException(nameof(profileRepository));
@@ -35,6 +37,8 @@ namespace FoodieMatch.Core.Application.Player
                 throw new ArgumentNullException(nameof(profileSession));
             _heartConfig = heartConfig ??
                 throw new ArgumentNullException(nameof(heartConfig));
+            _clock = clock ??
+                throw new ArgumentNullException(nameof(clock));
         }
 
         public async Task<PlayerProfileInitializationResult> InitializeAsync(
@@ -132,7 +136,8 @@ namespace FoodieMatch.Core.Application.Player
                 new HeartState(
                     _heartConfig.MaxHeartCount,
                     recoveryStartedAtUtc: null),
-                GoldPassState.Empty);
+                GoldPassState.Empty,
+                createdAtUnixSeconds: _clock.UtcNow.ToUnixTimeSeconds());
         }
 
         private static string CreateSaveErrorMessage(PlayerProfileSaveResult saveResult)

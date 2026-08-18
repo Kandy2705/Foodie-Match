@@ -13,6 +13,7 @@ using FoodieMatch.UI.LeaveGame;
 using FoodieMatch.UI.LeaderBoard;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Pause;
+using FoodieMatch.UI.Profile;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
@@ -49,7 +50,10 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(GoldPassView)] = UiAddressKeys.GoldPassScreen,
                 [typeof(ClaimRewardView)] = UiAddressKeys.ClaimRewardScreen,
                 [typeof(WeeklyContestIntroPopupView)] =
-                    UiAddressKeys.WeeklyContestIntroPopup
+                    UiAddressKeys.WeeklyContestIntroPopup,
+                [typeof(ProfilePopupView)] = UiAddressKeys.ProfilePopup,
+                [typeof(ProfileCustomizationPopupView)] =
+                    UiAddressKeys.ProfileCustomizationPopup
             };
 
         public static bool TryGetAddress(Type uiType, out string address)

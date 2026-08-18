@@ -37,6 +37,7 @@ using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Navigation;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
+using FoodieMatch.UI.Profile;
 using FoodieMatch.UI.Reward;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
@@ -88,6 +89,9 @@ namespace FoodieMatch.UI
 
         [Header("Booster Guide")]
         [SerializeField] private BoosterBuyCatalogSO _boosterBuyCatalog;
+
+        [Header("Profile Customization")]
+        [SerializeField] private ProfileCustomizationCatalogSO _profileCustomizationCatalog;
 
         private readonly List<BoosterBuyContentEntry> _pendingBoosterGuides = new();
 
@@ -641,6 +645,192 @@ namespace FoodieMatch.UI
         public void HideSettingPopup()
         {
             _popupManager.Hide<SettingPopupView>();
+        }
+
+        private bool _isCustomizationPopupLoading;
+
+        public void ShowProfilePopup()
+        {
+            long createdAtUnixSeconds = _playerProfileService.CreatedAtUnixSeconds;
+            DateTimeOffset joinDateTime = createdAtUnixSeconds > 0
+                ? DateTimeOffset.FromUnixTimeSeconds(createdAtUnixSeconds)
+                : DateTimeOffset.UtcNow;
+            string joinDate = joinDateTime.ToString("M/yyyy");
+
+            Sprite avatarSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetAvatarSpriteOrDefault(_playerProfileService.AvatarId)
+                : null;
+            Sprite frameSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetFrameSpriteOrDefault(_playerProfileService.FrameId)
+                : null;
+
+            ProfilePopupData data = new(
+                _playerProfileService.CurrentLevelNumber,
+                playerName: _playerProfileService.PlayerName,
+                joinDate: joinDate,
+                avatarSprite: avatarSprite,
+                frameSprite: frameSprite,
+                firstTryWins: _playerProfileService.FirstTryWins);
+
+            RunUiTask(
+                ShowPopupAsync<ProfilePopupView>(
+                    data: data,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new ProfilePopupViewActions(
+                                OnProfileCloseClicked,
+                                OnProfileEditAvatarClicked));
+                    }),
+                nameof(ShowProfilePopup));
+        }
+
+        public void HideProfilePopup()
+        {
+            _popupManager.Hide<ProfilePopupView>();
+        }
+
+        private void OnProfileCloseClicked()
+        {
+            HideProfilePopup();
+        }
+
+        private void OnProfileEditAvatarClicked()
+        {
+            if (_isCustomizationPopupLoading)
+            {
+                return;
+            }
+
+            ShowProfileCustomizationPopup();
+        }
+
+        private void OnProfileEditNameSubmitted(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                return;
+            }
+
+            _playerProfileService.UpdateCustomization(
+                newName,
+                _playerProfileService.AvatarId,
+                _playerProfileService.FrameId);
+            RefreshCustomizationViews();
+        }
+
+        public void ShowProfileCustomizationPopup()
+        {
+            if (_isCustomizationPopupLoading)
+            {
+                return;
+            }
+
+            RunUiTask(
+                ShowProfileCustomizationPopupAsync(),
+                nameof(ShowProfileCustomizationPopup));
+        }
+
+        private async Task ShowProfileCustomizationPopupAsync()
+        {
+            if (_isCustomizationPopupLoading)
+            {
+                return;
+            }
+
+            _isCustomizationPopupLoading = true;
+            if (_popupManager.TryGetOpened(out ProfilePopupView profilePopupView))
+            {
+                profilePopupView.SetEditAvatarInteractable(false);
+            }
+
+            try
+            {
+                ProfileCustomizationPopupData data = new(
+                    _playerProfileService.PlayerName,
+                    _playerProfileService.AvatarId,
+                    _playerProfileService.FrameId,
+                    _profileCustomizationCatalog);
+
+                await ShowPopupAsync<ProfileCustomizationPopupView>(
+                    data: data,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new ProfileCustomizationPopupViewActions(
+                                OnProfileCustomizationSaveClicked,
+                                OnProfileCustomizationCloseClicked));
+                    });
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Failed to load ProfileCustomizationPopup: {exception}");
+            }
+            finally
+            {
+                _isCustomizationPopupLoading = false;
+                if (_popupManager.TryGetOpened(out ProfilePopupView activeProfilePopupView))
+                {
+                    activeProfilePopupView.SetEditAvatarInteractable(true);
+                }
+            }
+        }
+
+        public void HideProfileCustomizationPopup()
+        {
+            _popupManager.Hide<ProfileCustomizationPopupView>();
+        }
+
+        private void OnProfileCustomizationSaveClicked(
+            string playerName,
+            string avatarId,
+            string frameId)
+        {
+            _playerProfileService.UpdateCustomization(
+                playerName,
+                avatarId,
+                frameId);
+            HideProfileCustomizationPopup();
+            RefreshCustomizationViews();
+        }
+
+        private void OnProfileCustomizationCloseClicked()
+        {
+            HideProfileCustomizationPopup();
+        }
+
+        private void RefreshCustomizationViews()
+        {
+            Sprite avatarSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetAvatarSpriteOrDefault(_playerProfileService.AvatarId)
+                : null;
+            Sprite frameSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetFrameSpriteOrDefault(_playerProfileService.FrameId)
+                : null;
+
+            if (_popupManager.TryGetOpened(out ProfilePopupView profilePopupView))
+            {
+                profilePopupView.UpdateCustomization(
+                    _playerProfileService.PlayerName,
+                    avatarSprite,
+                    frameSprite);
+            }
+
+            if (_popupManager.TryGetOpened(out MainMenuView mainMenuView))
+            {
+                if (mainMenuView.TryGetView<HomeView>(out HomeView homeView))
+                {
+                    homeView.SetCustomization(avatarSprite, frameSprite);
+                }
+
+                if (mainMenuView.TryGetView<LeaderBoardView>(out LeaderBoardView leaderBoardView))
+                {
+                    leaderBoardView.SetCustomization(
+                        _playerProfileService.PlayerName,
+                        avatarSprite,
+                        frameSprite);
+                }
+            }
         }
 
         private void ShowPlayerDebugPopup()
@@ -1197,11 +1387,13 @@ namespace FoodieMatch.UI
                             mainMenuView.ViewContainer);
 
                 case BottomNavigationTab.LeaderBoard:
-                    return await _addressableUiFactory
+                    LeaderBoardView leaderBoardView = await _addressableUiFactory
                         .GetOrCreateAsync<LeaderBoardView>(
                             UiAddressKeys.LeaderBoardScreen,
                             MainMenuLeaderBoardInstanceKey,
                             mainMenuView.ViewContainer);
+                    ConfigureLeaderBoardView(leaderBoardView);
+                    return leaderBoardView;
 
                 default:
                     throw new InvalidOperationException(
@@ -1220,13 +1412,59 @@ namespace FoodieMatch.UI
                     OnHomeStarterPackRequested,
                     OnHomeGoldPassRequested,
                     OnHomeCoinClicked,
-                    OnHomeHeartClicked));
+                    OnHomeHeartClicked,
+                    OnHomeAvatarRequested));
             SetHomePlayLevel(homeView);
             homeView.SetGoldPassUnlockLevel(
                 _goldPassProgressionConfig.UnlockLevel);
             homeView.SetPlayerResources(
                 displayedCoinBalance,
                 _playerProfileService.GetHeartStatus());
+            RefreshHomeCustomization(homeView);
+        }
+
+        private void RefreshHomeCustomization(HomeView homeView)
+        {
+            if (homeView == null)
+            {
+                return;
+            }
+
+            Sprite avatarSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetAvatarSpriteOrDefault(_playerProfileService.AvatarId)
+                : null;
+            Sprite frameSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetFrameSpriteOrDefault(_playerProfileService.FrameId)
+                : null;
+
+            homeView.SetCustomization(avatarSprite, frameSprite);
+        }
+
+        private void ConfigureLeaderBoardView(
+            LeaderBoardView leaderBoardView)
+        {
+            RefreshLeaderBoardCustomization(leaderBoardView);
+        }
+
+        private void RefreshLeaderBoardCustomization(
+            LeaderBoardView leaderBoardView)
+        {
+            if (leaderBoardView == null)
+            {
+                return;
+            }
+
+            Sprite avatarSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetAvatarSpriteOrDefault(_playerProfileService.AvatarId)
+                : null;
+            Sprite frameSprite = _profileCustomizationCatalog != null
+                ? _profileCustomizationCatalog.GetFrameSpriteOrDefault(_playerProfileService.FrameId)
+                : null;
+
+            leaderBoardView.SetCustomization(
+                _playerProfileService.PlayerName,
+                avatarSprite,
+                frameSprite);
         }
 
         private void ReleaseMainMenuViews()
@@ -1454,6 +1692,11 @@ namespace FoodieMatch.UI
         private void OnHomeHeartClicked()
         {
             ShowFillHeartPopup();
+        }
+
+        private void OnHomeAvatarRequested()
+        {
+            ShowProfilePopup();
         }
 
         public void ShowShopPopup()

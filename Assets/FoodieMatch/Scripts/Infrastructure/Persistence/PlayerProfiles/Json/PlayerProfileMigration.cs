@@ -28,15 +28,9 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                             break;
 
                         case 4:
-                            profileObject["goldPass"] = new JObject
-                            {
-                                ["seasonId"] = string.Empty,
-                                ["spoonCount"] = 0,
-                                ["isSeasonPassPurchased"] = false,
-                                ["claimedFreeMilestoneLevels"] = new JArray(),
-                                ["claimedSeasonMilestoneLevels"] = new JArray()
-                            };
-                            version = 5;
+                        case 5:
+                            AddMissingVersionSixFields(profileObject);
+                            version = 6;
                             break;
 
                         default:
@@ -59,6 +53,21 @@ namespace FoodieMatch.Infrastructure.Persistence.PlayerProfiles.Json
                 errorMessage = exception.Message;
                 return false;
             }
+        }
+
+        private static void AddMissingVersionSixFields(JObject profileObject)
+        {
+            profileObject["goldPass"] ??= new JObject
+            {
+                ["seasonId"] = string.Empty,
+                ["spoonCount"] = 0,
+                ["isSeasonPassPurchased"] = false,
+                ["claimedFreeMilestoneLevels"] = new JArray(),
+                ["claimedSeasonMilestoneLevels"] = new JArray()
+            };
+            profileObject["playerName"] ??= "Kandy";
+            profileObject["avatarId"] ??= "avatar_01";
+            profileObject["frameId"] ??= "frame_01";
         }
     }
 }
