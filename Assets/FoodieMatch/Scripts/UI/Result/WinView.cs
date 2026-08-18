@@ -62,6 +62,12 @@ namespace FoodieMatch.UI.Result
         {
             StopButtonRevealAnimation();
             RestoreRewardButtons();
+
+            if (_chefMascotSkeletonGraphic != null)
+            {
+                _chefMascotSkeletonGraphic.gameObject.SetActive(false);
+            }
+
             base.Hide();
         }
 
@@ -87,6 +93,18 @@ namespace FoodieMatch.UI.Result
 
         private void PlayWinMascotAnimation()
         {
+            if (_chefMascotSkeletonGraphic == null)
+            {
+                return;
+            }
+
+            if (!_chefMascotSkeletonGraphic.gameObject.activeSelf)
+            {
+                _chefMascotSkeletonGraphic.gameObject.SetActive(true);
+            }
+
+            _chefMascotSkeletonGraphic.enabled = true;
+
             if (!_chefMascotSkeletonGraphic.IsValid)
             {
                 _chefMascotSkeletonGraphic.Initialize(overwrite: false);
@@ -110,6 +128,7 @@ namespace FoodieMatch.UI.Result
                 IdleAnimationName,
                 loop: true,
                 delay: 0f);
+            _chefMascotSkeletonGraphic.Update(0f);
         }
 
         private void PlayButtonRevealAnimation()
