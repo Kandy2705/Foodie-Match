@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b7467960f270044b9f2944cb58046c1
+    m_Address: Assets/FoodieMatch/Bundle/UI/GoldPassUI/GoldPassInformationScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ed73c0f7618c4a5ab31808d6b69083e
     m_Address: Assets/FoodieMatch/Bundle/UI/ProfilePopup.prefab
     m_ReadOnly: 0

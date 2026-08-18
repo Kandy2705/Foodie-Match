@@ -1640,9 +1640,11 @@ namespace FoodieMatch.UI
             _popupManager.Hide<GoldPassView>();
         }
 
-        private static void OnGoldPassInformationClicked()
+        private void OnGoldPassInformationClicked()
         {
-            Debug.Log("Gold Pass information is not available yet.");
+            RunUiTask(
+                _popupManager.ShowAsync<GoldPassInformationView>(),
+                nameof(OnGoldPassInformationClicked));
         }
 
         private static void OnGoldPassPurchaseClicked()
