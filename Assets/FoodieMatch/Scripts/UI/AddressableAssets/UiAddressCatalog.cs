@@ -4,6 +4,7 @@ using FoodieMatch.UI.Advertising;
 using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
+using FoodieMatch.UI.ClaimReward;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.GoldPass;
@@ -46,6 +47,7 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(ShopView)] = UiAddressKeys.ShopScreen,
                 [typeof(LeaderBoardView)] = UiAddressKeys.LeaderBoardScreen,
                 [typeof(GoldPassView)] = UiAddressKeys.GoldPassScreen,
+                [typeof(ClaimRewardView)] = UiAddressKeys.ClaimRewardScreen,
                 [typeof(WeeklyContestIntroPopupView)] =
                     UiAddressKeys.WeeklyContestIntroPopup
             };

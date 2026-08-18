@@ -135,6 +135,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd54e4441b3ecea4e98ae1dd64121bcc
+    m_Address: Assets/FoodieMatch/Bundle/UI/ClaimReward/ClaimRewardScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0650f64b95e148d7a30d2e64a051082
     m_Address: Assets/FoodieMatch/Bundle/UI/MainMenuRoot.prefab
     m_ReadOnly: 0
