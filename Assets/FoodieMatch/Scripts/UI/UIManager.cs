@@ -135,6 +135,7 @@ namespace FoodieMatch.UI
         private bool _isTransitionLoadingVisible;
         private string _goldPassPurchaseDisplayPrice;
         private Func<Task<StorePaymentResult>> _goldPassPurchaseHandler;
+        private bool _isMainMenuTabLoading;
 
         public event Action PlayGameRequested;
 
@@ -250,8 +251,12 @@ namespace FoodieMatch.UI
 
             Transform overlayParent = _loadingRoot;
 
-            if (_popupManager.TryGetOpened(
-                    out MainMenuView mainMenuView) &&
+            bool hasOtherPopupOpened =
+                _popupManager.HasOtherOpenedPopup<MainMenuView>();
+
+            if (_isMainMenuTabLoading &&
+                !hasOtherPopupOpened &&
+                _popupManager.TryGetOpened(out MainMenuView mainMenuView) &&
                 mainMenuView.IsVisible)
             {
                 overlayParent = mainMenuView.ViewContainer;
@@ -1372,43 +1377,54 @@ namespace FoodieMatch.UI
             MainMenuView mainMenuView,
             BottomNavigationTab tab)
         {
-            switch (tab)
+            _isMainMenuTabLoading = true;
+            RefreshAddressableLoadingOverlay();
+
+            try
             {
-                case BottomNavigationTab.Home:
-                    return await _addressableUiFactory
-                        .GetOrCreateAsync<HomeView>(
-                            UiAddressKeys.HomeScreen,
-                            MainMenuHomeInstanceKey,
-                            mainMenuView.ViewContainer);
+                switch (tab)
+                {
+                    case BottomNavigationTab.Home:
+                        return await _addressableUiFactory
+                            .GetOrCreateAsync<HomeView>(
+                                UiAddressKeys.HomeScreen,
+                                MainMenuHomeInstanceKey,
+                                mainMenuView.ViewContainer);
 
-                case BottomNavigationTab.Shop:
-                    ShopView shopView = await _addressableUiFactory
-                        .GetOrCreateAsync<ShopView>(
-                            UiAddressKeys.ShopScreen,
-                            MainMenuShopInstanceKey,
-                            mainMenuView.ViewContainer);
-                    BindShopView(shopView);
-                    return shopView;
+                    case BottomNavigationTab.Shop:
+                        ShopView shopView = await _addressableUiFactory
+                            .GetOrCreateAsync<ShopView>(
+                                UiAddressKeys.ShopScreen,
+                                MainMenuShopInstanceKey,
+                                mainMenuView.ViewContainer);
+                        BindShopView(shopView);
+                        return shopView;
 
-                case BottomNavigationTab.Social:
-                    return await _addressableUiFactory
-                        .GetOrCreateAsync<SocialView>(
-                            UiAddressKeys.SocialScreen,
-                            MainMenuSocialInstanceKey,
-                            mainMenuView.ViewContainer);
+                    case BottomNavigationTab.Social:
+                        return await _addressableUiFactory
+                            .GetOrCreateAsync<SocialView>(
+                                UiAddressKeys.SocialScreen,
+                                MainMenuSocialInstanceKey,
+                                mainMenuView.ViewContainer);
 
-                case BottomNavigationTab.LeaderBoard:
-                    LeaderBoardView leaderBoardView = await _addressableUiFactory
-                        .GetOrCreateAsync<LeaderBoardView>(
-                            UiAddressKeys.LeaderBoardScreen,
-                            MainMenuLeaderBoardInstanceKey,
-                            mainMenuView.ViewContainer);
-                    ConfigureLeaderBoardView(leaderBoardView);
-                    return leaderBoardView;
+                    case BottomNavigationTab.LeaderBoard:
+                        LeaderBoardView leaderBoardView = await _addressableUiFactory
+                            .GetOrCreateAsync<LeaderBoardView>(
+                                UiAddressKeys.LeaderBoardScreen,
+                                MainMenuLeaderBoardInstanceKey,
+                                mainMenuView.ViewContainer);
+                        ConfigureLeaderBoardView(leaderBoardView);
+                        return leaderBoardView;
 
-                default:
-                    throw new InvalidOperationException(
-                        $"Main menu tab {tab} does not have an Addressable view.");
+                    default:
+                        throw new InvalidOperationException(
+                            $"Main menu tab {tab} does not have an Addressable view.");
+                }
+            }
+            finally
+            {
+                _isMainMenuTabLoading = false;
+                RefreshAddressableLoadingOverlay();
             }
         }
 
