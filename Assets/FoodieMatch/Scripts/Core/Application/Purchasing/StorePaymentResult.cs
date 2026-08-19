@@ -1,10 +1,10 @@
 using System;
 
-namespace FoodieMatch.Core.Application.Shop
+namespace FoodieMatch.Core.Application.Purchasing
 {
-    public sealed class ShopPaymentResult
+    public sealed class StorePaymentResult
     {
-        private ShopPaymentResult(bool isSuccess, string errorMessage)
+        private StorePaymentResult(bool isSuccess, string errorMessage)
         {
             IsSuccess = isSuccess;
             ErrorMessage = errorMessage;
@@ -14,12 +14,12 @@ namespace FoodieMatch.Core.Application.Shop
 
         public string ErrorMessage { get; }
 
-        public static ShopPaymentResult Succeeded()
+        public static StorePaymentResult Succeeded()
         {
-            return new ShopPaymentResult(true, null);
+            return new StorePaymentResult(true, null);
         }
 
-        public static ShopPaymentResult Failed(string errorMessage)
+        public static StorePaymentResult Failed(string errorMessage)
         {
             if (string.IsNullOrWhiteSpace(errorMessage))
             {
@@ -28,7 +28,7 @@ namespace FoodieMatch.Core.Application.Shop
                     nameof(errorMessage));
             }
 
-            return new ShopPaymentResult(false, errorMessage);
+            return new StorePaymentResult(false, errorMessage);
         }
     }
 }
