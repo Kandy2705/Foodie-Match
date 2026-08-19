@@ -154,6 +154,24 @@ namespace FoodieMatch.UI.Popup
             return false;
         }
 
+        public bool HasOtherOpenedPopup<TExcept>()
+            where TExcept : PopupBase
+        {
+            Type exceptType = typeof(TExcept);
+
+            foreach (KeyValuePair<Type, PopupBase> pair in _openedPopups)
+            {
+                if (pair.Key != exceptType &&
+                    pair.Value != null &&
+                    pair.Value.gameObject.activeInHierarchy)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public void Shutdown()
         {
             if (_isShutdown)
