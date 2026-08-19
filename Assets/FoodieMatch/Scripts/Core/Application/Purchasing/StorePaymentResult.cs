@@ -4,19 +4,34 @@ namespace FoodieMatch.Core.Application.Purchasing
 {
     public sealed class StorePaymentResult
     {
-        private StorePaymentResult(bool isSuccess, string errorMessage)
+        private StorePaymentResult(
+            StorePaymentStatus status,
+            string errorMessage)
         {
-            IsSuccess = isSuccess;
+            Status = status;
             ErrorMessage = errorMessage;
         }
 
-        public bool IsSuccess { get; }
+        public StorePaymentStatus Status { get; }
+
+        public bool IsSuccess => Status == StorePaymentStatus.Succeeded;
+
+        public bool IsCancelled => Status == StorePaymentStatus.Cancelled;
 
         public string ErrorMessage { get; }
 
         public static StorePaymentResult Succeeded()
         {
-            return new StorePaymentResult(true, null);
+            return new StorePaymentResult(
+                StorePaymentStatus.Succeeded,
+                null);
+        }
+
+        public static StorePaymentResult Cancelled()
+        {
+            return new StorePaymentResult(
+                StorePaymentStatus.Cancelled,
+                null);
         }
 
         public static StorePaymentResult Failed(string errorMessage)
@@ -28,7 +43,9 @@ namespace FoodieMatch.Core.Application.Purchasing
                     nameof(errorMessage));
             }
 
-            return new StorePaymentResult(false, errorMessage);
+            return new StorePaymentResult(
+                StorePaymentStatus.Failed,
+                errorMessage);
         }
     }
 }

@@ -637,7 +637,7 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
-        public bool TryActivateGoldPassSeasonPass(string seasonId)
+        public Task<bool> TryActivateGoldPassSeasonPassAsync(string seasonId)
         {
             lock (_stateLock)
             {
@@ -649,13 +649,12 @@ namespace FoodieMatch.Core.Application.Player
 
                 if (currentState.IsSeasonPassPurchased)
                 {
-                    return false;
+                    return Task.FromResult(false);
                 }
 
-                QueueProfileChange(
+                return QueueProfileChange(
                     currentProfile.WithGoldPassState(
                         currentState.WithSeasonPassPurchased()));
-                return true;
             }
         }
 

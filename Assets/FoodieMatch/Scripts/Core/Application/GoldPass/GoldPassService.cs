@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Time;
@@ -85,9 +86,9 @@ namespace FoodieMatch.Core.Application.GoldPass
                 amount);
         }
 
-        public bool ActivateSeasonPass()
+        public Task<bool> ActivateSeasonPassAsync()
         {
-            return _playerProfileService.TryActivateGoldPassSeasonPass(
+            return _playerProfileService.TryActivateGoldPassSeasonPassAsync(
                 GetCurrentSeason().SeasonId);
         }
 
