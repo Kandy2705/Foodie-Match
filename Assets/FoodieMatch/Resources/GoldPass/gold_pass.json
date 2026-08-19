@@ -1,4 +1,8 @@
 {
+  "purchase": {
+    "storeProductId": "com.foodiematch.gold_pass",
+    "fallbackDisplayPrice": "$10.99"
+  },
   "resetDayUtc": "Monday",
   "resetHourUtc": 0,
   "milestones": [

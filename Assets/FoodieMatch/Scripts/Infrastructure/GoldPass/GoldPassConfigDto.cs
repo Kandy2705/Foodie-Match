@@ -2,9 +2,16 @@ namespace FoodieMatch.Infrastructure.GoldPass
 {
     internal sealed class GoldPassConfigDto
     {
+        public GoldPassPurchaseDto purchase;
         public string resetDayUtc;
         public int resetHourUtc;
         public GoldPassMilestoneDto[] milestones;
+    }
+
+    internal sealed class GoldPassPurchaseDto
+    {
+        public string storeProductId;
+        public string fallbackDisplayPrice;
     }
 
     internal sealed class GoldPassMilestoneDto

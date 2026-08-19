@@ -87,9 +87,24 @@ namespace FoodieMatch.Infrastructure.GoldPass
             }
 
             return new GameGoldPassConfigSnapshot(
+                MapPurchase(configDto.purchase),
                 resetDayUtc,
                 configDto.resetHourUtc,
                 milestones);
+        }
+
+        private static GoldPassPurchaseDefinition MapPurchase(
+            GoldPassPurchaseDto purchaseDto)
+        {
+            if (purchaseDto == null)
+            {
+                throw new ArgumentException(
+                    "Gold Pass purchase config is missing.");
+            }
+
+            return new GoldPassPurchaseDefinition(
+                purchaseDto.storeProductId,
+                purchaseDto.fallbackDisplayPrice);
         }
 
         private static GoldPassRewardDefinition MapReward(
