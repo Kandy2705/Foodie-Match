@@ -14,6 +14,7 @@ using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Application.Time;
@@ -197,10 +198,16 @@ namespace FoodieMatch.App
                 boosterConfig);
             IGameEconomyConfig economyConfig = configurationSession;
             IGameAdsConfig adsConfig = configurationSession;
+            IStorePaymentGateway storePaymentGateway =
+                new DebugFreeStorePaymentGateway();
             ShopPurchaseService shopPurchaseService = new(
                 shopConfig,
-                new DebugFreeStorePaymentGateway(),
+                storePaymentGateway,
                 playerProfileService);
+            GoldPassPurchaseService goldPassPurchaseService = new(
+                goldPassConfig,
+                storePaymentGateway,
+                goldPassService);
             IAddressableUiFactory addressableUiFactory =
                 new AddressableUiFactory();
 
@@ -271,6 +278,7 @@ namespace FoodieMatch.App
                 boosterManager,
                 economyConfig,
                 shopPurchaseService,
+                goldPassPurchaseService,
                 rewardedAdService,
                 postLevelAdCoordinator,
                 levelCatalogRepository,

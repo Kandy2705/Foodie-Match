@@ -10,6 +10,7 @@ using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
@@ -32,6 +33,7 @@ namespace FoodieMatch.App
         private BoosterManager _boosterManager;
         private IGameEconomyConfig _economyConfig;
         private ShopPurchaseService _shopPurchaseService;
+        private GoldPassPurchaseService _goldPassPurchaseService;
         private IRewardedAdService _rewardedAdService;
         private PostLevelAdCoordinator _postLevelAdCoordinator;
         private ILevelCatalogRepository _levelCatalogRepository;
@@ -51,6 +53,7 @@ namespace FoodieMatch.App
             BoosterManager boosterManager,
             IGameEconomyConfig economyConfig,
             ShopPurchaseService shopPurchaseService,
+            GoldPassPurchaseService goldPassPurchaseService,
             IRewardedAdService rewardedAdService,
             PostLevelAdCoordinator postLevelAdCoordinator,
             ILevelCatalogRepository levelCatalogRepository,
@@ -66,6 +69,7 @@ namespace FoodieMatch.App
             _boosterManager = boosterManager;
             _economyConfig = economyConfig;
             _shopPurchaseService = shopPurchaseService;
+            _goldPassPurchaseService = goldPassPurchaseService;
             _rewardedAdService = rewardedAdService;
             _postLevelAdCoordinator = postLevelAdCoordinator;
             _levelCatalogRepository = levelCatalogRepository;
@@ -91,6 +95,9 @@ namespace FoodieMatch.App
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
             _uiManager.ShopPurchaseHandler = OnShopPurchaseRequestedAsync;
+            _uiManager.SetGoldPassPurchaseHandler(
+                goldPassPurchaseService.FallbackDisplayPrice,
+                OnGoldPassPurchaseRequestedAsync);
             _levelSynchronizer.CatalogUpdated += OnLevelCatalogUpdated;
         }
 
@@ -606,6 +613,11 @@ namespace FoodieMatch.App
             }
 
             return result;
+        }
+
+        private Task<StorePaymentResult> OnGoldPassPurchaseRequestedAsync()
+        {
+            return _goldPassPurchaseService.PurchaseAsync();
         }
 
         private void OnLeaveGameRequested()

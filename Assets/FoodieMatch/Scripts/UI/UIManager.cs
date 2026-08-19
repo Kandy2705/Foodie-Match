@@ -11,6 +11,7 @@ using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
@@ -132,6 +133,8 @@ namespace FoodieMatch.UI
         private int _gameplayHudRequestVersion;
         private bool _isAddressableUiLoading;
         private bool _isTransitionLoadingVisible;
+        private string _goldPassPurchaseDisplayPrice;
+        private Func<Task<StorePaymentResult>> _goldPassPurchaseHandler;
 
         public event Action PlayGameRequested;
 
@@ -1647,9 +1650,70 @@ namespace FoodieMatch.UI
                 nameof(OnGoldPassInformationClicked));
         }
 
-        private static void OnGoldPassPurchaseClicked()
+        public void SetGoldPassPurchaseHandler(
+            string displayPrice,
+            Func<Task<StorePaymentResult>> purchaseHandler)
         {
-            Debug.Log("Gold Pass purchase is not available yet.");
+            _goldPassPurchaseDisplayPrice = displayPrice;
+            _goldPassPurchaseHandler = purchaseHandler;
+        }
+
+        private void OnGoldPassPurchaseClicked()
+        {
+            RunUiTask(
+                ShowGoldPassPurchaseAsync(),
+                nameof(OnGoldPassPurchaseClicked));
+        }
+
+        private async Task ShowGoldPassPurchaseAsync()
+        {
+            GoldPassStatus status = _goldPassService.GetStatus();
+
+            if (status.IsSeasonPassPurchased)
+            {
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            GoldPassPurchaseView purchaseView =
+                await _popupManager.ShowAsync<GoldPassPurchaseView>();
+
+            if (this == null)
+            {
+                return;
+            }
+
+            purchaseView.SetActions(
+                new GoldPassPurchaseViewActions(
+                    OnGoldPassBuyClickedAsync,
+                    OnGoldPassPurchaseSeasonExpired));
+            purchaseView.Bind(
+                _goldPassPurchaseDisplayPrice,
+                status.Season.EndUtc);
+        }
+
+        private async Task OnGoldPassBuyClickedAsync()
+        {
+            StorePaymentResult result =
+                await _goldPassPurchaseHandler();
+
+            if (result.IsSuccess)
+            {
+                _popupManager.Hide<GoldPassPurchaseView>();
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            if (!result.IsCancelled)
+            {
+                ShowActionFeedback(result.ErrorMessage);
+            }
+        }
+
+        private void OnGoldPassPurchaseSeasonExpired()
+        {
+            _popupManager.Hide<GoldPassPurchaseView>();
+            RefreshOpenedGoldPass();
         }
 
         private void OnGoldPassClaimClicked(
