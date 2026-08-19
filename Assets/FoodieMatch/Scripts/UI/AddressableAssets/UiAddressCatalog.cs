@@ -48,6 +48,8 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(ShopView)] = UiAddressKeys.ShopScreen,
                 [typeof(LeaderBoardView)] = UiAddressKeys.LeaderBoardScreen,
                 [typeof(GoldPassView)] = UiAddressKeys.GoldPassScreen,
+                [typeof(GoldPassInformationView)] =
+                    UiAddressKeys.GoldPassInformationScreen,
                 [typeof(ClaimRewardView)] = UiAddressKeys.ClaimRewardScreen,
                 [typeof(WeeklyContestIntroPopupView)] =
                     UiAddressKeys.WeeklyContestIntroPopup,

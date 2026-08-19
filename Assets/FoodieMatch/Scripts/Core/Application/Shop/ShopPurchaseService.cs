@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Application.Purchasing;
 
 namespace FoodieMatch.Core.Application.Shop
 {
@@ -12,12 +13,12 @@ namespace FoodieMatch.Core.Application.Shop
         private readonly HashSet<string> _pendingProductIds = new(
             StringComparer.Ordinal);
         private readonly IGameShopConfig _shopConfig;
-        private readonly IShopPaymentGateway _paymentGateway;
+        private readonly IStorePaymentGateway _paymentGateway;
         private readonly PlayerProfileService _playerProfileService;
 
         public ShopPurchaseService(
             IGameShopConfig shopConfig,
-            IShopPaymentGateway paymentGateway,
+            IStorePaymentGateway paymentGateway,
             PlayerProfileService playerProfileService)
         {
             _shopConfig = shopConfig ?? throw new ArgumentNullException(nameof(shopConfig));
@@ -50,7 +51,7 @@ namespace FoodieMatch.Core.Application.Shop
                     return ShopPurchaseResult.Failed("Shop product was not found.");
                 }
 
-                ShopPaymentResult paymentResult =
+                StorePaymentResult paymentResult =
                     await _paymentGateway.PurchaseAsync(product.StoreProductId);
 
                 if (paymentResult == null || !paymentResult.IsSuccess)

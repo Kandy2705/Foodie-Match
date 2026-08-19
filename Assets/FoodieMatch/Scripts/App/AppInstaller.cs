@@ -32,6 +32,7 @@ using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
 using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.RemoteConfig;
+using FoodieMatch.Infrastructure.Purchasing;
 using FoodieMatch.Infrastructure.Shop;
 using FoodieMatch.Infrastructure.Time;
 using FoodieMatch.UI.Advertising;
@@ -198,7 +199,7 @@ namespace FoodieMatch.App
             IGameAdsConfig adsConfig = configurationSession;
             ShopPurchaseService shopPurchaseService = new(
                 shopConfig,
-                new DebugFreeShopPaymentGateway(),
+                new DebugFreeStorePaymentGateway(),
                 playerProfileService);
             IAddressableUiFactory addressableUiFactory =
                 new AddressableUiFactory();
