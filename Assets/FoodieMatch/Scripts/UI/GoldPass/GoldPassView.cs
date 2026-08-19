@@ -96,7 +96,7 @@ namespace FoodieMatch.UI.GoldPass
         public override void Show()
         {
             base.Show();
-            _animController.ShowInstantly();
+            _animController.Open();
         }
 
         public void ScrollToCurrentMilestone()
@@ -122,7 +122,13 @@ namespace FoodieMatch.UI.GoldPass
         {
             _isCountingDown = false;
             _rewardPreview.Hide();
-            _animController.HideInstantly();
+
+            if (gameObject.activeInHierarchy)
+            {
+                _animController.Close(OnCloseAnimationFinished);
+                return;
+            }
+
             base.Hide();
         }
 
@@ -286,6 +292,11 @@ namespace FoodieMatch.UI.GoldPass
         private void OnPurchaseButtonClicked()
         {
             _purchaseClicked();
+        }
+
+        private void OnCloseAnimationFinished()
+        {
+            base.Hide();
         }
 
         private void OnClaimClicked(

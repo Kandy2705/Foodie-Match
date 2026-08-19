@@ -9,17 +9,61 @@
     {
       "level": 0,
       "requiredSpoons": 0,
+      "freeReward": { "type": "Coin", "amount": 40 },
+      "seasonReward": { "type": "Coin", "amount": 500 }
+    },
+    {
+      "level": 1,
+      "requiredSpoons": 1,
+      "freeReward": { "type": "Coin", "amount": 40 },
+      "seasonReward": { "type": "Coin", "amount": 200 }
+    },
+    {
+      "level": 2,
+      "requiredSpoons": 2,
       "freeReward": {
-        "type": "Coin",
-        "amount": 100
+        "type": "Booster",
+        "boosterType": "Plate",
+        "amount": 1
+      },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Storage",
+        "amount": 1
+      }
+    },
+    {
+      "level": 3,
+      "requiredSpoons": 3,
+      "freeReward": { "type": "Coin", "amount": 60 },
+      "seasonReward": {
+        "type": "Treasure1",
+        "contents": [
+          { "type": "Coin", "amount": 200 },
+          { "type": "UnlimitedHeart", "durationMinutes": 15 }
+        ]
+      }
+    },
+    {
+      "level": 4,
+      "requiredSpoons": 5,
+      "freeReward": { "type": "Coin", "amount": 60 },
+      "seasonReward": { "type": "Coin", "amount": 200 }
+    },
+    {
+      "level": 5,
+      "requiredSpoons": 7,
+      "freeReward": {
+        "type": "Treasure1",
+        "contents": [
+          { "type": "Coin", "amount": 80 },
+          { "type": "UnlimitedHeart", "durationMinutes": 10 }
+        ]
       },
       "seasonReward": {
         "type": "Treasure1",
         "contents": [
-          {
-            "type": "Coin",
-            "amount": 300
-          },
+          { "type": "Coin", "amount": 250 },
           {
             "type": "Booster",
             "boosterType": "Plate",
@@ -29,28 +73,256 @@
       }
     },
     {
-      "level": 1,
-      "requiredSpoons": 1,
+      "level": 6,
+      "requiredSpoons": 9,
+      "freeReward": { "type": "Coin", "amount": 80 },
+      "seasonReward": { "type": "Coin", "amount": 250 }
+    },
+    {
+      "level": 7,
+      "requiredSpoons": 11,
       "freeReward": {
         "type": "Booster",
         "boosterType": "Storage",
         "amount": 1
       },
       "seasonReward": {
-        "type": "UnlimitedHeart",
-        "durationMinutes": 15
+        "type": "Booster",
+        "boosterType": "Swap",
+        "amount": 1
       }
     },
     {
-      "level": 2,
-      "requiredSpoons": 3,
+      "level": 8,
+      "requiredSpoons": 13,
+      "freeReward": { "type": "Coin", "amount": 80 },
+      "seasonReward": {
+        "type": "UnlimitedHeart",
+        "durationMinutes": 20
+      }
+    },
+    {
+      "level": 9,
+      "requiredSpoons": 15,
+      "freeReward": { "type": "Coin", "amount": 100 },
+      "seasonReward": { "type": "Coin", "amount": 250 }
+    },
+    {
+      "level": 10,
+      "requiredSpoons": 17,
       "freeReward": {
         "type": "Treasure1",
         "contents": [
+          { "type": "Coin", "amount": 100 },
           {
-            "type": "Coin",
-            "amount": 200
+            "type": "Booster",
+            "boosterType": "Plate",
+            "amount": 1
+          }
+        ]
+      },
+      "seasonReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 300 },
+          { "type": "UnlimitedHeart", "durationMinutes": 20 },
+          {
+            "type": "Booster",
+            "boosterType": "Fridge",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "level": 11,
+      "requiredSpoons": 20,
+      "freeReward": { "type": "Coin", "amount": 100 },
+      "seasonReward": { "type": "Coin", "amount": 300 }
+    },
+    {
+      "level": 12,
+      "requiredSpoons": 23,
+      "freeReward": {
+        "type": "UnlimitedHeart",
+        "durationMinutes": 15
+      },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Plate",
+        "amount": 2
+      }
+    },
+    {
+      "level": 13,
+      "requiredSpoons": 26,
+      "freeReward": { "type": "Coin", "amount": 120 },
+      "seasonReward": { "type": "Coin", "amount": 300 }
+    },
+    {
+      "level": 14,
+      "requiredSpoons": 29,
+      "freeReward": {
+        "type": "Booster",
+        "boosterType": "Swap",
+        "amount": 1
+      },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Storage",
+        "amount": 2
+      }
+    },
+    {
+      "level": 15,
+      "requiredSpoons": 32,
+      "freeReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 120 },
+          { "type": "UnlimitedHeart", "durationMinutes": 15 },
+          {
+            "type": "Booster",
+            "boosterType": "Fridge",
+            "amount": 1
+          }
+        ]
+      },
+      "seasonReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 350 },
+          { "type": "UnlimitedHeart", "durationMinutes": 30 },
+          {
+            "type": "Booster",
+            "boosterType": "Swap",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "level": 16,
+      "requiredSpoons": 35,
+      "freeReward": { "type": "Coin", "amount": 120 },
+      "seasonReward": { "type": "Coin", "amount": 350 }
+    },
+    {
+      "level": 17,
+      "requiredSpoons": 38,
+      "freeReward": { "type": "Coin", "amount": 140 },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Fridge",
+        "amount": 2
+      }
+    },
+    {
+      "level": 18,
+      "requiredSpoons": 41,
+      "freeReward": {
+        "type": "Booster",
+        "boosterType": "Plate",
+        "amount": 1
+      },
+      "seasonReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 350 },
+          { "type": "UnlimitedHeart", "durationMinutes": 30 },
+          {
+            "type": "Booster",
+            "boosterType": "Plate",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "level": 19,
+      "requiredSpoons": 44,
+      "freeReward": { "type": "Coin", "amount": 140 },
+      "seasonReward": { "type": "Coin", "amount": 350 }
+    },
+    {
+      "level": 20,
+      "requiredSpoons": 47,
+      "freeReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 150 },
+          { "type": "UnlimitedHeart", "durationMinutes": 20 },
+          {
+            "type": "Booster",
+            "boosterType": "Storage",
+            "amount": 2
+          }
+        ]
+      },
+      "seasonReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 400 },
+          {
+            "type": "Booster",
+            "boosterType": "Plate",
+            "amount": 2
           },
+          {
+            "type": "Booster",
+            "boosterType": "Storage",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "level": 21,
+      "requiredSpoons": 51,
+      "freeReward": { "type": "Coin", "amount": 140 },
+      "seasonReward": { "type": "Coin", "amount": 400 }
+    },
+    {
+      "level": 22,
+      "requiredSpoons": 55,
+      "freeReward": {
+        "type": "UnlimitedHeart",
+        "durationMinutes": 20
+      },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Swap",
+        "amount": 2
+      }
+    },
+    {
+      "level": 23,
+      "requiredSpoons": 59,
+      "freeReward": { "type": "Coin", "amount": 160 },
+      "seasonReward": { "type": "Coin", "amount": 400 }
+    },
+    {
+      "level": 24,
+      "requiredSpoons": 63,
+      "freeReward": {
+        "type": "Booster",
+        "boosterType": "Fridge",
+        "amount": 1
+      },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Fridge",
+        "amount": 2
+      }
+    },
+    {
+      "level": 25,
+      "requiredSpoons": 67,
+      "freeReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 160 },
+          { "type": "UnlimitedHeart", "durationMinutes": 20 },
           {
             "type": "Booster",
             "boosterType": "Swap",
@@ -59,42 +331,105 @@
         ]
       },
       "seasonReward": {
-        "type": "Treasure2",
-        "contents": [
-          {
-            "type": "Coin",
-            "amount": 500
-          },
-          {
-            "type": "UnlimitedHeart",
-            "durationMinutes": 30
-          }
-        ]
-      }
-    },
-    {
-      "level": 3,
-      "requiredSpoons": 6,
-      "freeReward": {
-        "type": "Booster",
-        "boosterType": "Fridge",
-        "amount": 1
-      },
-      "seasonReward": {
         "type": "Treasure3",
         "contents": [
-          {
-            "type": "Coin",
-            "amount": 1000
-          },
+          { "type": "Coin", "amount": 450 },
+          { "type": "UnlimitedHeart", "durationMinutes": 45 },
           {
             "type": "Booster",
             "boosterType": "Plate",
             "amount": 2
           },
           {
-            "type": "UnlimitedHeart",
-            "durationMinutes": 60
+            "type": "Booster",
+            "boosterType": "Storage",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "level": 26,
+      "requiredSpoons": 71,
+      "freeReward": { "type": "Coin", "amount": 180 },
+      "seasonReward": { "type": "Coin", "amount": 450 }
+    },
+    {
+      "level": 27,
+      "requiredSpoons": 75,
+      "freeReward": { "type": "Coin", "amount": 180 },
+      "seasonReward": {
+        "type": "Booster",
+        "boosterType": "Plate",
+        "amount": 3
+      }
+    },
+    {
+      "level": 28,
+      "requiredSpoons": 79,
+      "freeReward": {
+        "type": "Booster",
+        "boosterType": "Storage",
+        "amount": 2
+      },
+      "seasonReward": {
+        "type": "Treasure2",
+        "contents": [
+          { "type": "Coin", "amount": 450 },
+          { "type": "UnlimitedHeart", "durationMinutes": 45 },
+          {
+            "type": "Booster",
+            "boosterType": "Swap",
+            "amount": 3
+          }
+        ]
+      }
+    },
+    {
+      "level": 29,
+      "requiredSpoons": 83,
+      "freeReward": { "type": "Coin", "amount": 200 },
+      "seasonReward": { "type": "Coin", "amount": 500 }
+    },
+    {
+      "level": 30,
+      "requiredSpoons": 87,
+      "freeReward": {
+        "type": "Treasure3",
+        "contents": [
+          { "type": "Coin", "amount": 200 },
+          { "type": "UnlimitedHeart", "durationMinutes": 30 },
+          {
+            "type": "Booster",
+            "boosterType": "Plate",
+            "amount": 2
+          },
+          {
+            "type": "Booster",
+            "boosterType": "Fridge",
+            "amount": 2
+          }
+        ]
+      },
+      "seasonReward": {
+        "type": "Treasure3",
+        "contents": [
+          { "type": "Coin", "amount": 500 },
+          { "type": "UnlimitedHeart", "durationMinutes": 60 },
+          {
+            "type": "Booster",
+            "boosterType": "Storage",
+            "amount": 3
+          },
+          {
+            "type": "Booster",
+            "boosterType": "Swap",
+            "amount": 3
+          },
+          {
+            "type": "Booster",
+            "boosterType": "Fridge",
+            "amount": 3
           }
         ]
       }
