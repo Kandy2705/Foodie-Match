@@ -109,6 +109,10 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                         FirebaseRemoteConfigKeys.BoosterUnlockRewardAmount,
                         fallback.Booster.UnlockRewardAmount)),
                 new GameAdsConfigSnapshot(
+                    ReadPositiveInt(
+                        remoteConfig,
+                        FirebaseRemoteConfigKeys.PostLevelAdStartLevel,
+                        fallback.Ads.PostLevelAdStartLevel),
                     TimeSpan.FromMinutes(
                         ReadPositiveInt(
                             remoteConfig,

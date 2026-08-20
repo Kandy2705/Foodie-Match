@@ -24,9 +24,12 @@ namespace FoodieMatch.App.Advertising
             _cooldown = cooldown;
         }
 
-        public void RunAfterPostLevelAd(Action continuation)
+        public void RunAfterPostLevelAd(
+            int playedLevelNumber,
+            Action continuation)
         {
-            if (!_runtimeSettings.PostLevelAdsEnabled ||
+            if (playedLevelNumber < _adsConfig.PostLevelAdStartLevel ||
+                !_runtimeSettings.PostLevelAdsEnabled ||
                 !_cooldown.HasElapsed(_adsConfig.PostLevelAdInterval))
             {
                 continuation();

@@ -47,6 +47,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             "gold_pass_spoons_per_completed_level_hard";
         public const string GoldPassSuperHardSpoonsPerCompletedLevel =
             "gold_pass_spoons_per_completed_level_super_hard";
+        public const string PostLevelAdStartLevel =
+            "ads_post_level_start_level";
         public const string PostLevelAdIntervalMinutes =
             "ads_post_level_interval_minutes";
         public const string LevelManifestVersion =

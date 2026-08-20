@@ -110,6 +110,10 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                     unlockLevels,
                     dto.Booster.UnlockRewardAmount),
                 new GameAdsConfigSnapshot(
+                    dto.Ads.PostLevelStartLevel > 0
+                        ? dto.Ads.PostLevelStartLevel
+                        : GameAdsDefaults.CreateSnapshot()
+                            .PostLevelAdStartLevel,
                     TimeSpan.FromMinutes(dto.Ads.PostLevelIntervalMinutes)),
                 new GameGoldPassProgressionConfigSnapshot(
                     dto.GoldPassProgression.UnlockLevel,
@@ -172,6 +176,8 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
                 },
                 Ads = new AdsConfigDto
                 {
+                    PostLevelStartLevel =
+                        configuration.Ads.PostLevelAdStartLevel,
                     PostLevelIntervalMinutes =
                         checked((int)configuration.Ads.PostLevelAdInterval.TotalMinutes)
                 },
