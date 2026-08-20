@@ -102,7 +102,10 @@ namespace FoodieMatch.App
             GameConfigurationLoader = new FirebaseGameConfigurationLoader(
                 configurationSession,
                 localConfigDefaults,
-                configurationCache);
+                configurationCache,
+                shopConfig,
+                goldPassConfig,
+                catalogCache);
             LevelCatalogRepository levelCatalogRepository =
                 new(bundledLevelData.Catalog);
             ResourcesLevelRepository resourcesLevelRepository = new(
@@ -352,26 +355,22 @@ namespace FoodieMatch.App
                 return false;
             }
 
-            IGameShopConfig initialConfig = bundledConfig;
+            shopConfig = new GameShopConfigSession(bundledConfig);
 
             if (catalogCache.TryGetShopJson(out string cachedJson))
             {
                 GameShopConfigJsonParser parser = new();
 
-                if (parser.TryParse(
+                if (!parser.TryParse(
                         cachedJson,
                         out IGameShopConfig cachedConfig,
-                        out _))
-                {
-                    initialConfig = cachedConfig;
-                }
-                else
+                        out _) ||
+                    !shopConfig.TryApply(cachedConfig))
                 {
                     catalogCache.DeleteShopJson();
                 }
             }
 
-            shopConfig = new GameShopConfigSession(initialConfig);
             return true;
         }
 

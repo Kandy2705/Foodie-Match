@@ -5,8 +5,12 @@ using System.Threading.Tasks;
 using Firebase;
 using Firebase.RemoteConfig;
 using FoodieMatch.Core.Application.Configuration;
+using FoodieMatch.Core.Application.Configuration.GoldPass;
+using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Infrastructure.GoldPass;
 using FoodieMatch.Infrastructure.Persistence.Configuration;
+using FoodieMatch.Infrastructure.Shop;
 using UnityEngine;
 
 namespace FoodieMatch.Infrastructure.RemoteConfig
@@ -19,16 +23,27 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
         private readonly GameConfigurationSession _session;
         private readonly GameConfigurationSnapshotSet _localDefaults;
         private readonly PlayerPrefsGameConfigurationCache _cache;
+        private readonly GameShopConfigSession _shopConfig;
+        private readonly GameGoldPassConfigSession _goldPassConfig;
+        private readonly PlayerPrefsGameCatalogCache _catalogCache;
         private readonly RemoteConfigSnapshotBuilder _snapshotBuilder = new();
+        private readonly GameShopConfigJsonParser _shopConfigParser = new();
+        private readonly GameGoldPassConfigJsonParser _goldPassConfigParser = new();
 
         public FirebaseGameConfigurationLoader(
             GameConfigurationSession session,
             GameConfigurationSnapshotSet localDefaults,
-            PlayerPrefsGameConfigurationCache cache)
+            PlayerPrefsGameConfigurationCache cache,
+            GameShopConfigSession shopConfig,
+            GameGoldPassConfigSession goldPassConfig,
+            PlayerPrefsGameCatalogCache catalogCache)
         {
             _session = session;
             _localDefaults = localDefaults;
             _cache = cache;
+            _shopConfig = shopConfig;
+            _goldPassConfig = goldPassConfig;
+            _catalogCache = catalogCache;
         }
 
         public async Task<bool> RefreshAsync(CancellationToken cancellationToken)
@@ -78,6 +93,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     _snapshotBuilder.Build(remoteConfig, _session.Current);
                 _session.Apply(configuration);
                 _cache.Save(configuration);
+                ApplyRemoteShopCatalog(remoteConfig);
+                ApplyRemoteGoldPassCatalog(remoteConfig);
                 return true;
             }
             catch (OperationCanceledException) when (
@@ -92,6 +109,67 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     "Cached or local configuration will be used.");
                 return false;
             }
+        }
+
+        private void ApplyRemoteShopCatalog(
+            FirebaseRemoteConfig remoteConfig)
+        {
+            ConfigValue value = remoteConfig.GetValue(
+                FirebaseRemoteConfigKeys.ShopCatalog);
+
+            if (value.Source != ValueSource.RemoteValue)
+            {
+                return;
+            }
+
+            string json = value.StringValue;
+
+            if (!_shopConfigParser.TryParse(
+                    json,
+                    out IGameShopConfig config,
+                    out string errorMessage))
+            {
+                Debug.LogWarning(
+                    $"Remote Shop catalog was ignored: {errorMessage}");
+                return;
+            }
+
+            if (!_shopConfig.TryApply(config))
+            {
+                Debug.LogWarning(
+                    "Remote Shop catalog was ignored because its product IDs " +
+                    "do not match the bundled Shop catalog.");
+                return;
+            }
+
+            _catalogCache.SaveShopJson(json);
+        }
+
+        private void ApplyRemoteGoldPassCatalog(
+            FirebaseRemoteConfig remoteConfig)
+        {
+            ConfigValue value = remoteConfig.GetValue(
+                FirebaseRemoteConfigKeys.GoldPassCatalog);
+
+            if (value.Source != ValueSource.RemoteValue)
+            {
+                return;
+            }
+
+            string json = value.StringValue;
+
+            if (!_goldPassConfigParser.TryParse(
+                    json,
+                    out IGameGoldPassConfig config,
+                    out string errorMessage))
+            {
+                Debug.LogWarning(
+                    $"Remote Gold Pass catalog was ignored: {errorMessage}");
+                return;
+            }
+
+            _goldPassConfig.Apply(config);
+            _catalogCache.SaveGoldPassJson(json);
         }
 
         private static Dictionary<string, object> CreateFirebaseDefaults(
