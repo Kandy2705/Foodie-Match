@@ -25,6 +25,7 @@ using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.ClaimReward;
 using FoodieMatch.UI.Common;
+using FoodieMatch.UI.DailyReward;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Effects;
 using FoodieMatch.UI.Gameplay;
@@ -657,6 +658,35 @@ namespace FoodieMatch.UI
         public void HideSettingPopup()
         {
             _popupManager.Hide<SettingPopupView>();
+        }
+
+        public void ShowDailyRewardPopup()
+        {
+            RunUiTask(
+                ShowDailyRewardPopupAsync(),
+                nameof(ShowDailyRewardPopup));
+        }
+
+        private async Task ShowDailyRewardPopupAsync()
+        {
+            await ShowPopupAsync<DailyRewardPopupView>(
+                data: null,
+                dailyRewardPopup =>
+                {
+                    dailyRewardPopup.SetActions(
+                        new DailyRewardPopupViewActions(
+                            OnDailyRewardCloseClicked));
+                });
+        }
+
+        public void HideDailyRewardPopup()
+        {
+            _popupManager.Hide<DailyRewardPopupView>();
+        }
+
+        private void OnDailyRewardCloseClicked()
+        {
+            HideDailyRewardPopup();
         }
 
         private bool _isCustomizationPopupLoading;
@@ -1450,7 +1480,8 @@ namespace FoodieMatch.UI
                     OnHomeGoldPassRequested,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked,
-                    OnHomeAvatarRequested));
+                    OnHomeAvatarRequested,
+                    OnHomeDailyRequested));
             SetHomePlayLevel(homeView);
             homeView.SetGoldPassUnlockLevel(
                 _goldPassProgressionConfig.UnlockLevel);
@@ -1613,6 +1644,11 @@ namespace FoodieMatch.UI
         private void OnHomeSettingRequested()
         {
             ShowSettingPopup();
+        }
+
+        private void OnHomeDailyRequested()
+        {
+            ShowDailyRewardPopup();
         }
 
         private void OnHomeStarterPackRequested()
