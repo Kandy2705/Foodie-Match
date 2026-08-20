@@ -308,6 +308,30 @@ namespace FoodieMatch.Core.Domain.Player
                 FrameId);
         }
 
+        public PlayerProfile WithAdsRemoved(bool adsRemoved)
+        {
+            if (adsRemoved == AdsRemoved)
+            {
+                return this;
+            }
+
+            return new PlayerProfile(
+                CurrentLevelNumber,
+                CoinBalance,
+                _boosterCounts,
+                _seenBoosterGuides,
+                HeartState,
+                GoldPassState,
+                adsRemoved,
+                UnlimitedHeartEndUnixSeconds,
+                FirstTryWins,
+                HasFailedCurrentLevel,
+                CreatedAtUnixSeconds,
+                PlayerName,
+                AvatarId,
+                FrameId);
+        }
+
         public PlayerProfile WithFirstTryWins(int firstTryWins)
         {
             if (firstTryWins == FirstTryWins)

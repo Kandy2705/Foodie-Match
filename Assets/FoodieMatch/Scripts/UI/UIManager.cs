@@ -903,11 +903,13 @@ namespace FoodieMatch.UI
                 _boosterManager.GetCount(BoosterType.Plate),
                 _boosterManager.GetCount(BoosterType.Storage),
                 _boosterManager.GetCount(BoosterType.Swap),
-                _boosterManager.GetCount(BoosterType.Fridge));
+                _boosterManager.GetCount(BoosterType.Fridge),
+                _playerProfileService.AdsRemoved);
             DebugMenuValues values = new(
                 playerProfile,
                 goldPassStatus.SpoonCount,
                 goldPassStatus.IsSeasonPassPurchased,
+                _playerProfileService.AdsRemoved,
                 _advertisingRuntimeSettings.PostLevelAdsEnabled,
                 _advertisingRuntimeSettings.UseLevelPlayAds);
 
