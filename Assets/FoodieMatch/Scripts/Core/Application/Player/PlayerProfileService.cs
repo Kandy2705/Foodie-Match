@@ -538,7 +538,8 @@ namespace FoodieMatch.Core.Application.Player
                         update.SwapBoosterCount)
                     .WithBoosterCount(
                         BoosterType.Fridge,
-                        update.FridgeBoosterCount);
+                        update.FridgeBoosterCount)
+                    .WithAdsRemoved(update.AdsRemoved);
 
                 QueueProfileChange(updatedProfile);
             }

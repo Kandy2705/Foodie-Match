@@ -239,7 +239,8 @@ namespace FoodieMatch.App
                 interstitialAdService,
                 adsConfig,
                 advertisingRuntimeSettings,
-                postLevelAdCooldown);
+                postLevelAdCooldown,
+                playerProfileService);
             appRoot.BoardLayoutView.Construct(
                 appRoot.FoodVisualResolver,
                 appRoot.GameplayPoolRoot.FoodItems,

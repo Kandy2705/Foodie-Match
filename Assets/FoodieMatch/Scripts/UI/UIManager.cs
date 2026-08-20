@@ -37,9 +37,11 @@ using FoodieMatch.UI.LeaderBoard;
 using FoodieMatch.UI.Loading;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Navigation;
+using FoodieMatch.UI.Packages;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Popup;
 using FoodieMatch.UI.Profile;
+using FoodieMatch.UI.RemoveAds;
 using FoodieMatch.UI.Reward;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
@@ -67,6 +69,8 @@ namespace FoodieMatch.UI
             "main-menu/tournaments";
         private const string StarterPackProductId =
             "starter_pack";
+        private const string RemoveAdsProductId =
+            "remove_ads";
 
         [Header("Popup")]
         [SerializeField] private PopupManager _popupManager;
@@ -899,11 +903,13 @@ namespace FoodieMatch.UI
                 _boosterManager.GetCount(BoosterType.Plate),
                 _boosterManager.GetCount(BoosterType.Storage),
                 _boosterManager.GetCount(BoosterType.Swap),
-                _boosterManager.GetCount(BoosterType.Fridge));
+                _boosterManager.GetCount(BoosterType.Fridge),
+                _playerProfileService.AdsRemoved);
             DebugMenuValues values = new(
                 playerProfile,
                 goldPassStatus.SpoonCount,
                 goldPassStatus.IsSeasonPassPurchased,
+                _playerProfileService.AdsRemoved,
                 _advertisingRuntimeSettings.PostLevelAdsEnabled,
                 _advertisingRuntimeSettings.UseLevelPlayAds);
 
@@ -1487,6 +1493,7 @@ namespace FoodieMatch.UI
                     OnHomePlayRequested,
                     OnHomeSettingRequested,
                     OnHomeStarterPackRequested,
+                    OnHomeNoAdsRequested,
                     OnHomeGoldPassRequested,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked,
@@ -1673,6 +1680,42 @@ namespace FoodieMatch.UI
                 nameof(OnHomeStarterPackRequested));
         }
 
+        private void OnHomeNoAdsRequested()
+        {
+            ShowRemoveAdsPopup();
+        }
+
+        public void ShowRemoveAdsPopup(Action onClosed = null)
+        {
+            RunUiTask(
+                ShowPopupAsync<RemoveAdsPopupView>(
+                    null,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new RemoveAdsPopupViewActions(
+                                OnRemoveAdsBuyRequestedAsync,
+                                onClosed));
+                    }),
+                nameof(ShowRemoveAdsPopup));
+        }
+
+        public void ShowPackagePopup<TPopupView>(string productId, Action onClosed = null)
+            where TPopupView : PackagePopupViewBase
+        {
+            RunUiTask(
+                ShowPopupAsync<TPopupView>(
+                    null,
+                    popup =>
+                    {
+                        popup.SetActions(
+                            new PackagePopupViewActions(
+                                () => ShopPurchaseHandler(productId),
+                                onClosed));
+                    }),
+                $"ShowPackagePopup_{productId}");
+        }
+
         private void OnHomeGoldPassRequested()
         {
             if (_currentLevelNumber < _goldPassProgressionConfig.UnlockLevel)
@@ -1849,6 +1892,11 @@ namespace FoodieMatch.UI
         private Task<ShopPurchaseResult> OnStarterPackBuyRequestedAsync()
         {
             return ShopPurchaseHandler(StarterPackProductId);
+        }
+
+        private Task<ShopPurchaseResult> OnRemoveAdsBuyRequestedAsync()
+        {
+            return ShopPurchaseHandler(RemoveAdsProductId);
         }
 
         private void OnHomeCoinClicked()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using FoodieMatch.UI.Common;
 using FoodieMatch.UI.Popup;
 using UnityEngine;
@@ -18,6 +19,9 @@ namespace FoodieMatch.UI.DailyReward
         [SerializeField] private GameObject _questContent;
         [SerializeField] private GameObject _freeCoinContent;
 
+        [Header("Scroll")]
+        [SerializeField] private ScrollRect _questScrollRect;
+
         [Header("Tabs")]
         [SerializeField] private Image _questsTabImage;
         [SerializeField] private Image _freeCoinTabImage;
@@ -30,6 +34,7 @@ namespace FoodieMatch.UI.DailyReward
         [SerializeField] private PopupAnimController _popupAnimController;
 
         private Action _closeClicked;
+        private Coroutine _resetScrollCoroutine;
 
         private void Awake()
         {
@@ -51,8 +56,23 @@ namespace FoodieMatch.UI.DailyReward
             }
         }
 
+        private void OnDisable()
+        {
+            if (_resetScrollCoroutine != null)
+            {
+                StopCoroutine(_resetScrollCoroutine);
+                _resetScrollCoroutine = null;
+            }
+        }
+
         private void OnDestroy()
         {
+            if (_resetScrollCoroutine != null)
+            {
+                StopCoroutine(_resetScrollCoroutine);
+                _resetScrollCoroutine = null;
+            }
+
             if (_closeButton != null)
             {
                 _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
@@ -83,6 +103,47 @@ namespace FoodieMatch.UI.DailyReward
             {
                 _popupAnimController.Open();
             }
+
+            if (_resetScrollCoroutine != null)
+            {
+                StopCoroutine(_resetScrollCoroutine);
+            }
+
+            _resetScrollCoroutine = StartCoroutine(ResetQuestScrollPosition());
+        }
+
+        private IEnumerator ResetQuestScrollPosition()
+        {
+            yield return null;
+            yield return new WaitForEndOfFrame();
+
+            if (_questScrollRect == null)
+            {
+                _resetScrollCoroutine = null;
+                yield break;
+            }
+
+            _questScrollRect.StopMovement();
+            _questScrollRect.velocity = Vector2.zero;
+
+            Canvas.ForceUpdateCanvases();
+
+            if (_questScrollRect.content != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(
+                    _questScrollRect.content);
+
+                Vector2 position = _questScrollRect.content.anchoredPosition;
+                position.y = 0f;
+                _questScrollRect.content.anchoredPosition = position;
+            }
+
+            Canvas.ForceUpdateCanvases();
+
+            _questScrollRect.verticalNormalizedPosition = 1f;
+            _questScrollRect.velocity = Vector2.zero;
+
+            _resetScrollCoroutine = null;
         }
 
         public override void Hide()
@@ -166,6 +227,13 @@ namespace FoodieMatch.UI.DailyReward
         private void OnQuestsTabButtonClicked()
         {
             ShowQuests();
+
+            if (_resetScrollCoroutine != null)
+            {
+                StopCoroutine(_resetScrollCoroutine);
+            }
+
+            _resetScrollCoroutine = StartCoroutine(ResetQuestScrollPosition());
         }
 
         private void OnFreeCoinTabButtonClicked()

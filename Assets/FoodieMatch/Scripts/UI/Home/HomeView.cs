@@ -13,6 +13,7 @@ namespace FoodieMatch.UI.Home
     public sealed class HomeView : MonoBehaviour, IPlayerResourceView, IMainMenuViewLifecycle
     {
         private const string StarterPackButtonName = "StarterPackButton";
+        private const string NoAdsButtonName = "NoAdsButton";
         private const string AvatarButtonName = "AvatarButton";
         private const string DailyButtonName = "DailyButton";
 
@@ -20,6 +21,7 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _settingButton;
         [SerializeField] private Button _starterPackButton;
+        [SerializeField] private Button _noAdsButton;
         [SerializeField] private Button _goldPassButton;
         [SerializeField] private Button _avatarButton;
         [SerializeField] private Button _dailyButton;
@@ -41,6 +43,7 @@ namespace FoodieMatch.UI.Home
         private Action _playClicked;
         private Action _settingClicked;
         private Action _starterPackClicked;
+        private Action _noAdsClicked;
         private Action _goldPassClicked;
         private Action _avatarClicked;
         private Action _dailyClicked;
@@ -51,6 +54,8 @@ namespace FoodieMatch.UI.Home
         {
             _starterPackButton ??=
                 FindRequiredButton(StarterPackButtonName);
+            _noAdsButton ??=
+                FindOptionalButton(NoAdsButtonName);
             _avatarButton ??=
                 FindRequiredButton(AvatarButtonName);
             _dailyButton ??=
@@ -61,6 +66,12 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.AddListener(OnSettingButtonClicked);
             _starterPackButton.onClick.AddListener(
                 OnStarterPackButtonClicked);
+
+            if (_noAdsButton != null)
+            {
+                _noAdsButton.onClick.AddListener(OnNoAdsButtonClicked);
+            }
+
             _goldPassButton.onClick.AddListener(OnGoldPassButtonClicked);
             _avatarButton.onClick.AddListener(OnAvatarButtonClicked);
 
@@ -76,6 +87,12 @@ namespace FoodieMatch.UI.Home
             _settingButton.onClick.RemoveListener(OnSettingButtonClicked);
             _starterPackButton.onClick.RemoveListener(
                 OnStarterPackButtonClicked);
+
+            if (_noAdsButton != null)
+            {
+                _noAdsButton.onClick.RemoveListener(OnNoAdsButtonClicked);
+            }
+
             _goldPassButton.onClick.RemoveListener(OnGoldPassButtonClicked);
             _avatarButton.onClick.RemoveListener(OnAvatarButtonClicked);
 
@@ -92,6 +109,7 @@ namespace FoodieMatch.UI.Home
             _playClicked = actions.PlayClicked;
             _settingClicked = actions.SettingClicked;
             _starterPackClicked = actions.StarterPackClicked;
+            _noAdsClicked = actions.NoAdsClicked;
             _goldPassClicked = actions.GoldPassClicked;
             _avatarClicked = actions.AvatarClicked;
             _dailyClicked = actions.DailyClicked;
@@ -186,6 +204,7 @@ namespace FoodieMatch.UI.Home
             _playClicked = null;
             _settingClicked = null;
             _starterPackClicked = null;
+            _noAdsClicked = null;
             _goldPassClicked = null;
             _avatarClicked = null;
             _dailyClicked = null;
@@ -236,6 +255,11 @@ namespace FoodieMatch.UI.Home
         private void OnStarterPackButtonClicked()
         {
             _starterPackClicked?.Invoke();
+        }
+
+        private void OnNoAdsButtonClicked()
+        {
+            _noAdsClicked?.Invoke();
         }
 
         private void OnGoldPassButtonClicked()

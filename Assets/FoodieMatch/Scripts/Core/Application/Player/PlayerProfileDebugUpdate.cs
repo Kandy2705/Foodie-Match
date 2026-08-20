@@ -11,7 +11,8 @@ namespace FoodieMatch.Core.Application.Player
             int plateBoosterCount,
             int storageBoosterCount,
             int swapBoosterCount,
-            int fridgeBoosterCount)
+            int fridgeBoosterCount,
+            bool adsRemoved)
         {
             if (currentLevelNumber < 1)
             {
@@ -40,6 +41,7 @@ namespace FoodieMatch.Core.Application.Player
             StorageBoosterCount = storageBoosterCount;
             SwapBoosterCount = swapBoosterCount;
             FridgeBoosterCount = fridgeBoosterCount;
+            AdsRemoved = adsRemoved;
         }
 
         public int CurrentLevelNumber { get; }
@@ -55,6 +57,8 @@ namespace FoodieMatch.Core.Application.Player
         public int SwapBoosterCount { get; }
 
         public int FridgeBoosterCount { get; }
+
+        public bool AdsRemoved { get; }
 
         private static void ValidateBoosterCount(int count, string parameterName)
         {

@@ -46,6 +46,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1284a6ee3158f48d3bcb26bc15f72cbc
+    m_Address: Assets/FoodieMatch/Bundle/UI/RemoveAdsPopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12c038bb33c2a0042948c4eb62b1bd83
     m_Address: Assets/FoodieMatch/Bundle/UI/FakeRewardedAdPopup.prefab
     m_ReadOnly: 0

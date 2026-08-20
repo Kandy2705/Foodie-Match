@@ -1,6 +1,7 @@
 using System;
 using FoodieMatch.Core.Application.Advertising;
 using FoodieMatch.Core.Application.Configuration.Advertising;
+using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Infrastructure.Advertising;
 
 namespace FoodieMatch.App.Advertising
@@ -11,24 +12,33 @@ namespace FoodieMatch.App.Advertising
         private readonly IGameAdsConfig _adsConfig;
         private readonly IAdvertisingRuntimeSettings _runtimeSettings;
         private readonly PostLevelAdCooldown _cooldown;
+        private readonly PlayerProfileService _playerProfileService;
 
         public PostLevelAdCoordinator(
             IInterstitialAdService interstitialAdService,
             IGameAdsConfig adsConfig,
             IAdvertisingRuntimeSettings runtimeSettings,
-            PostLevelAdCooldown cooldown)
+            PostLevelAdCooldown cooldown,
+            PlayerProfileService playerProfileService)
         {
-            _interstitialAdService = interstitialAdService;
-            _adsConfig = adsConfig;
-            _runtimeSettings = runtimeSettings;
-            _cooldown = cooldown;
+            _interstitialAdService = interstitialAdService ??
+                throw new ArgumentNullException(nameof(interstitialAdService));
+            _adsConfig = adsConfig ??
+                throw new ArgumentNullException(nameof(adsConfig));
+            _runtimeSettings = runtimeSettings ??
+                throw new ArgumentNullException(nameof(runtimeSettings));
+            _cooldown = cooldown ??
+                throw new ArgumentNullException(nameof(cooldown));
+            _playerProfileService = playerProfileService ??
+                throw new ArgumentNullException(nameof(playerProfileService));
         }
 
         public void RunAfterPostLevelAd(
             int playedLevelNumber,
             Action continuation)
         {
-            if (playedLevelNumber < _adsConfig.PostLevelAdStartLevel ||
+            if (_playerProfileService.AdsRemoved ||
+                playedLevelNumber < _adsConfig.PostLevelAdStartLevel ||
                 !_runtimeSettings.PostLevelAdsEnabled ||
                 !_cooldown.HasElapsed(_adsConfig.PostLevelAdInterval))
             {
