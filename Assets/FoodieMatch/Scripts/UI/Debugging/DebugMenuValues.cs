@@ -8,12 +8,14 @@ namespace FoodieMatch.UI.Debugging
             PlayerProfileDebugUpdate playerProfile,
             int goldPassSpoonCount,
             bool isSeasonPassPurchased,
+            bool adsRemoved,
             bool postLevelAdsEnabled,
             bool useLevelPlayAds)
         {
             PlayerProfile = playerProfile;
             GoldPassSpoonCount = goldPassSpoonCount;
             IsSeasonPassPurchased = isSeasonPassPurchased;
+            AdsRemoved = adsRemoved;
             PostLevelAdsEnabled = postLevelAdsEnabled;
             UseLevelPlayAds = useLevelPlayAds;
         }
@@ -23,6 +25,8 @@ namespace FoodieMatch.UI.Debugging
         public int GoldPassSpoonCount { get; }
 
         public bool IsSeasonPassPurchased { get; }
+
+        public bool AdsRemoved { get; }
 
         public bool PostLevelAdsEnabled { get; }
 

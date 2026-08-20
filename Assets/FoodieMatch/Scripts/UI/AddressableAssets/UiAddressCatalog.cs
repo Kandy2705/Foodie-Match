@@ -15,6 +15,7 @@ using FoodieMatch.UI.LeaderBoard;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Pause;
 using FoodieMatch.UI.Profile;
+using FoodieMatch.UI.RemoveAds;
 using FoodieMatch.UI.Result;
 using FoodieMatch.UI.RetryGame;
 using FoodieMatch.UI.Revive;
@@ -61,7 +62,8 @@ namespace FoodieMatch.UI.AddressableAssets
                 [typeof(ProfileCustomizationPopupView)] =
                     UiAddressKeys.ProfileCustomizationPopup,
                 [typeof(DailyRewardPopupView)] = UiAddressKeys.DailyRewardPopup,
-                [typeof(TournamentsView)] = UiAddressKeys.TournamentsScreen
+                [typeof(TournamentsView)] = UiAddressKeys.TournamentsScreen,
+                [typeof(RemoveAdsPopupView)] = UiAddressKeys.RemoveAdsPopup
             };
 
         public static bool TryGetAddress(Type uiType, out string address)

@@ -21,6 +21,21 @@
       }
     },
     {
+      "id": "remove_ads",
+      "storeProductId": "com.foodiematch.shop.remove_ads",
+      "fallbackDisplayPrice": "$5.99",
+      "displayName": "Remove Ads",
+      "cardType": "Special",
+      "section": "Special",
+      "sortOrder": 0,
+      "rewards": {
+        "coins": 5000,
+        "unlimitedHeartSeconds": 0,
+        "removeAds": true,
+        "boosters": []
+      }
+    },
+    {
       "id": "limited_pack",
       "storeProductId": "com.foodiematch.shop.limited_pack",
       "fallbackDisplayPrice": "$5.99",

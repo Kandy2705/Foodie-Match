@@ -19,6 +19,7 @@ namespace FoodieMatch.UI.Debugging
         [SerializeField] private TMP_InputField _fridgeBoosterCountInput;
         [SerializeField] private TMP_InputField _goldPassSpoonCountInput;
         [SerializeField] private Toggle _seasonPassPurchasedToggle;
+        [SerializeField] private Toggle _adsRemovedToggle;
         [SerializeField] private Toggle _postLevelAdsToggle;
         [SerializeField] private Toggle _useLevelPlayAdsToggle;
         [SerializeField] private TMP_Text _statusText;
@@ -88,6 +89,8 @@ namespace FoodieMatch.UI.Debugging
                 values.GoldPassSpoonCount.ToString());
             _seasonPassPurchasedToggle.SetIsOnWithoutNotify(
                 values.IsSeasonPassPurchased);
+            _adsRemovedToggle.SetIsOnWithoutNotify(
+                values.AdsRemoved);
             _postLevelAdsToggle.SetIsOnWithoutNotify(
                 values.PostLevelAdsEnabled);
             _useLevelPlayAdsToggle.SetIsOnWithoutNotify(
@@ -169,11 +172,13 @@ namespace FoodieMatch.UI.Debugging
                 plateBoosterCount,
                 storageBoosterCount,
                 swapBoosterCount,
-                fridgeBoosterCount);
+                fridgeBoosterCount,
+                _adsRemovedToggle.isOn);
             values = new DebugMenuValues(
                 playerProfile,
                 goldPassSpoonCount,
                 _seasonPassPurchasedToggle.isOn,
+                _adsRemovedToggle.isOn,
                 _postLevelAdsToggle.isOn,
                 _useLevelPlayAdsToggle.isOn);
 

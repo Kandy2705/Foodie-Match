@@ -1,18 +1,17 @@
 using System;
 using System.Threading.Tasks;
 using FoodieMatch.Core.Application.Shop;
+using FoodieMatch.UI.Packages;
 
 namespace FoodieMatch.UI.StarterPack
 {
-    public sealed class StarterPackPopupViewActions
+    public sealed class StarterPackPopupViewActions : PackagePopupViewActions
     {
         public StarterPackPopupViewActions(
-            Func<Task<ShopPurchaseResult>> buyClicked)
+            Func<Task<ShopPurchaseResult>> buyClicked,
+            Action closeClicked = null)
+            : base(buyClicked, closeClicked)
         {
-            BuyClicked = buyClicked ??
-                throw new ArgumentNullException(nameof(buyClicked));
         }
-
-        public Func<Task<ShopPurchaseResult>> BuyClicked { get; }
     }
 }
