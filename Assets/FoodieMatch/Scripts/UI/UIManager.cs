@@ -109,6 +109,7 @@ namespace FoodieMatch.UI
         private IAddressableUiFactory _addressableUiFactory;
         private ComboFeedbackViewPool _comboFeedbackViewPool;
         private ClickParticlePool _clickParticlePool;
+        private GameplayPointerInput _gameplayPointerInput;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
@@ -217,6 +218,7 @@ namespace FoodieMatch.UI
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
             _clickParticlePool = clickParticlePool;
+            _gameplayPointerInput = gameplayPointerInput;
             _clickParticleController = new GameplayClickParticleController(
                 gameplayPointerInput,
                 PlayClickParticle);
@@ -438,6 +440,7 @@ namespace FoodieMatch.UI
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.HideInstantly();
+                BindGameplayWorldInputBlocker();
                 BindGameplayHudActions();
                 RefreshClickParticleState();
                 _addressableUiFactory.ReleaseLabel(
@@ -467,6 +470,7 @@ namespace FoodieMatch.UI
             }
 
             _gameplayHudView.HideInstantly();
+            BindGameplayWorldInputBlocker();
             BindGameplayHudActions();
             RefreshClickParticleState();
             _addressableUiFactory.ReleaseLabel(
@@ -1357,6 +1361,12 @@ namespace FoodieMatch.UI
             _gameplayHudView.SetProgress(_currentServedCount, _currentTotalCount);
             _gameplayHudView.SetCombo(_currentComboCount, _currentComboRemainingSeconds);
             RefreshBoosterHud();
+        }
+
+        private void BindGameplayWorldInputBlocker()
+        {
+            _gameplayPointerInput.SetWorldInputBlockCheck(
+                _gameplayHudView.IsWorldInputBlocked);
         }
 
         private void BindShopView(ShopView shopView)

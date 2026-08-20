@@ -14,6 +14,7 @@ namespace FoodieMatch.Features.Gameplay
 
         private EventSystem _eventSystem;
         private PointerEventData _pointerEventData;
+        private Func<Vector2, bool> _worldInputBlockCheck;
 
         public event Action<Vector2> PointerPressed;
         public event Action<GameplayPointerPress> PrimaryPointerPressed;
@@ -22,6 +23,12 @@ namespace FoodieMatch.Features.Gameplay
         {
             _eventSystem = eventSystem;
             _pointerEventData = new PointerEventData(eventSystem);
+        }
+
+        public void SetWorldInputBlockCheck(
+            Func<Vector2, bool> worldInputBlockCheck)
+        {
+            _worldInputBlockCheck = worldInputBlockCheck;
         }
 
         private void Update()
@@ -102,6 +109,11 @@ namespace FoodieMatch.Features.Gameplay
 
         private bool IsPointerOverUi(Vector2 screenPosition)
         {
+            if (_worldInputBlockCheck?.Invoke(screenPosition) == true)
+            {
+                return true;
+            }
+
             _pointerEventData.position = screenPosition;
             _raycastResults.Clear();
             _eventSystem.RaycastAll(_pointerEventData, _raycastResults);

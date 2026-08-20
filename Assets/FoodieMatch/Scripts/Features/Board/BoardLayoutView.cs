@@ -21,7 +21,6 @@ namespace FoodieMatch.Features.Board
         }
 
         [SerializeField] private Transform _foodItemRoot;
-        [SerializeField] private Transform _foodInteractionTopBoundary;
 
         [Header("Food Selection")]
         [SerializeField]
@@ -440,9 +439,7 @@ namespace FoodieMatch.Features.Board
             return foodItemView != null &&
                    foodItemView.IsInteractable &&
                    !foodItemView.IsEmpty &&
-                   !foodItemView.IsFlying &&
-                   foodItemView.InteractionBottomY <=
-                   _foodInteractionTopBoundary.position.y;
+                   !foodItemView.IsFlying;
         }
 
         public void RefreshStackedGrillLayout()

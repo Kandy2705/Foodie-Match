@@ -126,37 +126,6 @@ Transform:
   - {fileID: 7342462093909454308}
   m_Father: {fileID: 5514189170341223280}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5711919774127164970
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5800961004947856124}
-  m_Layer: 0
-  m_Name: FoodInteractionTopBoundary
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5800961004947856124
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5711919774127164970}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -8.83, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1286941968552030120}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5770418002331678874
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,8 +188,7 @@ Transform:
   m_LocalPosition: {x: 0.004, y: 4.86, z: 0}
   m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 5800961004947856124}
+  m_Children: []
   m_Father: {fileID: 4584925039884091008}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3364052177403190990
@@ -936,10 +904,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7524849346745534345, guid: 2e362507c242e1c4a830fec4a73adfac, type: 3}
-      propertyPath: _foodInteractionTopBoundary
-      value: 
-      objectReference: {fileID: 5800961004947856124}
     - target: {fileID: 7769947647303370247, guid: 2e362507c242e1c4a830fec4a73adfac, type: 3}
       propertyPath: m_LocalPosition.y
       value: -9.03

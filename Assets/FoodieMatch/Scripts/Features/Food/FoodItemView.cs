@@ -83,7 +83,6 @@ namespace FoodieMatch.Features.Food
         public bool IsFlying => _isFlying;
         public float TopTrayToGrillFlightDuration => _topTrayToGrillFlightDuration;
         public FoodItemVisualState VisualState { get; private set; }
-        public float InteractionBottomY => _spriteRenderer.bounds.min.y;
 
         public void Construct(ParticleEffectPool grillSmokePool)
         {
