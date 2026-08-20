@@ -40,6 +40,7 @@ namespace FoodieMatch.UI.GoldPass
         private Action _closeClicked;
         private Action _informationClicked;
         private Action _purchaseClicked;
+        private Action _lockedRewardClicked;
         private Action<int, GoldPassTrack, ClaimRewardPopupData> _claimClicked;
         private Action _seasonExpired;
         private DateTimeOffset _seasonEndUtc;
@@ -78,6 +79,7 @@ namespace FoodieMatch.UI.GoldPass
             _closeClicked = actions.CloseClicked;
             _informationClicked = actions.InformationClicked;
             _purchaseClicked = actions.PurchaseClicked;
+            _lockedRewardClicked = actions.LockedRewardClicked;
             _claimClicked = actions.ClaimClicked;
             _seasonExpired = actions.SeasonExpired;
         }
@@ -145,6 +147,7 @@ namespace FoodieMatch.UI.GoldPass
             _closeClicked = null;
             _informationClicked = null;
             _purchaseClicked = null;
+            _lockedRewardClicked = null;
             _claimClicked = null;
             _seasonExpired = null;
             base.Dispose();
@@ -204,7 +207,9 @@ namespace FoodieMatch.UI.GoldPass
                     i == currentMilestoneIndex,
                     _visualCatalog,
                     OnClaimClicked,
-                    OnTreasureClicked);
+                    OnTreasureClicked,
+                    _lockedRewardClicked,
+                    _purchaseClicked);
             }
         }
 

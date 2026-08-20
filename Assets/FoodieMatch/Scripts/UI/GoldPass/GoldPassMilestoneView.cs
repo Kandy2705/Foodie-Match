@@ -37,7 +37,9 @@ namespace FoodieMatch.UI.GoldPass
             Action<int, GoldPassTrack, GoldPassRewardDefinition> claimClicked,
             Action<int, GoldPassTrack, GoldPassRewardDefinition,
                     RectTransform>
-                treasureClicked)
+                treasureClicked,
+            Action lockedRewardClicked,
+            Action purchaseClicked)
         {
             _definition = milestone.Definition;
             _claimClicked = claimClicked;
@@ -57,8 +59,11 @@ namespace FoodieMatch.UI.GoldPass
                 milestone.IsUnlocked,
                 true,
                 milestone.IsFreeRewardClaimed,
+                GoldPassTrack.Free,
                 OnFreeRewardClaimed,
-                OnFreeTreasureClicked);
+                OnFreeTreasureClicked,
+                lockedRewardClicked,
+                purchaseClicked);
 
             _seasonRewardView.Bind(
                 _definition.SeasonReward,
@@ -66,8 +71,11 @@ namespace FoodieMatch.UI.GoldPass
                 milestone.IsUnlocked,
                 isSeasonPassPurchased,
                 milestone.IsSeasonRewardClaimed,
+                GoldPassTrack.Season,
                 OnSeasonRewardClaimed,
-                OnSeasonTreasureClicked);
+                OnSeasonTreasureClicked,
+                lockedRewardClicked,
+                purchaseClicked);
 
             gameObject.SetActive(true);
         }

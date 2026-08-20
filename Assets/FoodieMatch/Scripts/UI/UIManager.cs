@@ -1648,6 +1648,7 @@ namespace FoodieMatch.UI
                     OnGoldPassCloseClicked,
                     OnGoldPassInformationClicked,
                     OnGoldPassPurchaseClicked,
+                    OnGoldPassLockedRewardClicked,
                     OnGoldPassClaimClicked,
                     OnGoldPassSeasonExpired));
             goldPassView.Bind(_goldPassService.GetStatus());
@@ -1679,6 +1680,11 @@ namespace FoodieMatch.UI
             RunUiTask(
                 ShowGoldPassPurchaseAsync(),
                 nameof(OnGoldPassPurchaseClicked));
+        }
+
+        private void OnGoldPassLockedRewardClicked()
+        {
+            _audioService.PlaySfx(AudioKeys.SfxNotificationAlert);
         }
 
         private async Task ShowGoldPassPurchaseAsync()
