@@ -35,6 +35,8 @@ namespace FoodieMatch.Core.Application.Configuration
 
         public TimeSpan HeartRecoveryDuration => _current.Heart.HeartRecoveryDuration;
 
+        public int PostLevelAdStartLevel => _current.Ads.PostLevelAdStartLevel;
+
         public TimeSpan PostLevelAdInterval => _current.Ads.PostLevelAdInterval;
 
         public int UnlockRewardAmount => _current.Booster.UnlockRewardAmount;

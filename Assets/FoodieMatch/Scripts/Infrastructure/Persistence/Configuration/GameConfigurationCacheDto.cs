@@ -91,6 +91,9 @@ namespace FoodieMatch.Infrastructure.Persistence.Configuration
 
     internal sealed class AdsConfigDto
     {
+        [JsonProperty("postLevelStartLevel")]
+        public int PostLevelStartLevel { get; set; }
+
         [JsonProperty("postLevelIntervalMinutes", Required = Required.Always)]
         public int PostLevelIntervalMinutes { get; set; }
     }
