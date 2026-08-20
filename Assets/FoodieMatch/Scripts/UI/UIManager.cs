@@ -48,6 +48,7 @@ using FoodieMatch.UI.Setting;
 using FoodieMatch.UI.Shop;
 using FoodieMatch.UI.Social;
 using FoodieMatch.UI.StarterPack;
+using FoodieMatch.UI.Tournaments;
 using UnityEngine;
 
 namespace FoodieMatch.UI
@@ -62,6 +63,8 @@ namespace FoodieMatch.UI
             "main-menu/social";
         private const string MainMenuLeaderBoardInstanceKey =
             "main-menu/leaderboard";
+        private const string MainMenuTournamentsInstanceKey =
+            "main-menu/tournaments";
         private const string StarterPackProductId =
             "starter_pack";
 
@@ -1456,6 +1459,13 @@ namespace FoodieMatch.UI
                         ConfigureLeaderBoardView(leaderBoardView);
                         return leaderBoardView;
 
+                    case BottomNavigationTab.Trophy:
+                        return await _addressableUiFactory
+                            .GetOrCreateAsync<TournamentsView>(
+                                UiAddressKeys.TournamentsScreen,
+                                MainMenuTournamentsInstanceKey,
+                                mainMenuView.ViewContainer);
+
                     default:
                         throw new InvalidOperationException(
                             $"Main menu tab {tab} does not have an Addressable view.");
@@ -1546,6 +1556,7 @@ namespace FoodieMatch.UI
             _addressableUiFactory.Release(MainMenuShopInstanceKey);
             _addressableUiFactory.Release(MainMenuSocialInstanceKey);
             _addressableUiFactory.Release(MainMenuLeaderBoardInstanceKey);
+            _addressableUiFactory.Release(MainMenuTournamentsInstanceKey);
         }
 
         private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
