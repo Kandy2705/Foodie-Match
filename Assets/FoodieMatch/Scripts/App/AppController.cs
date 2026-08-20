@@ -657,13 +657,16 @@ namespace FoodieMatch.App
 
         private void OnGameplayHomeRequested()
         {
-            _postLevelAdCoordinator.RunAfterPostLevelAd(BackToHome);
+            _postLevelAdCoordinator.RunAfterPostLevelAd(
+                _activeLevelNumber,
+                BackToHome);
         }
 
         private void OnGameplayRetryRequested(int levelNumber)
         {
             _playerProfileService.RecordCurrentLevelFailed();
             _postLevelAdCoordinator.RunAfterPostLevelAd(
+                levelNumber,
                 () => StartLevel(levelNumber));
         }
 
@@ -699,6 +702,7 @@ namespace FoodieMatch.App
 
             _uiManager.ShowWinPopup(
                 () => OnRegularWinRewardSelected(
+                    completedLevelNumber,
                     regularCoinReward,
                     spoonCount),
                 () => OnRewardedAdWinRewardSelected(
@@ -709,10 +713,12 @@ namespace FoodieMatch.App
         }
 
         private void OnRegularWinRewardSelected(
+            int completedLevelNumber,
             long coinReward,
             int spoonCount)
         {
             _postLevelAdCoordinator.RunAfterPostLevelAd(
+                completedLevelNumber,
                 () => CompleteWinReward(
                     coinReward,
                     spoonCount));

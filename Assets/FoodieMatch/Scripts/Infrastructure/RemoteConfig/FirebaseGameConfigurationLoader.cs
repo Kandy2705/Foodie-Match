@@ -145,6 +145,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
                     defaults.GoldPassProgression.HardSpoonsPerCompletedLevel,
                 [FirebaseRemoteConfigKeys.GoldPassSuperHardSpoonsPerCompletedLevel] =
                     defaults.GoldPassProgression.SuperHardSpoonsPerCompletedLevel,
+                [FirebaseRemoteConfigKeys.PostLevelAdStartLevel] =
+                    defaults.Ads.PostLevelAdStartLevel,
                 [FirebaseRemoteConfigKeys.PostLevelAdIntervalMinutes] =
                     checked((int)defaults.Ads.PostLevelAdInterval.TotalMinutes),
                 [FirebaseRemoteConfigKeys.LevelManifestVersion] = 0,
