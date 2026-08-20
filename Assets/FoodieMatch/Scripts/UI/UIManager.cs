@@ -1650,6 +1650,7 @@ namespace FoodieMatch.UI
                     OnGoldPassPurchaseClicked,
                     OnGoldPassLockedRewardClicked,
                     OnGoldPassClaimClicked,
+                    OnGoldPassClaimAllClicked,
                     OnGoldPassSeasonExpired));
             goldPassView.Bind(_goldPassService.GetStatus());
             goldPassView.ScrollToCurrentMilestone();
@@ -1757,6 +1758,22 @@ namespace FoodieMatch.UI
             RunUiTask(
                 _popupManager.ShowAsync<ClaimRewardView>(rewardPopupData),
                 nameof(OnGoldPassClaimClicked));
+        }
+
+        private void OnGoldPassClaimAllClicked(
+            ClaimRewardPopupData rewardPopupData)
+        {
+            if (!_goldPassService.TryClaimAll())
+            {
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            RefreshAllPlayerResources();
+            RefreshOpenedGoldPass();
+            RunUiTask(
+                _popupManager.ShowAsync<ClaimRewardView>(rewardPopupData),
+                nameof(OnGoldPassClaimAllClicked));
         }
 
         private void OnGoldPassSeasonExpired()

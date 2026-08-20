@@ -125,6 +125,13 @@ namespace FoodieMatch.Core.Application.GoldPass
                 track);
         }
 
+        public bool TryClaimAll()
+        {
+            return _playerProfileService.TryClaimAllGoldPassRewards(
+                GetCurrentSeason().SeasonId,
+                _config.Milestones);
+        }
+
         private GoldPassSeasonPeriod GetCurrentSeason()
         {
             return _seasonSchedule.GetCurrentSeason(_clock.UtcNow);
