@@ -55,5 +55,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             "levels_manifest_version";
         public const string LevelManifestUrl =
             "levels_manifest_url";
+        public const string ShopCatalog = "shop_catalog";
+        public const string GoldPassCatalog = "gold_pass_catalog";
     }
 }
