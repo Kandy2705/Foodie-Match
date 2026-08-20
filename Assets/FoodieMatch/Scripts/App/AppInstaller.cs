@@ -62,6 +62,9 @@ namespace FoodieMatch.App
 
         public bool Install(AppRoot appRoot)
         {
+            ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
+            PlayerPrefsGameCatalogCache catalogCache = new(saveService);
+
             if (!TryLoadBundledLevelData(
                     out ResourcesLevelCatalogData bundledLevelData,
                     out LevelContentValidator levelContentValidator))
@@ -69,20 +72,22 @@ namespace FoodieMatch.App
                 return false;
             }
 
-            if (!TryCreateShopConfig(out IGameShopConfig shopConfig))
+            if (!TryCreateShopConfig(
+                    catalogCache,
+                    out GameShopConfigSession shopConfig))
             {
                 return false;
             }
 
             if (!TryCreateGoldPassConfig(
-                    out IGameGoldPassConfig goldPassConfig))
+                    catalogCache,
+                    out GameGoldPassConfigSession goldPassConfig))
             {
                 return false;
             }
 
             GameplayEvents = new GameplayEvents();
 
-            ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
             GameConfigurationSnapshotSet localConfigDefaults =
                 GameConfigurationSnapshotSet.CreateDefaults();
             PlayerPrefsGameConfigurationCache configurationCache = new(saveService);
@@ -330,35 +335,84 @@ namespace FoodieMatch.App
                 _interstitialAdUnitId);
         }
 
-        private static bool TryCreateShopConfig(out IGameShopConfig shopConfig)
+        private static bool TryCreateShopConfig(
+            PlayerPrefsGameCatalogCache catalogCache,
+            out GameShopConfigSession shopConfig)
         {
             ResourcesGameShopConfigLoader loader = new();
 
-            if (loader.TryLoad(out shopConfig, out string errorMessage))
+            if (!loader.TryLoad(
+                    out IGameShopConfig bundledConfig,
+                    out string errorMessage))
             {
-                return true;
+                Debug.LogError(
+                    $"Cannot install app because shop config is invalid: " +
+                    errorMessage);
+                shopConfig = null;
+                return false;
             }
 
-            Debug.LogError($"Cannot install app because shop config is invalid: {errorMessage}");
-            shopConfig = null;
-            return false;
+            IGameShopConfig initialConfig = bundledConfig;
+
+            if (catalogCache.TryGetShopJson(out string cachedJson))
+            {
+                GameShopConfigJsonParser parser = new();
+
+                if (parser.TryParse(
+                        cachedJson,
+                        out IGameShopConfig cachedConfig,
+                        out _))
+                {
+                    initialConfig = cachedConfig;
+                }
+                else
+                {
+                    catalogCache.DeleteShopJson();
+                }
+            }
+
+            shopConfig = new GameShopConfigSession(initialConfig);
+            return true;
         }
 
         private static bool TryCreateGoldPassConfig(
-            out IGameGoldPassConfig goldPassConfig)
+            PlayerPrefsGameCatalogCache catalogCache,
+            out GameGoldPassConfigSession goldPassConfig)
         {
             ResourcesGameGoldPassConfigLoader loader = new();
 
-            if (loader.TryLoad(out goldPassConfig, out string errorMessage))
+            if (!loader.TryLoad(
+                    out IGameGoldPassConfig bundledConfig,
+                    out string errorMessage))
             {
-                return true;
+                Debug.LogError(
+                    $"Cannot install app because Gold Pass config is invalid: " +
+                    errorMessage);
+                goldPassConfig = null;
+                return false;
             }
 
-            Debug.LogError(
-                $"Cannot install app because Gold Pass config is invalid: " +
-                errorMessage);
-            goldPassConfig = null;
-            return false;
+            IGameGoldPassConfig initialConfig = bundledConfig;
+
+            if (catalogCache.TryGetGoldPassJson(out string cachedJson))
+            {
+                GameGoldPassConfigJsonParser parser = new();
+
+                if (parser.TryParse(
+                        cachedJson,
+                        out IGameGoldPassConfig cachedConfig,
+                        out _))
+                {
+                    initialConfig = cachedConfig;
+                }
+                else
+                {
+                    catalogCache.DeleteGoldPassJson();
+                }
+            }
+
+            goldPassConfig = new GameGoldPassConfigSession(initialConfig);
+            return true;
         }
 
         private static void LogPlayerProfileSaveFailure(string errorMessage)
