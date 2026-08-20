@@ -39,7 +39,7 @@ namespace FoodieMatch.UI.AddressableAssets
         public const string GoldPassPurchaseScreen =
             "Assets/FoodieMatch/Bundle/UI/GoldPassUI/GoldPassPurchaseScreen.prefab";
         public const string ClaimRewardScreen =
-            "Assets/FoodieMatch/Bundle/UI/ClaimReward/ClaimRewardScreen.prefab";
+            "Assets/FoodieMatch/Bundle/UI/ClaimRewardUI/ClaimRewardScreen.prefab";
         public const string WeeklyContestIntroPopup =
             "Assets/FoodieMatch/Bundle/UI/WeeklyContestIntroPopup.prefab";
         public const string PausePopup =
@@ -56,5 +56,9 @@ namespace FoodieMatch.UI.AddressableAssets
             "Assets/FoodieMatch/Bundle/UI/ProfilePopup.prefab";
         public const string ProfileCustomizationPopup =
             "Assets/FoodieMatch/Bundle/UI/ProfileCustomizationPopup.prefab";
+        public const string DailyRewardPopup =
+            "Assets/FoodieMatch/Bundle/UI/DailyRewardPopup.prefab";
+        public const string TournamentsScreen =
+            "Assets/FoodieMatch/Bundle/UI/TournamentsUI/TornamentsScreen.prefab";
     }
 }

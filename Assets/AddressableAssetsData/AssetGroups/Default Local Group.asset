@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 05eb57c42ea4748138941438cd541d9a
+    m_Address: Assets/FoodieMatch/Bundle/UI/DailyRewardUI/FreeCoinContent.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 09e42893c3ab04430a77e9e4f35d4e7b
     m_Address: Assets/FoodieMatch/Bundle/UI/LevelLosePopupRoot.prefab
     m_ReadOnly: 0
@@ -95,7 +100,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 538d6065271024bb085488ce9665daf7
-    m_Address: Assets/FoodieMatch/Bundle/UI/StarterPack/RewardItem.prefab
+    m_Address: Assets/FoodieMatch/Bundle/UI/StarterPackUI/RewardItem.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -119,6 +124,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ui_gameplay_critical
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8b255e25699974bb8a0f818b8c53d164
+    m_Address: Assets/FoodieMatch/Bundle/UI/DailyRewardPopup.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 92a5fa395545b489a9d79e82bf6d3c18
     m_Address: Assets/FoodieMatch/Bundle/UI/ProfileCustomizationPopup.prefab
@@ -152,13 +162,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0cc4c1fbac874a00bfdccd7078838a9
+    m_Address: Assets/FoodieMatch/Bundle/UI/TournamentsUI/TornamentsScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d9af11fced6b448c0ab1919ce139b903
     m_Address: Assets/FoodieMatch/Bundle/UI/LeaderBoardUI/LeaderBoardScreen.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dd54e4441b3ecea4e98ae1dd64121bcc
-    m_Address: Assets/FoodieMatch/Bundle/UI/ClaimReward/ClaimRewardScreen.prefab
+    m_Address: Assets/FoodieMatch/Bundle/UI/ClaimRewardUI/ClaimRewardScreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ec80ec5b90742428b9435b18a20577de
+    m_Address: Assets/FoodieMatch/Bundle/UI/DailyRewardUI/QuestScrollView.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -14,6 +14,7 @@ namespace FoodieMatch.UI.Home
     {
         private const string StarterPackButtonName = "StarterPackButton";
         private const string AvatarButtonName = "AvatarButton";
+        private const string DailyButtonName = "DailyButton";
 
         [Header("Actions")]
         [SerializeField] private Button _playButton;
@@ -21,6 +22,7 @@ namespace FoodieMatch.UI.Home
         [SerializeField] private Button _starterPackButton;
         [SerializeField] private Button _goldPassButton;
         [SerializeField] private Button _avatarButton;
+        [SerializeField] private Button _dailyButton;
 
         [Header("Customization")]
         [SerializeField] private Image _avatarImage;
@@ -41,6 +43,7 @@ namespace FoodieMatch.UI.Home
         private Action _starterPackClicked;
         private Action _goldPassClicked;
         private Action _avatarClicked;
+        private Action _dailyClicked;
         private Sprite _normalPlayButtonSprite;
         private Vector4 _normalPlayLevelMargin;
 
@@ -50,6 +53,8 @@ namespace FoodieMatch.UI.Home
                 FindRequiredButton(StarterPackButtonName);
             _avatarButton ??=
                 FindRequiredButton(AvatarButtonName);
+            _dailyButton ??=
+                FindOptionalButton(DailyButtonName);
             _normalPlayButtonSprite = _playButton.image.sprite;
             _normalPlayLevelMargin = _playLevelText.margin;
             _playButton.onClick.AddListener(OnPlayButtonClicked);
@@ -58,6 +63,11 @@ namespace FoodieMatch.UI.Home
                 OnStarterPackButtonClicked);
             _goldPassButton.onClick.AddListener(OnGoldPassButtonClicked);
             _avatarButton.onClick.AddListener(OnAvatarButtonClicked);
+
+            if (_dailyButton != null)
+            {
+                _dailyButton.onClick.AddListener(OnDailyButtonClicked);
+            }
         }
 
         private void OnDestroy()
@@ -68,6 +78,12 @@ namespace FoodieMatch.UI.Home
                 OnStarterPackButtonClicked);
             _goldPassButton.onClick.RemoveListener(OnGoldPassButtonClicked);
             _avatarButton.onClick.RemoveListener(OnAvatarButtonClicked);
+
+            if (_dailyButton != null)
+            {
+                _dailyButton.onClick.RemoveListener(OnDailyButtonClicked);
+            }
+
             Clear();
         }
 
@@ -78,6 +94,7 @@ namespace FoodieMatch.UI.Home
             _starterPackClicked = actions.StarterPackClicked;
             _goldPassClicked = actions.GoldPassClicked;
             _avatarClicked = actions.AvatarClicked;
+            _dailyClicked = actions.DailyClicked;
             _resourceBarView.SetResourceClickActions(
                 actions.CoinClicked,
                 actions.HeartClicked);
@@ -171,6 +188,7 @@ namespace FoodieMatch.UI.Home
             _starterPackClicked = null;
             _goldPassClicked = null;
             _avatarClicked = null;
+            _dailyClicked = null;
             _resourceBarView.Clear();
         }
 
@@ -200,6 +218,21 @@ namespace FoodieMatch.UI.Home
                 $"{nameof(HomeView)} could not find {buttonName}.");
         }
 
+        private Button FindOptionalButton(string buttonName)
+        {
+            Button[] buttons = GetComponentsInChildren<Button>(true);
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i].name == buttonName)
+                {
+                    return buttons[i];
+                }
+            }
+
+            return null;
+        }
+
         private void OnStarterPackButtonClicked()
         {
             _starterPackClicked?.Invoke();
@@ -213,6 +246,11 @@ namespace FoodieMatch.UI.Home
         private void OnAvatarButtonClicked()
         {
             _avatarClicked?.Invoke();
+        }
+
+        private void OnDailyButtonClicked()
+        {
+            _dailyClicked?.Invoke();
         }
     }
 }

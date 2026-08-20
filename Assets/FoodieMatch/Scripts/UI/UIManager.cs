@@ -25,6 +25,7 @@ using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.ClaimReward;
 using FoodieMatch.UI.Common;
+using FoodieMatch.UI.DailyReward;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Effects;
 using FoodieMatch.UI.Gameplay;
@@ -47,6 +48,7 @@ using FoodieMatch.UI.Setting;
 using FoodieMatch.UI.Shop;
 using FoodieMatch.UI.Social;
 using FoodieMatch.UI.StarterPack;
+using FoodieMatch.UI.Tournaments;
 using UnityEngine;
 
 namespace FoodieMatch.UI
@@ -61,6 +63,8 @@ namespace FoodieMatch.UI
             "main-menu/social";
         private const string MainMenuLeaderBoardInstanceKey =
             "main-menu/leaderboard";
+        private const string MainMenuTournamentsInstanceKey =
+            "main-menu/tournaments";
         private const string StarterPackProductId =
             "starter_pack";
 
@@ -657,6 +661,35 @@ namespace FoodieMatch.UI
         public void HideSettingPopup()
         {
             _popupManager.Hide<SettingPopupView>();
+        }
+
+        public void ShowDailyRewardPopup()
+        {
+            RunUiTask(
+                ShowDailyRewardPopupAsync(),
+                nameof(ShowDailyRewardPopup));
+        }
+
+        private async Task ShowDailyRewardPopupAsync()
+        {
+            await ShowPopupAsync<DailyRewardPopupView>(
+                data: null,
+                dailyRewardPopup =>
+                {
+                    dailyRewardPopup.SetActions(
+                        new DailyRewardPopupViewActions(
+                            OnDailyRewardCloseClicked));
+                });
+        }
+
+        public void HideDailyRewardPopup()
+        {
+            _popupManager.Hide<DailyRewardPopupView>();
+        }
+
+        private void OnDailyRewardCloseClicked()
+        {
+            HideDailyRewardPopup();
         }
 
         private bool _isCustomizationPopupLoading;
@@ -1426,6 +1459,13 @@ namespace FoodieMatch.UI
                         ConfigureLeaderBoardView(leaderBoardView);
                         return leaderBoardView;
 
+                    case BottomNavigationTab.Trophy:
+                        return await _addressableUiFactory
+                            .GetOrCreateAsync<TournamentsView>(
+                                UiAddressKeys.TournamentsScreen,
+                                MainMenuTournamentsInstanceKey,
+                                mainMenuView.ViewContainer);
+
                     default:
                         throw new InvalidOperationException(
                             $"Main menu tab {tab} does not have an Addressable view.");
@@ -1450,7 +1490,8 @@ namespace FoodieMatch.UI
                     OnHomeGoldPassRequested,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked,
-                    OnHomeAvatarRequested));
+                    OnHomeAvatarRequested,
+                    OnHomeDailyRequested));
             SetHomePlayLevel(homeView);
             homeView.SetGoldPassUnlockLevel(
                 _goldPassProgressionConfig.UnlockLevel);
@@ -1515,6 +1556,7 @@ namespace FoodieMatch.UI
             _addressableUiFactory.Release(MainMenuShopInstanceKey);
             _addressableUiFactory.Release(MainMenuSocialInstanceKey);
             _addressableUiFactory.Release(MainMenuLeaderBoardInstanceKey);
+            _addressableUiFactory.Release(MainMenuTournamentsInstanceKey);
         }
 
         private CoinRewardOverlayView GetOrCreateCoinRewardOverlay()
@@ -1613,6 +1655,11 @@ namespace FoodieMatch.UI
         private void OnHomeSettingRequested()
         {
             ShowSettingPopup();
+        }
+
+        private void OnHomeDailyRequested()
+        {
+            ShowDailyRewardPopup();
         }
 
         private void OnHomeStarterPackRequested()
