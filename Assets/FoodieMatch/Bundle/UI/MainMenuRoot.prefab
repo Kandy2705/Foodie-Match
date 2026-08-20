@@ -292,6 +292,34 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 20.115707
       objectReference: {fileID: 0}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.data[4]._tab
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.data[4]._label
+      value: Tournaments
+      objectReference: {fileID: 0}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.data[4]._button
+      value: 
+      objectReference: {fileID: 4998985826866945560}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.data[4]._target
+      value: 
+      objectReference: {fileID: 3899984749330534868}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.data[4]._normalIcon
+      value: 
+      objectReference: {fileID: 8219800336326530058}
+    - target: {fileID: 2883961291605266397, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+      propertyPath: _tabs.Array.data[4]._selectedIcon
+      value: 
+      objectReference: {fileID: -6877023074814619825, guid: d7ebe5c97d737465bb3ceaf45463fad0, type: 3}
     - target: {fileID: 3852758425585065568, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
       propertyPath: m_Name
       value: BottomNavigationBar
@@ -322,7 +350,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5805841051891394453, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 16777215
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 5805841051891394453, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
       propertyPath: m_hasFontAssetChanged
@@ -432,8 +460,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5d0ef2d415d44a13a98a5e5547a8e67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &3899984749330534868 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4272007524029545215, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+  m_PrefabInstance: {fileID: 961165864686201643}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4998985826866945560 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5190759610885600563, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+  m_PrefabInstance: {fileID: 961165864686201643}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &6968152955410034079 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7918847065488590516, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
   m_PrefabInstance: {fileID: 961165864686201643}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8219800336326530058 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9170498283305123617, guid: 05de7ac2ed90f46878b05d6e1cb41b37, type: 3}
+  m_PrefabInstance: {fileID: 961165864686201643}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
