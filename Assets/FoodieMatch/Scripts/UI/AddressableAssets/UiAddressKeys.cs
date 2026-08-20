@@ -60,5 +60,7 @@ namespace FoodieMatch.UI.AddressableAssets
             "Assets/FoodieMatch/Bundle/UI/DailyRewardPopup.prefab";
         public const string TournamentsScreen =
             "Assets/FoodieMatch/Bundle/UI/TournamentsUI/TornamentsScreen.prefab";
+        public const string RemoveAdsPopup =
+            "Assets/FoodieMatch/Bundle/UI/RemoveAdsPopup.prefab";
     }
 }
