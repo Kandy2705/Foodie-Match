@@ -11,6 +11,7 @@ using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Player;
+using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
@@ -108,6 +109,7 @@ namespace FoodieMatch.UI
         private IAddressableUiFactory _addressableUiFactory;
         private ComboFeedbackViewPool _comboFeedbackViewPool;
         private ClickParticlePool _clickParticlePool;
+        private GameplayPointerInput _gameplayPointerInput;
         private GameplayEvents _gameplayEvents;
         private GameplayHudView _gameplayHudView;
         private LoadingScreenView _loadingScreenView;
@@ -132,6 +134,8 @@ namespace FoodieMatch.UI
         private int _gameplayHudRequestVersion;
         private bool _isAddressableUiLoading;
         private bool _isTransitionLoadingVisible;
+        private string _goldPassPurchaseDisplayPrice;
+        private Func<Task<StorePaymentResult>> _goldPassPurchaseHandler;
         private bool _isMainMenuTabLoading;
 
         public event Action PlayGameRequested;
@@ -214,6 +218,7 @@ namespace FoodieMatch.UI
             _shopConfig = shopConfig;
             _comboFeedbackViewPool = comboFeedbackViewPool;
             _clickParticlePool = clickParticlePool;
+            _gameplayPointerInput = gameplayPointerInput;
             _clickParticleController = new GameplayClickParticleController(
                 gameplayPointerInput,
                 PlayClickParticle);
@@ -435,6 +440,7 @@ namespace FoodieMatch.UI
             if (_gameplayHudView != null)
             {
                 _gameplayHudView.HideInstantly();
+                BindGameplayWorldInputBlocker();
                 BindGameplayHudActions();
                 RefreshClickParticleState();
                 _addressableUiFactory.ReleaseLabel(
@@ -464,6 +470,7 @@ namespace FoodieMatch.UI
             }
 
             _gameplayHudView.HideInstantly();
+            BindGameplayWorldInputBlocker();
             BindGameplayHudActions();
             RefreshClickParticleState();
             _addressableUiFactory.ReleaseLabel(
@@ -1356,6 +1363,12 @@ namespace FoodieMatch.UI
             RefreshBoosterHud();
         }
 
+        private void BindGameplayWorldInputBlocker()
+        {
+            _gameplayPointerInput.SetWorldInputBlockCheck(
+                _gameplayHudView.IsWorldInputBlocked);
+        }
+
         private void BindShopView(ShopView shopView)
         {
             shopView.SetPurchaseHandler(ShopPurchaseHandler);
@@ -1645,7 +1658,9 @@ namespace FoodieMatch.UI
                     OnGoldPassCloseClicked,
                     OnGoldPassInformationClicked,
                     OnGoldPassPurchaseClicked,
+                    OnGoldPassLockedRewardClicked,
                     OnGoldPassClaimClicked,
+                    OnGoldPassClaimAllClicked,
                     OnGoldPassSeasonExpired));
             goldPassView.Bind(_goldPassService.GetStatus());
             goldPassView.ScrollToCurrentMilestone();
@@ -1663,9 +1678,75 @@ namespace FoodieMatch.UI
                 nameof(OnGoldPassInformationClicked));
         }
 
-        private static void OnGoldPassPurchaseClicked()
+        public void SetGoldPassPurchaseHandler(
+            string displayPrice,
+            Func<Task<StorePaymentResult>> purchaseHandler)
         {
-            Debug.Log("Gold Pass purchase is not available yet.");
+            _goldPassPurchaseDisplayPrice = displayPrice;
+            _goldPassPurchaseHandler = purchaseHandler;
+        }
+
+        private void OnGoldPassPurchaseClicked()
+        {
+            RunUiTask(
+                ShowGoldPassPurchaseAsync(),
+                nameof(OnGoldPassPurchaseClicked));
+        }
+
+        private void OnGoldPassLockedRewardClicked()
+        {
+            _audioService.PlaySfx(AudioKeys.SfxNotificationAlert);
+        }
+
+        private async Task ShowGoldPassPurchaseAsync()
+        {
+            GoldPassStatus status = _goldPassService.GetStatus();
+
+            if (status.IsSeasonPassPurchased)
+            {
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            GoldPassPurchaseView purchaseView =
+                await _popupManager.ShowAsync<GoldPassPurchaseView>();
+
+            if (this == null)
+            {
+                return;
+            }
+
+            purchaseView.SetActions(
+                new GoldPassPurchaseViewActions(
+                    OnGoldPassBuyClickedAsync,
+                    OnGoldPassPurchaseSeasonExpired));
+            purchaseView.Bind(
+                _goldPassPurchaseDisplayPrice,
+                status.Season.EndUtc);
+        }
+
+        private async Task OnGoldPassBuyClickedAsync()
+        {
+            StorePaymentResult result =
+                await _goldPassPurchaseHandler();
+
+            if (result.IsSuccess)
+            {
+                _popupManager.Hide<GoldPassPurchaseView>();
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            if (!result.IsCancelled)
+            {
+                ShowActionFeedback(result.ErrorMessage);
+            }
+        }
+
+        private void OnGoldPassPurchaseSeasonExpired()
+        {
+            _popupManager.Hide<GoldPassPurchaseView>();
+            RefreshOpenedGoldPass();
         }
 
         private void OnGoldPassClaimClicked(
@@ -1687,6 +1768,22 @@ namespace FoodieMatch.UI
             RunUiTask(
                 _popupManager.ShowAsync<ClaimRewardView>(rewardPopupData),
                 nameof(OnGoldPassClaimClicked));
+        }
+
+        private void OnGoldPassClaimAllClicked(
+            ClaimRewardPopupData rewardPopupData)
+        {
+            if (!_goldPassService.TryClaimAll())
+            {
+                RefreshOpenedGoldPass();
+                return;
+            }
+
+            RefreshAllPlayerResources();
+            RefreshOpenedGoldPass();
+            RunUiTask(
+                _popupManager.ShowAsync<ClaimRewardView>(rewardPopupData),
+                nameof(OnGoldPassClaimAllClicked));
         }
 
         private void OnGoldPassSeasonExpired()

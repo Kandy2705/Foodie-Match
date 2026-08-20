@@ -637,7 +637,7 @@ namespace FoodieMatch.Core.Application.Player
             }
         }
 
-        public bool TryActivateGoldPassSeasonPass(string seasonId)
+        public Task<bool> TryActivateGoldPassSeasonPassAsync(string seasonId)
         {
             lock (_stateLock)
             {
@@ -649,13 +649,12 @@ namespace FoodieMatch.Core.Application.Player
 
                 if (currentState.IsSeasonPassPurchased)
                 {
-                    return false;
+                    return Task.FromResult(false);
                 }
 
-                QueueProfileChange(
+                return QueueProfileChange(
                     currentProfile.WithGoldPassState(
                         currentState.WithSeasonPassPurchased()));
-                return true;
             }
         }
 
@@ -764,6 +763,65 @@ namespace FoodieMatch.Core.Application.Player
 
                 QueueProfileChange(updatedProfile);
                 return GoldPassClaimResult.Succeeded;
+            }
+        }
+
+        public bool TryClaimAllGoldPassRewards(
+            string seasonId,
+            IReadOnlyList<GoldPassMilestoneDefinition> milestones)
+        {
+            lock (_stateLock)
+            {
+                PlayerProfile currentProfile =
+                    _profileSession.CurrentRecord.Profile;
+                GoldPassState currentState = GetGoldPassStateForSeason(
+                    currentProfile,
+                    seasonId);
+                GoldPassState updatedState = currentState;
+                List<GoldPassRewardDefinition> rewards = new();
+
+                for (int i = 0; i < milestones.Count; i++)
+                {
+                    GoldPassMilestoneDefinition milestone = milestones[i];
+
+                    if (currentState.SpoonCount < milestone.RequiredSpoons)
+                    {
+                        continue;
+                    }
+
+                    if (!currentState.HasClaimedFreeMilestone(milestone.Level))
+                    {
+                        rewards.Add(milestone.FreeReward);
+                        updatedState = updatedState.WithClaimedFreeMilestone(
+                            milestone.Level);
+                    }
+
+                    if (currentState.IsSeasonPassPurchased &&
+                        !currentState.HasClaimedSeasonMilestone(milestone.Level))
+                    {
+                        rewards.Add(milestone.SeasonReward);
+                        updatedState = updatedState.WithClaimedSeasonMilestone(
+                            milestone.Level);
+                    }
+                }
+
+                if (rewards.Count == 0)
+                {
+                    return false;
+                }
+
+                PlayerProfile updatedProfile = currentProfile;
+
+                for (int i = 0; i < rewards.Count; i++)
+                {
+                    updatedProfile = ApplyGoldPassReward(
+                        updatedProfile,
+                        rewards[i],
+                        updatedState);
+                }
+
+                QueueProfileChange(updatedProfile);
+                return true;
             }
         }
 

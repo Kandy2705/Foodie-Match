@@ -116,7 +116,7 @@ MonoBehaviour:
   _coinArrivalParticleRoot: {fileID: 8550519750722241124}
   _coinArrivalParticle: {fileID: 476861588379451310}
   _coinSpawnRadius: 200
-  _coinAppearInterval: 0.1
+  _coinAppearInterval: 0
   _coinHoldDuration: 0.4
   _coinFlightIntervalRange: {x: 0.1, y: 0.1}
 --- !u!1 &5547876593773083989
@@ -212,15 +212,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8610732102245255532, guid: f6bef641e3c7fd345b664f691332639d, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8610732102245255532, guid: f6bef641e3c7fd345b664f691332639d, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8610732102245255532, guid: f6bef641e3c7fd345b664f691332639d, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8610732102245255532, guid: f6bef641e3c7fd345b664f691332639d, type: 3}
       propertyPath: m_LocalPosition.x

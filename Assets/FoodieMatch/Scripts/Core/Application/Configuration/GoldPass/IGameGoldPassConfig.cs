@@ -5,6 +5,8 @@ namespace FoodieMatch.Core.Application.Configuration.GoldPass
 {
     public interface IGameGoldPassConfig
     {
+        GoldPassPurchaseDefinition Purchase { get; }
+
         DayOfWeek ResetDayUtc { get; }
 
         int ResetHourUtc { get; }

@@ -18,6 +18,7 @@ namespace FoodieMatch.UI.GoldPass
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _activateButton;
         [SerializeField] private Button _seasonPassButton;
+        [SerializeField] private Button _claimAllButton;
 
         [Header("Status")]
         [SerializeField] private TMP_Text _timeText;
@@ -40,12 +41,15 @@ namespace FoodieMatch.UI.GoldPass
         private Action _closeClicked;
         private Action _informationClicked;
         private Action _purchaseClicked;
+        private Action _lockedRewardClicked;
         private Action<int, GoldPassTrack, ClaimRewardPopupData> _claimClicked;
+        private Action<ClaimRewardPopupData> _claimAllClicked;
         private Action _seasonExpired;
         private DateTimeOffset _seasonEndUtc;
         private int _scrollTargetIndex;
         private int _displayedMinuteCount = -1;
         private bool _isCountingDown;
+        private ClaimRewardPopupData _claimAllPopupData;
 
         private void Awake()
         {
@@ -53,6 +57,7 @@ namespace FoodieMatch.UI.GoldPass
             _closeButton.onClick.AddListener(OnCloseButtonClicked);
             _activateButton.onClick.AddListener(OnPurchaseButtonClicked);
             _seasonPassButton.onClick.AddListener(OnPurchaseButtonClicked);
+            _claimAllButton.onClick.AddListener(OnClaimAllButtonClicked);
             _rewardPreview.Hide();
         }
 
@@ -71,6 +76,7 @@ namespace FoodieMatch.UI.GoldPass
             _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
             _activateButton.onClick.RemoveListener(OnPurchaseButtonClicked);
             _seasonPassButton.onClick.RemoveListener(OnPurchaseButtonClicked);
+            _claimAllButton.onClick.RemoveListener(OnClaimAllButtonClicked);
         }
 
         public void SetActions(GoldPassViewActions actions)
@@ -78,7 +84,9 @@ namespace FoodieMatch.UI.GoldPass
             _closeClicked = actions.CloseClicked;
             _informationClicked = actions.InformationClicked;
             _purchaseClicked = actions.PurchaseClicked;
+            _lockedRewardClicked = actions.LockedRewardClicked;
             _claimClicked = actions.ClaimClicked;
+            _claimAllClicked = actions.ClaimAllClicked;
             _seasonExpired = actions.SeasonExpired;
         }
 
@@ -91,12 +99,13 @@ namespace FoodieMatch.UI.GoldPass
             BindProgress(status);
             BindMilestones(status);
             BindSeasonPass(status.IsSeasonPassPurchased);
+            BindClaimAll(status);
         }
 
         public override void Show()
         {
             base.Show();
-            _animController.ShowInstantly();
+            _animController.Open();
         }
 
         public void ScrollToCurrentMilestone()
@@ -122,7 +131,13 @@ namespace FoodieMatch.UI.GoldPass
         {
             _isCountingDown = false;
             _rewardPreview.Hide();
-            _animController.HideInstantly();
+
+            if (gameObject.activeInHierarchy)
+            {
+                _animController.Close(OnCloseAnimationFinished);
+                return;
+            }
+
             base.Hide();
         }
 
@@ -139,7 +154,10 @@ namespace FoodieMatch.UI.GoldPass
             _closeClicked = null;
             _informationClicked = null;
             _purchaseClicked = null;
+            _lockedRewardClicked = null;
             _claimClicked = null;
+            _claimAllClicked = null;
+            _claimAllPopupData = null;
             _seasonExpired = null;
             base.Dispose();
         }
@@ -198,7 +216,9 @@ namespace FoodieMatch.UI.GoldPass
                     i == currentMilestoneIndex,
                     _visualCatalog,
                     OnClaimClicked,
-                    OnTreasureClicked);
+                    OnTreasureClicked,
+                    _lockedRewardClicked,
+                    _purchaseClicked);
             }
         }
 
@@ -218,6 +238,16 @@ namespace FoodieMatch.UI.GoldPass
         {
             _activateButton.gameObject.SetActive(!isPurchased);
             _seasonPassButton.interactable = !isPurchased;
+        }
+
+        private void BindClaimAll(GoldPassStatus status)
+        {
+            _claimAllButton.gameObject.SetActive(status.HasClaimableRewards);
+            _claimAllPopupData = status.HasClaimableRewards
+                ? GoldPassRewardPresentation.CreateAggregatedClaimPopupData(
+                    status.ClaimableRewards,
+                    _visualCatalog)
+                : null;
         }
 
         private void UpdateCountdown(DateTimeOffset currentUtc)
@@ -286,6 +316,17 @@ namespace FoodieMatch.UI.GoldPass
         private void OnPurchaseButtonClicked()
         {
             _purchaseClicked();
+        }
+
+        private void OnClaimAllButtonClicked()
+        {
+            _rewardPreview.Hide();
+            _claimAllClicked(_claimAllPopupData);
+        }
+
+        private void OnCloseAnimationFinished()
+        {
+            base.Hide();
         }
 
         private void OnClaimClicked(

@@ -11,10 +11,14 @@ namespace FoodieMatch.Core.Application.Configuration.GoldPass
             _milestonesByLevel;
 
         public GameGoldPassConfigSnapshot(
+            GoldPassPurchaseDefinition purchase,
             DayOfWeek resetDayUtc,
             int resetHourUtc,
             IReadOnlyList<GoldPassMilestoneDefinition> milestones)
         {
+            Purchase = purchase ??
+                throw new ArgumentNullException(nameof(purchase));
+
             if (resetHourUtc < 0 || resetHourUtc > 23)
             {
                 throw new ArgumentOutOfRangeException(nameof(resetHourUtc));
@@ -83,6 +87,8 @@ namespace FoodieMatch.Core.Application.Configuration.GoldPass
                 new ReadOnlyDictionary<int, GoldPassMilestoneDefinition>(
                     milestonesByLevel);
         }
+
+        public GoldPassPurchaseDefinition Purchase { get; }
 
         public DayOfWeek ResetDayUtc { get; }
 

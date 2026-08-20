@@ -8,6 +8,7 @@ namespace FoodieMatch.Core.Application.Audio
         public const string MusicIngame = "ingame";
 
         public const string SfxClick = "click";
+        public const string SfxNotificationAlert = "notification-alert";
         public const string SfxScreenTap = "screen-tap";
         public const string SfxWinGame = "win_screen";
         public const string SfxLoseGame = "Lose-game";

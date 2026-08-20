@@ -227,6 +227,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animController: {fileID: 5820586817875270548}
+  _worldInputBlockRegions:
+  - {fileID: 2820630594889301422}
   _pauseButton: {fileID: 348668763945171684}
   _boosterButtonViews:
   - {fileID: 3819767808955946785}
@@ -448,7 +450,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2203090840292919041
 RectTransform:
   m_ObjectHideFlags: 0
@@ -517,6 +519,7 @@ GameObject:
   - component: {fileID: 181227009657634219}
   - component: {fileID: 4278421302183632850}
   - component: {fileID: 20572416698259206}
+  - component: {fileID: 2820630594889301422}
   m_Layer: 5
   m_Name: BlockerTop
   m_TagString: Untagged
@@ -565,7 +568,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -581,6 +584,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2820630594889301422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7098510670711928959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fdb01b3668a43baa497a5f8f8547c1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7264797295068217304
 GameObject:
   m_ObjectHideFlags: 0

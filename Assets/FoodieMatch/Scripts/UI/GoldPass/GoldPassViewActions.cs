@@ -10,13 +10,17 @@ namespace FoodieMatch.UI.GoldPass
             Action closeClicked,
             Action informationClicked,
             Action purchaseClicked,
+            Action lockedRewardClicked,
             Action<int, GoldPassTrack, ClaimRewardPopupData> claimClicked,
+            Action<ClaimRewardPopupData> claimAllClicked,
             Action seasonExpired)
         {
             CloseClicked = closeClicked;
             InformationClicked = informationClicked;
             PurchaseClicked = purchaseClicked;
+            LockedRewardClicked = lockedRewardClicked;
             ClaimClicked = claimClicked;
+            ClaimAllClicked = claimAllClicked;
             SeasonExpired = seasonExpired;
         }
 
@@ -26,10 +30,14 @@ namespace FoodieMatch.UI.GoldPass
 
         public Action PurchaseClicked { get; }
 
+        public Action LockedRewardClicked { get; }
+
         public Action<int, GoldPassTrack, ClaimRewardPopupData> ClaimClicked
         {
             get;
         }
+
+        public Action<ClaimRewardPopupData> ClaimAllClicked { get; }
 
         public Action SeasonExpired { get; }
     }

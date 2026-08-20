@@ -181,15 +181,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _canvasGroup: {fileID: 893611782359785459}
-  _scaleUpDuration: 0.1
-  _scaleSettleDuration: 0.1
+  _scaleUpDuration: 0.14
+  _scaleSettleDuration: 0.14
   _overshootScale: 1.2
-  _scaleUpEase: 9
+  _scaleUpEase: 27
   _scaleSettleEase: 4
   _fadeInDuration: 0.2
   _fadeInEase: 9
-  _arrivalHoldDuration: 0.1
+  _arrivalHoldDuration: 0
   _retreatStrength: 50
-  _movementDurationRange: {x: 0.2, y: 0.2}
+  _movementDurationRange: {x: 0.6, y: 0.6}
   _curveOffset: 60
-  _movementEase: 1
+  _movementEase: 6

@@ -36,6 +36,8 @@ namespace FoodieMatch.UI.AddressableAssets
             "Assets/FoodieMatch/Bundle/UI/GoldPassUI/GoldPassScreen.prefab";
         public const string GoldPassInformationScreen =
             "Assets/FoodieMatch/Bundle/UI/GoldPassUI/GoldPassInformationScreen.prefab";
+        public const string GoldPassPurchaseScreen =
+            "Assets/FoodieMatch/Bundle/UI/GoldPassUI/GoldPassPurchaseScreen.prefab";
         public const string ClaimRewardScreen =
             "Assets/FoodieMatch/Bundle/UI/ClaimReward/ClaimRewardScreen.prefab";
         public const string WeeklyContestIntroPopup =

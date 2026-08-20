@@ -18,6 +18,10 @@ namespace FoodieMatch.UI.Gameplay
         [Header("Motion")]
         [SerializeField] private PopupAnimController _animController;
 
+        [Header("World Input Blocking")]
+        [SerializeField]
+        private GameplayInputBlockRegion[] _worldInputBlockRegions;
+
         [SerializeField] private Button _pauseButton;
         [SerializeField] private BoosterButtonView[] _boosterButtonViews;
         [SerializeField] private TMP_Text[] _boosterCountTexts;
@@ -117,6 +121,19 @@ namespace FoodieMatch.UI.Gameplay
             {
                 _boosterButtonViews[i].SetInputEnabled(interactable);
             }
+        }
+
+        public bool IsWorldInputBlocked(Vector2 screenPosition)
+        {
+            for (int i = 0; i < _worldInputBlockRegions.Length; i++)
+            {
+                if (_worldInputBlockRegions[i].Contains(screenPosition))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void SetProgress(int servedCount, int totalCount)
