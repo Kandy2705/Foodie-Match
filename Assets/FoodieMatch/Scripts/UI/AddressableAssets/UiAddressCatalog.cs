@@ -5,6 +5,7 @@ using FoodieMatch.UI.Booster;
 using FoodieMatch.UI.BoosterBuy;
 using FoodieMatch.UI.BoosterGuide;
 using FoodieMatch.UI.ClaimReward;
+using FoodieMatch.UI.DailyReward;
 using FoodieMatch.UI.Debugging;
 using FoodieMatch.UI.Gameplay;
 using FoodieMatch.UI.GoldPass;
@@ -57,7 +58,8 @@ namespace FoodieMatch.UI.AddressableAssets
                     UiAddressKeys.WeeklyContestIntroPopup,
                 [typeof(ProfilePopupView)] = UiAddressKeys.ProfilePopup,
                 [typeof(ProfileCustomizationPopupView)] =
-                    UiAddressKeys.ProfileCustomizationPopup
+                    UiAddressKeys.ProfileCustomizationPopup,
+                [typeof(DailyRewardPopupView)] = UiAddressKeys.DailyRewardPopup
             };
 
         public static bool TryGetAddress(Type uiType, out string address)
