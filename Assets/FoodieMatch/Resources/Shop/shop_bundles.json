@@ -8,6 +8,7 @@
       "cardType": "Special",
       "section": "StarterPack",
       "sortOrder": 0,
+      "presentationType": "PopupOnly",
       "rewards": {
         "coins": 2000,
         "unlimitedHeartSeconds": 3600,
@@ -28,6 +29,7 @@
       "cardType": "Special",
       "section": "Special",
       "sortOrder": 0,
+      "presentationType": "PopupOnly",
       "rewards": {
         "coins": 5000,
         "unlimitedHeartSeconds": 0,

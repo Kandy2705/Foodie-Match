@@ -2,6 +2,12 @@ using System;
 
 namespace FoodieMatch.Core.Application.Configuration.Shop
 {
+    public enum ShopProductPresentationType
+    {
+        ShopCard,
+        PopupOnly
+    }
+
     public sealed class ShopProductDefinition
     {
         public ShopProductDefinition(
@@ -12,6 +18,7 @@ namespace FoodieMatch.Core.Application.Configuration.Shop
             string cardType,
             string section,
             int sortOrder,
+            ShopProductPresentationType presentationType,
             ShopRewardDefinition rewards)
         {
             Id = RequireValue(id, nameof(id));
@@ -32,6 +39,7 @@ namespace FoodieMatch.Core.Application.Configuration.Shop
             }
 
             SortOrder = sortOrder;
+            PresentationType = presentationType;
             Rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
         }
 
@@ -48,6 +56,8 @@ namespace FoodieMatch.Core.Application.Configuration.Shop
         public string Section { get; }
 
         public int SortOrder { get; }
+
+        public ShopProductPresentationType PresentationType { get; }
 
         public ShopRewardDefinition Rewards { get; }
 
