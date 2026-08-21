@@ -21,8 +21,6 @@ namespace FoodieMatch.UI.Shop
         IMainMenuViewLifecycle,
         IMainMenuTabSelectionHandler
     {
-        private const string StarterPackSection = "StarterPack";
-
         [SerializeField] private CoinCounterView _coinCounterView;
         [SerializeField] private HeartCounterView _heartCounterView;
         [SerializeField] private Button _coinCounterButton;
@@ -221,10 +219,8 @@ namespace FoodieMatch.UI.Shop
             {
                 ShopProductDefinition product = _shopConfig.Products[i];
 
-                if (string.Equals(
-                        product.Section,
-                        StarterPackSection,
-                        StringComparison.Ordinal))
+                if (product.PresentationType !=
+                    ShopProductPresentationType.ShopCard)
                 {
                     continue;
                 }

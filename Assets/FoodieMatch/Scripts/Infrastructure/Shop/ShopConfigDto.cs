@@ -18,6 +18,7 @@ namespace FoodieMatch.Infrastructure.Shop
         public string cardType;
         public string section;
         public int sortOrder;
+        public string presentationType;
         public ShopRewardsDto rewards;
     }
 

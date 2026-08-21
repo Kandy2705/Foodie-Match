@@ -54,6 +54,21 @@ namespace FoodieMatch.Infrastructure.Shop
             }
 
             Dictionary<BoosterType, int> boosterAmounts = new();
+            ShopProductPresentationType presentationType =
+                ShopProductPresentationType.ShopCard;
+
+            if (!string.IsNullOrWhiteSpace(productDto.presentationType) &&
+                (!Enum.TryParse(
+                    productDto.presentationType,
+                    ignoreCase: false,
+                    out presentationType) ||
+                 !Enum.IsDefined(
+                    typeof(ShopProductPresentationType),
+                    presentationType)))
+            {
+                throw new ArgumentException(
+                    $"Shop product {productDto.id} presentationType is invalid.");
+            }
 
             if (productDto.rewards.boosters != null)
             {
@@ -86,6 +101,7 @@ namespace FoodieMatch.Infrastructure.Shop
                 productDto.cardType,
                 productDto.section,
                 productDto.sortOrder,
+                presentationType,
                 new ShopRewardDefinition(
                     productDto.rewards.coins,
                     productDto.rewards.unlimitedHeartSeconds,
