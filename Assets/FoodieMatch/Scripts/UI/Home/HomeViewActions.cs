@@ -10,6 +10,7 @@ namespace FoodieMatch.UI.Home
             Action starterPackClicked,
             Action noAdsClicked,
             Action goldPassClicked,
+            Action goldPassSeasonExpired,
             Action coinClicked,
             Action heartClicked,
             Action avatarClicked,
@@ -25,6 +26,8 @@ namespace FoodieMatch.UI.Home
                 throw new ArgumentNullException(nameof(noAdsClicked));
             GoldPassClicked = goldPassClicked ??
                 throw new ArgumentNullException(nameof(goldPassClicked));
+            GoldPassSeasonExpired = goldPassSeasonExpired ??
+                throw new ArgumentNullException(nameof(goldPassSeasonExpired));
             CoinClicked = coinClicked ??
                 throw new ArgumentNullException(nameof(coinClicked));
             HeartClicked = heartClicked ??
@@ -43,6 +46,8 @@ namespace FoodieMatch.UI.Home
         public Action NoAdsClicked { get; }
 
         public Action GoldPassClicked { get; }
+
+        public Action GoldPassSeasonExpired { get; }
 
         public Action CoinClicked { get; }
 
