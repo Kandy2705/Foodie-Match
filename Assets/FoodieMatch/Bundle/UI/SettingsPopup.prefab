@@ -94,7 +94,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.9411765}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.98039216}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -234,6 +234,7 @@ MonoBehaviour:
   _openTrigger: Open
   _closeTrigger: Close
   _hiddenState: Hidden
+  _shownState: Shown
   _openState: Open
   _closeState: Close
   _waitForAnimatorStates: 1
