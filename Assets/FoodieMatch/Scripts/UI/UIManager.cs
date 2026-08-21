@@ -418,6 +418,7 @@ namespace FoodieMatch.UI
                 mainMenuView.TryGetView(out HomeView homeView))
             {
                 SetHomePlayLevel(homeView);
+                RefreshHomeGoldPass(homeView);
             }
         }
 
@@ -1495,13 +1496,13 @@ namespace FoodieMatch.UI
                     OnHomeStarterPackRequested,
                     OnHomeNoAdsRequested,
                     OnHomeGoldPassRequested,
+                    OnHomeGoldPassSeasonExpired,
                     OnHomeCoinClicked,
                     OnHomeHeartClicked,
                     OnHomeAvatarRequested,
                     OnHomeDailyRequested));
             SetHomePlayLevel(homeView);
-            homeView.SetGoldPassUnlockLevel(
-                _goldPassProgressionConfig.UnlockLevel);
+            RefreshHomeGoldPass(homeView);
             homeView.SetPlayerResources(
                 displayedCoinBalance,
                 _playerProfileService.GetHeartStatus());
@@ -1726,6 +1727,15 @@ namespace FoodieMatch.UI
             RunUiTask(
                 ShowGoldPassAsync(),
                 nameof(OnHomeGoldPassRequested));
+        }
+
+        private void OnHomeGoldPassSeasonExpired()
+        {
+            if (_popupManager.TryGetOpened(out MainMenuView mainMenuView) &&
+                mainMenuView.TryGetView(out HomeView homeView))
+            {
+                RefreshHomeGoldPass(homeView);
+            }
         }
 
         private async Task ShowGoldPassAsync()
@@ -2118,6 +2128,7 @@ namespace FoodieMatch.UI
             }
 
             SetHomePlayLevel(homeView);
+            RefreshHomeGoldPass(homeView);
             homeView.SetPlayerResources(
                 _playerProfileService.CoinBalance,
                 _playerProfileService.GetHeartStatus());
@@ -2143,6 +2154,20 @@ namespace FoodieMatch.UI
             }
 
             homeView.SetPlayLevel(level.LevelNumber, level.Difficulty);
+        }
+
+        private void RefreshHomeGoldPass(HomeView homeView)
+        {
+            int unlockLevel = _goldPassProgressionConfig.UnlockLevel;
+
+            if (_currentLevelNumber < unlockLevel)
+            {
+                homeView.SetGoldPassUnlockLevel(unlockLevel);
+                return;
+            }
+
+            homeView.SetGoldPassSeasonEnd(
+                _goldPassService.GetStatus().Season.EndUtc);
         }
 
         private void OnPauseResumeClicked()

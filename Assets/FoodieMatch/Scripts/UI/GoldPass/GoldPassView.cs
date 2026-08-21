@@ -270,23 +270,7 @@ namespace FoodieMatch.UI.GoldPass
             }
 
             _displayedMinuteCount = totalMinutes;
-            int days = totalMinutes / (24 * 60);
-            int hours = totalMinutes / 60 % 24;
-            int minutes = totalMinutes % 60;
-
-            if (days > 0)
-            {
-                _timeText.text = $"{days}d {hours}h";
-                return;
-            }
-
-            if (hours > 0)
-            {
-                _timeText.text = $"{hours}h {minutes}m";
-                return;
-            }
-
-            _timeText.text = $"{minutes}m";
+            _timeText.text = GoldPassTimeFormatter.Format(totalMinutes);
         }
 
         private void OnTreasureClicked(

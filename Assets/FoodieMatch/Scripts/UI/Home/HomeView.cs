@@ -2,6 +2,7 @@ using System;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Domain.Level;
 using FoodieMatch.UI.Common;
+using FoodieMatch.UI.GoldPass;
 using FoodieMatch.UI.MainMenu;
 using FoodieMatch.UI.Reward;
 using TMPro;
@@ -45,10 +46,14 @@ namespace FoodieMatch.UI.Home
         private Action _starterPackClicked;
         private Action _noAdsClicked;
         private Action _goldPassClicked;
+        private Action _goldPassSeasonExpired;
         private Action _avatarClicked;
         private Action _dailyClicked;
         private Sprite _normalPlayButtonSprite;
         private Vector4 _normalPlayLevelMargin;
+        private DateTimeOffset _goldPassSeasonEndUtc;
+        private int _displayedGoldPassMinuteCount = -1;
+        private bool _isGoldPassCountingDown;
 
         private void Awake()
         {
@@ -104,6 +109,14 @@ namespace FoodieMatch.UI.Home
             Clear();
         }
 
+        private void Update()
+        {
+            if (_isGoldPassCountingDown)
+            {
+                UpdateGoldPassCountdown(DateTimeOffset.UtcNow);
+            }
+        }
+
         public void SetActions(HomeViewActions actions)
         {
             _playClicked = actions.PlayClicked;
@@ -111,6 +124,7 @@ namespace FoodieMatch.UI.Home
             _starterPackClicked = actions.StarterPackClicked;
             _noAdsClicked = actions.NoAdsClicked;
             _goldPassClicked = actions.GoldPassClicked;
+            _goldPassSeasonExpired = actions.GoldPassSeasonExpired;
             _avatarClicked = actions.AvatarClicked;
             _dailyClicked = actions.DailyClicked;
             _resourceBarView.SetResourceClickActions(
@@ -160,7 +174,16 @@ namespace FoodieMatch.UI.Home
 
         public void SetGoldPassUnlockLevel(int unlockLevel)
         {
+            _isGoldPassCountingDown = false;
             _goldPassUnlockLevelText.text = $"Level {unlockLevel}";
+        }
+
+        public void SetGoldPassSeasonEnd(DateTimeOffset seasonEndUtc)
+        {
+            _goldPassSeasonEndUtc = seasonEndUtc;
+            _displayedGoldPassMinuteCount = -1;
+            _isGoldPassCountingDown = true;
+            UpdateGoldPassCountdown(DateTimeOffset.UtcNow);
         }
 
         public void SetCoinBalance(long coinBalance)
@@ -201,14 +224,40 @@ namespace FoodieMatch.UI.Home
 
         public void Clear()
         {
+            _isGoldPassCountingDown = false;
             _playClicked = null;
             _settingClicked = null;
             _starterPackClicked = null;
             _noAdsClicked = null;
             _goldPassClicked = null;
+            _goldPassSeasonExpired = null;
             _avatarClicked = null;
             _dailyClicked = null;
             _resourceBarView.Clear();
+        }
+
+        private void UpdateGoldPassCountdown(DateTimeOffset currentUtc)
+        {
+            TimeSpan remaining = _goldPassSeasonEndUtc - currentUtc;
+
+            if (remaining <= TimeSpan.Zero)
+            {
+                _goldPassUnlockLevelText.text = "0m";
+                _isGoldPassCountingDown = false;
+                _goldPassSeasonExpired();
+                return;
+            }
+
+            int totalMinutes = (int)Math.Ceiling(remaining.TotalMinutes);
+
+            if (totalMinutes == _displayedGoldPassMinuteCount)
+            {
+                return;
+            }
+
+            _displayedGoldPassMinuteCount = totalMinutes;
+            _goldPassUnlockLevelText.text =
+                GoldPassTimeFormatter.Format(totalMinutes);
         }
 
         private void OnPlayButtonClicked()
