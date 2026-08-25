@@ -1,6 +1,7 @@
 using System.IO;
 using FoodieMatch.App.Advertising;
 using FoodieMatch.Core.Application.Advertising;
+using FoodieMatch.Core.Application.Authentication;
 using FoodieMatch.Core.Application.Audio;
 using FoodieMatch.Core.Application.Booster;
 using FoodieMatch.Core.Application.Configuration;
@@ -25,6 +26,7 @@ using FoodieMatch.Core.Domain.RequiredPackage;
 using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
+using FoodieMatch.Infrastructure.Firebase;
 using FoodieMatch.Infrastructure.GoldPass;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
@@ -57,6 +59,8 @@ namespace FoodieMatch.App
         public PlayerProfileInitializer PlayerProfileInitializer { get; private set; }
 
         public FirebaseGameConfigurationLoader GameConfigurationLoader { get; private set; }
+
+        public IPlayerIdentityService PlayerIdentityService { get; private set; }
 
         public ILevelSynchronizer LevelSynchronizer { get; private set; }
 
@@ -99,13 +103,18 @@ namespace FoodieMatch.App
             }
 
             GameConfigurationSession configurationSession = new(initialConfig);
+            FirebaseRuntimeInitializer firebaseRuntimeInitializer = new();
             GameConfigurationLoader = new FirebaseGameConfigurationLoader(
                 configurationSession,
                 localConfigDefaults,
                 configurationCache,
                 shopConfig,
                 goldPassConfig,
-                catalogCache);
+                catalogCache,
+                firebaseRuntimeInitializer);
+            PlayerIdentityService =
+                new FirebaseAnonymousPlayerIdentityService(
+                    firebaseRuntimeInitializer);
             LevelCatalogRepository levelCatalogRepository =
                 new(bundledLevelData.Catalog);
             ResourcesLevelRepository resourcesLevelRepository = new(

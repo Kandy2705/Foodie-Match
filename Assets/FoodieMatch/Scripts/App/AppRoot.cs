@@ -95,6 +95,9 @@ namespace FoodieMatch.App
                 Stopwatch startupTimer = Stopwatch.StartNew();
                 _uiManager.ShowLoadingImmediately();
                 _uiManager.SetLoadingProgress(0.2f);
+                Task<bool> authenticationTask =
+                    _appInstaller.PlayerIdentityService.AuthenticateAsync(
+                        cancellationToken);
                 await _appInstaller.GameConfigurationLoader.RefreshAsync(
                     cancellationToken);
 
@@ -118,8 +121,11 @@ namespace FoodieMatch.App
                             levelProgress.Report,
                             cancellationToken)
                     : Task.CompletedTask;
-                await WaitForStartupLevelSynchronizationAsync(
+                Task startupWorkTask = Task.WhenAll(
                     levelSynchronizationTask,
+                    authenticationTask);
+                await WaitForStartupWorkAsync(
+                    startupWorkTask,
                     startupTimer.Elapsed,
                     cancellationToken);
                 levelProgress.Stop();
@@ -158,8 +164,8 @@ namespace FoodieMatch.App
             }
         }
 
-        private static async Task WaitForStartupLevelSynchronizationAsync(
-            Task synchronizationTask,
+        private static async Task WaitForStartupWorkAsync(
+            Task startupWorkTask,
             TimeSpan elapsed,
             CancellationToken cancellationToken)
         {
@@ -168,38 +174,38 @@ namespace FoodieMatch.App
 
             if (remainingDuration <= TimeSpan.Zero)
             {
-                _ = ObserveLevelSynchronizationAsync(
-                    synchronizationTask,
+                _ = ObserveStartupWorkAsync(
+                    startupWorkTask,
                     cancellationToken);
                 return;
             }
 
             Task completedTask = await Task.WhenAny(
-                synchronizationTask,
+                startupWorkTask,
                 Task.Delay(
                     remainingDuration,
                     cancellationToken));
 
-            if (completedTask == synchronizationTask)
+            if (completedTask == startupWorkTask)
             {
-                await ObserveLevelSynchronizationAsync(
-                    synchronizationTask,
+                await ObserveStartupWorkAsync(
+                    startupWorkTask,
                     cancellationToken);
                 return;
             }
 
-            _ = ObserveLevelSynchronizationAsync(
-                synchronizationTask,
+            _ = ObserveStartupWorkAsync(
+                startupWorkTask,
                 cancellationToken);
         }
 
-        private static async Task ObserveLevelSynchronizationAsync(
-            Task synchronizationTask,
+        private static async Task ObserveStartupWorkAsync(
+            Task startupWorkTask,
             CancellationToken cancellationToken)
         {
             try
             {
-                await synchronizationTask;
+                await startupWorkTask;
             }
             catch (OperationCanceledException) when (
                 cancellationToken.IsCancellationRequested)
@@ -208,7 +214,7 @@ namespace FoodieMatch.App
             catch (Exception exception)
             {
                 Debug.LogWarning(
-                    $"Startup level synchronization failed: {exception.Message}");
+                    $"Startup background work failed: {exception.Message}");
             }
         }
     }
