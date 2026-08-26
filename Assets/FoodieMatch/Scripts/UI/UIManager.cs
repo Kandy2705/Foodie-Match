@@ -13,6 +13,7 @@ using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Rewards;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Level;
@@ -102,6 +103,9 @@ namespace FoodieMatch.UI
         [Header("Profile Customization")]
         [SerializeField] private ProfileCustomizationCatalogSO _profileCustomizationCatalog;
 
+        [Header("Daily Reward")]
+        [SerializeField] private DailyRewardCatalogSO _dailyRewardCatalog;
+
         private readonly List<BoosterBuyContentEntry> _pendingBoosterGuides = new();
 
         private BoosterManager _boosterManager;
@@ -110,6 +114,7 @@ namespace FoodieMatch.UI
         private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private IAdvertisingRuntimeSettings _advertisingRuntimeSettings;
         private PlayerProfileService _playerProfileService;
+        private DailyRewardService _dailyRewardService;
         private GoldPassService _goldPassService;
         private ILevelCatalogRepository _levelCatalogRepository;
         private IGameShopConfig _shopConfig;
@@ -162,6 +167,8 @@ namespace FoodieMatch.UI
 
         public event Action FillHeartRewardedAdRequested;
 
+        public event Action<int> DailyFreeRewardAdRequested;
+
         public Func<BoosterType, bool> BoosterUseHandler { get; set; }
 
         public Func<bool> RestartGameHandler { get; set; }
@@ -194,6 +201,7 @@ namespace FoodieMatch.UI
             IGameGoldPassProgressionConfig goldPassProgressionConfig,
             IAdvertisingRuntimeSettings advertisingRuntimeSettings,
             PlayerProfileService playerProfileService,
+            DailyRewardService dailyRewardService,
             GoldPassService goldPassService,
             ILevelCatalogRepository levelCatalogRepository,
             IGameShopConfig shopConfig,
@@ -221,6 +229,8 @@ namespace FoodieMatch.UI
             _goldPassProgressionConfig = goldPassProgressionConfig;
             _advertisingRuntimeSettings = advertisingRuntimeSettings;
             _playerProfileService = playerProfileService;
+            _dailyRewardService = dailyRewardService ??
+                throw new ArgumentNullException(nameof(dailyRewardService));
             _goldPassService = goldPassService;
             _levelCatalogRepository = levelCatalogRepository;
             _shopConfig = shopConfig;
@@ -683,7 +693,12 @@ namespace FoodieMatch.UI
                 {
                     dailyRewardPopup.SetActions(
                         new DailyRewardPopupViewActions(
-                            OnDailyRewardCloseClicked));
+                            OnDailyRewardCloseClicked,
+                            OnDailyQuestClicked,
+                            OnDailyGiftClicked,
+                            OnDailyFreeRewardClicked,
+                            RefreshDailyRewardPopup));
+                    dailyRewardPopup.Bind(_dailyRewardService.GetStatus());
                 });
         }
 
@@ -695,6 +710,166 @@ namespace FoodieMatch.UI
         private void OnDailyRewardCloseClicked()
         {
             HideDailyRewardPopup();
+        }
+
+        private void OnDailyQuestClicked(int questIndex)
+        {
+            DailyRewardStatus status = _dailyRewardService.GetStatus();
+            if (questIndex < 0 || questIndex >= status.Quests.Count)
+            {
+                return;
+            }
+
+            DailyQuestStatus quest = status.Quests[questIndex];
+            if (!quest.IsCompleted)
+            {
+                HideDailyRewardPopup();
+                PlayGameRequested?.Invoke();
+                return;
+            }
+
+            if (_dailyRewardService.TryClaimQuest(quest.Type))
+            {
+                long targetCoinBalance = _playerProfileService.CoinBalance;
+                long startingCoinBalance = targetCoinBalance - quest.CoinReward;
+                Sprite rewardIcon = GetOpenedDailyRewardPopup()?.GetQuestRewardIcon(questIndex)
+                    ?? _dailyRewardCatalog?.GetQuestIcon(quest.Type)
+                    ?? _dailyRewardCatalog?.CoinIcon;
+                RefreshDailyRewardPopup();
+                ShowDailyRewardClaim(
+                    rewardIcon,
+                    quest.CoinReward,
+                    startingCoinBalance,
+                    targetCoinBalance);
+            }
+        }
+
+        private void OnDailyGiftClicked()
+        {
+            long startingCoinBalance = _playerProfileService.CoinBalance;
+            Sprite rewardIcon = GetOpenedDailyRewardPopup()?.GetDailyGiftRewardIcon()
+                ?? _dailyRewardCatalog?.DailyGiftIcon;
+            if (!_dailyRewardService.TryClaimDailyGift())
+            {
+                return;
+            }
+
+            long targetCoinBalance = _playerProfileService.CoinBalance;
+            RefreshDailyRewardPopup();
+            ShowDailyRewardClaim(
+                rewardIcon,
+                DailyRewardService.DailyGiftCoinAmount,
+                startingCoinBalance,
+                targetCoinBalance);
+        }
+
+        private void OnDailyFreeRewardClicked(int rewardIndex)
+        {
+            if (!_dailyRewardService.CanClaimFreeReward(rewardIndex))
+            {
+                return;
+            }
+
+            if (rewardIndex < DailyRewardService.AdRewardCount)
+            {
+                DailyFreeRewardAdRequested?.Invoke(rewardIndex);
+                return;
+            }
+
+            CompleteDailyFreeReward(rewardIndex);
+        }
+
+        public void CompleteDailyFreeReward(int rewardIndex)
+        {
+            Sprite rewardIcon = GetOpenedDailyRewardPopup()?.GetFreeRewardIcon(rewardIndex)
+                ?? _dailyRewardCatalog?.GetFreeRewardIcon(rewardIndex);
+            bool isCoinReward = rewardIndex == 0 || rewardIndex == 3;
+            long startingCoinBalance = _playerProfileService.CoinBalance;
+            if (!_dailyRewardService.TryClaimFreeReward(rewardIndex))
+            {
+                return;
+            }
+
+            RefreshDailyRewardPopup();
+            int amount = GetDailyFreeRewardAmount(rewardIndex);
+            if (isCoinReward)
+            {
+                ShowDailyRewardClaim(
+                    rewardIcon,
+                    amount,
+                    startingCoinBalance,
+                    _playerProfileService.CoinBalance);
+                return;
+            }
+
+            ShowDailyRewardClaim(rewardIcon, amount);
+        }
+
+        public void RefreshDailyRewardPopup()
+        {
+            if (_popupManager.TryGetOpened(
+                    out DailyRewardPopupView dailyRewardPopup))
+            {
+                dailyRewardPopup.Bind(_dailyRewardService.GetStatus());
+            }
+        }
+
+        private DailyRewardPopupView GetOpenedDailyRewardPopup()
+        {
+            return _popupManager.TryGetOpened(
+                out DailyRewardPopupView dailyRewardPopup)
+                ? dailyRewardPopup
+                : null;
+        }
+
+        private void ShowDailyRewardClaim(
+            Sprite icon,
+            int amount,
+            long? startingCoinBalance = null,
+            long? targetCoinBalance = null)
+        {
+            Action continued = () =>
+            {
+                if (startingCoinBalance.HasValue && targetCoinBalance.HasValue)
+                {
+                    PlayHomeCoinReward(
+                        startingCoinBalance.Value,
+                        targetCoinBalance.Value,
+                        _economyConfig.CoinValuePerRewardImage);
+                    return;
+                }
+
+                RefreshAllPlayerResources();
+            };
+
+            ClaimRewardPopupData popupData = new(
+                ClaimRewardTitle.Congratulations,
+                new[]
+                {
+                    new ClaimRewardItemData(icon, $"x{amount}")
+                },
+                continued);
+
+            RunUiTask(
+                _popupManager.ShowAsync<ClaimRewardView>(popupData),
+                nameof(ShowDailyRewardClaim));
+        }
+
+        private int GetDailyFreeRewardAmount(int rewardIndex)
+        {
+            if (_dailyRewardCatalog != null)
+            {
+                return _dailyRewardCatalog.GetFreeRewardAmount(rewardIndex);
+            }
+
+            return rewardIndex switch
+            {
+                0 => DailyRewardService.FirstAdCoinAmount,
+                1 => 1,
+                2 => 1,
+                3 => DailyRewardService.FinalBonusCoinAmount,
+                _ => throw new ArgumentOutOfRangeException(nameof(rewardIndex))
+            };
         }
 
         private bool _isCustomizationPopupLoading;
