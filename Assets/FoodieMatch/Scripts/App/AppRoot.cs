@@ -107,6 +107,21 @@ namespace FoodieMatch.App
                         cancellationToken);
                 PlayerProfileInitializationResult result =
                     await profileTask;
+                _uiManager.SetLoadingProgress(0.4f);
+
+                if (result.IsSuccess)
+                {
+                    PlayerProfileRecord synchronizedRecord =
+                        await SynchronizePlayerProfileWithinStartupLimitAsync(
+                            authenticationTask,
+                            result.Record,
+                            startupTimer,
+                            cancellationToken);
+                    result = PlayerProfileInitializationResult.Succeeded(
+                        synchronizedRecord,
+                        result.RecoveredInvalidData);
+                }
+
                 LevelLoadingProgressReporter levelProgress = new(
                     _uiManager,
                     checkingManifest: 0.45f,
@@ -121,9 +136,7 @@ namespace FoodieMatch.App
                             levelProgress.Report,
                             cancellationToken)
                     : Task.CompletedTask;
-                Task startupWorkTask = Task.WhenAll(
-                    levelSynchronizationTask,
-                    authenticationTask);
+                Task startupWorkTask = levelSynchronizationTask;
                 await WaitForStartupWorkAsync(
                     startupWorkTask,
                     startupTimer.Elapsed,
@@ -161,6 +174,81 @@ namespace FoodieMatch.App
                 {
                     await _uiManager.HideLoadingAsync();
                 }
+            }
+        }
+
+        private async Task<PlayerProfileRecord>
+            SynchronizePlayerProfileWithinStartupLimitAsync(
+                Task<bool> authenticationTask,
+                PlayerProfileRecord localRecord,
+                Stopwatch startupTimer,
+                CancellationToken cancellationToken)
+        {
+            TimeSpan remainingDuration =
+                LevelSynchronizationSettings.LoadingWaitLimit -
+                startupTimer.Elapsed;
+
+            if (remainingDuration <= TimeSpan.Zero)
+            {
+                _ = ObserveStartupWorkAsync(
+                    authenticationTask,
+                    cancellationToken);
+                return localRecord;
+            }
+
+            using CancellationTokenSource syncCancellation =
+                CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken);
+            Task<PlayerProfileRecord> synchronizationTask =
+                SynchronizeAfterAuthenticationAsync(
+                    authenticationTask,
+                    localRecord,
+                    syncCancellation.Token);
+            Task completedTask = await Task.WhenAny(
+                synchronizationTask,
+                Task.Delay(remainingDuration, cancellationToken));
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (completedTask == synchronizationTask)
+            {
+                return await synchronizationTask;
+            }
+
+            syncCancellation.Cancel();
+            _ = ObserveProfileSynchronizationAsync(synchronizationTask);
+            return localRecord;
+        }
+
+        private async Task<PlayerProfileRecord>
+            SynchronizeAfterAuthenticationAsync(
+                Task<bool> authenticationTask,
+                PlayerProfileRecord localRecord,
+                CancellationToken cancellationToken)
+        {
+            bool isAuthenticated = await authenticationTask;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return isAuthenticated
+                ? await _appInstaller.PlayerProfileCloudSynchronizer
+                    .SynchronizeAsync(cancellationToken)
+                : localRecord;
+        }
+
+        private static async Task ObserveProfileSynchronizationAsync(
+            Task synchronizationTask)
+        {
+            try
+            {
+                await synchronizationTask;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"Player profile cloud synchronization failed: " +
+                    exception.Message);
             }
         }
 

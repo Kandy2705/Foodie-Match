@@ -27,6 +27,7 @@ using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Firebase;
+using FoodieMatch.Infrastructure.Firebase.PlayerProfiles;
 using FoodieMatch.Infrastructure.GoldPass;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
@@ -61,6 +62,12 @@ namespace FoodieMatch.App
         public FirebaseGameConfigurationLoader GameConfigurationLoader { get; private set; }
 
         public IPlayerIdentityService PlayerIdentityService { get; private set; }
+
+        public PlayerProfileCloudSynchronizer PlayerProfileCloudSynchronizer
+        {
+            get;
+            private set;
+        }
 
         public ILevelSynchronizer LevelSynchronizer { get; private set; }
 
@@ -160,8 +167,20 @@ namespace FoodieMatch.App
             IGameHeartConfig heartConfig = configurationSession;
             IClock clock = new SystemClock();
             PlayerProfileSession profileSession = new();
-            IPlayerProfileRepository profileRepository =
+            IPlayerProfileRepository localProfileRepository =
                 new PlayerPrefsPlayerProfileRepository(saveService);
+            IPlayerProfileRepository cloudProfileRepository =
+                new FirestorePlayerProfileRepository(PlayerIdentityService);
+            PlayerProfileCloudSynchronizer = new PlayerProfileCloudSynchronizer(
+                localProfileRepository,
+                cloudProfileRepository,
+                PlayerIdentityService,
+                new PlayerPrefsPlayerProfileSyncMetadataStore(saveService),
+                profileSession);
+            IPlayerProfileRepository profileRepository =
+                new CloudSyncingPlayerProfileRepository(
+                    localProfileRepository,
+                    PlayerProfileCloudSynchronizer);
             IInvalidPlayerProfileRecovery invalidProfileRecovery =
                 new PlayerPrefsInvalidPlayerProfileRecovery(saveService);
             PlayerProfileInitializer = new PlayerProfileInitializer(
