@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d71a812345bc4693a1523e1e912448da, type: 3}
+  m_Name: DailyRewardCatalog
+  m_EditorClassIdentifier: 
+  _coinIcon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  _storageIcon: {fileID: -1625834913553564709, guid: 3aae3ad16a8634f03aa9089ef736f32d, type: 3}
+  _swapIcon: {fileID: -3932251115960932063, guid: 5445c44b0fd944dd686452e22743a2b5, type: 3}
+  _plateIcon: {fileID: 347840636878216627, guid: fe0141235759c4523974356e826a9b19, type: 3}
+  _fridgeIcon: {fileID: -4709088927621829093, guid: 4581619a9f2bf47798a0511b658ddffc, type: 3}
+  _dailyGiftCoinAmount: 50
+  _dailyGiftCooldownSeconds: 3600
+  _dailyGiftIcon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  _quests:
+  - _type: 0
+    _title: Pass 3 levels
+    _target: 3
+    _coinReward: 40
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  - _type: 1
+    _title: Use 2 Storage
+    _target: 2
+    _coinReward: 40
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  - _type: 2
+    _title: Use 2 Refresh
+    _target: 2
+    _coinReward: 40
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  - _type: 3
+    _title: Use 2 Plate
+    _target: 2
+    _coinReward: 40
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  - _type: 4
+    _title: Use 2 Fridge
+    _target: 2
+    _coinReward: 40
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  _freeRewardSteps:
+  - _rewardType: 0
+    _boosterType: 2
+    _amount: 100
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
+  - _rewardType: 1
+    _boosterType: 2
+    _amount: 1
+    _icon: {fileID: -3932251115960932063, guid: 5445c44b0fd944dd686452e22743a2b5, type: 3}
+  - _rewardType: 1
+    _boosterType: 1
+    _amount: 1
+    _icon: {fileID: -1625834913553564709, guid: 3aae3ad16a8634f03aa9089ef736f32d, type: 3}
+  - _rewardType: 0
+    _boosterType: 2
+    _amount: 300
+    _icon: {fileID: -5314987306681390748, guid: 0b724892cdb844b55a1d8bdd9b2dfbf5, type: 3}
