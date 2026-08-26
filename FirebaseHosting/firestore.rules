@@ -2,9 +2,149 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAuthenticatedUser(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function hasPlayerSnapshot(data, userId) {
+      return data.playerId == userId &&
+             data.displayName is string &&
+             data.avatarId is string &&
+             data.frameId is string;
+    }
+
+    function hasValidCompletionReference(userId, completionId) {
+      return completionId is string &&
+             existsAfter(
+               /databases/$(database)/documents/leaderboardCompletions/$(userId)/events/$(completionId));
+    }
+
+    function completionAfter(userId, completionId) {
+      return getAfter(
+        /databases/$(database)/documents/leaderboardCompletions/$(userId)/events/$(completionId));
+    }
+
+    function validGlobalEntry(data, userId) {
+      return data.keys().hasOnly([
+               'playerId',
+               'displayName',
+               'avatarId',
+               'frameId',
+               'highestCompletedLevel',
+               'reachedAtUtc',
+               'updatedAt',
+               'lastCompletionId'
+             ]) &&
+             hasPlayerSnapshot(data, userId) &&
+             data.highestCompletedLevel is int &&
+             data.highestCompletedLevel > 0 &&
+             data.reachedAtUtc is timestamp &&
+             data.updatedAt == request.time &&
+             hasValidCompletionReference(
+               userId,
+               data.lastCompletionId) &&
+             completionAfter(userId, data.lastCompletionId)
+                 .data.levelNumber == data.highestCompletedLevel &&
+             completionAfter(userId, data.lastCompletionId)
+                 .data.completedAtUtc == data.reachedAtUtc;
+    }
+
+    function validWeeklyEntry(data, userId, weekId) {
+      return data.keys().hasOnly([
+               'playerId',
+               'displayName',
+               'avatarId',
+               'frameId',
+               'weekId',
+               'weeklyScore',
+               'reachedAtUtc',
+               'updatedAt',
+               'lastCompletionId'
+             ]) &&
+             hasPlayerSnapshot(data, userId) &&
+             data.weekId == weekId &&
+             data.weeklyScore is int &&
+             data.weeklyScore > 0 &&
+             data.reachedAtUtc is timestamp &&
+             data.updatedAt == request.time &&
+             hasValidCompletionReference(
+               userId,
+               data.lastCompletionId) &&
+             completionAfter(userId, data.lastCompletionId)
+                 .data.weekId == weekId &&
+             completionAfter(userId, data.lastCompletionId)
+                 .data.completedAtUtc == data.reachedAtUtc;
+    }
+
+    function validCompletion(data, weekId) {
+      return data.keys().hasOnly([
+               'levelNumber',
+               'weekId',
+               'completedAtUtc',
+               'createdAt'
+             ]) &&
+             data.levelNumber is int &&
+             data.levelNumber > 0 &&
+             data.weekId == weekId &&
+             data.completedAtUtc is timestamp &&
+             data.completedAtUtc >= request.time - duration.value(7, 'd') &&
+             data.completedAtUtc <= request.time + duration.value(5, 'm') &&
+             data.createdAt == request.time;
+    }
+
     match /playerProfiles/{userId} {
       allow read, write: if request.auth != null &&
                          request.auth.uid == userId;
+    }
+
+    match /leaderboardGlobal/{userId} {
+      allow read: if request.auth != null;
+
+      allow create: if isAuthenticatedUser(userId) &&
+                       validGlobalEntry(request.resource.data, userId);
+
+      allow update: if isAuthenticatedUser(userId) &&
+                       validGlobalEntry(request.resource.data, userId) &&
+                       request.resource.data.highestCompletedLevel ==
+                         resource.data.highestCompletedLevel + 1 &&
+                       request.resource.data.lastCompletionId !=
+                         resource.data.lastCompletionId;
+    }
+
+    match /leaderboardWeekly/{weekId}/entries/{userId} {
+      allow read: if request.auth != null;
+
+      allow create: if isAuthenticatedUser(userId) &&
+                       validWeeklyEntry(
+                         request.resource.data,
+                         userId,
+                         weekId) &&
+                       request.resource.data.weeklyScore == 1;
+
+      allow update: if isAuthenticatedUser(userId) &&
+                       validWeeklyEntry(
+                         request.resource.data,
+                         userId,
+                         weekId) &&
+                       request.resource.data.weeklyScore ==
+                         resource.data.weeklyScore + 1 &&
+                       request.resource.data.lastCompletionId !=
+                         resource.data.lastCompletionId;
+    }
+
+    match /leaderboardCompletions/{userId}/events/{completionId} {
+      allow read: if isAuthenticatedUser(userId);
+
+      allow create: if isAuthenticatedUser(userId) &&
+                       validCompletion(
+                         request.resource.data,
+                         request.resource.data.weekId) &&
+                       getAfter(
+                         /databases/$(database)/documents/leaderboardGlobal/$(userId))
+                           .data.lastCompletionId == completionId &&
+                       getAfter(
+                         /databases/$(database)/documents/leaderboardWeekly/$(request.resource.data.weekId)/entries/$(userId))
+                           .data.lastCompletionId == completionId;
     }
   }
 }

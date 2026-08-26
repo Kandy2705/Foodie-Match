@@ -1,0 +1,33 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "leaderboardGlobal",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "highestCompletedLevel",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "reachedAtUtc",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "weeklyScore",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "reachedAtUtc",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
