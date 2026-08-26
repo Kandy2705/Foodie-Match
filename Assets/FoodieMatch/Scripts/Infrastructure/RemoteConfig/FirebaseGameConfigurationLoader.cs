@@ -8,6 +8,7 @@ using FoodieMatch.Core.Application.Configuration;
 using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Domain.Booster;
+using FoodieMatch.Infrastructure.Firebase;
 using FoodieMatch.Infrastructure.GoldPass;
 using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Shop;
@@ -26,6 +27,7 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
         private readonly GameShopConfigSession _shopConfig;
         private readonly GameGoldPassConfigSession _goldPassConfig;
         private readonly PlayerPrefsGameCatalogCache _catalogCache;
+        private readonly FirebaseRuntimeInitializer _runtimeInitializer;
         private readonly RemoteConfigSnapshotBuilder _snapshotBuilder = new();
         private readonly GameShopConfigJsonParser _shopConfigParser = new();
         private readonly GameGoldPassConfigJsonParser _goldPassConfigParser = new();
@@ -36,7 +38,8 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             PlayerPrefsGameConfigurationCache cache,
             GameShopConfigSession shopConfig,
             GameGoldPassConfigSession goldPassConfig,
-            PlayerPrefsGameCatalogCache catalogCache)
+            PlayerPrefsGameCatalogCache catalogCache,
+            FirebaseRuntimeInitializer runtimeInitializer)
         {
             _session = session;
             _localDefaults = localDefaults;
@@ -44,15 +47,15 @@ namespace FoodieMatch.Infrastructure.RemoteConfig
             _shopConfig = shopConfig;
             _goldPassConfig = goldPassConfig;
             _catalogCache = catalogCache;
+            _runtimeInitializer = runtimeInitializer;
         }
 
         public async Task<bool> RefreshAsync(CancellationToken cancellationToken)
         {
             try
             {
-                FirebaseApp.LogLevel = LogLevel.Error;
                 DependencyStatus dependencyStatus =
-                    await FirebaseApp.CheckAndFixDependenciesAsync();
+                    await _runtimeInitializer.InitializeAsync();
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (dependencyStatus != DependencyStatus.Available)
