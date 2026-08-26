@@ -14,6 +14,7 @@ using FoodieMatch.Core.Application.Configuration.Shop;
 using FoodieMatch.Core.Application.Events;
 using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
+using FoodieMatch.Core.Application.Leaderboard;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
@@ -27,12 +28,14 @@ using FoodieMatch.Features.Gameplay;
 using FoodieMatch.Infrastructure.Advertising;
 using FoodieMatch.Infrastructure.Audio;
 using FoodieMatch.Infrastructure.Firebase;
+using FoodieMatch.Infrastructure.Firebase.Leaderboard;
 using FoodieMatch.Infrastructure.Firebase.PlayerProfiles;
 using FoodieMatch.Infrastructure.GoldPass;
 using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Level.Remote;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.Infrastructure.Persistence.Leaderboard;
 using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.RemoteConfig;
@@ -70,6 +73,12 @@ namespace FoodieMatch.App
         }
 
         public ILevelSynchronizer LevelSynchronizer { get; private set; }
+
+        public LeaderboardSubmissionService LeaderboardSubmissionService
+        {
+            get;
+            private set;
+        }
 
         public bool Install(AppRoot appRoot)
         {
@@ -194,6 +203,11 @@ namespace FoodieMatch.App
                 profileSession,
                 heartConfig,
                 clock);
+            LeaderboardSubmissionService = new LeaderboardSubmissionService(
+                new FirestoreLeaderboardSubmissionRepository(
+                    PlayerIdentityService),
+                new PlayerPrefsLeaderboardPendingSubmissionStore(saveService),
+                clock);
             GoldPassService goldPassService = new(
                 goldPassConfig,
                 playerProfileService,
@@ -310,6 +324,7 @@ namespace FoodieMatch.App
                 appRoot.UIManager,
                 appRoot.GameplayController,
                 playerProfileService,
+                LeaderboardSubmissionService,
                 goldPassService,
                 goldPassProgressionConfig,
                 boosterManager,

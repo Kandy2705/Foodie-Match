@@ -9,6 +9,7 @@ using FoodieMatch.Core.Application.Configuration.Economy;
 using FoodieMatch.Core.Application.Configuration.GoldPass;
 using FoodieMatch.Core.Application.GoldPass;
 using FoodieMatch.Core.Application.Level;
+using FoodieMatch.Core.Application.Leaderboard;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
@@ -28,6 +29,7 @@ namespace FoodieMatch.App
         private UIManager _uiManager;
         private GameplayController _gameplayController;
         private PlayerProfileService _playerProfileService;
+        private LeaderboardSubmissionService _leaderboardSubmissionService;
         private GoldPassService _goldPassService;
         private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private BoosterManager _boosterManager;
@@ -48,6 +50,7 @@ namespace FoodieMatch.App
             UIManager uiManager,
             GameplayController gameplayController,
             PlayerProfileService playerProfileService,
+            LeaderboardSubmissionService leaderboardSubmissionService,
             GoldPassService goldPassService,
             IGameGoldPassProgressionConfig goldPassProgressionConfig,
             BoosterManager boosterManager,
@@ -64,6 +67,7 @@ namespace FoodieMatch.App
             _uiManager = uiManager;
             _gameplayController = gameplayController;
             _playerProfileService = playerProfileService;
+            _leaderboardSubmissionService = leaderboardSubmissionService;
             _goldPassService = goldPassService;
             _goldPassProgressionConfig = goldPassProgressionConfig;
             _boosterManager = boosterManager;
@@ -802,6 +806,12 @@ namespace FoodieMatch.App
                 {
                     _goldPassService.AddSpoons(spoonCount);
                 }
+
+                _leaderboardSubmissionService.QueueLevelCompletion(
+                    _activeLevelNumber,
+                    _playerProfileService.PlayerName,
+                    _playerProfileService.AvatarId,
+                    _playerProfileService.FrameId);
                 HomeRewardPresentation rewardPresentation = new(
                     startingCoinBalance,
                     _playerProfileService.CoinBalance,

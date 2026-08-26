@@ -73,6 +73,8 @@ service cloud.firestore {
              completionAfter(userId, data.lastCompletionId)
                  .data.weekId == weekId &&
              completionAfter(userId, data.lastCompletionId)
+                 .data.countsTowardWeekly == true &&
+             completionAfter(userId, data.lastCompletionId)
                  .data.completedAtUtc == data.reachedAtUtc;
     }
 
@@ -81,13 +83,16 @@ service cloud.firestore {
                'levelNumber',
                'weekId',
                'completedAtUtc',
+               'countsTowardWeekly',
                'createdAt'
              ]) &&
              data.levelNumber is int &&
              data.levelNumber > 0 &&
              data.weekId == weekId &&
              data.completedAtUtc is timestamp &&
-             data.completedAtUtc >= request.time - duration.value(7, 'd') &&
+             data.countsTowardWeekly is bool &&
+             (!data.countsTowardWeekly ||
+               data.completedAtUtc >= request.time - duration.value(7, 'd')) &&
              data.completedAtUtc <= request.time + duration.value(5, 'm') &&
              data.createdAt == request.time;
     }
@@ -142,9 +147,10 @@ service cloud.firestore {
                        getAfter(
                          /databases/$(database)/documents/leaderboardGlobal/$(userId))
                            .data.lastCompletionId == completionId &&
-                       getAfter(
-                         /databases/$(database)/documents/leaderboardWeekly/$(request.resource.data.weekId)/entries/$(userId))
-                           .data.lastCompletionId == completionId;
+                       (!request.resource.data.countsTowardWeekly ||
+                         getAfter(
+                           /databases/$(database)/documents/leaderboardWeekly/$(request.resource.data.weekId)/entries/$(userId))
+                             .data.lastCompletionId == completionId);
     }
   }
 }

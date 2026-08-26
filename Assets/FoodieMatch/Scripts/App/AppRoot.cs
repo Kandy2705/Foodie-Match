@@ -98,6 +98,9 @@ namespace FoodieMatch.App
                 Task<bool> authenticationTask =
                     _appInstaller.PlayerIdentityService.AuthenticateAsync(
                         cancellationToken);
+                _ = FlushPendingLeaderboardAfterAuthenticationAsync(
+                    authenticationTask,
+                    cancellationToken);
                 await _appInstaller.GameConfigurationLoader.RefreshAsync(
                     cancellationToken);
 
@@ -232,6 +235,24 @@ namespace FoodieMatch.App
                 ? await _appInstaller.PlayerProfileCloudSynchronizer
                     .SynchronizeAsync(cancellationToken)
                 : localRecord;
+        }
+
+        private async Task FlushPendingLeaderboardAfterAuthenticationAsync(
+            Task<bool> authenticationTask,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (await authenticationTask)
+                {
+                    await _appInstaller.LeaderboardSubmissionService
+                        .FlushPendingAsync(cancellationToken);
+                }
+            }
+            catch (OperationCanceledException) when (
+                cancellationToken.IsCancellationRequested)
+            {
+            }
         }
 
         private static async Task ObserveProfileSynchronizationAsync(
