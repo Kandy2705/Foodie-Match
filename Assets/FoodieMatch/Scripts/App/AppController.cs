@@ -12,6 +12,7 @@ using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Rewards;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Domain.Booster;
 using FoodieMatch.Core.Domain.Level;
@@ -28,6 +29,7 @@ namespace FoodieMatch.App
         private UIManager _uiManager;
         private GameplayController _gameplayController;
         private PlayerProfileService _playerProfileService;
+        private DailyRewardService _dailyRewardService;
         private GoldPassService _goldPassService;
         private IGameGoldPassProgressionConfig _goldPassProgressionConfig;
         private BoosterManager _boosterManager;
@@ -48,6 +50,7 @@ namespace FoodieMatch.App
             UIManager uiManager,
             GameplayController gameplayController,
             PlayerProfileService playerProfileService,
+            DailyRewardService dailyRewardService,
             GoldPassService goldPassService,
             IGameGoldPassProgressionConfig goldPassProgressionConfig,
             BoosterManager boosterManager,
@@ -64,6 +67,7 @@ namespace FoodieMatch.App
             _uiManager = uiManager;
             _gameplayController = gameplayController;
             _playerProfileService = playerProfileService;
+            _dailyRewardService = dailyRewardService;
             _goldPassService = goldPassService;
             _goldPassProgressionConfig = goldPassProgressionConfig;
             _boosterManager = boosterManager;
@@ -92,6 +96,8 @@ namespace FoodieMatch.App
                 OnFillHeartCoinPurchaseRequested;
             _uiManager.FillHeartRewardedAdRequested +=
                 OnFillHeartRewardedAdRequested;
+            _uiManager.DailyFreeRewardAdRequested +=
+                OnDailyFreeRewardAdRequested;
             _uiManager.BoosterUseHandler = OnBoosterUseRequested;
             _uiManager.RestartGameHandler = OnRestartGameRequested;
             _uiManager.ShopPurchaseHandler = OnShopPurchaseRequestedAsync;
@@ -473,6 +479,7 @@ namespace FoodieMatch.App
             {
                 if (_gameplayController.TryApplyBooster(boosterType))
                 {
+                    _dailyRewardService.RecordBoosterUsed(boosterType);
                     return true;
                 }
             }
@@ -584,6 +591,18 @@ namespace FoodieMatch.App
             {
                 _uiManager.CompleteHeartRefill();
             }
+        }
+
+        private void OnDailyFreeRewardAdRequested(int rewardIndex)
+        {
+            if (!_dailyRewardService.CanClaimFreeReward(rewardIndex))
+            {
+                return;
+            }
+
+            TryShowRewardedAd(
+                RewardedAdPlacement.DailyReward,
+                () => _uiManager.CompleteDailyFreeReward(rewardIndex));
         }
 
         private void UpdateUiAfterBoosterGranted(BoosterType boosterType)
@@ -798,6 +817,7 @@ namespace FoodieMatch.App
                 _playerProfileService.ApplyLevelCompletionReward(
                     homeLevelNumber,
                     coinReward);
+                _dailyRewardService.RecordLevelCompleted();
                 if (spoonCount > 0)
                 {
                     _goldPassService.AddSpoons(spoonCount);

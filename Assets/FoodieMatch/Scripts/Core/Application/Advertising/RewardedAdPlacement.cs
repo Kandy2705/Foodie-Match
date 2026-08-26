@@ -8,6 +8,7 @@ namespace FoodieMatch.Core.Application.Advertising
         BoosterPlate = 3,
         BoosterStorage = 4,
         BoosterSwap = 5,
-        DoubleCoin = 6
+        DoubleCoin = 6,
+        DailyReward = 7
     }
 }

@@ -16,6 +16,7 @@ namespace FoodieMatch.Infrastructure.Advertising
                 RewardedAdPlacement.BoosterStorage => "Booster_Storage",
                 RewardedAdPlacement.BoosterSwap => "Booster_Swap",
                 RewardedAdPlacement.DoubleCoin => "Double_Coin",
+                RewardedAdPlacement.DailyReward => "Daily_Reward",
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(placement),
                     placement,
