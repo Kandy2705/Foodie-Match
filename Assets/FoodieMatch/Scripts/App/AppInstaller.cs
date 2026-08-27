@@ -17,6 +17,7 @@ using FoodieMatch.Core.Application.Level;
 using FoodieMatch.Core.Application.Player;
 using FoodieMatch.Core.Application.Purchasing;
 using FoodieMatch.Core.Application.Repositories;
+using FoodieMatch.Core.Application.Rewards;
 using FoodieMatch.Core.Application.Shop;
 using FoodieMatch.Core.Application.Time;
 using FoodieMatch.Core.Application.UseCases;
@@ -33,6 +34,7 @@ using FoodieMatch.Infrastructure.Level;
 using FoodieMatch.Infrastructure.Level.Json;
 using FoodieMatch.Infrastructure.Level.Remote;
 using FoodieMatch.Infrastructure.Persistence.PlayerProfiles;
+using FoodieMatch.Infrastructure.Persistence.Rewards;
 using FoodieMatch.Infrastructure.Persistence.Configuration;
 using FoodieMatch.Infrastructure.Persistence.Save;
 using FoodieMatch.Infrastructure.RemoteConfig;
@@ -232,6 +234,11 @@ namespace FoodieMatch.App
             BoosterManager boosterManager = new(
                 playerProfileService,
                 boosterConfig);
+            DailyRewardService dailyRewardService = new(
+                new PlayerPrefsDailyRewardProgressStore(saveService),
+                playerProfileService,
+                boosterManager,
+                clock);
             IGameEconomyConfig economyConfig = configurationSession;
             IGameAdsConfig adsConfig = configurationSession;
             IStorePaymentGateway storePaymentGateway =
@@ -256,6 +263,7 @@ namespace FoodieMatch.App
                 goldPassProgressionConfig,
                 advertisingRuntimeSettings,
                 playerProfileService,
+                dailyRewardService,
                 goldPassService,
                 levelCatalogRepository,
                 shopConfig,
@@ -310,6 +318,7 @@ namespace FoodieMatch.App
                 appRoot.UIManager,
                 appRoot.GameplayController,
                 playerProfileService,
+                dailyRewardService,
                 goldPassService,
                 goldPassProgressionConfig,
                 boosterManager,

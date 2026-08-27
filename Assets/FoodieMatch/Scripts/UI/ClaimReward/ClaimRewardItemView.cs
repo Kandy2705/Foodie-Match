@@ -16,28 +16,67 @@ namespace FoodieMatch.UI.ClaimReward
         [SerializeField] private Animator _lightBurstAnimator;
         [SerializeField] private ParticleSystem _particleSystem;
 
-        private Vector3 _visibleScale;
+        private bool _isInitialized;
+        private Vector3 _visibleScale = Vector3.one;
 
         private void Awake()
         {
-            _visibleScale = _motionRoot.localScale;
+            EnsureInitialized();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (_isInitialized)
+            {
+                return;
+            }
+
+            _isInitialized = true;
+            if (_motionRoot != null && _motionRoot.localScale != Vector3.zero)
+            {
+                _visibleScale = _motionRoot.localScale;
+            }
+            else
+            {
+                _visibleScale = Vector3.one;
+            }
+
             StopEffects();
         }
 
         public void Bind(ClaimRewardItemData data)
         {
-            _iconImage.sprite = data.Icon;
-            _iconImage.preserveAspect = true;
-            _amountText.text = data.AmountText;
-            _amountText.gameObject.SetActive(
-                !string.IsNullOrEmpty(data.AmountText));
+            EnsureInitialized();
+
+            if (_iconImage != null)
+            {
+                _iconImage.sprite = data.Icon;
+                _iconImage.enabled = data.Icon != null;
+                if (data.Icon != null)
+                {
+                    _iconImage.type = Image.Type.Simple;
+                    _iconImage.SetNativeSize();
+                }
+            }
+
+            if (_amountText != null)
+            {
+                _amountText.text = data.AmountText;
+                _amountText.gameObject.SetActive(
+                    !string.IsNullOrEmpty(data.AmountText));
+            }
+
             gameObject.SetActive(true);
         }
 
         public void PrepareReveal()
         {
+            EnsureInitialized();
             StopEffects();
-            _motionRoot.localScale = Vector3.zero;
+            if (_motionRoot != null)
+            {
+                _motionRoot.localScale = Vector3.zero;
+            }
         }
 
         public Sequence InsertReveal(
@@ -46,6 +85,8 @@ namespace FoodieMatch.UI.ClaimReward
             float duration,
             Ease ease)
         {
+            EnsureInitialized();
+            Vector3 targetScale = _visibleScale != Vector3.zero ? _visibleScale : Vector3.one;
             return sequence
                 .InsertCallback(
                     startTime,
@@ -55,15 +96,19 @@ namespace FoodieMatch.UI.ClaimReward
                     startTime,
                     Tween.Scale(
                         _motionRoot,
-                        _visibleScale,
+                        targetScale,
                         duration,
                         ease));
         }
 
         public void Hide()
         {
+            EnsureInitialized();
             StopEffects();
-            _motionRoot.localScale = _visibleScale;
+            if (_motionRoot != null)
+            {
+                _motionRoot.localScale = _visibleScale != Vector3.zero ? _visibleScale : Vector3.one;
+            }
             gameObject.SetActive(false);
         }
 
