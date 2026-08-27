@@ -80,6 +80,12 @@ namespace FoodieMatch.App
             private set;
         }
 
+        public LeaderboardStandingsService LeaderboardStandingsService
+        {
+            get;
+            private set;
+        }
+
         public bool Install(AppRoot appRoot)
         {
             ISaveService saveService = new PlayerPrefsSaveServiceAdapter();
@@ -207,6 +213,10 @@ namespace FoodieMatch.App
                 new FirestoreLeaderboardSubmissionRepository(
                     PlayerIdentityService),
                 new PlayerPrefsLeaderboardPendingSubmissionStore(saveService),
+                clock);
+            LeaderboardStandingsService = new LeaderboardStandingsService(
+                new FirestoreLeaderboardStandingsRepository(
+                    PlayerIdentityService),
                 clock);
             GoldPassService goldPassService = new(
                 goldPassConfig,
