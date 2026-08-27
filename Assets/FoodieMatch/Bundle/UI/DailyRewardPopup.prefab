@@ -357,7 +357,21 @@ MonoBehaviour:
   _freeCoinTabImage: {fileID: 6593648574900046025}
   _tabOnSprite: {fileID: -3961891085770601449, guid: 2fdfb35b5d2cc42a08157eeff6aaafc3, type: 3}
   _tabOffSprite: {fileID: 3369664492372133144, guid: fb8888531d9184e838951fedcd505aa5, type: 3}
+  _progressCurrentSprite: {fileID: -7185801221230608338, guid: ae69065f999e0434c98a3babf6203f7c, type: 3}
+  _progressFilledSprite: {fileID: 21300000, guid: 0b3a98efaefbd482babe13894f489e51, type: 3}
+  _progressCheckedSprite: {fileID: 887921738603304505, guid: a89de5e967c4648b1b8de920eca93743, type: 3}
+  _claimedFont: {fileID: 11400000, guid: 593c3215382804688a52103527b54cec, type: 2}
+  _claimedTextColor: {r: 0.7411765, g: 0.5176471, b: 0.32941177, a: 1}
   _popupAnimController: {fileID: 5764012389298729818}
+  _dailyGiftClaimSprite: {fileID: 21300000, guid: 4183b283e46a24097a584d37295c9b18, type: 3}
+  _dailyGiftCooldownSprite: {fileID: 487825882658737399, guid: a3dd0a277588d475fb317ba594e76552, type: 3}
+  _dailyGiftClaimFont: {fileID: 11400000, guid: 66dd3602b606d4d5396aabc9ba67f410, type: 2}
+  _dailyGiftCooldownFont: {fileID: 11400000, guid: 527fa6c24d045453ea0ed570d4d4dcd8, type: 2}
+  _dailyGiftCooldownImageTop: 8
+  _dailyGiftCooldownImageBottom: 8
+  _dailyGiftClaimPixelsPerUnitMultiplier: 1.5
+  _dailyGiftCooldownPixelsPerUnitMultiplier: 1
+  _catalog: {fileID: 11400000, guid: 8f49c0d12e3f4924a87f191b2c45d3e1, type: 2}
 --- !u!1001 &1969693510125902844
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -707,6 +721,18 @@ PrefabInstance:
     - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_SizeDelta.y
       value: 1407.4348
+      objectReference: {fileID: 0}
+    - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5569352691473308568, guid: f600b333c3a81435793212c0515baac3, type: 3}
       propertyPath: m_LocalPosition.x

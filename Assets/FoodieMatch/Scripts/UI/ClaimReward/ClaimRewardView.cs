@@ -43,23 +43,48 @@ namespace FoodieMatch.UI.ClaimReward
             Animator.StringToHash("Normal");
 
         private readonly List<ClaimRewardItemView> _rewardItems = new();
+        private bool _isInitialized;
         private Sequence _revealSequence;
         private Vector2 _titleVisiblePosition;
         private Vector3 _titleVisibleScale;
         private float _titleVisibleAlpha;
         private Vector3 _continueVisibleScale;
+        private Vector3 _continueBaseScale;
+        private Vector3 _rewardPanelBaseScale;
         private float _continueVisibleAlpha;
+        private float _defaultTitleFontSize;
         private ClaimRewardPopupData _data;
         private int _openCompletionCount;
+        private bool _continueRequested;
 
         private void Awake()
         {
+            EnsureInitialized();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (_isInitialized)
+            {
+                return;
+            }
+
+            _isInitialized = true;
             _backgroundButton.onClick.AddListener(OnBackgroundClicked);
             _titleVisiblePosition = _titleText.rectTransform.anchoredPosition;
-            _titleVisibleScale = _titleText.rectTransform.localScale;
-            _titleVisibleAlpha = _titleText.alpha;
-            _continueVisibleScale = _tapToContinueText.rectTransform.localScale;
-            _continueVisibleAlpha = _tapToContinueText.alpha;
+            _titleVisibleScale = _titleText.rectTransform.localScale != Vector3.zero
+                ? _titleText.rectTransform.localScale
+                : Vector3.one;
+            _titleVisibleAlpha = _titleText.alpha > 0f ? _titleText.alpha : 1f;
+            _continueBaseScale = _tapToContinueText.rectTransform.localScale != Vector3.zero
+                ? _tapToContinueText.rectTransform.localScale
+                : Vector3.one;
+            _continueVisibleScale = _continueBaseScale;
+            _rewardPanelBaseScale = _rewardPanel.localScale != Vector3.zero
+                ? _rewardPanel.localScale
+                : Vector3.one;
+            _continueVisibleAlpha = _tapToContinueText.alpha > 0f ? _tapToContinueText.alpha : 1f;
+            _defaultTitleFontSize = _titleText.fontSize > 0f ? _titleText.fontSize : 96f;
         }
 
         private void OnDestroy()
@@ -70,8 +95,18 @@ namespace FoodieMatch.UI.ClaimReward
 
         public override void Setup(IPopupData data)
         {
+            EnsureInitialized();
             _data = (ClaimRewardPopupData)data;
+            _continueRequested = false;
             _titleText.text = ClaimRewardTitleText.Get(_data.Title);
+            _titleText.fontSize = _data.Title == ClaimRewardTitle.Congratulations
+                ? 96f
+                : _defaultTitleFontSize;
+            float scale = _data.PresentationScale > 0f ? _data.PresentationScale : 1f;
+            _rewardPanel.localScale =
+                _rewardPanelBaseScale * scale;
+            _continueVisibleScale =
+                _continueBaseScale * scale;
             BindRewards(_data.Rewards);
         }
 
@@ -246,12 +281,25 @@ namespace FoodieMatch.UI.ClaimReward
 
         private void OnBackgroundClicked()
         {
+            _continueRequested = true;
             RequestHide();
         }
 
         private void OnCloseAnimationFinished()
         {
             base.Hide();
+            InvokeContinuedIfRequested();
+        }
+
+        private void InvokeContinuedIfRequested()
+        {
+            if (!_continueRequested)
+            {
+                return;
+            }
+
+            _continueRequested = false;
+            _data?.Continued?.Invoke();
         }
 
         private void StopReveal()
